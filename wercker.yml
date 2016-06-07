@@ -55,16 +55,22 @@ build:
     - script:
         name: cross platform release
         code: |
-          (GOOS=linux GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64 && mv cf-mgmt ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64)
+          (GOOS=linux GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64 && mv cf-mgmt ${WERCKER_OUTPUT_DIR})
     - script:
         name: create tarball
         code: |
-          tar -cvzf cf-mgmt_binaries.tgz ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/
+          tar -cvzf cf-mgmt_binaries.tgz ${WERCKER_OUTPUT_DIR}/
 
     - script:
         name: add repo to artifact
         code: |
           cp -R ./ ${WERCKER_OUTPUT_DIR}
+    - script:
+        name: list output dir
+        code: |
+         ls -al ${WERCKER_OUTPUT_DIR}
+
+
 
 deploy:
   steps:
@@ -89,6 +95,13 @@ deploy:
         code: |
           go get github.com/xchapter7x/versioning
           export WERCKER_GITHUB_CREATE_RELEASE_ID=`versioning bump_patch`
+
+    - internal/docker-push:
+        username: $DOCKER_HUB_USERNAME
+        password: $DOCKER_HUB_PASSWORD
+        tag: CF-MGMT-$WERCKER_GITHUB_CREATE_RELEASE_ID
+        repository: pcfservices/cf-mgmt
+        registry: https://registry.hub.docker.com
 
     - github-create-release:
         token: $GITHUB_TOKEN
