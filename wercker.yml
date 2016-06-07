@@ -71,6 +71,11 @@ build:
           cp ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64/cf-mgmt ${WERCKER_OUTPUT_DIR}/.
 
     - script:
+        name: add repo to artifact
+        code: |
+          cp -R ./ ${WERCKER_OUTPUT_DIR}
+          
+    - script:
         name: list output dir
         code: |
          ls -al ${WERCKER_OUTPUT_DIR}
