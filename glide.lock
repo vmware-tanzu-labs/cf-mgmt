@@ -1,0 +1,20 @@
+hash: 2f5b0a366d7be2ab43eba538741a4da22aa5538c87ed345bee57b4fca4a594c2
+updated: 2016-06-07T10:13:39.321130998-05:00
+imports:
+- name: github.com/codegangsta/cli
+  version: edb24d02aa3cea2319c33f2836d4a5133907fe4c
+- name: github.com/moul/http2curl
+  version: b1479103caacaa39319f75e7f57fc545287fca0d
+- name: github.com/op/go-logging
+  version: 970db520ece77730c7e4724c61121037378659d9
+- name: github.com/parnurzeal/gorequest
+  version: f17fef20c518e688f4edb3eb2af148462ecab3ef
+- name: github.com/xchapter7x/lo
+  version: aa2602d0e8e8647f0ce7b53109b37040941915aa
+- name: golang.org/x/net
+  version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
+  subpackages:
+  - publicsuffix
+- name: gopkg.in/yaml.v2
+  version: a83829b6f1293c91addabc89d0571c246397bbf4
+devImports: []
