@@ -96,10 +96,16 @@ deploy:
           go get github.com/xchapter7x/versioning
           export WERCKER_GITHUB_CREATE_RELEASE_ID=`versioning bump_patch`
 
+    - script:
+        name: show directory
+        code: |
+          ls -la
+          pwd
+
     - internal/docker-push:
         username: $DOCKER_HUB_USERNAME
         password: $DOCKER_HUB_PASSWORD
-        tag: CF-MGMT-$WERCKER_GITHUB_CREATE_RELEASE_ID
+        tag: latest,CF-MGMT-$WERCKER_GITHUB_CREATE_RELEASE_ID
         repository: pcfservices/cf-mgmt
         registry: https://registry.hub.docker.com
 

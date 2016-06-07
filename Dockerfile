@@ -1,4 +1,4 @@
-FROM golang:latest
+FROM busybox:latest
 
 MAINTAINER Caleb Washburn "cwashburn@pivotal.io"
 
