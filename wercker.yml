@@ -115,6 +115,7 @@ deploy:
     - internal/docker-push:
         username: $DOCKER_HUB_USERNAME
         password: $DOCKER_HUB_PASSWORD
+        cmd: cp /pipeline/source/cf-mgmt /usr/bin/cf-mgmt
         tag: latest,CF-MGMT-$WERCKER_GITHUB_CREATE_RELEASE_ID
         repository: pcfservices/cf-mgmt
         registry: https://registry.hub.docker.com
