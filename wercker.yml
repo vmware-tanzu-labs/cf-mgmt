@@ -74,7 +74,7 @@ build:
         name: add repo to artifact
         code: |
           cp -R ./ ${WERCKER_OUTPUT_DIR}
-          
+
     - script:
         name: list output dir
         code: |
@@ -112,7 +112,7 @@ deploy:
           ls -la
           pwd
 
-    - internal/docker-scratch-push:
+    - internal/docker-push:
         username: $DOCKER_HUB_USERNAME
         password: $DOCKER_HUB_PASSWORD
         tag: latest,CF-MGMT-$WERCKER_GITHUB_CREATE_RELEASE_ID
