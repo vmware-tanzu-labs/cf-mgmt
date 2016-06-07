@@ -50,7 +50,7 @@ build:
     - script:
         name: cross platform release
         code: |
-          (GOOS=linux GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}${BUILD_DIR}/linux64 && mv cf-mgmt ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64)
+          (GOOS=linux GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64 && mv cf-mgmt ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64)
           (GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/osx && mv cf-mgmt ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/osx)
           (GOOS=windows GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/win64 && mv cf-mgmt.exe ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/win64)
 
