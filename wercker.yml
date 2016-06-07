@@ -41,11 +41,6 @@ build:
           (go build)
 
     - script:
-        name: add repo to artifact
-        code: |
-          cp -R ./ ${WERCKER_OUTPUT_DIR}
-
-    - script:
         name: set release id variable and version
         code: |
           go get github.com/xchapter7x/versioning
@@ -55,16 +50,26 @@ build:
     - script:
         name: cross platform release
         code: |
-          (GOOS=linux GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64 && mv cf-mgmt ${WERCKER_OUTPUT_DIR})
+          (GOOS=linux GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}${BUILD_DIR}/linux64 && mv cf-mgmt ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64)
+          (GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/osx && mv cf-mgmt ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/osx)
+          (GOOS=windows GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/win64 && mv cf-mgmt.exe ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/win64)
+
+    - script:
+        name: list output dir
+        code: |
+          echo ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}
+          ls -al ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}
     - script:
         name: create tarball
         code: |
-          tar -cvzf cf-mgmt_binaries.tgz ${WERCKER_OUTPUT_DIR}/
+          tar -cvzf cf-mgmt_binaries.tgz ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/
 
     - script:
-        name: add repo to artifact
+        name: copy to output dir
         code: |
-          cp -R ./ ${WERCKER_OUTPUT_DIR}
+          cp cf-mgmt_binaries.tgz ${WERCKER_OUTPUT_DIR}/.
+          cp ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64/cf-mgmt ${WERCKER_OUTPUT_DIR}/.
+
     - script:
         name: list output dir
         code: |
@@ -102,7 +107,7 @@ deploy:
           ls -la
           pwd
 
-    - internal/docker-push:
+    - internal/docker-scratch-push:
         username: $DOCKER_HUB_USERNAME
         password: $DOCKER_HUB_PASSWORD
         tag: latest,CF-MGMT-$WERCKER_GITHUB_CREATE_RELEASE_ID
