@@ -59,8 +59,8 @@ func (m *DefaultSpaceManager) FindSpace(orgGUID, spaceName string) (space Resour
 	return
 }
 
-//SyncSpaces -
-func (m *DefaultSpaceManager) SyncSpaces(configDir string) (err error) {
+//CreateSpaces -
+func (m *DefaultSpaceManager) CreateSpaces(configDir string) (err error) {
 	var spaceNames []string
 	var orgName, orgGUID string
 	files, _ := ioutil.ReadDir(configDir)

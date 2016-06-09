@@ -63,33 +63,33 @@ func NewApp(eh *ErrorHandler) *cli.App {
 				cli.ShowVersion(c)
 			},
 		},
-		CreateSyncOrgsCommand(eh),
-		CreateSyncSpacesCommand(eh),
+		CreateOrgsCommand(eh),
+		CreateSpacesCommand(eh),
 	}
 
 	return app
 }
 
-//CreateSyncOrgsCommand -
-func CreateSyncOrgsCommand(eh *ErrorHandler) (command cli.Command) {
-	desc := fmt.Sprintf("sync-orgs")
+//CreateOrgsCommand -
+func CreateOrgsCommand(eh *ErrorHandler) (command cli.Command) {
+	desc := fmt.Sprintf("create-orgs")
 	command = cli.Command{
-		Name:        "sync-orgs",
-		Usage:       "sync orgs with what is defined in config",
+		Name:        "create-orgs",
+		Usage:       "create orgs with what is defined in config",
 		Description: desc,
-		Action:      runSyncOrgs,
-		Flags:       syncOrgsFlags(),
+		Action:      runCreateOrgs,
+		Flags:       createOrgsFlags(),
 	}
 	return
 }
 
-func syncOrgsFlags() (flags []cli.Flag) {
+func createOrgsFlags() (flags []cli.Flag) {
 	var flagList = buildDefaultFlags()
 	flags = buildFlags(flagList)
 	return
 }
 
-func runSyncOrgs(c *cli.Context) (err error) {
+func runCreateOrgs(c *cli.Context) (err error) {
 	var token, theSystemDomain, theUserID, thePassword string
 	var theConfigDir = "."
 
@@ -100,31 +100,31 @@ func runSyncOrgs(c *cli.Context) (err error) {
 	uaamanager := uaa.NewDefaultUAAManager(theSystemDomain, theUserID, thePassword)
 	if token, err = uaamanager.GetToken(); err == nil {
 		orgManager := organization.NewManager(theSystemDomain, token)
-		err = orgManager.SyncOrgs(theConfigDir)
+		err = orgManager.CreateOrgs(theConfigDir)
 	}
 	return
 }
 
-//CreateSyncSpacesCommand -
-func CreateSyncSpacesCommand(eh *ErrorHandler) (command cli.Command) {
-	desc := fmt.Sprintf("sync-spaces")
+//CreateSpacesCommand -
+func CreateSpacesCommand(eh *ErrorHandler) (command cli.Command) {
+	desc := fmt.Sprintf("create-spaces")
 	command = cli.Command{
-		Name:        "sync-spaces",
-		Usage:       "sync spaces with what is defined in config",
+		Name:        "create-spaces",
+		Usage:       "create spaces with what is defined in config",
 		Description: desc,
-		Action:      runSyncSpaces,
-		Flags:       syncSpacesFlags(),
+		Action:      runCreateSpaces,
+		Flags:       createSpacesFlags(),
 	}
 	return
 }
 
-func syncSpacesFlags() (flags []cli.Flag) {
+func createSpacesFlags() (flags []cli.Flag) {
 	var flagList = buildDefaultFlags()
 	flags = buildFlags(flagList)
 	return
 }
 
-func runSyncSpaces(c *cli.Context) (err error) {
+func runCreateSpaces(c *cli.Context) (err error) {
 	var token, theSystemDomain, theUserID, thePassword string
 	var theConfigDir = "."
 
@@ -135,7 +135,7 @@ func runSyncSpaces(c *cli.Context) (err error) {
 	uaamanager := uaa.NewDefaultUAAManager(theSystemDomain, theUserID, thePassword)
 	if token, err = uaamanager.GetToken(); err == nil {
 		orgManager := space.NewManager(theSystemDomain, token)
-		err = orgManager.SyncSpaces(theConfigDir)
+		err = orgManager.CreateSpaces(theConfigDir)
 	}
 	return
 }

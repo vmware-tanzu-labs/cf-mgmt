@@ -21,8 +21,8 @@ func NewManager(sysDomain, token string) (mgr Manager) {
 	}
 }
 
-//SyncOrgs -
-func (m *DefaultOrgManager) SyncOrgs(configDir string) (err error) {
+//CreateOrgs -
+func (m *DefaultOrgManager) CreateOrgs(configDir string) (err error) {
 	var orgNames []string
 	var configFile = configDir + "/orgs.yml"
 	lo.G.Info("Processing org file", configFile)

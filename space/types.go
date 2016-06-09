@@ -6,7 +6,7 @@ package space
 type Manager interface {
 	CreateSpace(orgGUID, spaceName string) (space Resource, err error)
 	FindSpace(orgGUID, spaceName string) (space Resource, err error)
-	SyncSpaces(configFile string) (err error)
+	CreateSpaces(configFile string) (err error)
 }
 
 //Resources -

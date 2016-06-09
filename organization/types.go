@@ -4,7 +4,7 @@ package organization
 type Manager interface {
 	CreateOrg(orgName string) (org Resource, err error)
 	FindOrg(orgName string) (org Resource, err error)
-	SyncOrgs(configFile string) (err error)
+	CreateOrgs(configFile string) (err error)
 }
 
 //Resources -
