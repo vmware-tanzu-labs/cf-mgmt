@@ -13,8 +13,8 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-//NewDefaultOrgManager -
-func NewDefaultOrgManager(sysDomain, token string) (mgr Manager) {
+//NewManager -
+func NewManager(sysDomain, token string) (mgr Manager) {
 	return &DefaultOrgManager{
 		SysDomain: sysDomain,
 		Token:     token,
@@ -22,11 +22,11 @@ func NewDefaultOrgManager(sysDomain, token string) (mgr Manager) {
 }
 
 //SyncOrgs -
-func (m *DefaultOrgManager) SyncOrgs(configFile string) (err error) {
+func (m *DefaultOrgManager) SyncOrgs(configDir string) (err error) {
 	var orgNames []string
+	var configFile = configDir + "/orgs.yml"
 	lo.G.Info("Processing org file", configFile)
 	if orgNames, err = m.loadInputFile(configFile); err == nil {
-		lo.G.Info("Loaded", configFile)
 		if len(orgNames) == 0 {
 			lo.G.Info("No orgs in config file")
 		}
@@ -47,7 +47,7 @@ func (m *DefaultOrgManager) SyncOrgs(configFile string) (err error) {
 func (m *DefaultOrgManager) doesOrgExist(orgName string) (result bool) {
 	result = false
 	for _, org := range m.Orgs {
-		if org.OrgEntity.Name == orgName {
+		if org.Entity.Name == orgName {
 			result = true
 			return
 		}
@@ -68,7 +68,7 @@ func (m *DefaultOrgManager) loadInputFile(configFile string) (orgs []string, err
 }
 
 //CreateOrg -
-func (m *DefaultOrgManager) CreateOrg(orgName string) (org OrgResource, err error) {
+func (m *DefaultOrgManager) CreateOrg(orgName string) (org Resource, err error) {
 	var res *http.Response
 	orgsURL := fmt.Sprintf("https://api.%s/v2/organizations", m.SysDomain)
 
@@ -91,10 +91,10 @@ func (m *DefaultOrgManager) CreateOrg(orgName string) (org OrgResource, err erro
 }
 
 //FindOrg -
-func (m *DefaultOrgManager) FindOrg(orgName string) (org OrgResource, err error) {
+func (m *DefaultOrgManager) FindOrg(orgName string) (org Resource, err error) {
 	if err = m.fetchOrgs(); err == nil {
 		for _, theOrg := range m.Orgs {
-			if theOrg.OrgEntity.Name == orgName {
+			if theOrg.Entity.Name == orgName {
 				org = theOrg
 				return
 			}
@@ -115,9 +115,9 @@ func (m *DefaultOrgManager) fetchOrgs() (err error) {
 	get.Set("Authorization", "BEARER "+m.Token)
 
 	if res, body, errs = get.End(); len(errs) == 0 && res.StatusCode == http.StatusOK {
-		orgResources := new(OrgResources)
+		orgResources := new(Resources)
 		if err = json.Unmarshal([]byte(body), &orgResources); err == nil {
-			m.Orgs = orgResources.OrgResource
+			m.Orgs = orgResources.Resource
 		}
 	} else if len(errs) > 0 {
 		err = errs[0]

@@ -7,6 +7,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
@@ -32,7 +33,7 @@ const (
 	systemDomain string = "SYSTEM_DOMAIN"
 	userID       string = "USER_ID"
 	password     string = "PASSWORD"
-	configFile   string = "CONFIG_FILE"
+	configDir    string = "CONFIG_DIR"
 )
 
 func main() {
@@ -63,6 +64,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 			},
 		},
 		CreateSyncOrgsCommand(eh),
+		CreateSyncSpacesCommand(eh),
 	}
 
 	return app
@@ -82,42 +84,95 @@ func CreateSyncOrgsCommand(eh *ErrorHandler) (command cli.Command) {
 }
 
 func syncOrgsFlags() (flags []cli.Flag) {
-	var flagList = map[string]flagBucket{
-		systemDomain: flagBucket{
-			Desc:   "system domain",
-			EnvVar: systemDomain,
-		},
-		userID: flagBucket{
-			Desc:   "user id that can create/delete orgs",
-			EnvVar: userID,
-		},
-		password: flagBucket{
-			Desc:   "password for user account that can create/delete orgs",
-			EnvVar: password,
-		},
-		configFile: flagBucket{
-			Desc:   "config file for orgs.  Default is orgs.yml in current directory",
-			EnvVar: configFile,
-		},
-	}
-
+	var flagList = buildDefaultFlags()
 	flags = buildFlags(flagList)
 	return
 }
 
 func runSyncOrgs(c *cli.Context) (err error) {
-	var token string
-	var theConfigFile = "orgs.yml"
-	theSytemDomain := c.String(getFlag(systemDomain))
-	theUserID := c.String(getFlag(userID))
-	thePassword := c.String(getFlag(password))
-	if c.IsSet(getFlag(configFile)) {
-		theConfigFile = c.String(getFlag(configFile))
+	var token, theSystemDomain, theUserID, thePassword string
+	var theConfigDir = "."
+
+	if theSystemDomain, theUserID, thePassword, theConfigDir, err = getRequiredFields(c); err != nil {
+		return
 	}
-	uaamanager := uaa.NewDefaultUAAManager(theSytemDomain, theUserID, thePassword)
+
+	uaamanager := uaa.NewDefaultUAAManager(theSystemDomain, theUserID, thePassword)
 	if token, err = uaamanager.GetToken(); err == nil {
-		orgManager := organization.NewDefaultOrgManager(theSytemDomain, token)
-		err = orgManager.SyncOrgs(theConfigFile)
+		orgManager := organization.NewManager(theSystemDomain, token)
+		err = orgManager.SyncOrgs(theConfigDir)
+	}
+	return
+}
+
+//CreateSyncSpacesCommand -
+func CreateSyncSpacesCommand(eh *ErrorHandler) (command cli.Command) {
+	desc := fmt.Sprintf("sync-spaces")
+	command = cli.Command{
+		Name:        "sync-spaces",
+		Usage:       "sync spaces with what is defined in config",
+		Description: desc,
+		Action:      runSyncSpaces,
+		Flags:       syncSpacesFlags(),
+	}
+	return
+}
+
+func syncSpacesFlags() (flags []cli.Flag) {
+	var flagList = buildDefaultFlags()
+	flags = buildFlags(flagList)
+	return
+}
+
+func runSyncSpaces(c *cli.Context) (err error) {
+	var token, theSystemDomain, theUserID, thePassword string
+	var theConfigDir = "."
+
+	if theSystemDomain, theUserID, thePassword, theConfigDir, err = getRequiredFields(c); err != nil {
+		return
+	}
+
+	uaamanager := uaa.NewDefaultUAAManager(theSystemDomain, theUserID, thePassword)
+	if token, err = uaamanager.GetToken(); err == nil {
+		orgManager := space.NewManager(theSystemDomain, token)
+		err = orgManager.SyncSpaces(theConfigDir)
+	}
+	return
+}
+
+func buildDefaultFlags() (flagList map[string]flagBucket) {
+	flagList = map[string]flagBucket{
+		systemDomain: flagBucket{
+			Desc:   "system domain",
+			EnvVar: systemDomain,
+		},
+		userID: flagBucket{
+			Desc:   "user id that has admin priv",
+			EnvVar: userID,
+		},
+		password: flagBucket{
+			Desc:   "password for user account that has admin priv",
+			EnvVar: password,
+		},
+		configDir: flagBucket{
+			Desc:   "config dir.  Default is .",
+			EnvVar: configDir,
+		},
+	}
+	return
+}
+
+func getRequiredFields(c *cli.Context) (sysDomain, user, pwd, config string, err error) {
+	sysDomain = c.String(getFlag(systemDomain))
+	user = c.String(getFlag(userID))
+	pwd = c.String(getFlag(password))
+	if c.IsSet(getFlag(configDir)) {
+		config = c.String(getFlag(configDir))
+	}
+	if sysDomain == "" ||
+		user == "" ||
+		pwd == "" {
+		err = fmt.Errorf("Must set system-domain, user-id and password properties")
 	}
 	return
 }

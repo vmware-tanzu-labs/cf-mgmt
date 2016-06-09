@@ -2,34 +2,34 @@ package organization
 
 //Manager -
 type Manager interface {
-	CreateOrg(orgName string) (org OrgResource, err error)
-	FindOrg(orgName string) (org OrgResource, err error)
+	CreateOrg(orgName string) (org Resource, err error)
+	FindOrg(orgName string) (org Resource, err error)
 	SyncOrgs(configFile string) (err error)
 }
 
-//OrgResources -
-type OrgResources struct {
-	OrgResource []OrgResource `json:"resources"`
+//Resources -
+type Resources struct {
+	Resource []Resource `json:"resources"`
 }
 
-//OrgResource -
-type OrgResource struct {
-	OrgMetaData OrgMetaData `json:"metadata"`
-	OrgEntity   OrgEntity   `json:"entity"`
+//Resource -
+type Resource struct {
+	MetaData MetaData `json:"metadata"`
+	Entity   Entity   `json:"entity"`
 }
 
-//OrgMetaData -
-type OrgMetaData struct {
+//MetaData -
+type MetaData struct {
 	GUID string `json:"guid"`
 }
 
 //InputOrgs -
 type InputOrgs struct {
-	Orgs []string `json:"orgs"`
+	Orgs []string `yaml:"orgs"`
 }
 
-//OrgEntity -
-type OrgEntity struct {
+//Entity -
+type Entity struct {
 	Name               string `json:"name"`
 	SpacesURL          string `json:"spaces_url"`
 	QuotaURL           string `json:"quota_definition_url"`
@@ -49,5 +49,5 @@ type Org struct {
 type DefaultOrgManager struct {
 	Token     string
 	SysDomain string
-	Orgs      []OrgResource
+	Orgs      []Resource
 }
