@@ -90,9 +90,7 @@ func createOrgsFlags() (flags []cli.Flag) {
 }
 
 func runCreateOrgs(c *cli.Context) (err error) {
-	var token, theSystemDomain, theUserID, thePassword string
-	var theConfigDir = "."
-
+	var token, theSystemDomain, theUserID, thePassword, theConfigDir string
 	if theSystemDomain, theUserID, thePassword, theConfigDir, err = getRequiredFields(c); err != nil {
 		return
 	}
@@ -125,9 +123,7 @@ func createSpacesFlags() (flags []cli.Flag) {
 }
 
 func runCreateSpaces(c *cli.Context) (err error) {
-	var token, theSystemDomain, theUserID, thePassword string
-	var theConfigDir = "."
-
+	var token, theSystemDomain, theUserID, thePassword, theConfigDir string
 	if theSystemDomain, theUserID, thePassword, theConfigDir, err = getRequiredFields(c); err != nil {
 		return
 	}
@@ -166,14 +162,14 @@ func getRequiredFields(c *cli.Context) (sysDomain, user, pwd, config string, err
 	sysDomain = c.String(getFlag(systemDomain))
 	user = c.String(getFlag(userID))
 	pwd = c.String(getFlag(password))
-	if c.IsSet(getFlag(configDir)) {
-		config = c.String(getFlag(configDir))
-	}
+	config = c.String(getFlag(configDir))
 	if sysDomain == "" ||
 		user == "" ||
-		pwd == "" {
-		err = fmt.Errorf("Must set system-domain, user-id and password properties")
+		pwd == "" ||
+		config == "" {
+		err = fmt.Errorf("Must set system-domain, user-id, password, config-dir properties")
 	}
+
 	return
 }
 
