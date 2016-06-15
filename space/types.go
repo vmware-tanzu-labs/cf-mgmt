@@ -1,12 +1,15 @@
 package space
 
+import "github.com/pivotalservices/cf-mgmt/securitygroup"
+
 //{"name":"test2","organization_guid":"76c940e3-1c4c-411b-8672-3edc0651cae7"}
 
 //Manager -
 type Manager interface {
-	CreateSpace(orgGUID, spaceName string) (space Resource, err error)
-	FindSpace(orgGUID, spaceName string) (space Resource, err error)
-	CreateSpaces(configFile string) (err error)
+	CreateSpace(orgName, spaceName string) (space Resource, err error)
+	FindSpace(orgName, spaceName string) (space Resource, err error)
+	CreateSpaces(configDir string) (err error)
+	UpdateSpaces(configDir string) (err error)
 }
 
 //Resources -
@@ -23,17 +26,32 @@ type Resource struct {
 //MetaData -
 type MetaData struct {
 	GUID string `json:"guid"`
+	URL  string `json:"url"`
 }
 
-//InputSpaces -
-type InputSpaces struct {
-	Org    string   `yml:"org"`
-	Spaces []string `yml:"spaces"`
+//InputCreateSpaces -
+type InputCreateSpaces struct {
+	Org    string   `yaml:"org"`
+	Spaces []string `yaml:"spaces"`
+}
+
+//InputUpdateSpaces -
+type InputUpdateSpaces struct {
+	Org            string `yaml:"org"`
+	Space          string `yaml:"space"`
+	DeveloperGroup string `yaml:"space-developer-group"`
+	ManagerGroup   string `yaml:"space-manager-group"`
+	AuditorGroup   string `yaml:"space-auditor-group"`
+	AllowSSH       bool   `yaml:"allow-ssh"`
 }
 
 //Entity -
 type Entity struct {
-	Name string `json:"name"`
+	Name           string                   `json:"name"`
+	AllowSSH       bool                     `json:"allow_ssh"`
+	SecurityGroups []securitygroup.Resource `json:"security_groups"`
+	OrgGUID        string                   `json:"organization_guid"`
+	Org            Org                      `json:"organization"`
 	//SpacesURL          string `json:"spaces_url"`
 	//QuotaURL           string `json:"quota_definition_url"`
 	//SpaceQuoteURL      string `json:"space_quota_definitions_url"`
@@ -43,9 +61,22 @@ type Entity struct {
 	//AuditorsURL        string `json:"auditors_url"`
 }
 
+//Org -
+type Org struct {
+	OrgEntity OrgEntity `json:"entity"`
+}
+
+//OrgEntity -
+type OrgEntity struct {
+	Name string `json:"name"`
+}
+
 //DefaultSpaceManager -
 type DefaultSpaceManager struct {
-	Token     string
-	SysDomain string
-	Spaces    []Resource
+	Token       string
+	UAACToken   string
+	SysDomain   string
+	Spaces      []Resource
+	FilePattern string
+	FilePaths   []string
 }

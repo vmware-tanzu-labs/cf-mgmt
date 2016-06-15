@@ -5,3 +5,5 @@ import:
 - package: gopkg.in/yaml.v2
 - package: github.com/xchapter7x/lo
 - package: github.com/codegangsta/cli
+- package: github.com/nmcclain/ldap
+- package: github.com/nmcclain/asn1-ber

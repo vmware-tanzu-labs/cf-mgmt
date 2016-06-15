@@ -1,0 +1,8 @@
+url: ldap://adminsys.mrll.com
+userDN: CN=ldap_search,OU=Users,OU=Common,DC=adminsys,DC=mrll,DC=com
+userPassword: S3archM3
+userSearchBase: OU=ENT,DC=adminsys,DC=mrll,DC=com
+userSearchFilter: (&(objectClass=user)(sAMAccountName={0}))
+userMailAttributeName: mail
+groupSearchBase: ou=ENT,dc=mrll,dc=mrll,dc=com
+groupSearchFilter: member={0}

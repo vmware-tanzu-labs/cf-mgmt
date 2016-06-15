@@ -5,6 +5,7 @@ type Manager interface {
 	CreateOrg(orgName string) (org Resource, err error)
 	FindOrg(orgName string) (org Resource, err error)
 	CreateOrgs(configFile string) (err error)
+	AddUser(orgName, userName string) (err error)
 }
 
 //Resources -
@@ -48,6 +49,7 @@ type Org struct {
 //DefaultOrgManager -
 type DefaultOrgManager struct {
 	Token     string
+	UAACToken string
 	SysDomain string
 	Orgs      []Resource
 }

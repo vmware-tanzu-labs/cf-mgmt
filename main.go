@@ -33,6 +33,7 @@ const (
 	systemDomain string = "SYSTEM_DOMAIN"
 	userID       string = "USER_ID"
 	password     string = "PASSWORD"
+	clientSecret string = "CLIENT_SECRET"
 	configDir    string = "CONFIG_DIR"
 )
 
@@ -59,80 +60,74 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		cli.Command{
 			Name:  "version",
 			Usage: "shows the application version currently in use",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) (err error) {
 				cli.ShowVersion(c)
+				return
 			},
 		},
-		CreateOrgsCommand(eh),
-		CreateSpacesCommand(eh),
+		CreateCommand("create-orgs", runCreateOrgs, defaultFlags(), eh),
+		CreateCommand("create-spaces", runCreateSpaces, defaultFlags(), eh),
+		CreateCommand("update-spaces", runUpdateSpaces, defaultFlags(), eh),
 	}
 
 	return app
 }
 
-//CreateOrgsCommand -
-func CreateOrgsCommand(eh *ErrorHandler) (command cli.Command) {
-	desc := fmt.Sprintf("create-orgs")
+//CreateCommand -
+func CreateCommand(commandName string, action func(c *cli.Context) (err error), flags []cli.Flag, eh *ErrorHandler) (command cli.Command) {
+	desc := fmt.Sprintf(commandName)
 	command = cli.Command{
-		Name:        "create-orgs",
-		Usage:       "create orgs with what is defined in config",
+		Name:        commandName,
+		Usage:       fmt.Sprintf("%s with what is defined in config", commandName),
 		Description: desc,
-		Action:      runCreateOrgs,
-		Flags:       createOrgsFlags(),
+		Action:      action,
+		Flags:       flags,
 	}
-	return
-}
-
-func createOrgsFlags() (flags []cli.Flag) {
-	var flagList = buildDefaultFlags()
-	flags = buildFlags(flagList)
 	return
 }
 
 func runCreateOrgs(c *cli.Context) (err error) {
-	var token, theSystemDomain, theUserID, thePassword, theConfigDir string
-	if theSystemDomain, theUserID, thePassword, theConfigDir, err = getRequiredFields(c); err != nil {
-		return
-	}
-
-	uaamanager := uaa.NewDefaultUAAManager(theSystemDomain, theUserID, thePassword)
-	if token, err = uaamanager.GetToken(); err == nil {
-		orgManager := organization.NewManager(theSystemDomain, token)
+	if theSystemDomain, theUserID, thePassword, theConfigDir, theSecret, theError := getRequiredFields(c); theError == nil {
+		uaaManager := uaa.NewDefaultUAAManager(theSystemDomain, theUserID)
+		cfToken := uaaManager.GetCFToken(thePassword)
+		uaacToken := uaaManager.GetUAACToken(theSecret)
+		orgManager := organization.NewManager(theSystemDomain, cfToken, uaacToken)
 		err = orgManager.CreateOrgs(theConfigDir)
+	} else {
+		err = theError
 	}
-	return
-}
-
-//CreateSpacesCommand -
-func CreateSpacesCommand(eh *ErrorHandler) (command cli.Command) {
-	desc := fmt.Sprintf("create-spaces")
-	command = cli.Command{
-		Name:        "create-spaces",
-		Usage:       "create spaces with what is defined in config",
-		Description: desc,
-		Action:      runCreateSpaces,
-		Flags:       createSpacesFlags(),
-	}
-	return
-}
-
-func createSpacesFlags() (flags []cli.Flag) {
-	var flagList = buildDefaultFlags()
-	flags = buildFlags(flagList)
 	return
 }
 
 func runCreateSpaces(c *cli.Context) (err error) {
-	var token, theSystemDomain, theUserID, thePassword, theConfigDir string
-	if theSystemDomain, theUserID, thePassword, theConfigDir, err = getRequiredFields(c); err != nil {
-		return
-	}
-
-	uaamanager := uaa.NewDefaultUAAManager(theSystemDomain, theUserID, thePassword)
-	if token, err = uaamanager.GetToken(); err == nil {
-		orgManager := space.NewManager(theSystemDomain, token)
+	if theSystemDomain, theUserID, thePassword, theConfigDir, theSecret, theError := getRequiredFields(c); theError == nil {
+		uaaManager := uaa.NewDefaultUAAManager(theSystemDomain, theUserID)
+		cfToken := uaaManager.GetCFToken(thePassword)
+		uaacToken := uaaManager.GetUAACToken(theSecret)
+		orgManager := space.NewManager(theSystemDomain, cfToken, uaacToken)
 		err = orgManager.CreateSpaces(theConfigDir)
+	} else {
+		err = theError
 	}
+	return
+}
+
+func runUpdateSpaces(c *cli.Context) (err error) {
+	if theSystemDomain, theUserID, thePassword, theConfigDir, theSecret, theError := getRequiredFields(c); theError == nil {
+		uaaManager := uaa.NewDefaultUAAManager(theSystemDomain, theUserID)
+		cfToken := uaaManager.GetCFToken(thePassword)
+		uaacToken := uaaManager.GetUAACToken(theSecret)
+		orgManager := space.NewManager(theSystemDomain, cfToken, uaacToken)
+		err = orgManager.UpdateSpaces(theConfigDir)
+	} else {
+		err = theError
+	}
+	return
+}
+
+func defaultFlags() (flags []cli.Flag) {
+	var flagList = buildDefaultFlags()
+	flags = buildFlags(flagList)
 	return
 }
 
@@ -150,6 +145,10 @@ func buildDefaultFlags() (flagList map[string]flagBucket) {
 			Desc:   "password for user account that has admin priv",
 			EnvVar: password,
 		},
+		clientSecret: flagBucket{
+			Desc:   "secret for user account that has admin priv",
+			EnvVar: clientSecret,
+		},
 		configDir: flagBucket{
 			Desc:   "config dir.  Default is .",
 			EnvVar: configDir,
@@ -158,18 +157,20 @@ func buildDefaultFlags() (flagList map[string]flagBucket) {
 	return
 }
 
-func getRequiredFields(c *cli.Context) (sysDomain, user, pwd, config string, err error) {
+func getRequiredFields(c *cli.Context) (sysDomain, user, pwd, config, secret string, err error) {
 	sysDomain = c.String(getFlag(systemDomain))
 	user = c.String(getFlag(userID))
 	pwd = c.String(getFlag(password))
 	config = c.String(getFlag(configDir))
+	secret = c.String(getFlag(clientSecret))
+
 	if sysDomain == "" ||
 		user == "" ||
 		pwd == "" ||
-		config == "" {
-		err = fmt.Errorf("Must set system-domain, user-id, password, config-dir properties")
+		config == "" ||
+		secret == "" {
+		err = fmt.Errorf("Must set system-domain, user-id, password, config-dir, client-secret properties")
 	}
-
 	return
 }
 

@@ -14,11 +14,40 @@ import (
 )
 
 //NewManager -
-func NewManager(sysDomain, token string) (mgr Manager) {
+func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 	return &DefaultOrgManager{
 		SysDomain: sysDomain,
 		Token:     token,
+		UAACToken: uaacToken,
 	}
+}
+
+//AddUser -
+func (m *DefaultOrgManager) AddUser(orgName, userName string) (err error) {
+	lo.G.Info("Adding", userName, "to", orgName)
+	var org Resource
+	if org, err = m.FindOrg(orgName); err == nil {
+		orgGUID := org.MetaData.GUID
+		var res *http.Response
+		url := fmt.Sprintf("https://api.%s/v2/organizations/%s/users", m.SysDomain, orgGUID)
+		var body string
+		var errs []error
+		request := gorequest.New()
+		put := request.Put(url)
+		put.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+		put.Set("Authorization", "BEARER "+m.Token)
+		sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
+		put.Send(sendString)
+		if res, _, errs = put.End(); len(errs) == 0 && res.StatusCode == http.StatusCreated {
+			return
+		} else if len(errs) > 0 {
+			err = errs[0]
+		} else {
+			err = fmt.Errorf("Status %d, body %s", res.StatusCode, body)
+		}
+		return
+	}
+	return
 }
 
 //CreateOrgs -

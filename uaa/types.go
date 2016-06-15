@@ -2,7 +2,8 @@ package uaa
 
 //Manager -
 type Manager interface {
-	GetToken() (token string, err error)
+	GetCFToken(password string) (token string)
+	GetUAACToken(secret string) (token string)
 }
 
 //Token -
@@ -14,5 +15,4 @@ type Token struct {
 type DefaultUAAManager struct {
 	SysDomain string
 	UserID    string
-	Password  string
 }
