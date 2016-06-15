@@ -114,6 +114,7 @@ func (m *DefaultManager) getGroup(groupName string) (entry *l.Entry, err error) 
 		defer ldapConnection.Close()
 		filter := fmt.Sprintf(groupFilter, groupName)
 		lo.G.Debug("Using group filter", filter)
+		lo.G.Debug("Using group search base:", m.Config.GroupSearchBase)
 		if err = ldapConnection.Bind(m.Config.BindDN, m.Config.BindPassword); err == nil {
 			search := l.NewSearchRequest(
 				m.Config.GroupSearchBase,
