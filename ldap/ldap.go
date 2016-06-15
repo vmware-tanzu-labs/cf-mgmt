@@ -70,51 +70,70 @@ func (m *DefaultManager) GetUserIDs(groupName string) (users []User, err error) 
 func (m *DefaultManager) getUser(userDN string) (entry *l.Entry, err error) {
 	var ldapConnection *l.Conn
 	var sr *l.SearchResult
-	ldapConnection, err = l.Dial("tcp", fmt.Sprintf("%s:%d", m.Config.LdapHost, m.Config.LdapPort))
-	// be sure to add error checking!
-	defer ldapConnection.Close()
-	if err = ldapConnection.Bind(m.Config.BindDN, m.Config.BindPassword); err == nil {
-		//filter := fmt.Sprintf(userFilter, userObjectClass, userID)
-		lo.G.Debug("User DN:", userDN)
-		userCNTemp := strings.Replace(userDN, ","+m.Config.UserSearchBase, "", 1)
-		userCN := strings.Replace(userCNTemp, "\\,", ",", 1)
-		filter := fmt.Sprintf(userFilter, userCN)
-		lo.G.Debug("Using user search filter", filter)
-		search := l.NewSearchRequest(
-			m.Config.UserSearchBase,
-			l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
-			filter,
-			attributes,
-			nil)
+	ldapURL := fmt.Sprintf("%s:%d", m.Config.LdapHost, m.Config.LdapPort)
+	lo.G.Info("Connecting to", ldapURL)
+	if ldapConnection, err = l.Dial("tcp", ldapURL); err == nil {
+		// be sure to add error checking!
+		defer ldapConnection.Close()
+		if err = ldapConnection.Bind(m.Config.BindDN, m.Config.BindPassword); err == nil {
+			//filter := fmt.Sprintf(userFilter, userObjectClass, userID)
+			lo.G.Debug("User DN:", userDN)
+			userCNTemp := strings.Replace(userDN, ","+m.Config.UserSearchBase, "", 1)
+			userCN := strings.Replace(userCNTemp, "\\,", ",", 1)
+			filter := fmt.Sprintf(userFilter, userCN)
+			lo.G.Debug("Using user search filter", filter)
+			search := l.NewSearchRequest(
+				m.Config.UserSearchBase,
+				l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
+				filter,
+				attributes,
+				nil)
 
-		if sr, err = ldapConnection.Search(search); err == nil {
-			if (len(sr.Entries)) == 1 {
-				entry = sr.Entries[0]
+			if sr, err = ldapConnection.Search(search); err == nil {
+				if (len(sr.Entries)) == 1 {
+					entry = sr.Entries[0]
+				}
+			} else {
+				lo.G.Error(err)
 			}
+		} else {
+			lo.G.Error(err)
 		}
+	} else {
+		lo.G.Error(err)
 	}
 	return
 }
 func (m *DefaultManager) getGroup(groupName string) (entry *l.Entry, err error) {
 	var ldapConnection *l.Conn
 	var sr *l.SearchResult
-	ldapConnection, err = l.Dial("tcp", fmt.Sprintf("%s:%d", m.Config.LdapHost, m.Config.LdapPort))
-	// be sure to add error checking!
-	defer ldapConnection.Close()
-	filter := fmt.Sprintf(groupFilter, groupName)
-	if err = ldapConnection.Bind(m.Config.BindDN, m.Config.BindPassword); err == nil {
-		search := l.NewSearchRequest(
-			m.Config.GroupSearchBase,
-			l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
-			filter,
-			attributes,
-			nil)
+	ldapURL := fmt.Sprintf("%s:%d", m.Config.LdapHost, m.Config.LdapPort)
+	lo.G.Info("Connecting to", ldapURL)
+	if ldapConnection, err = l.Dial("tcp", ldapURL); err == nil {
+		// be sure to add error checking!
+		defer ldapConnection.Close()
+		filter := fmt.Sprintf(groupFilter, groupName)
+		lo.G.Debug("Using group filter", filter)
+		if err = ldapConnection.Bind(m.Config.BindDN, m.Config.BindPassword); err == nil {
+			search := l.NewSearchRequest(
+				m.Config.GroupSearchBase,
+				l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
+				filter,
+				attributes,
+				nil)
 
-		if sr, err = ldapConnection.Search(search); err == nil {
-			if (len(sr.Entries)) == 1 {
-				entry = sr.Entries[0]
+			if sr, err = ldapConnection.Search(search); err == nil {
+				if (len(sr.Entries)) == 1 {
+					entry = sr.Entries[0]
+				}
+			} else {
+				lo.G.Error(err)
 			}
+		} else {
+			lo.G.Error(err)
 		}
+	} else {
+		lo.G.Error(err)
 	}
 	return
 }
