@@ -76,7 +76,8 @@ func (m *DefaultManager) getUser(userDN string) (entry *l.Entry, err error) {
 	if err = ldapConnection.Bind(m.Config.BindDN, m.Config.BindPassword); err == nil {
 		//filter := fmt.Sprintf(userFilter, userObjectClass, userID)
 		lo.G.Debug("User DN:", userDN)
-		userCN := strings.Replace(userDN, ","+m.Config.UserSearchBase, "", 1)
+		userCNTemp := strings.Replace(userDN, ","+m.Config.UserSearchBase, "", 1)
+		userCN := strings.Replace(userCNTemp, "\\,", ",", 1)
 		filter := fmt.Sprintf(userFilter, userCN)
 		lo.G.Debug("Using user search filter", filter)
 		search := l.NewSearchRequest(
