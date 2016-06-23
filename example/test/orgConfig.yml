@@ -1,7 +1,4 @@
 org: test
-org-billingmanager-group:
+org-billingmanager-group: test_space1_developers
 org-manager-group:
 org-auditor-group:
-org-billingmanagers: []
-org-managers: []
-org-auditors: []

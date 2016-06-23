@@ -10,6 +10,7 @@ type Manager interface {
 	FindSpace(orgName, spaceName string) (space Resource, err error)
 	CreateSpaces(configDir string) (err error)
 	UpdateSpaces(configDir string) (err error)
+	UpdateSpaceUsers(configDir string) (err error)
 }
 
 //Resources -

@@ -1,0 +1,10 @@
+---
+platform: linux
+
+image: docker:///pcfservices/cf-mgmt
+
+inputs:
+  - name: config-repo
+
+run:
+  path: config-repo/ci/tasks/cf-mgmt.sh

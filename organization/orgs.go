@@ -1,15 +1,12 @@
 package organization
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 
-	"gopkg.in/yaml.v2"
-
-	"github.com/parnurzeal/gorequest"
+	"github.com/pivotalservices/cf-mgmt/ldap"
+	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/utils"
 	"github.com/xchapter7x/lo"
 )
 
@@ -28,39 +25,24 @@ func (m *DefaultOrgManager) AddUser(orgName, userName string) (err error) {
 	var org Resource
 	if org, err = m.FindOrg(orgName); err == nil {
 		orgGUID := org.MetaData.GUID
-		var res *http.Response
 		url := fmt.Sprintf("https://api.%s/v2/organizations/%s/users", m.SysDomain, orgGUID)
-		var body string
-		var errs []error
-		request := gorequest.New()
-		put := request.Put(url)
-		put.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-		put.Set("Authorization", "BEARER "+m.Token)
 		sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
-		put.Send(sendString)
-		if res, _, errs = put.End(); len(errs) == 0 && res.StatusCode == http.StatusCreated {
-			return
-		} else if len(errs) > 0 {
-			err = errs[0]
-		} else {
-			err = fmt.Errorf("Status %d, body %s", res.StatusCode, body)
-		}
-		return
+		err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
 	}
 	return
 }
 
 //CreateOrgs -
 func (m *DefaultOrgManager) CreateOrgs(configDir string) (err error) {
-	var orgNames []string
 	var configFile = configDir + "/orgs.yml"
 	lo.G.Info("Processing org file", configFile)
-	if orgNames, err = m.loadInputFile(configFile); err == nil {
-		if len(orgNames) == 0 {
+	input := &InputOrgs{}
+	if err = utils.NewDefaultManager().LoadFile(configFile, input); err == nil {
+		if len(input.Orgs) == 0 {
 			lo.G.Info("No orgs in config file")
 		}
 		if err = m.fetchOrgs(); err == nil {
-			for _, orgName := range orgNames {
+			for _, orgName := range input.Orgs {
 				if m.doesOrgExist(orgName) {
 					lo.G.Info(fmt.Sprintf("[%s] org already exists", orgName))
 				} else {
@@ -85,36 +67,12 @@ func (m *DefaultOrgManager) doesOrgExist(orgName string) (result bool) {
 
 }
 
-func (m *DefaultOrgManager) loadInputFile(configFile string) (orgs []string, err error) {
-	var data []byte
-	if data, err = ioutil.ReadFile(configFile); err == nil {
-		c := &InputOrgs{}
-		if err = yaml.Unmarshal(data, c); err == nil {
-			orgs = c.Orgs
-		}
-	}
-	return
-}
-
 //CreateOrg -
 func (m *DefaultOrgManager) CreateOrg(orgName string) (org Resource, err error) {
-	var res *http.Response
-	orgsURL := fmt.Sprintf("https://api.%s/v2/organizations", m.SysDomain)
-
-	var body string
-	var errs []error
-	request := gorequest.New()
-	post := request.Post(orgsURL)
-	post.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-	post.Set("Authorization", "BEARER "+m.Token)
+	url := fmt.Sprintf("https://api.%s/v2/organizations", m.SysDomain)
 	sendString := fmt.Sprintf(`{"name":"%s"}`, orgName)
-	post.Send(sendString)
-	if res, body, errs = post.End(); len(errs) == 0 && res.StatusCode == http.StatusOK {
+	if _, err = utils.NewDefaultManager().HTTPPost(url, m.Token, sendString); err == nil {
 		org, err = m.FindOrg(orgName)
-	} else if len(errs) > 0 {
-		err = errs[0]
-	} else {
-		err = fmt.Errorf(body)
 	}
 	return
 }
@@ -132,26 +90,87 @@ func (m *DefaultOrgManager) FindOrg(orgName string) (org Resource, err error) {
 	return
 }
 
+//UpdateOrgUsers -
+func (m *DefaultOrgManager) UpdateOrgUsers(configDir string) (err error) {
+
+	var org Resource
+	var ldapMgr ldap.Manager
+	files, _ := utils.NewDefaultManager().FindFiles(configDir, "orgConfig.yml")
+	for _, f := range files {
+		lo.G.Info("Processing org file", f)
+		input := &InputUpdateOrgs{}
+		if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
+			if org, err = m.FindOrg(input.Org); err == nil {
+				if ldapMgr, err = ldap.NewDefaultManager(configDir); err == nil {
+					uaacMgr := uaac.NewManager(m.SysDomain, m.UAACToken)
+					lo.G.Info("User sync for org", input.Org)
+					if err = m.updateUsers(ldapMgr, uaacMgr, org, "managers", input.ManagerGroup); err != nil {
+						return
+					}
+					if err = m.updateUsers(ldapMgr, uaacMgr, org, "auditors", input.AuditorGroup); err != nil {
+						return
+					}
+					if err = m.updateUsers(ldapMgr, uaacMgr, org, "billing_managers", input.BillingManagerGroup); err != nil {
+						return
+					}
+				}
+			}
+		} else {
+			lo.G.Error(err)
+		}
+	}
+	return
+}
+
+func (m *DefaultOrgManager) updateUsers(ldapMgr ldap.Manager, uaacMgr uaac.Manager, org Resource, role, groupName string) (err error) {
+	var groupUsers []ldap.User
+	var uaacUsers map[string]string
+	if groupName != "" {
+		lo.G.Info("Getting users for group", groupName)
+		if groupUsers, err = ldapMgr.GetUserIDs(groupName); err == nil {
+			if uaacUsers, err = uaacMgr.ListUsers(); err == nil {
+				for _, groupUser := range groupUsers {
+					if _, userExists := uaacUsers[groupUser.UserID]; userExists {
+						lo.G.Info("User", groupUser.UserID, "already exists")
+					} else {
+						lo.G.Info("User", groupUser.UserID, "doesn't exist so creating in UAA")
+						if err = uaacMgr.CreateUser(groupUser.UserID, groupUser.Email, groupUser.UserDN); err != nil {
+							return
+						}
+					}
+					lo.G.Info("Adding user to groups")
+					if err = m.addRole(groupUser.UserID, role, org); err != nil {
+						lo.G.Error(err)
+						return
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+func (m *DefaultOrgManager) addRole(userName, role string, org Resource) (err error) {
+	orgName := org.Entity.Name
+	if err = m.AddUser(orgName, userName); err != nil {
+		return
+	}
+	lo.G.Info("Adding", userName, "to", org.Entity.Name, "with role", role)
+
+	url := fmt.Sprintf("https://api.%s/v2/organizations/%s/%s", m.SysDomain, org.MetaData.GUID, role)
+	sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
+	err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
+	return
+}
+
 func (m *DefaultOrgManager) fetchOrgs() (err error) {
-	var res *http.Response
-	orgsURL := fmt.Sprintf("https://api.%s/v2/organizations", m.SysDomain)
-
 	var body string
-	var errs []error
-	request := gorequest.New()
-	get := request.Get(orgsURL)
-	get.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-	get.Set("Authorization", "BEARER "+m.Token)
-
-	if res, body, errs = get.End(); len(errs) == 0 && res.StatusCode == http.StatusOK {
+	url := fmt.Sprintf("https://api.%s/v2/organizations", m.SysDomain)
+	if body, err = utils.NewDefaultManager().HTTPGet(url, m.Token); err == nil {
 		orgResources := new(Resources)
 		if err = json.Unmarshal([]byte(body), &orgResources); err == nil {
 			m.Orgs = orgResources.Resource
 		}
-	} else if len(errs) > 0 {
-		err = errs[0]
-	} else {
-		err = fmt.Errorf(body)
 	}
 	return
 }

@@ -1,0 +1,77 @@
+resources:
+- name: config-repo
+  type: git
+  source:
+    uri: {{git_repo_uri}}
+    branch: master
+    private_key: {{git_private_key}}
+jobs:
+- name: create-orgs
+  plan:
+  - get: config-repo
+    trigger: true
+  - task: create-orgs
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      CF_MGMT_COMMAND: create-orgs
+- name: create-spaces
+  plan:
+  - get: config-repo
+    passed: [create-orgs]
+    trigger: true
+  - task: create-spaces
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      CF_MGMT_COMMAND: create-spaces
+- name: update-spaces
+  plan:
+  - get: config-repo
+    passed: [create-spaces]
+    trigger: true
+  - task: update-spaces
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      CF_MGMT_COMMAND: update-spaces
+- name: update-space-users
+  plan:
+  - get: config-repo
+    passed: [update-spaces]
+    trigger: true
+  - task: update-space-users
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      CF_MGMT_COMMAND: update-space-users
+- name: update-org-users
+  plan:
+  - get: config-repo
+    passed: [create-orgs]
+    trigger: true
+  - task: update-org-users
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      CF_MGMT_COMMAND: update-org-users

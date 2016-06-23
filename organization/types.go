@@ -6,6 +6,7 @@ type Manager interface {
 	FindOrg(orgName string) (org Resource, err error)
 	CreateOrgs(configFile string) (err error)
 	AddUser(orgName, userName string) (err error)
+	UpdateOrgUsers(configDir string) (err error)
 }
 
 //Resources -
@@ -27,6 +28,14 @@ type MetaData struct {
 //InputOrgs -
 type InputOrgs struct {
 	Orgs []string `yaml:"orgs"`
+}
+
+//InputUpdateOrgs -
+type InputUpdateOrgs struct {
+	Org                 string `yaml:"org"`
+	BillingManagerGroup string `yaml:"org-billingmanager-group"`
+	ManagerGroup        string `yaml:"org-manager-group"`
+	AuditorGroup        string `yaml:"org-auditor-group"`
 }
 
 //Entity -
