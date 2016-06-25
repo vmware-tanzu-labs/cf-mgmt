@@ -36,6 +36,16 @@ type InputCreateSpaces struct {
 	Spaces []string `yaml:"spaces"`
 }
 
+//Contains -
+func (s *InputCreateSpaces) Contains(spaceName string) bool {
+	set := make(map[string]bool)
+	for _, v := range s.Spaces {
+		set[v] = true
+	}
+	_, ok := set[spaceName]
+	return ok
+}
+
 //InputUpdateSpaces -
 type InputUpdateSpaces struct {
 	Org            string `yaml:"org"`

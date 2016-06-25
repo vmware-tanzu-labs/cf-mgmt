@@ -2,3 +2,4 @@ vendor
 merrill_example
 ldap_test
 main
+.DS_Store

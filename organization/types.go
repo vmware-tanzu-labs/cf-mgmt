@@ -30,6 +30,16 @@ type InputOrgs struct {
 	Orgs []string `yaml:"orgs"`
 }
 
+//Contains -
+func (s *InputOrgs) Contains(orgName string) bool {
+	set := make(map[string]bool)
+	for _, v := range s.Orgs {
+		set[v] = true
+	}
+	_, ok := set[orgName]
+	return ok
+}
+
 //InputUpdateOrgs -
 type InputUpdateOrgs struct {
 	Org                 string `yaml:"org"`

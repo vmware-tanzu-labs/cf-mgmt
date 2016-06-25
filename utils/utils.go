@@ -101,6 +101,15 @@ func (m *DefaultManager) LoadFile(configFile string, dataType interface{}) (err 
 	return
 }
 
+//WriteFile -
+func (m *DefaultManager) WriteFile(configFile string, dataType interface{}) (err error) {
+	var data []byte
+	if data, err = yaml.Marshal(dataType); err == nil {
+		err = ioutil.WriteFile(configFile, data, 0755)
+	}
+	return
+}
+
 //Manager -
 type Manager interface {
 	FindFiles(directoryName, pattern string) (files []string, err error)
@@ -108,6 +117,7 @@ type Manager interface {
 	HTTPPost(url, token, payload string) (body string, err error)
 	HTTPGet(url, token string) (body string, err error)
 	LoadFile(configFile string, dataType interface{}) (err error)
+	WriteFile(configFile string, dataType interface{}) (err error)
 }
 
 //DefaultManager -
