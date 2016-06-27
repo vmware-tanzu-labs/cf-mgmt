@@ -7,6 +7,7 @@ type Manager interface {
 	CreateOrgs(configFile string) (err error)
 	AddUser(orgName, userName string) (err error)
 	UpdateOrgUsers(configDir string) (err error)
+	CreateQuotas(configDir string) (err error)
 }
 
 //Resources -
@@ -42,22 +43,21 @@ func (s *InputOrgs) Contains(orgName string) bool {
 
 //InputUpdateOrgs -
 type InputUpdateOrgs struct {
-	Org                 string `yaml:"org"`
-	BillingManagerGroup string `yaml:"org-billingmanager-group"`
-	ManagerGroup        string `yaml:"org-manager-group"`
-	AuditorGroup        string `yaml:"org-auditor-group"`
+	Org                     string `yaml:"org"`
+	BillingManagerGroup     string `yaml:"org-billingmanager-group"`
+	ManagerGroup            string `yaml:"org-manager-group"`
+	AuditorGroup            string `yaml:"org-auditor-group"`
+	EnableOrgQuota          bool   `yaml:"enable-org-quota"`
+	MemoryLimit             int    `yaml:"memory-limit"`
+	InstanceMemoryLimit     int    `yaml:"instance-memory-limit"`
+	TotalRoutes             int    `yaml:"total-routes"`
+	TotalServices           int    `yaml:"total-services"`
+	PaidServicePlansAllowed bool   `yaml:"paid-service-plans-allowed"`
 }
 
 //Entity -
 type Entity struct {
-	Name               string `json:"name"`
-	SpacesURL          string `json:"spaces_url"`
-	QuotaURL           string `json:"quota_definition_url"`
-	SpaceQuoteURL      string `json:"space_quota_definitions_url"`
-	UsersURL           string `json:"users_url"`
-	ManagersURL        string `json:"managers_url"`
-	BillingManagersURL string `json:"billing_managers_url"`
-	AuditorsURL        string `json:"auditors_url"`
+	Name string `json:"name"`
 }
 
 //Org -
