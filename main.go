@@ -114,6 +114,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlags(), eh),
 		CreateCommand("create-spaces", runCreateSpaces, defaultFlags(), eh),
 		CreateCommand("update-spaces", runUpdateSpaces, defaultFlags(), eh),
+		CreateCommand("update-space-quotas", runCreateSpaceQuotas, defaultFlags(), eh),
 		CreateCommand("update-space-users", runUpdateSpaceUsers, defaultFlags(), eh),
 	}
 
@@ -302,10 +303,17 @@ func runCreateOrgs(c *cli.Context) (err error) {
 }
 
 func runCreateOrgQuotas(c *cli.Context) (err error) {
-	lo.G.Info("Running create quotas")
 	var cfMgmt CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.OrgManager.CreateQuotas(cfMgmt.ConfigDir)
+	}
+	return
+}
+
+func runCreateSpaceQuotas(c *cli.Context) (err error) {
+	var cfMgmt CFMgmt
+	if cfMgmt, err = InitializeManager(c); err == nil {
+		err = cfMgmt.SpaceManager.CreateQuotas(cfMgmt.ConfigDir)
 	}
 	return
 }

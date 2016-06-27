@@ -31,7 +31,7 @@ func (m *DefaultOrgManager) CreateQuotas(configDir string) (err error) {
 			if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
 				if input.EnableOrgQuota {
 					if org, err = m.FindOrg(input.Org); err == nil {
-						quotaName := fmt.Sprintf("%s-org", org.Entity.Name)
+						quotaName := org.Entity.Name
 						if quotaGUID, ok := quotas[quotaName]; ok {
 							if err = m.updateQuota(quotaGUID, quotaName, input); err == nil {
 								m.updateOrgQuota(org.MetaData.GUID, quotaGUID)

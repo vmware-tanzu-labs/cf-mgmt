@@ -11,6 +11,7 @@ type Manager interface {
 	CreateSpaces(configDir string) (err error)
 	UpdateSpaces(configDir string) (err error)
 	UpdateSpaceUsers(configDir string) (err error)
+	CreateQuotas(configDir string) (err error)
 }
 
 //Resources -
@@ -48,12 +49,18 @@ func (s *InputCreateSpaces) Contains(spaceName string) bool {
 
 //InputUpdateSpaces -
 type InputUpdateSpaces struct {
-	Org            string `yaml:"org"`
-	Space          string `yaml:"space"`
-	DeveloperGroup string `yaml:"space-developer-group"`
-	ManagerGroup   string `yaml:"space-manager-group"`
-	AuditorGroup   string `yaml:"space-auditor-group"`
-	AllowSSH       bool   `yaml:"allow-ssh"`
+	Org                     string `yaml:"org"`
+	Space                   string `yaml:"space"`
+	DeveloperGroup          string `yaml:"space-developer-group"`
+	ManagerGroup            string `yaml:"space-manager-group"`
+	AuditorGroup            string `yaml:"space-auditor-group"`
+	AllowSSH                bool   `yaml:"allow-ssh"`
+	EnableSpaceQuota        bool   `yaml:"enable-space-quota"`
+	MemoryLimit             int    `yaml:"memory-limit"`
+	InstanceMemoryLimit     int    `yaml:"instance-memory-limit"`
+	TotalRoutes             int    `yaml:"total-routes"`
+	TotalServices           int    `yaml:"total-services"`
+	PaidServicePlansAllowed bool   `yaml:"paid-service-plans-allowed"`
 }
 
 //Entity -
@@ -63,13 +70,6 @@ type Entity struct {
 	SecurityGroups []securitygroup.Resource `json:"security_groups"`
 	OrgGUID        string                   `json:"organization_guid"`
 	Org            Org                      `json:"organization"`
-	//SpacesURL          string `json:"spaces_url"`
-	//QuotaURL           string `json:"quota_definition_url"`
-	//SpaceQuoteURL      string `json:"space_quota_definitions_url"`
-	//UsersURL           string `json:"users_url"`
-	//ManagersURL        string `json:"managers_url"`
-	//BillingManagersURL string `json:"billing_managers_url"`
-	//AuditorsURL        string `json:"auditors_url"`
 }
 
 //Org -

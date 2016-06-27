@@ -20,6 +20,85 @@ func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 	}
 }
 
+//CreateQuotas -
+func (m *DefaultSpaceManager) CreateQuotas(configDir string) (err error) {
+	var quotas map[string]string
+	var space Resource
+	var targetQuotaGUID string
+
+	files, _ := utils.NewDefaultManager().FindFiles(configDir, "spaceConfig.yml")
+	for _, f := range files {
+		input := &InputUpdateSpaces{}
+		if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
+			lo.G.Info("Processing file", f)
+			if input.EnableSpaceQuota {
+				if space, err = m.FindSpace(input.Org, input.Space); err == nil {
+					quotaName := space.Entity.Name
+					if quotas, err = m.listQuotas(space.Entity.OrgGUID); err == nil {
+						if quotaGUID, ok := quotas[quotaName]; ok {
+							if err = m.updateQuota(space.Entity.OrgGUID, quotaGUID, quotaName, input); err == nil {
+								m.updateSpaceQuota(space.MetaData.GUID, quotaGUID)
+							}
+						} else {
+							if targetQuotaGUID, err = m.createQuota(space.Entity.OrgGUID, quotaName, input); err == nil {
+								m.updateSpaceQuota(space.MetaData.GUID, targetQuotaGUID)
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+
+	if err != nil {
+		lo.G.Error(err)
+	}
+	return
+}
+
+func (m *DefaultSpaceManager) createQuota(orgGUID, quotaName string, quota *InputUpdateSpaces) (quotaGUID string, err error) {
+	var body string
+	url := fmt.Sprintf("https://api.%s/v2/space_quota_definitions", m.SysDomain)
+	sendString := fmt.Sprintf(`{"name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t,"organization_guid":"%s"}`, quotaName, quota.MemoryLimit, quota.InstanceMemoryLimit, quota.TotalRoutes, quota.TotalServices, quota.PaidServicePlansAllowed, orgGUID)
+	if body, err = utils.NewDefaultManager().HTTPPost(url, m.Token, sendString); err == nil {
+		quotaResource := new(Resource)
+		if err = json.Unmarshal([]byte(body), &quotaResource); err == nil {
+			quotaGUID = quotaResource.MetaData.GUID
+		}
+	}
+	return
+}
+func (m *DefaultSpaceManager) updateQuota(orgGUID, quotaGUID, quotaName string, quota *InputUpdateSpaces) (err error) {
+	url := fmt.Sprintf("https://api.%s/v2/space_quota_definitions/%s", m.SysDomain, quotaGUID)
+	sendString := fmt.Sprintf(`{"guid":"%s","name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t,"organization_guid":"%s"}`, quotaGUID, quotaName, quota.MemoryLimit, quota.InstanceMemoryLimit, quota.TotalRoutes, quota.TotalServices, quota.PaidServicePlansAllowed, orgGUID)
+	err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
+	return
+}
+
+func (m *DefaultSpaceManager) updateSpaceQuota(spaceGUID, quotaGUID string) (err error) {
+	url := fmt.Sprintf("https://api.%s/v2/space_quota_definitions/%s/spaces/%s ", m.SysDomain, quotaGUID, spaceGUID)
+	sendString := ""
+	//err = utils.NewDefaultManager().HTTPDelete(url, m.Token, sendString)
+	err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
+	return
+}
+
+func (m *DefaultSpaceManager) listQuotas(orgGUID string) (quotas map[string]string, err error) {
+	quotas = make(map[string]string)
+	var body string
+	url := fmt.Sprintf("https://api.%s/v2/organizations/%s/space_quota_definitions", m.SysDomain, orgGUID)
+	if body, err = utils.NewDefaultManager().HTTPGet(url, m.Token); err == nil {
+		quotaResources := new(Resources)
+		if err = json.Unmarshal([]byte(body), &quotaResources); err == nil {
+			for _, quota := range quotaResources.Resource {
+				quotas[quota.Entity.Name] = quota.MetaData.GUID
+			}
+		}
+	}
+	return
+}
+
 //UpdateSpaces -
 func (m *DefaultSpaceManager) UpdateSpaces(configDir string) (err error) {
 	var space Resource

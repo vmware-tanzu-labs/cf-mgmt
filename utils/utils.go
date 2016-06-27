@@ -27,6 +27,26 @@ func (m *DefaultManager) FindFiles(configDir, pattern string) (files []string, e
 	return
 }
 
+//HTTPDelete -
+func (m *DefaultManager) HTTPDelete(url, token, payload string) (err error) {
+	var res *http.Response
+	var body string
+	var errs []error
+	request := gorequest.New()
+	put := request.Delete(url)
+	put.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	put.Set("Authorization", "BEARER "+token)
+	put.Send(payload)
+	if res, _, errs = put.End(); len(errs) == 0 && res.StatusCode == http.StatusCreated {
+		return
+	} else if len(errs) > 0 {
+		err = errs[0]
+	} else {
+		err = fmt.Errorf("Status %d, body %s", res.StatusCode, body)
+	}
+	return
+}
+
 //HTTPPut -
 func (m *DefaultManager) HTTPPut(url, token, payload string) (err error) {
 	var res *http.Response
@@ -114,6 +134,7 @@ func (m *DefaultManager) WriteFile(configFile string, dataType interface{}) (err
 type Manager interface {
 	FindFiles(directoryName, pattern string) (files []string, err error)
 	HTTPPut(url, token, payload string) (err error)
+	HTTPDelete(url, token, payload string) (err error)
 	HTTPPost(url, token, payload string) (body string, err error)
 	HTTPGet(url, token string) (body string, err error)
 	LoadFile(configFile string, dataType interface{}) (err error)

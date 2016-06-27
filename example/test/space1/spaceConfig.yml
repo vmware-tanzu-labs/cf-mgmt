@@ -5,3 +5,9 @@ allow-ssh: yes
 space-auditor-group: test_space1_auditors
 space-developer-group: test_space1_developers
 space-manager-group: test_space1_managers
+enable-space-quota: true
+memory-limit: 10240
+instance-memory-limit: -1
+total-routes: 10
+total-services: -1
+paid-service-plans-allowed: true
