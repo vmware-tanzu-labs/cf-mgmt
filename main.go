@@ -272,7 +272,7 @@ func runGeneratePipeline(c *cli.Context) (err error) {
 func createFile(assetName, fileName string) (err error) {
 	var f *os.File
 	var fileBytes []byte
-	if fileBytes, err = generated.Asset(fmt.Sprintf("pipeline/%s", assetName)); err == nil {
+	if fileBytes, err = generated.Asset(fmt.Sprintf("files/%s", assetName)); err == nil {
 		if f, err = os.Create(fileName); err == nil {
 			defer f.Close()
 			_, err = f.Write(fileBytes)
