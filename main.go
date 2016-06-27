@@ -116,6 +116,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateCommand("update-spaces", runUpdateSpaces, defaultFlags(), eh),
 		CreateCommand("update-space-quotas", runCreateSpaceQuotas, defaultFlags(), eh),
 		CreateCommand("update-space-users", runUpdateSpaceUsers, defaultFlags(), eh),
+		CreateCommand("update-space-security-groups", runCreateSpaceSecurityGroups, defaultFlags(), eh),
 	}
 
 	return app
@@ -314,6 +315,14 @@ func runCreateSpaceQuotas(c *cli.Context) (err error) {
 	var cfMgmt CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.CreateQuotas(cfMgmt.ConfigDir)
+	}
+	return
+}
+
+func runCreateSpaceSecurityGroups(c *cli.Context) (err error) {
+	var cfMgmt CFMgmt
+	if cfMgmt, err = InitializeManager(c); err == nil {
+		err = cfMgmt.SpaceManager.CreateApplicationSecurityGroups(cfMgmt.ConfigDir)
 	}
 	return
 }

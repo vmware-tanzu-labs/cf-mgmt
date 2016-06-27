@@ -12,6 +12,7 @@ type Manager interface {
 	UpdateSpaces(configDir string) (err error)
 	UpdateSpaceUsers(configDir string) (err error)
 	CreateQuotas(configDir string) (err error)
+	CreateApplicationSecurityGroups(configDir string) (err error)
 }
 
 //Resources -
@@ -61,6 +62,7 @@ type InputUpdateSpaces struct {
 	TotalRoutes             int    `yaml:"total-routes"`
 	TotalServices           int    `yaml:"total-services"`
 	PaidServicePlansAllowed bool   `yaml:"paid-service-plans-allowed"`
+	EnableSecurityGroup     bool   `yaml:"enable-security-group"`
 }
 
 //Entity -

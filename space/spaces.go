@@ -1,8 +1,12 @@
 package space
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
@@ -18,6 +22,94 @@ func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 		Token:     token,
 		UAACToken: uaacToken,
 	}
+}
+
+//CreateApplicationSecurityGroups -
+func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) (err error) {
+	var contents string
+	var targetSGGUID string
+	var sgs map[string]string
+	var space Resource
+	files, _ := utils.NewDefaultManager().FindFiles(configDir, "spaceConfig.yml")
+	for _, f := range files {
+		input := &InputUpdateSpaces{}
+		if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
+			if input.EnableSecurityGroup {
+				if space, err = m.FindSpace(input.Org, input.Space); err == nil {
+					securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
+					if contents, err = m.getSecurityFileContents(securityGroupFile); err == nil {
+						sgName := fmt.Sprintf("%s-%s", input.Org, input.Space)
+						if sgs, err = m.listSecurityGroups(); err == nil {
+							if sgGUID, ok := sgs[sgName]; ok {
+								if err = m.updateSecurityGroup(sgGUID, sgName, contents); err == nil {
+									m.updateSpaceSecurityGroup(space.MetaData.GUID, sgGUID)
+								}
+							} else {
+								if targetSGGUID, err = m.createSecurityGroup(sgName, contents); err == nil {
+									m.updateSpaceSecurityGroup(space.MetaData.GUID, targetSGGUID)
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+func (m *DefaultSpaceManager) updateSecurityGroup(sgGUID, sgName, contents string) (err error) {
+	url := fmt.Sprintf("https://api.%s/v2/security_groups/%s", m.SysDomain, sgGUID)
+	sendString := fmt.Sprintf(`{"name":"%s","rules":%s}`, sgName, contents)
+	err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
+	return
+}
+
+func (m *DefaultSpaceManager) createSecurityGroup(sgName, contents string) (sgGUID string, err error) {
+	var body string
+	url := fmt.Sprintf("https://api.%s/v2/security_groups", m.SysDomain)
+	sendString := fmt.Sprintf(`{"name":"%s","rules":%s}`, sgName, contents)
+	if body, err = utils.NewDefaultManager().HTTPPost(url, m.Token, sendString); err == nil {
+		sgResource := new(Resource)
+		if err = json.Unmarshal([]byte(body), &sgResource); err == nil {
+			sgGUID = sgResource.MetaData.GUID
+		}
+	}
+	return
+}
+
+func (m *DefaultSpaceManager) updateSpaceSecurityGroup(spaceGUID, sgGUID string) (err error) {
+	url := fmt.Sprintf("https://api.%s/v2/security_groups/%s/spaces/%s", m.SysDomain, sgGUID, spaceGUID)
+	sendString := ""
+	//err = utils.NewDefaultManager().HTTPDelete(url, m.Token, sendString)
+	err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
+	return
+}
+
+func (m *DefaultSpaceManager) getSecurityFileContents(securityGroupFile string) (contents string, err error) {
+	var f *os.File
+	buf := bytes.NewBuffer(nil)
+
+	if f, err = os.Open(securityGroupFile); err == nil {
+		io.Copy(buf, f)
+		f.Close()
+		contents = string(buf.Bytes())
+	}
+	return
+}
+func (m *DefaultSpaceManager) listSecurityGroups() (securityGroups map[string]string, err error) {
+	securityGroups = make(map[string]string)
+	var body string
+	url := fmt.Sprintf("https://api.%s/v2/security_groups", m.SysDomain)
+	if body, err = utils.NewDefaultManager().HTTPGet(url, m.Token); err == nil {
+		sgResources := new(Resources)
+		if err = json.Unmarshal([]byte(body), &sgResources); err == nil {
+			for _, sg := range sgResources.Resource {
+				securityGroups[sg.Entity.Name] = sg.MetaData.GUID
+			}
+		}
+	}
+	return
 }
 
 //CreateQuotas -
@@ -77,7 +169,7 @@ func (m *DefaultSpaceManager) updateQuota(orgGUID, quotaGUID, quotaName string, 
 }
 
 func (m *DefaultSpaceManager) updateSpaceQuota(spaceGUID, quotaGUID string) (err error) {
-	url := fmt.Sprintf("https://api.%s/v2/space_quota_definitions/%s/spaces/%s ", m.SysDomain, quotaGUID, spaceGUID)
+	url := fmt.Sprintf("https://api.%s/v2/space_quota_definitions/%s/spaces/%s", m.SysDomain, quotaGUID, spaceGUID)
 	sendString := ""
 	//err = utils.NewDefaultManager().HTTPDelete(url, m.Token, sendString)
 	err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)

@@ -76,12 +76,12 @@ func (m *DefaultManager) HTTPPost(url, token, payload string) (body string, err 
 	post.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	post.Set("Authorization", "BEARER "+token)
 	post.Send(payload)
-	if res, body, errs = post.End(); len(errs) != 0 || res.StatusCode != http.StatusOK {
-		if len(errs) > 0 {
-			err = errs[0]
-		} else {
-			err = fmt.Errorf(body)
-		}
+	if res, body, errs = post.End(); len(errs) == 0 && (res.StatusCode == http.StatusOK || res.StatusCode == http.StatusCreated) {
+		return
+	} else if len(errs) > 0 {
+		err = errs[0]
+	} else {
+		err = fmt.Errorf("Status %d, body %s", res.StatusCode, body)
 	}
 	return
 }
