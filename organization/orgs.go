@@ -33,11 +33,15 @@ func (m *DefaultOrgManager) CreateQuotas(configDir string) (err error) {
 					if org, err = m.FindOrg(input.Org); err == nil {
 						quotaName := org.Entity.Name
 						if quotaGUID, ok := quotas[quotaName]; ok {
+							lo.G.Info("Updating quota", quotaName)
 							if err = m.updateQuota(quotaGUID, quotaName, input); err == nil {
+								lo.G.Info("Assigning", quotaName, "to", org.Entity.Name)
 								m.updateOrgQuota(org.MetaData.GUID, quotaGUID)
 							}
 						} else {
+							lo.G.Info("Creating quota", quotaName)
 							if targetQuotaGUID, err = m.createQuota(quotaName, input); err == nil {
+								lo.G.Info("Assigning", quotaName, "to", org.Entity.Name)
 								m.updateOrgQuota(org.MetaData.GUID, targetQuotaGUID)
 							}
 						}

@@ -41,11 +41,15 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 						sgName := fmt.Sprintf("%s-%s", input.Org, input.Space)
 						if sgs, err = m.listSecurityGroups(); err == nil {
 							if sgGUID, ok := sgs[sgName]; ok {
+								lo.G.Info("Updating security group", sgName)
 								if err = m.updateSecurityGroup(sgGUID, sgName, contents); err == nil {
+									lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
 									m.updateSpaceSecurityGroup(space.MetaData.GUID, sgGUID)
 								}
 							} else {
+								lo.G.Info("Creating security group", sgName)
 								if targetSGGUID, err = m.createSecurityGroup(sgName, contents); err == nil {
+									lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
 									m.updateSpaceSecurityGroup(space.MetaData.GUID, targetSGGUID)
 								}
 							}
@@ -128,11 +132,15 @@ func (m *DefaultSpaceManager) CreateQuotas(configDir string) (err error) {
 					quotaName := space.Entity.Name
 					if quotas, err = m.listQuotas(space.Entity.OrgGUID); err == nil {
 						if quotaGUID, ok := quotas[quotaName]; ok {
+							lo.G.Info("Updating quota", quotaName)
 							if err = m.updateQuota(space.Entity.OrgGUID, quotaGUID, quotaName, input); err == nil {
+								lo.G.Info("Assigning", quotaName, "to", space.Entity.Name)
 								m.updateSpaceQuota(space.MetaData.GUID, quotaGUID)
 							}
 						} else {
+							lo.G.Info("Creating quota", quotaName)
 							if targetQuotaGUID, err = m.createQuota(space.Entity.OrgGUID, quotaName, input); err == nil {
+								lo.G.Info("Assigning", quotaName, "to", space.Entity.Name)
 								m.updateSpaceQuota(space.MetaData.GUID, targetQuotaGUID)
 							}
 						}
