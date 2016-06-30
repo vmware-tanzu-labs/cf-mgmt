@@ -225,23 +225,25 @@ func (m *DefaultSpaceManager) UpdateSpaces(configDir string) (err error) {
 func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir string) (err error) {
 	var space Resource
 	var ldapMgr ldap.Manager
-	files, _ := utils.NewDefaultManager().FindFiles(configDir, "spaceConfig.yml")
-	for _, f := range files {
-		lo.G.Info("Processing space file", f)
-		input := &InputUpdateSpaces{}
-		if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
-			if space, err = m.FindSpace(input.Org, input.Space); err == nil {
-				if ldapMgr, err = ldap.NewDefaultManager(configDir); err == nil {
-					uaacMgr := uaac.NewManager(m.SysDomain, m.UAACToken)
-					lo.G.Info("User sync for space", space.Entity.Name)
-					if err = m.updateUsers(ldapMgr, uaacMgr, space, "developers", input.DeveloperGroup); err != nil {
-						return
-					}
-					if err = m.updateUsers(ldapMgr, uaacMgr, space, "managers", input.ManagerGroup); err != nil {
-						return
-					}
-					if err = m.updateUsers(ldapMgr, uaacMgr, space, "auditors", input.AuditorGroup); err != nil {
-						return
+	if ldapMgr, err = ldap.NewDefaultManager(configDir); err == nil {
+		if ldapMgr.IsEnabled() {
+			files, _ := utils.NewDefaultManager().FindFiles(configDir, "spaceConfig.yml")
+			for _, f := range files {
+				lo.G.Info("Processing space file", f)
+				input := &InputUpdateSpaces{}
+				if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
+					if space, err = m.FindSpace(input.Org, input.Space); err == nil {
+						uaacMgr := uaac.NewManager(m.SysDomain, m.UAACToken)
+						lo.G.Info("User sync for space", space.Entity.Name)
+						if err = m.updateUsers(ldapMgr, uaacMgr, space, "developers", input.DeveloperGroup); err != nil {
+							return
+						}
+						if err = m.updateUsers(ldapMgr, uaacMgr, space, "managers", input.ManagerGroup); err != nil {
+							return
+						}
+						if err = m.updateUsers(ldapMgr, uaacMgr, space, "auditors", input.AuditorGroup); err != nil {
+							return
+						}
 					}
 				}
 			}

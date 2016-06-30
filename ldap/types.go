@@ -3,6 +3,7 @@ package ldap
 //Manager -
 type Manager interface {
 	GetUserIDs(groupName string) (users []User, err error)
+	IsEnabled() bool
 }
 
 //DefaultManager -

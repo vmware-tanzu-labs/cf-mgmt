@@ -28,6 +28,11 @@ func NewDefaultManager(configDir string) (mgr Manager, err error) {
 	return
 }
 
+//IsEnabled -
+func (m *DefaultManager) IsEnabled() bool {
+	return m.Config.Enabled
+}
+
 func (m *DefaultManager) getConfig(configDir string) (config Config, err error) {
 	var data []byte
 	if data, err = ioutil.ReadFile(configDir + "/ldap.yml"); err == nil {

@@ -171,31 +171,30 @@ func (m *DefaultOrgManager) FindOrg(orgName string) (org Resource, err error) {
 
 //UpdateOrgUsers -
 func (m *DefaultOrgManager) UpdateOrgUsers(configDir string) (err error) {
-
 	var org Resource
 	var ldapMgr ldap.Manager
-	files, _ := utils.NewDefaultManager().FindFiles(configDir, "orgConfig.yml")
-	for _, f := range files {
-		lo.G.Info("Processing org file", f)
-		input := &InputUpdateOrgs{}
-		if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
-			if org, err = m.FindOrg(input.Org); err == nil {
-				if ldapMgr, err = ldap.NewDefaultManager(configDir); err == nil {
-					uaacMgr := uaac.NewManager(m.SysDomain, m.UAACToken)
-					lo.G.Info("User sync for org", input.Org)
-					if err = m.updateUsers(ldapMgr, uaacMgr, org, "managers", input.ManagerGroup); err != nil {
-						return
-					}
-					if err = m.updateUsers(ldapMgr, uaacMgr, org, "auditors", input.AuditorGroup); err != nil {
-						return
-					}
-					if err = m.updateUsers(ldapMgr, uaacMgr, org, "billing_managers", input.BillingManagerGroup); err != nil {
-						return
+	if ldapMgr, err = ldap.NewDefaultManager(configDir); err == nil {
+		if ldapMgr.IsEnabled() {
+			files, _ := utils.NewDefaultManager().FindFiles(configDir, "orgConfig.yml")
+			for _, f := range files {
+				lo.G.Info("Processing org file", f)
+				input := &InputUpdateOrgs{}
+				if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
+					if org, err = m.FindOrg(input.Org); err == nil {
+						uaacMgr := uaac.NewManager(m.SysDomain, m.UAACToken)
+						lo.G.Info("User sync for org", input.Org)
+						if err = m.updateUsers(ldapMgr, uaacMgr, org, "managers", input.ManagerGroup); err != nil {
+							return
+						}
+						if err = m.updateUsers(ldapMgr, uaacMgr, org, "auditors", input.AuditorGroup); err != nil {
+							return
+						}
+						if err = m.updateUsers(ldapMgr, uaacMgr, org, "billing_managers", input.BillingManagerGroup); err != nil {
+							return
+						}
 					}
 				}
 			}
-		} else {
-			lo.G.Error(err)
 		}
 	}
 	return
