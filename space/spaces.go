@@ -329,7 +329,6 @@ func (m *DefaultSpaceManager) FindSpace(orgName, spaceName string) (space Resour
 
 //CreateSpaces -
 func (m *DefaultSpaceManager) CreateSpaces(configDir string) (err error) {
-	var orgName string
 	files, _ := utils.NewDefaultManager().FindFiles(configDir, "spaces.yml")
 	for _, f := range files {
 		lo.G.Info("Processing space file", f)
@@ -343,8 +342,8 @@ func (m *DefaultSpaceManager) CreateSpaces(configDir string) (err error) {
 					if m.doesSpaceExist(spaceName) {
 						lo.G.Info(fmt.Sprintf("[%s] space already exists", spaceName))
 					} else {
-						lo.G.Info(fmt.Sprintf("Creating [%s] space in [%s] org", spaceName, orgName))
-						m.CreateSpace(orgName, spaceName)
+						lo.G.Info(fmt.Sprintf("Creating [%s] space in [%s] org", spaceName, input.Org))
+						m.CreateSpace(input.Org, spaceName)
 					}
 				}
 			} else {

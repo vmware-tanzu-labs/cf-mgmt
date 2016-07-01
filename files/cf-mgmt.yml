@@ -1,7 +1,9 @@
 ---
 platform: linux
 
-image: docker:///pcfservices/cf-mgmt
+image_resource:
+  type: docker-image
+  source: {repository: pcfservices/cf-mgmt, tag: "latest"}
 
 inputs:
   - name: config-repo
