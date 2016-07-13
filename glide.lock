@@ -1,5 +1,5 @@
-hash: 3e8911ec94c088ad3374aa6521b13b04e90570abbde3715b2a69ed3d116d4914
-updated: 2016-06-09T20:05:57.442826511-05:00
+hash: 0504080e1728ee122855892253f2779b131a86b156f4a5fb0fffe297fe2d6288
+updated: 2016-07-12T07:27:48.438290916-07:00
 imports:
 - name: github.com/codegangsta/cli
   version: edb24d02aa3cea2319c33f2836d4a5133907fe4c
@@ -9,6 +9,10 @@ imports:
   version: ec51d5ed21377b4023ca7b1e70ae4cb296ee6047
 - name: github.com/nmcclain/ldap
   version: 6e14e82719330c918c5b4139cc80c51d7ebc5fba
+- name: github.com/onsi/ginkgo
+  version: 16c38793d41b07a5f9ae77d573af7836a994bf27
+- name: github.com/onsi/gomega
+  version: fcb0f1276bbd7cf097f5a7fd86cc68b50da9376f
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9
 - name: github.com/parnurzeal/gorequest

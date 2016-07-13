@@ -1,0 +1,10 @@
+org: test
+org-billingmanager-group: test_space1_developers
+org-manager-group:
+org-auditor-group:
+enable-org-quota: true
+memory-limit: 10240
+instance-memory-limit: -1
+total-routes: 10
+total-services: -1
+paid-service-plans-allowed: true
