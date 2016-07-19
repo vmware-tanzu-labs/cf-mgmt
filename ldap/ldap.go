@@ -83,7 +83,7 @@ func (m *DefaultManager) getUser(userDN string) (entry *l.Entry, err error) {
 		if err = ldapConnection.Bind(m.Config.BindDN, m.Config.BindPassword); err == nil {
 			//filter := fmt.Sprintf(userFilter, userObjectClass, userID)
 			lo.G.Debug("User DN:", userDN)
-			index := strings.Index(userDN, ",ou=")
+			index := strings.Index(strings.ToUpper(userDN), ",OU=")
 			userCNTemp := userDN[:index]
 			userCN := strings.Replace(userCNTemp, "\\,", ",", 1)
 			lo.G.Debug("userCN", userCN)
