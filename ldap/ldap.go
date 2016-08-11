@@ -7,6 +7,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/mavricknz/ldap"
 	l "github.com/nmcclain/ldap"
 	"github.com/xchapter7x/lo"
 )
@@ -85,7 +86,7 @@ func (m *DefaultManager) getUser(userDN string) (entry *l.Entry, err error) {
 			lo.G.Debug("User DN:", userDN)
 			index := strings.Index(strings.ToUpper(userDN), ",OU=")
 			userCNTemp := userDN[:index]
-			userCN := strings.Replace(userCNTemp, "\\,", ",", 1)
+			userCN := ldap.EscapeFilterValue(userCNTemp)
 			lo.G.Debug("userCN", userCN)
 			filter := fmt.Sprintf(userFilter, userCN)
 			lo.G.Debug("Using user search filter", filter)
@@ -119,7 +120,7 @@ func (m *DefaultManager) getGroup(groupName string) (entry *l.Entry, err error) 
 	if ldapConnection, err = l.Dial("tcp", ldapURL); err == nil {
 		// be sure to add error checking!
 		defer ldapConnection.Close()
-		filter := fmt.Sprintf(groupFilter, groupName)
+		filter := fmt.Sprintf(groupFilter, ldap.EscapeFilterValue(groupName))
 		lo.G.Debug("Using group filter", filter)
 		lo.G.Debug("Using group search base:", m.Config.GroupSearchBase)
 		if err = ldapConnection.Bind(m.Config.BindDN, m.Config.BindPassword); err == nil {

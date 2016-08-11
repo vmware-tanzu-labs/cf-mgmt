@@ -1,6 +1,6 @@
 org: test
 org-billingmanager-group: test_space1_developers
-org-manager-group:
+org-manager-group: PCF One Org (Owner)
 org-auditor-group:
 enable-org-quota: true
 memory-limit: 10240

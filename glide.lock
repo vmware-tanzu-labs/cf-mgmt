@@ -1,8 +1,12 @@
-hash: 0504080e1728ee122855892253f2779b131a86b156f4a5fb0fffe297fe2d6288
-updated: 2016-07-12T07:27:48.438290916-07:00
+hash: 80c886d36daa7f527e6b8b6edf8b2059cb931fc5f2ef986e94c870fed8e19398
+updated: 2016-08-10T22:16:44.596268619-07:00
 imports:
 - name: github.com/codegangsta/cli
   version: edb24d02aa3cea2319c33f2836d4a5133907fe4c
+- name: github.com/mavricknz/asn1-ber
+  version: b9df1c2f4213e9acfe05cbd20696ac5fc0d5c70e
+- name: github.com/mavricknz/ldap
+  version: f5a958005e43f515b70d9b1a61d9c842ecd507a6
 - name: github.com/moul/http2curl
   version: b1479103caacaa39319f75e7f57fc545287fca0d
 - name: github.com/nmcclain/asn1-ber

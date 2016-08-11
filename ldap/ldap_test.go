@@ -22,7 +22,13 @@ var _ = XDescribe("Ldap", func() {
 				Ω(err).Should(BeNil())
 				Ω(len(users)).Should(Equal(3))
 			})
-
+		})
+		Context("when called with a valid group with special characters", func() {
+			It("then it should return 3 users", func() {
+				users, err := ldapManager.GetUserIDs("PCF One Org (Owner)")
+				Ω(err).Should(BeNil())
+				Ω(len(users)).Should(Equal(3))
+			})
 		})
 	})
 })
