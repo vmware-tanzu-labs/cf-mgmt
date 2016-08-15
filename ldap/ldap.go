@@ -19,11 +19,17 @@ var (
 )
 
 //NewDefaultManager -
-func NewDefaultManager(configDir string) (mgr Manager, err error) {
+func NewDefaultManager(configDir, ldapBindPassword string) (mgr Manager, err error) {
 	var config Config
 	m := &DefaultManager{}
 	if config, err = m.getConfig(configDir); err == nil {
 		m.Config = config
+		if ldapBindPassword != "" {
+			m.LdapBindPassword = ldapBindPassword
+		} else {
+			lo.G.Warning("Ldap bind password should be removed from ldap.yml as this will be deprecated in a future release.  Use --ldap-password flag instead.")
+			m.LdapBindPassword = m.Config.BindPassword
+		}
 	}
 	mgr = m
 	return
@@ -81,7 +87,7 @@ func (m *DefaultManager) getUser(userDN string) (entry *l.Entry, err error) {
 	if ldapConnection, err = l.Dial("tcp", ldapURL); err == nil {
 		// be sure to add error checking!
 		defer ldapConnection.Close()
-		if err = ldapConnection.Bind(m.Config.BindDN, m.Config.BindPassword); err == nil {
+		if err = ldapConnection.Bind(m.Config.BindDN, m.LdapBindPassword); err == nil {
 			//filter := fmt.Sprintf(userFilter, userObjectClass, userID)
 			lo.G.Debug("User DN:", userDN)
 			index := strings.Index(strings.ToUpper(userDN), ",OU=")
@@ -123,7 +129,7 @@ func (m *DefaultManager) getGroup(groupName string) (entry *l.Entry, err error) 
 		filter := fmt.Sprintf(groupFilter, ldap.EscapeFilterValue(groupName))
 		lo.G.Debug("Using group filter", filter)
 		lo.G.Debug("Using group search base:", m.Config.GroupSearchBase)
-		if err = ldapConnection.Bind(m.Config.BindDN, m.Config.BindPassword); err == nil {
+		if err = ldapConnection.Bind(m.Config.BindDN, m.LdapBindPassword); err == nil {
 			search := l.NewSearchRequest(
 				m.Config.GroupSearchBase,
 				l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,

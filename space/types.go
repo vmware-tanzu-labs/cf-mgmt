@@ -10,7 +10,7 @@ type Manager interface {
 	FindSpace(orgName, spaceName string) (space Resource, err error)
 	CreateSpaces(configDir string) (err error)
 	UpdateSpaces(configDir string) (err error)
-	UpdateSpaceUsers(configDir string) (err error)
+	UpdateSpaceUsers(configDir, ldapBindPassword string) (err error)
 	CreateQuotas(configDir string) (err error)
 	CreateApplicationSecurityGroups(configDir string) (err error)
 }

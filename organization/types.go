@@ -6,7 +6,7 @@ type Manager interface {
 	FindOrg(orgName string) (org Resource, err error)
 	CreateOrgs(configFile string) (err error)
 	AddUser(orgName, userName string) (err error)
-	UpdateOrgUsers(configDir string) (err error)
+	UpdateOrgUsers(configDir, ldapBindPassword string) (err error)
 	CreateQuotas(configDir string) (err error)
 }
 

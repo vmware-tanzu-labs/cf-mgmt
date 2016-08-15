@@ -8,7 +8,8 @@ type Manager interface {
 
 //DefaultManager -
 type DefaultManager struct {
-	Config Config
+	Config           Config
+	LdapBindPassword string
 }
 
 //Config -

@@ -39,6 +39,7 @@ type CFMgmt struct {
 	OrgManager   organization.Manager
 	SpaceManager space.Manager
 	ConfigDir    string
+	LdapBindPwd  string
 }
 
 //InitializeManager -
@@ -48,6 +49,7 @@ func InitializeManager(c *cli.Context) (cfMgmt CFMgmt, err error) {
 	pwd := c.String(getFlag(password))
 	config := getConfigDir(c)
 	secret := c.String(getFlag(clientSecret))
+	ldapPwd := c.String(getFlag(ldapPassword))
 
 	if sysDomain == "" ||
 		user == "" ||
@@ -56,6 +58,7 @@ func InitializeManager(c *cli.Context) (cfMgmt CFMgmt, err error) {
 		err = fmt.Errorf("Must set system-domain, user-id, password, client-secret properties")
 	} else {
 		cfMgmt = CFMgmt{}
+		cfMgmt.LdapBindPwd = ldapPwd
 		cfMgmt.UAAManager = uaa.NewDefaultUAAManager(sysDomain, user)
 		cfToken := cfMgmt.UAAManager.GetCFToken(pwd)
 		uaacToken := cfMgmt.UAAManager.GetUAACToken(secret)
@@ -75,6 +78,7 @@ const (
 	configDir    string = "CONFIG_DIR"
 	orgName      string = "ORG"
 	spaceName    string = "SPACE"
+	ldapPassword string = "LDAP_PASSWORD"
 )
 
 func main() {
@@ -111,11 +115,11 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateGeneratePipelineCommand(runGeneratePipeline, eh),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags(), eh),
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags(), eh),
-		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlags(), eh),
+		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlagsWithLdap(), eh),
 		CreateCommand("create-spaces", runCreateSpaces, defaultFlags(), eh),
 		CreateCommand("update-spaces", runUpdateSpaces, defaultFlags(), eh),
 		CreateCommand("update-space-quotas", runCreateSpaceQuotas, defaultFlags(), eh),
-		CreateCommand("update-space-users", runUpdateSpaceUsers, defaultFlags(), eh),
+		CreateCommand("update-space-users", runUpdateSpaceUsers, defaultFlagsWithLdap(), eh),
 		CreateCommand("update-space-security-groups", runCreateSpaceSecurityGroups, defaultFlags(), eh),
 	}
 
@@ -346,7 +350,7 @@ func runUpdateSpaces(c *cli.Context) (err error) {
 func runUpdateSpaceUsers(c *cli.Context) (err error) {
 	var cfMgmt CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
-		err = cfMgmt.SpaceManager.UpdateSpaceUsers(cfMgmt.ConfigDir)
+		err = cfMgmt.SpaceManager.UpdateSpaceUsers(cfMgmt.ConfigDir, cfMgmt.LdapBindPwd)
 	}
 	return
 }
@@ -354,8 +358,19 @@ func runUpdateSpaceUsers(c *cli.Context) (err error) {
 func runUpdateOrgUsers(c *cli.Context) (err error) {
 	var cfMgmt CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
-		err = cfMgmt.OrgManager.UpdateOrgUsers(cfMgmt.ConfigDir)
+		err = cfMgmt.OrgManager.UpdateOrgUsers(cfMgmt.ConfigDir, cfMgmt.LdapBindPwd)
 	}
+	return
+}
+
+func defaultFlagsWithLdap() (flags []cli.Flag) {
+	flags = defaultFlags()
+	flag := cli.StringFlag{
+		Name:   getFlag(ldapPassword),
+		EnvVar: ldapPassword,
+		Usage:  "Ldap password for binding",
+	}
+	flags = append(flags, flag)
 	return
 }
 

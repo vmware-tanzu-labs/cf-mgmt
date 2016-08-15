@@ -222,10 +222,10 @@ func (m *DefaultSpaceManager) UpdateSpaces(configDir string) (err error) {
 }
 
 //UpdateSpaceUsers -
-func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir string) (err error) {
+func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword string) (err error) {
 	var space Resource
 	var ldapMgr ldap.Manager
-	if ldapMgr, err = ldap.NewDefaultManager(configDir); err == nil {
+	if ldapMgr, err = ldap.NewDefaultManager(configDir, ldapBindPassword); err == nil {
 		if ldapMgr.IsEnabled() {
 			files, _ := utils.NewDefaultManager().FindFiles(configDir, "spaceConfig.yml")
 			for _, f := range files {

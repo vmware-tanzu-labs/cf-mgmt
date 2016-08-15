@@ -12,7 +12,7 @@ var _ = XDescribe("Ldap", func() {
 	var mgrError error
 	Describe("given a GetUserIDs", func() {
 		BeforeEach(func() {
-			if ldapManager, mgrError = NewDefaultManager("./fixtures/example"); mgrError != nil {
+			if ldapManager, mgrError = NewDefaultManager("./fixtures/example", "secret"); mgrError != nil {
 				panic(mgrError)
 			}
 		})

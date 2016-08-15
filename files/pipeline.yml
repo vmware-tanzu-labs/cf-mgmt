@@ -66,6 +66,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LDAP_PASSWORD: {{ldap_password}}
       CF_MGMT_COMMAND: update-space-users
 - name: update-space-quotas
   plan:
@@ -110,6 +111,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LDAP_PASSWORD: {{ldap_password}}
       CF_MGMT_COMMAND: update-org-users
 - name: update-org-quotas
   plan:

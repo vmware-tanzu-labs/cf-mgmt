@@ -3,3 +3,4 @@ system_domain: <your cf system domain>
 user_id: <user account with permission to create orgs/spaces>
 password: <password of user account with permission to create orgs/spaces>
 client_secret: <client secret for uaac for user_id>
+ldap_password: <password to bind to ldap>

@@ -170,10 +170,10 @@ func (m *DefaultOrgManager) FindOrg(orgName string) (org Resource, err error) {
 }
 
 //UpdateOrgUsers -
-func (m *DefaultOrgManager) UpdateOrgUsers(configDir string) (err error) {
+func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) (err error) {
 	var org Resource
 	var ldapMgr ldap.Manager
-	if ldapMgr, err = ldap.NewDefaultManager(configDir); err == nil {
+	if ldapMgr, err = ldap.NewDefaultManager(configDir, ldapBindPassword); err == nil {
 		if ldapMgr.IsEnabled() {
 			files, _ := utils.NewDefaultManager().FindFiles(configDir, "orgConfig.yml")
 			for _, f := range files {
