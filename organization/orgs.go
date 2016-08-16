@@ -3,6 +3,7 @@ package organization
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaac"
