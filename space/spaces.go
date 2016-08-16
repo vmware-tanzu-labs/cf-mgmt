@@ -259,7 +259,7 @@ func (m *DefaultSpaceManager) updateUsers(ldapMgr ldap.Manager, uaacMgr uaac.Man
 		if groupUsers, err = ldapMgr.GetUserIDs(groupName); err == nil {
 			if uaacUsers, err = uaacMgr.ListUsers(); err == nil {
 				for _, groupUser := range groupUsers {
-					if _, userExists := uaacUsers[groupUser.UserID]; userExists {
+					if _, userExists := uaacUsers[strings.ToLower(groupUser.UserID)]; userExists {
 						lo.G.Info("User", groupUser.UserID, "already exists")
 					} else {
 						lo.G.Info("User", groupUser.UserID, "doesn't exist so creating in UAA")
