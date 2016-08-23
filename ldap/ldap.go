@@ -91,7 +91,7 @@ func (m *DefaultManager) getUser(userDN string) (entry *l.Entry, err error) {
 			//filter := fmt.Sprintf(userFilter, userObjectClass, userID)
 			lo.G.Debug("User DN:", userDN)
 			index := strings.Index(strings.ToUpper(userDN), ",OU=")
-			userCNTemp := userDN[:index]
+			userCNTemp := strings.Replace(userDN[:index], "\\,", ",", 1)
 			userCN := ldap.EscapeFilterValue(userCNTemp)
 			lo.G.Debug("userCN", userCN)
 			filter := fmt.Sprintf(userFilter, userCN)
