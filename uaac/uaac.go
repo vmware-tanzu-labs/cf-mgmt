@@ -58,7 +58,7 @@ func (m *DefaultUAACManager) ListUsers() (users map[string]string, err error) {
 		if err = json.Unmarshal([]byte(body), &userList); err == nil {
 			userList := userList.Users
 			for _, user := range userList {
-				users[user.Name] = user.ID
+				users[strings.ToLower(user.Name)] = user.ID
 			}
 		}
 	} else if len(errs) > 0 {
