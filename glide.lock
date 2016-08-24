@@ -1,8 +1,10 @@
-hash: 80c886d36daa7f527e6b8b6edf8b2059cb931fc5f2ef986e94c870fed8e19398
-updated: 2016-08-10T22:16:44.596268619-07:00
+hash: 4caf6bf71dfba947bdc70f25644a62a36845800d06247674b9a3520e2499da89
+updated: 2016-08-24T10:33:44.83579613-07:00
 imports:
 - name: github.com/codegangsta/cli
-  version: edb24d02aa3cea2319c33f2836d4a5133907fe4c
+  version: 05fe449c81eb7305a34e9253c321c960a1c5e057
+- name: github.com/golang/protobuf
+  version: 888eb0692c857ec880338addf316bd662d5e630e
 - name: github.com/mavricknz/asn1-ber
   version: b9df1c2f4213e9acfe05cbd20696ac5fc0d5c70e
 - name: github.com/mavricknz/ldap
@@ -14,19 +16,19 @@ imports:
 - name: github.com/nmcclain/ldap
   version: 6e14e82719330c918c5b4139cc80c51d7ebc5fba
 - name: github.com/onsi/ginkgo
-  version: 16c38793d41b07a5f9ae77d573af7836a994bf27
+  version: 43e2af1f01ace55adbb6d7d0f30416476db1baae
 - name: github.com/onsi/gomega
-  version: fcb0f1276bbd7cf097f5a7fd86cc68b50da9376f
+  version: c90bd38f8da6e92f8b114953db2f0ad7361fb4b4
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9
 - name: github.com/parnurzeal/gorequest
-  version: f17fef20c518e688f4edb3eb2af148462ecab3ef
+  version: f9171eaf7698463d99521734b167d7afb1632bce
 - name: github.com/xchapter7x/lo
-  version: aa2602d0e8e8647f0ce7b53109b37040941915aa
+  version: e33b245fc7a8186582208abc2458c2691bff681c
 - name: golang.org/x/net
-  version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
+  version: 7394c112eae4dba7e96bfcfe738e6373d61772b4
   subpackages:
   - publicsuffix
 - name: gopkg.in/yaml.v2
-  version: a83829b6f1293c91addabc89d0571c246397bbf4
+  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
 devImports: []

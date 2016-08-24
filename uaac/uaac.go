@@ -1,77 +1,47 @@
 package uaac
 
 import (
-	"crypto/tls"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 
-	"github.com/parnurzeal/gorequest"
+	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
 //NewManager -
 func NewManager(systemDomain, uuacToken string) (mgr Manager) {
 	return &DefaultUAACManager{
-		SystemDomain: systemDomain,
-		UUACToken:    uuacToken,
+		Host:      fmt.Sprintf("https://uaa.%s", systemDomain),
+		UUACToken: uuacToken,
 	}
 }
 
 //CreateUser -
-func (m *DefaultUAACManager) CreateUser(userName, userEmail, userDN string) (err error) {
-	var res *http.Response
-	var body string
-	var errs []error
-	url := fmt.Sprintf("https://uaa.%s/Users", m.SystemDomain)
-	request := gorequest.New()
-	post := request.Post(url)
-	post.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-	post.Set("Authorization", "BEARER "+m.UUACToken)
-	post.Set("Content-Type", "application/json")
-	sendString := fmt.Sprintf(`{"userName":"%s","emails":[{"value":"%s"}],"origin":"ldap","externalId":"%s"}`, userName, userEmail, strings.Replace(userDN, "\\,", ",", 1))
-	post.Send(sendString)
-	if res, body, errs = post.End(); len(errs) == 0 && res.StatusCode == http.StatusCreated {
-		fmt.Println("successfully added user", userName)
-	} else if len(errs) > 0 {
-		err = errs[0]
-	} else {
-		err = fmt.Errorf(body)
+func (m *DefaultUAACManager) CreateUser(userName, userEmail, userDN string) error {
+	url := fmt.Sprintf("%s/Users", m.Host)
+	payload := fmt.Sprintf(`{"userName":"%s","emails":[{"value":"%s"}],"origin":"ldap","externalId":"%s"}`, userName, userEmail, strings.Replace(userDN, "\\,", ",", 1))
+	if _, err := utils.NewDefaultManager().HTTPPost(url, m.UUACToken, payload); err != nil {
+		return err
 	}
-	return
+	fmt.Println("successfully added user", userName)
+	return nil
 }
 
 //ListUsers -
-func (m *DefaultUAACManager) ListUsers() (users map[string]string, err error) {
-	var res *http.Response
-	var body string
-	var errs []error
-	users = make(map[string]string)
-	url := fmt.Sprintf("https://uaa.%s/Users", m.SystemDomain)
-	request := gorequest.New()
-	get := request.Get(url)
-	get.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-	get.Set("Authorization", "BEARER "+m.UUACToken)
-
-	if res, body, errs = get.End(); len(errs) == 0 && res.StatusCode == http.StatusOK {
-		userList := new(UserList)
-		if err = json.Unmarshal([]byte(body), &userList); err == nil {
-			userList := userList.Users
-			for _, user := range userList {
-				users[strings.ToLower(user.Name)] = user.ID
-			}
-		}
-	} else if len(errs) > 0 {
-		err = errs[0]
-	} else {
-		err = fmt.Errorf(body)
+func (m *DefaultUAACManager) ListUsers() (map[string]string, error) {
+	users := make(map[string]string)
+	url := fmt.Sprintf("%s/Users", m.Host)
+	userList := new(UserList)
+	if err := utils.NewDefaultManager().HTTPGetResult(url, m.UUACToken, userList); err != nil {
+		return nil, err
 	}
-
-	return
+	for _, user := range userList.Users {
+		users[strings.ToLower(user.Name)] = user.ID
+	}
+	return users, nil
 }
 
 //DefaultUAACManager -
 type DefaultUAACManager struct {
-	SystemDomain string
-	UUACToken    string
+	Host      string
+	UUACToken string
 }

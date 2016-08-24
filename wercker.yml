@@ -5,8 +5,6 @@ build:
     # Sets the go workspace and places you package
     # at the right place in the workspace tree
     - setup-go-workspace
-    - wercker/golint:
-        exclude: "^vendor\\|fakes"
 
     # Get the dependencies
     - script:
@@ -15,7 +13,9 @@ build:
           export GO15VENDOREXPERIMENT=1
           cd $WERCKER_SOURCE_DIR
           go version
-          go get github.com/Masterminds/glide
+          wget https://github.com/Masterminds/glide/releases/download/v0.11.1/glide-v0.11.1-linux-amd64.tar.gz
+          tar xvzf glide-v0.11.1-linux-amd64.tar.gz
+          export PATH=./linux-amd64:$PATH
           export PATH=$WERCKER_SOURCE_DIR/bin:$PATH
           glide install
 
@@ -23,23 +23,24 @@ build:
     - script:
         name: go test
         code: |
-          go test $(glide novendor) -v -race
+          go test $(glide novendor) -v -cover -race
 
-    # Setting the coverage watermark low.
-    # This should be raised as we gain more coverage...
-    # Test coverage for the project
+crosscompile:
+  steps:
+    - setup-go-workspace
+
+    # Get the dependencies
     - script:
-        name: go test cover
+        name: go get
         code: |
-          ./testCoverage $(glide novendor) $COVERAGE_WATERMARK
-
-    # lets make sure we can build
-    # the main executable (later we can cross compile and upload)
-    - script:
-        name: go smoke build
-        code: |
-          (go build)
-
+          export GO15VENDOREXPERIMENT=1
+          cd $WERCKER_SOURCE_DIR
+          go version
+          wget https://github.com/Masterminds/glide/releases/download/v0.11.1/glide-v0.11.1-linux-amd64.tar.gz
+          tar xvzf glide-v0.11.1-linux-amd64.tar.gz
+          export PATH=./linux-amd64:$PATH
+          export PATH=$WERCKER_SOURCE_DIR/bin:$PATH
+          glide install
     - script:
         name: set release id variable and version
         code: |

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -105,6 +106,15 @@ func (m *DefaultManager) HTTPGet(url, token string) (body string, err error) {
 	return
 }
 
+//HTTPGetResult - return struct marshalled into target
+func (m *DefaultManager) HTTPGetResult(url, token string, target interface{}) error {
+	body, err := m.HTTPGet(url, token)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal([]byte(body), &target)
+}
+
 func (m *DefaultManager) walkDirectories(path string, info os.FileInfo, e error) (err error) {
 	if strings.Contains(path, m.filePattern) {
 		m.filePaths = append(m.filePaths, path)
@@ -137,6 +147,7 @@ type Manager interface {
 	HTTPDelete(url, token, payload string) (err error)
 	HTTPPost(url, token, payload string) (body string, err error)
 	HTTPGet(url, token string) (body string, err error)
+	HTTPGetResult(url, token string, target interface{}) (err error)
 	LoadFile(configFile string, dataType interface{}) (err error)
 	WriteFile(configFile string, dataType interface{}) (err error)
 }

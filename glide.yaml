@@ -9,3 +9,4 @@ import:
 - package: github.com/mavricknz/asn1-ber
 - package: github.com/onsi/ginkgo
 - package: github.com/onsi/gomega
+- package: github.com/golang/protobuf
