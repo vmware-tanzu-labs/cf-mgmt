@@ -28,89 +28,54 @@ func (m *DefaultManager) FindFiles(configDir, pattern string) (files []string, e
 	return
 }
 
-//HTTPDelete -
-func (m *DefaultManager) HTTPDelete(url, token, payload string) (err error) {
-	var res *http.Response
-	var body string
-	var errs []error
-	request := gorequest.New()
-	put := request.Delete(url)
-	put.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-	put.Set("Authorization", "BEARER "+token)
-	put.Send(payload)
-	if res, _, errs = put.End(); len(errs) == 0 && res.StatusCode == http.StatusCreated {
-		return
-	} else if len(errs) > 0 {
-		err = errs[0]
-	} else {
-		err = fmt.Errorf("Status %d, body %s", res.StatusCode, body)
-	}
-	return
-}
-
 //HTTPPut -
-func (m *DefaultManager) HTTPPut(url, token, payload string) (err error) {
-	var res *http.Response
-	var body string
-	var errs []error
+func (m *DefaultManager) HTTPPut(url, token, payload string) error {
 	request := gorequest.New()
 	put := request.Put(url)
 	put.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	put.Set("Authorization", "BEARER "+token)
 	put.Send(payload)
-	if res, _, errs = put.End(); len(errs) == 0 && res.StatusCode == http.StatusCreated {
-		return
-	} else if len(errs) > 0 {
-		err = errs[0]
-	} else {
-		err = fmt.Errorf("Status %d, body %s", res.StatusCode, body)
+	res, body, errs := put.End()
+	if len(errs) > 0 {
+		return errs[0]
 	}
-	return
+	if res.StatusCode != http.StatusCreated {
+		return fmt.Errorf("Status %d, body %s", res.StatusCode, body)
+	}
+
+	return nil
 }
 
 //HTTPPost -
-func (m *DefaultManager) HTTPPost(url, token, payload string) (body string, err error) {
-	var res *http.Response
-	var errs []error
+func (m *DefaultManager) HTTPPost(url, token, payload string) (string, error) {
 	request := gorequest.New()
 	post := request.Post(url)
 	post.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	post.Set("Authorization", "BEARER "+token)
 	post.Send(payload)
-	if res, body, errs = post.End(); len(errs) == 0 && (res.StatusCode == http.StatusOK || res.StatusCode == http.StatusCreated) {
-		return
-	} else if len(errs) > 0 {
-		err = errs[0]
-	} else {
-		err = fmt.Errorf("Status %d, body %s", res.StatusCode, body)
+	res, body, errs := post.End()
+	if len(errs) > 0 {
+		return "", errs[0]
 	}
-	return
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusCreated {
+		return "", fmt.Errorf("Status %d, body %s", res.StatusCode, body)
+	}
+	return body, nil
 }
 
-//HTTPGet -
-func (m *DefaultManager) HTTPGet(url, token string) (body string, err error) {
-	var res *http.Response
-	var errs []error
+//HTTPGet - return struct marshalled into target
+func (m *DefaultManager) HTTPGet(url, token string, target interface{}) error {
 	request := gorequest.New()
 	get := request.Get(url)
 	get.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	get.Set("Authorization", "BEARER "+token)
 
-	if res, body, errs = get.End(); len(errs) != 0 || res.StatusCode != http.StatusOK {
-		if len(errs) > 0 {
-			err = errs[0]
-		} else {
-			err = fmt.Errorf(body)
-		}
+	res, body, errs := get.End()
+	if len(errs) > 0 {
+		return errs[0]
 	}
-	return
-}
-
-//HTTPGetResult - return struct marshalled into target
-func (m *DefaultManager) HTTPGetResult(url, token string, target interface{}) error {
-	body, err := m.HTTPGet(url, token)
-	if err != nil {
-		return err
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf(body)
 	}
 	return json.Unmarshal([]byte(body), &target)
 }
@@ -144,10 +109,8 @@ func (m *DefaultManager) WriteFile(configFile string, dataType interface{}) (err
 type Manager interface {
 	FindFiles(directoryName, pattern string) (files []string, err error)
 	HTTPPut(url, token, payload string) (err error)
-	HTTPDelete(url, token, payload string) (err error)
 	HTTPPost(url, token, payload string) (body string, err error)
-	HTTPGet(url, token string) (body string, err error)
-	HTTPGetResult(url, token string, target interface{}) (err error)
+	HTTPGet(url, token string, target interface{}) (err error)
 	LoadFile(configFile string, dataType interface{}) (err error)
 	WriteFile(configFile string, dataType interface{}) (err error)
 }

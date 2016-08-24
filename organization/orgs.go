@@ -86,14 +86,11 @@ func (m *DefaultOrgManager) updateOrgQuota(orgGUID, quotaGUID string) (err error
 
 func (m *DefaultOrgManager) listQuotas() (quotas map[string]string, err error) {
 	quotas = make(map[string]string)
-	var body string
 	url := fmt.Sprintf("https://api.%s/v2/quota_definitions", m.SysDomain)
-	if body, err = utils.NewDefaultManager().HTTPGet(url, m.Token); err == nil {
-		quotaResources := new(Resources)
-		if err = json.Unmarshal([]byte(body), &quotaResources); err == nil {
-			for _, quota := range quotaResources.Resource {
-				quotas[quota.Entity.Name] = quota.MetaData.GUID
-			}
+	quotaResources := new(Resources)
+	if err = utils.NewDefaultManager().HTTPGet(url, m.Token, quotaResources); err == nil {
+		for _, quota := range quotaResources.Resource {
+			quotas[quota.Entity.Name] = quota.MetaData.GUID
 		}
 	}
 	return
@@ -243,13 +240,11 @@ func (m *DefaultOrgManager) addRole(userName, role string, org Resource) (err er
 }
 
 func (m *DefaultOrgManager) fetchOrgs() (err error) {
-	var body string
+
 	url := fmt.Sprintf("https://api.%s/v2/organizations", m.SysDomain)
-	if body, err = utils.NewDefaultManager().HTTPGet(url, m.Token); err == nil {
-		orgResources := new(Resources)
-		if err = json.Unmarshal([]byte(body), &orgResources); err == nil {
-			m.Orgs = orgResources.Resource
-		}
+	orgResources := new(Resources)
+	if err = utils.NewDefaultManager().HTTPGet(url, m.Token, orgResources); err == nil {
+		m.Orgs = orgResources.Resource
 	}
 	return
 }

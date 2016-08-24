@@ -85,7 +85,6 @@ func (m *DefaultSpaceManager) createSecurityGroup(sgName, contents string) (sgGU
 func (m *DefaultSpaceManager) updateSpaceSecurityGroup(spaceGUID, sgGUID string) (err error) {
 	url := fmt.Sprintf("https://api.%s/v2/security_groups/%s/spaces/%s", m.SysDomain, sgGUID, spaceGUID)
 	sendString := ""
-	//err = utils.NewDefaultManager().HTTPDelete(url, m.Token, sendString)
 	err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
 	return
 }
@@ -103,14 +102,11 @@ func (m *DefaultSpaceManager) getSecurityFileContents(securityGroupFile string) 
 }
 func (m *DefaultSpaceManager) listSecurityGroups() (securityGroups map[string]string, err error) {
 	securityGroups = make(map[string]string)
-	var body string
 	url := fmt.Sprintf("https://api.%s/v2/security_groups", m.SysDomain)
-	if body, err = utils.NewDefaultManager().HTTPGet(url, m.Token); err == nil {
-		sgResources := new(Resources)
-		if err = json.Unmarshal([]byte(body), &sgResources); err == nil {
-			for _, sg := range sgResources.Resource {
-				securityGroups[sg.Entity.Name] = sg.MetaData.GUID
-			}
+	sgResources := new(Resources)
+	if err = utils.NewDefaultManager().HTTPGet(url, m.Token, sgResources); err == nil {
+		for _, sg := range sgResources.Resource {
+			securityGroups[sg.Entity.Name] = sg.MetaData.GUID
 		}
 	}
 	return
@@ -186,14 +182,12 @@ func (m *DefaultSpaceManager) updateSpaceQuota(spaceGUID, quotaGUID string) (err
 
 func (m *DefaultSpaceManager) listQuotas(orgGUID string) (quotas map[string]string, err error) {
 	quotas = make(map[string]string)
-	var body string
+
 	url := fmt.Sprintf("https://api.%s/v2/organizations/%s/space_quota_definitions", m.SysDomain, orgGUID)
-	if body, err = utils.NewDefaultManager().HTTPGet(url, m.Token); err == nil {
-		quotaResources := new(Resources)
-		if err = json.Unmarshal([]byte(body), &quotaResources); err == nil {
-			for _, quota := range quotaResources.Resource {
-				quotas[quota.Entity.Name] = quota.MetaData.GUID
-			}
+	quotaResources := new(Resources)
+	if err = utils.NewDefaultManager().HTTPGet(url, m.Token, quotaResources); err == nil {
+		for _, quota := range quotaResources.Resource {
+			quotas[quota.Entity.Name] = quota.MetaData.GUID
 		}
 	}
 	return
@@ -380,15 +374,12 @@ func (m *DefaultSpaceManager) getOrgGUID(orgName string) (orgGUID string, err er
 }
 
 func (m *DefaultSpaceManager) fetchSpaces(orgName string) (err error) {
-	var body string
 	var orgGUID string
 	if orgGUID, err = m.getOrgGUID(orgName); err == nil {
+		spaceResources := new(Resources)
 		url := fmt.Sprintf("https://api.%s/v2/organizations/%s/spaces?inline-relations-depth=1", m.SysDomain, orgGUID)
-		if body, err = utils.NewDefaultManager().HTTPGet(url, m.Token); err == nil {
-			spaceResources := new(Resources)
-			if err = json.Unmarshal([]byte(body), &spaceResources); err == nil {
-				m.Spaces = spaceResources.Resource
-			}
+		if err = utils.NewDefaultManager().HTTPGet(url, m.Token, spaceResources); err == nil {
+			m.Spaces = spaceResources.Resource
 		}
 	}
 	return

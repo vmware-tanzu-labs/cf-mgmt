@@ -31,7 +31,7 @@ func (m *DefaultUAACManager) ListUsers() (map[string]string, error) {
 	users := make(map[string]string)
 	url := fmt.Sprintf("%s/Users", m.Host)
 	userList := new(UserList)
-	if err := utils.NewDefaultManager().HTTPGetResult(url, m.UUACToken, userList); err != nil {
+	if err := utils.NewDefaultManager().HTTPGet(url, m.UUACToken, userList); err != nil {
 		return nil, err
 	}
 	for _, user := range userList.Users {
