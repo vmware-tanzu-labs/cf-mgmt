@@ -79,7 +79,7 @@ build:
         name: list output dir
         code: |
          ls -al ${WERCKER_OUTPUT_DIR}
-         
+
 deploy:
   steps:
     - script:
@@ -108,7 +108,7 @@ deploy:
         token: $GITHUB_TOKEN
         tag: $WERCKER_GITHUB_CREATE_RELEASE_ID
         title: CF-MGMT $WERCKER_GITHUB_CREATE_RELEASE_ID
-        prerelease: $RELEASE_PRERELEASE
+        draft: true
 
     - github-upload-asset:
         token: $GITHUB_TOKEN
