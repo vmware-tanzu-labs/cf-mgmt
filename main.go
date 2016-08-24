@@ -43,7 +43,8 @@ type CFMgmt struct {
 }
 
 //InitializeManager -
-func InitializeManager(c *cli.Context) (cfMgmt CFMgmt, err error) {
+func InitializeManager(c *cli.Context) (*CFMgmt, error) {
+	var err error
 	sysDomain := c.String(getFlag(systemDomain))
 	user := c.String(getFlag(userID))
 	pwd := c.String(getFlag(password))
@@ -56,18 +57,24 @@ func InitializeManager(c *cli.Context) (cfMgmt CFMgmt, err error) {
 		pwd == "" ||
 		secret == "" {
 		err = fmt.Errorf("Must set system-domain, user-id, password, client-secret properties")
-	} else {
-		cfMgmt = CFMgmt{}
-		cfMgmt.LdapBindPwd = ldapPwd
-		cfMgmt.UAAManager = uaa.NewDefaultUAAManager(sysDomain, user)
-		cfToken := cfMgmt.UAAManager.GetCFToken(pwd)
-		uaacToken := cfMgmt.UAAManager.GetUAACToken(secret)
-		cfMgmt.OrgManager = organization.NewManager(sysDomain, cfToken, uaacToken)
-		cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken)
-		cfMgmt.ConfigDir = config
+		return nil, err
 	}
 
-	return
+	var cfToken, uaacToken string
+	cfMgmt := &CFMgmt{}
+	cfMgmt.LdapBindPwd = ldapPwd
+	cfMgmt.UAAManager = uaa.NewDefaultUAAManager(sysDomain, user)
+	if cfToken, err = cfMgmt.UAAManager.GetCFToken(pwd); err != nil {
+		return nil, err
+	}
+	if uaacToken, err = cfMgmt.UAAManager.GetUAACToken(secret); err != nil {
+		return nil, err
+	}
+	cfMgmt.OrgManager = organization.NewManager(sysDomain, cfToken, uaacToken)
+	cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken)
+	cfMgmt.ConfigDir = config
+	return cfMgmt, nil
+
 }
 
 const (
@@ -300,7 +307,7 @@ func CreateCommand(commandName string, action func(c *cli.Context) (err error), 
 }
 
 func runCreateOrgs(c *cli.Context) (err error) {
-	var cfMgmt CFMgmt
+	var cfMgmt *CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.OrgManager.CreateOrgs(cfMgmt.ConfigDir)
 	}
@@ -308,7 +315,7 @@ func runCreateOrgs(c *cli.Context) (err error) {
 }
 
 func runCreateOrgQuotas(c *cli.Context) (err error) {
-	var cfMgmt CFMgmt
+	var cfMgmt *CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.OrgManager.CreateQuotas(cfMgmt.ConfigDir)
 	}
@@ -316,7 +323,7 @@ func runCreateOrgQuotas(c *cli.Context) (err error) {
 }
 
 func runCreateSpaceQuotas(c *cli.Context) (err error) {
-	var cfMgmt CFMgmt
+	var cfMgmt *CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.CreateQuotas(cfMgmt.ConfigDir)
 	}
@@ -324,7 +331,7 @@ func runCreateSpaceQuotas(c *cli.Context) (err error) {
 }
 
 func runCreateSpaceSecurityGroups(c *cli.Context) (err error) {
-	var cfMgmt CFMgmt
+	var cfMgmt *CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.CreateApplicationSecurityGroups(cfMgmt.ConfigDir)
 	}
@@ -332,7 +339,7 @@ func runCreateSpaceSecurityGroups(c *cli.Context) (err error) {
 }
 
 func runCreateSpaces(c *cli.Context) (err error) {
-	var cfMgmt CFMgmt
+	var cfMgmt *CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.CreateSpaces(cfMgmt.ConfigDir)
 	}
@@ -340,7 +347,7 @@ func runCreateSpaces(c *cli.Context) (err error) {
 }
 
 func runUpdateSpaces(c *cli.Context) (err error) {
-	var cfMgmt CFMgmt
+	var cfMgmt *CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.UpdateSpaces(cfMgmt.ConfigDir)
 	}
@@ -348,7 +355,7 @@ func runUpdateSpaces(c *cli.Context) (err error) {
 }
 
 func runUpdateSpaceUsers(c *cli.Context) (err error) {
-	var cfMgmt CFMgmt
+	var cfMgmt *CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.UpdateSpaceUsers(cfMgmt.ConfigDir, cfMgmt.LdapBindPwd)
 	}
@@ -356,7 +363,7 @@ func runUpdateSpaceUsers(c *cli.Context) (err error) {
 }
 
 func runUpdateOrgUsers(c *cli.Context) (err error) {
-	var cfMgmt CFMgmt
+	var cfMgmt *CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.OrgManager.UpdateOrgUsers(cfMgmt.ConfigDir, cfMgmt.LdapBindPwd)
 	}
