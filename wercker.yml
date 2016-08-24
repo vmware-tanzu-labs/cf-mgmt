@@ -44,7 +44,7 @@ build:
         name: set release id variable and version
         code: |
           go get github.com/xchapter7x/versioning
-          export NEXT_VERSION=`versioning bump_patch`
+          export NEXT_VERSION=`versioning bump_patch`-`git rev-parse HEAD | cut -c1-6`
           echo "next version should be: ${NEXT_VERSION}"
 
     - script:
@@ -102,7 +102,7 @@ deploy:
         name: set release id variable for version
         code: |
           go get github.com/xchapter7x/versioning
-          export WERCKER_GITHUB_CREATE_RELEASE_ID=`versioning bump_patch`
+          export WERCKER_GITHUB_CREATE_RELEASE_ID=`versioning bump_patch`-`git rev-parse HEAD | cut -c1-6`
 
     - github-create-release:
         token: $GITHUB_TOKEN
