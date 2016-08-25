@@ -1,5 +1,7 @@
 package organization
 
+import "github.com/pivotalservices/cf-mgmt/http"
+
 //Manager -
 type Manager interface {
 	CreateOrg(orgName string) (org Resource, err error)
@@ -69,6 +71,7 @@ type Org struct {
 type DefaultOrgManager struct {
 	Token     string
 	UAACToken string
-	SysDomain string
+	Host      string
 	Orgs      []Resource
+	HTTP      http.Manager
 }

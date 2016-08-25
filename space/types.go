@@ -1,6 +1,9 @@
 package space
 
-import "github.com/pivotalservices/cf-mgmt/securitygroup"
+import (
+	"github.com/pivotalservices/cf-mgmt/http"
+	"github.com/pivotalservices/cf-mgmt/securitygroup"
+)
 
 //{"name":"test2","organization_guid":"76c940e3-1c4c-411b-8672-3edc0651cae7"}
 
@@ -92,4 +95,5 @@ type DefaultSpaceManager struct {
 	Spaces      []Resource
 	FilePattern string
 	FilePaths   []string
+	HTTP        http.Manager
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pivotalservices/cf-mgmt/http"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	"github.com/pivotalservices/cf-mgmt/utils"
@@ -14,9 +15,10 @@ import (
 //NewManager -
 func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 	return &DefaultOrgManager{
-		SysDomain: sysDomain,
+		Host:      fmt.Sprintf("https://api.%s", sysDomain),
 		Token:     token,
 		UAACToken: uaacToken,
+		HTTP:      http.NewManager(),
 	}
 }
 
@@ -60,9 +62,9 @@ func (m *DefaultOrgManager) CreateQuotas(configDir string) (err error) {
 
 func (m *DefaultOrgManager) createQuota(quotaName string, quota *InputUpdateOrgs) (quotaGUID string, err error) {
 	var body string
-	url := fmt.Sprintf("https://api.%s/v2/quota_definitions", m.SysDomain)
+	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
 	sendString := fmt.Sprintf(`{"name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t}`, quotaName, quota.MemoryLimit, quota.InstanceMemoryLimit, quota.TotalRoutes, quota.TotalServices, quota.PaidServicePlansAllowed)
-	if body, err = utils.NewDefaultManager().HTTPPost(url, m.Token, sendString); err == nil {
+	if body, err = m.HTTP.Post(url, m.Token, sendString); err == nil {
 		quotaResource := new(Resource)
 		if err = json.Unmarshal([]byte(body), &quotaResource); err == nil {
 			quotaGUID = quotaResource.MetaData.GUID
@@ -71,24 +73,24 @@ func (m *DefaultOrgManager) createQuota(quotaName string, quota *InputUpdateOrgs
 	return
 }
 func (m *DefaultOrgManager) updateQuota(quotaGUID, quotaName string, quota *InputUpdateOrgs) (err error) {
-	url := fmt.Sprintf("https://api.%s/v2/quota_definitions/%s", m.SysDomain, quotaGUID)
+	url := fmt.Sprintf("%s/v2/quota_definitions/%s", m.Host, quotaGUID)
 	sendString := fmt.Sprintf(`{"guid":"%s","name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t}`, quotaGUID, quotaName, quota.MemoryLimit, quota.InstanceMemoryLimit, quota.TotalRoutes, quota.TotalServices, quota.PaidServicePlansAllowed)
-	err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
+	err = m.HTTP.Put(url, m.Token, sendString)
 	return
 }
 
 func (m *DefaultOrgManager) updateOrgQuota(orgGUID, quotaGUID string) (err error) {
-	url := fmt.Sprintf("https://api.%s/v2/organizations/%s", m.SysDomain, orgGUID)
+	url := fmt.Sprintf("%s/v2/organizations/%s", m.Host, orgGUID)
 	sendString := fmt.Sprintf(`{"quota_definition_guid":"%s"}`, quotaGUID)
-	err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
+	err = m.HTTP.Put(url, m.Token, sendString)
 	return
 }
 
 func (m *DefaultOrgManager) listQuotas() (quotas map[string]string, err error) {
 	quotas = make(map[string]string)
-	url := fmt.Sprintf("https://api.%s/v2/quota_definitions", m.SysDomain)
+	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
 	quotaResources := new(Resources)
-	if err = utils.NewDefaultManager().HTTPGet(url, m.Token, quotaResources); err == nil {
+	if err = m.HTTP.Get(url, m.Token, quotaResources); err == nil {
 		for _, quota := range quotaResources.Resource {
 			quotas[quota.Entity.Name] = quota.MetaData.GUID
 		}
@@ -102,9 +104,9 @@ func (m *DefaultOrgManager) AddUser(orgName, userName string) (err error) {
 	var org Resource
 	if org, err = m.FindOrg(orgName); err == nil {
 		orgGUID := org.MetaData.GUID
-		url := fmt.Sprintf("https://api.%s/v2/organizations/%s/users", m.SysDomain, orgGUID)
+		url := fmt.Sprintf("%s/v2/organizations/%s/users", m.Host, orgGUID)
 		sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
-		err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
+		err = m.HTTP.Put(url, m.Token, sendString)
 	}
 	return
 }
@@ -146,9 +148,9 @@ func (m *DefaultOrgManager) doesOrgExist(orgName string) (result bool) {
 
 //CreateOrg -
 func (m *DefaultOrgManager) CreateOrg(orgName string) (org Resource, err error) {
-	url := fmt.Sprintf("https://api.%s/v2/organizations", m.SysDomain)
+	url := fmt.Sprintf("%s/v2/organizations", m.Host)
 	sendString := fmt.Sprintf(`{"name":"%s"}`, orgName)
-	if _, err = utils.NewDefaultManager().HTTPPost(url, m.Token, sendString); err == nil {
+	if _, err = m.HTTP.Post(url, m.Token, sendString); err == nil {
 		org, err = m.FindOrg(orgName)
 	}
 	return
@@ -179,7 +181,7 @@ func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) (
 				input := &InputUpdateOrgs{}
 				if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
 					if org, err = m.FindOrg(input.Org); err == nil {
-						uaacMgr := uaac.NewManager(m.SysDomain, m.UAACToken)
+						uaacMgr := uaac.NewManager(m.Host, m.UAACToken)
 						lo.G.Info("User sync for org", input.Org)
 						if err = m.updateUsers(ldapMgr, uaacMgr, org, "managers", input.ManagerGroup); err != nil {
 							return
@@ -233,17 +235,17 @@ func (m *DefaultOrgManager) addRole(userName, role string, org Resource) (err er
 	}
 	lo.G.Info("Adding", userName, "to", org.Entity.Name, "with role", role)
 
-	url := fmt.Sprintf("https://api.%s/v2/organizations/%s/%s", m.SysDomain, org.MetaData.GUID, role)
+	url := fmt.Sprintf("%s/v2/organizations/%s/%s", m.Host, org.MetaData.GUID, role)
 	sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
-	err = utils.NewDefaultManager().HTTPPut(url, m.Token, sendString)
+	err = m.HTTP.Put(url, m.Token, sendString)
 	return
 }
 
 func (m *DefaultOrgManager) fetchOrgs() (err error) {
 
-	url := fmt.Sprintf("https://api.%s/v2/organizations", m.SysDomain)
+	url := fmt.Sprintf("%s/v2/organizations", m.Host)
 	orgResources := new(Resources)
-	if err = utils.NewDefaultManager().HTTPGet(url, m.Token, orgResources); err == nil {
+	if err = m.HTTP.Get(url, m.Token, orgResources); err == nil {
 		m.Orgs = orgResources.Resource
 	}
 	return

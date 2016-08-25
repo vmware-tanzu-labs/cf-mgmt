@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pivotalservices/cf-mgmt/utils"
+	"github.com/pivotalservices/cf-mgmt/http"
 )
 
 //NewManager -
@@ -19,7 +19,7 @@ func NewManager(systemDomain, uuacToken string) (mgr Manager) {
 func (m *DefaultUAACManager) CreateUser(userName, userEmail, userDN string) error {
 	url := fmt.Sprintf("%s/Users", m.Host)
 	payload := fmt.Sprintf(`{"userName":"%s","emails":[{"value":"%s"}],"origin":"ldap","externalId":"%s"}`, userName, userEmail, strings.Replace(userDN, "\\,", ",", 1))
-	if _, err := utils.NewDefaultManager().HTTPPost(url, m.UUACToken, payload); err != nil {
+	if _, err := http.NewManager().Post(url, m.UUACToken, payload); err != nil {
 		return err
 	}
 	fmt.Println("successfully added user", userName)
@@ -31,7 +31,7 @@ func (m *DefaultUAACManager) ListUsers() (map[string]string, error) {
 	users := make(map[string]string)
 	url := fmt.Sprintf("%s/Users", m.Host)
 	userList := new(UserList)
-	if err := utils.NewDefaultManager().HTTPGet(url, m.UUACToken, userList); err != nil {
+	if err := http.NewManager().Get(url, m.UUACToken, userList); err != nil {
 		return nil, err
 	}
 	for _, user := range userList.Users {
