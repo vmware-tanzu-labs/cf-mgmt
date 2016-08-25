@@ -4,8 +4,8 @@ import "github.com/pivotalservices/cf-mgmt/http"
 
 //Manager -
 type Manager interface {
-	CreateOrg(orgName string) (org Resource, err error)
-	FindOrg(orgName string) (org Resource, err error)
+	CreateOrg(orgName string) (org *Resource, err error)
+	FindOrg(orgName string) (org *Resource, err error)
 	CreateOrgs(configFile string) (err error)
 	AddUser(orgName, userName string) (err error)
 	UpdateOrgUsers(configDir, ldapBindPassword string) (err error)
@@ -14,7 +14,7 @@ type Manager interface {
 
 //Resources -
 type Resources struct {
-	Resource []Resource `json:"resources"`
+	Resource []*Resource `json:"resources"`
 }
 
 //Resource -
@@ -72,6 +72,5 @@ type DefaultOrgManager struct {
 	Token     string
 	UAACToken string
 	Host      string
-	Orgs      []Resource
 	HTTP      http.Manager
 }

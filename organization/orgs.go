@@ -25,7 +25,7 @@ func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 //CreateQuotas -
 func (m *DefaultOrgManager) CreateQuotas(configDir string) (err error) {
 	var quotas map[string]string
-	var org Resource
+	var org *Resource
 	var targetQuotaGUID string
 	if quotas, err = m.listQuotas(); err == nil {
 		files, _ := utils.NewDefaultManager().FindFiles(configDir, "orgConfig.yml")
@@ -101,7 +101,7 @@ func (m *DefaultOrgManager) listQuotas() (quotas map[string]string, err error) {
 //AddUser -
 func (m *DefaultOrgManager) AddUser(orgName, userName string) (err error) {
 	lo.G.Info("Adding", userName, "to", orgName)
-	var org Resource
+	var org *Resource
 	if org, err = m.FindOrg(orgName); err == nil {
 		orgGUID := org.MetaData.GUID
 		url := fmt.Sprintf("%s/v2/organizations/%s/users", m.Host, orgGUID)
@@ -112,31 +112,37 @@ func (m *DefaultOrgManager) AddUser(orgName, userName string) (err error) {
 }
 
 //CreateOrgs -
-func (m *DefaultOrgManager) CreateOrgs(configDir string) (err error) {
+func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 	var configFile = configDir + "/orgs.yml"
 	lo.G.Info("Processing org file", configFile)
 	input := &InputOrgs{}
-	if err = utils.NewDefaultManager().LoadFile(configFile, input); err == nil {
-		if len(input.Orgs) == 0 {
-			lo.G.Info("No orgs in config file")
-		}
-		if err = m.fetchOrgs(); err == nil {
-			for _, orgName := range input.Orgs {
-				if m.doesOrgExist(orgName) {
-					lo.G.Info(fmt.Sprintf("[%s] org already exists", orgName))
-				} else {
-					lo.G.Info(fmt.Sprintf("Creating [%s] org", orgName))
-					m.CreateOrg(orgName)
-				}
+	if err := utils.NewDefaultManager().LoadFile(configFile, input); err != nil {
+		return err
+	}
+	if len(input.Orgs) == 0 {
+		lo.G.Info("No orgs in config file")
+		return nil
+	}
+
+	if orgs, err := m.fetchOrgs(); err == nil {
+		for _, orgName := range input.Orgs {
+			if m.doesOrgExist(orgName, orgs) {
+				lo.G.Info(fmt.Sprintf("[%s] org already exists", orgName))
+			} else {
+				lo.G.Info(fmt.Sprintf("Creating [%s] org", orgName))
+				m.CreateOrg(orgName)
 			}
 		}
+	} else {
+		return err
 	}
-	return
+
+	return nil
 }
 
-func (m *DefaultOrgManager) doesOrgExist(orgName string) (result bool) {
+func (m *DefaultOrgManager) doesOrgExist(orgName string, orgs []*Resource) (result bool) {
 	result = false
-	for _, org := range m.Orgs {
+	for _, org := range orgs {
 		if org.Entity.Name == orgName {
 			result = true
 			return
@@ -147,7 +153,7 @@ func (m *DefaultOrgManager) doesOrgExist(orgName string) (result bool) {
 }
 
 //CreateOrg -
-func (m *DefaultOrgManager) CreateOrg(orgName string) (org Resource, err error) {
+func (m *DefaultOrgManager) CreateOrg(orgName string) (org *Resource, err error) {
 	url := fmt.Sprintf("%s/v2/organizations", m.Host)
 	sendString := fmt.Sprintf(`{"name":"%s"}`, orgName)
 	if _, err = m.HTTP.Post(url, m.Token, sendString); err == nil {
@@ -157,21 +163,22 @@ func (m *DefaultOrgManager) CreateOrg(orgName string) (org Resource, err error) 
 }
 
 //FindOrg -
-func (m *DefaultOrgManager) FindOrg(orgName string) (org Resource, err error) {
-	if err = m.fetchOrgs(); err == nil {
-		for _, theOrg := range m.Orgs {
+func (m *DefaultOrgManager) FindOrg(orgName string) (*Resource, error) {
+	if orgs, err := m.fetchOrgs(); err == nil {
+		for _, theOrg := range orgs {
 			if theOrg.Entity.Name == orgName {
-				org = theOrg
-				return
+				return theOrg, nil
 			}
 		}
+	} else {
+		return nil, err
 	}
-	return
+	return nil, nil
 }
 
 //UpdateOrgUsers -
 func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) (err error) {
-	var org Resource
+	var org *Resource
 	var ldapMgr ldap.Manager
 	if ldapMgr, err = ldap.NewDefaultManager(configDir, ldapBindPassword); err == nil {
 		if ldapMgr.IsEnabled() {
@@ -200,7 +207,7 @@ func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) (
 	return
 }
 
-func (m *DefaultOrgManager) updateUsers(ldapMgr ldap.Manager, uaacMgr uaac.Manager, org Resource, role, groupName string) (err error) {
+func (m *DefaultOrgManager) updateUsers(ldapMgr ldap.Manager, uaacMgr uaac.Manager, org *Resource, role, groupName string) (err error) {
 	var groupUsers []ldap.User
 	var uaacUsers map[string]string
 	if groupName != "" {
@@ -228,7 +235,7 @@ func (m *DefaultOrgManager) updateUsers(ldapMgr ldap.Manager, uaacMgr uaac.Manag
 	return
 }
 
-func (m *DefaultOrgManager) addRole(userName, role string, org Resource) (err error) {
+func (m *DefaultOrgManager) addRole(userName, role string, org *Resource) (err error) {
 	orgName := org.Entity.Name
 	if err = m.AddUser(orgName, userName); err != nil {
 		return
@@ -241,12 +248,12 @@ func (m *DefaultOrgManager) addRole(userName, role string, org Resource) (err er
 	return
 }
 
-func (m *DefaultOrgManager) fetchOrgs() (err error) {
+func (m *DefaultOrgManager) fetchOrgs() ([]*Resource, error) {
 
 	url := fmt.Sprintf("%s/v2/organizations", m.Host)
 	orgResources := new(Resources)
-	if err = m.HTTP.Get(url, m.Token, orgResources); err == nil {
-		m.Orgs = orgResources.Resource
+	if err := m.HTTP.Get(url, m.Token, orgResources); err != nil {
+		return nil, err
 	}
-	return
+	return orgResources.Resource, nil
 }

@@ -363,10 +363,10 @@ func (m *DefaultSpaceManager) doesSpaceExist(spaceName string) (result bool) {
 }
 
 func (m *DefaultSpaceManager) getOrgGUID(orgName string) (orgGUID string, err error) {
-	var org organization.Resource
+	var org *organization.Resource
 	orgMgr := organization.NewManager(m.SysDomain, m.Token, m.UAACToken)
 	if org, err = orgMgr.FindOrg(orgName); err == nil {
-		if org == (organization.Resource{}) {
+		if org == nil {
 			err = fmt.Errorf("Org [%s] does not exist", orgName)
 			return
 		}

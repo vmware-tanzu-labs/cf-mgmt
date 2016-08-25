@@ -1,7 +1,14 @@
 box: golang
+services:
+- name: ldap
+  id: cwashburn/ldap
 build:
   # The steps that will be executed on build
   steps:
+
+    - script:
+        name: env
+        code: env
     # Sets the go workspace and places you package
     # at the right place in the workspace tree
     - setup-go-workspace
