@@ -65,8 +65,7 @@ crosscompile:
     - script:
         name: list output dir
         code: |
-          echo ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}
-          ls -al ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}
+          ls -al ${WERCKER_OUTPUT_DIR}
 deploy:
   steps:
     - script:
