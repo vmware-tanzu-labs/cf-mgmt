@@ -30,7 +30,7 @@ build:
     - script:
         name: go test
         code: |
-          go test $(glide novendor) -v -cover -race
+          LOG_LEVEL=debug go test $(glide novendor) -v -cover -race
 
 crosscompile:
   steps:

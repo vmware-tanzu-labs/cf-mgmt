@@ -7,8 +7,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/mavricknz/ldap"
-	l "github.com/nmcclain/ldap"
+	l "github.com/go-ldap/ldap"
 	"github.com/xchapter7x/lo"
 )
 
@@ -18,137 +17,115 @@ var (
 	userFilter  = "(%s)"
 )
 
-//NewDefaultManager -
-func NewDefaultManager(configDir, ldapBindPassword string) (mgr Manager, err error) {
-	var config Config
-	m := &DefaultManager{}
-	if config, err = m.getConfig(configDir); err == nil {
-		m.Config = config
-		if ldapBindPassword != "" {
-			m.LdapBindPassword = ldapBindPassword
-		} else {
-			lo.G.Warning("Ldap bind password should be removed from ldap.yml as this will be deprecated in a future release.  Use --ldap-password flag instead.")
-			m.LdapBindPassword = m.Config.BindPassword
-		}
-	}
-	mgr = m
-	return
+func NewManager() Manager {
+	return &DefaultManager{}
 }
 
-//IsEnabled -
-func (m *DefaultManager) IsEnabled() bool {
-	return m.Config.Enabled
-}
-
-func (m *DefaultManager) getConfig(configDir string) (config Config, err error) {
+func (m *DefaultManager) GetConfig(configDir, ldapBindPassword string) (config *Config, err error) {
 	var data []byte
 	if data, err = ioutil.ReadFile(configDir + "/ldap.yml"); err == nil {
-		c := &Config{}
-		if err = yaml.Unmarshal(data, c); err == nil {
-			config = *c
+		config := &Config{}
+		if err = yaml.Unmarshal(data, &config); err == nil {
+			if ldapBindPassword != "" {
+				config.BindPassword = ldapBindPassword
+			} else {
+				lo.G.Warning("Ldap bind password should be removed from ldap.yml as this will be deprecated in a future release.  Use --ldap-password flag instead.")
+			}
 		}
 	}
 	return
 }
 
 //GetUserIDs -
-func (m *DefaultManager) GetUserIDs(groupName string) (users []User, err error) {
-	var groupEntry *l.Entry
-	var userEntry *l.Entry
-	if groupEntry, err = m.getGroup(groupName); err == nil {
-		if groupEntry != nil {
-			userDNList := groupEntry.GetAttributeValues(m.Config.GroupAttribute)
-			for _, userDN := range userDNList {
-				if userEntry, err = m.getUser(userDN); err == nil {
-					if userEntry != nil {
-						user := User{
-							UserDN: userEntry.DN,
-							UserID: userEntry.GetAttributeValue(m.Config.UserNameAttribute),
-							Email:  userEntry.GetAttributeValue(m.Config.UserMailAttribute),
+func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []User, err error) {
+	var ldapConnection *l.Conn
+	ldapURL := fmt.Sprintf("%s:%d", config.LdapHost, config.LdapPort)
+	lo.G.Debug("Connecting to", ldapURL)
+	if ldapConnection, err = l.Dial("tcp", ldapURL); err == nil {
+		// be sure to add error checking!
+		defer ldapConnection.Close()
+		if err = ldapConnection.Bind(config.BindDN, config.BindPassword); err != nil {
+			return
+		}
+		var groupEntry *l.Entry
+		var userEntry *l.Entry
+		if groupEntry, err = m.getGroup(ldapConnection, groupName, config.GroupSearchBase); err == nil {
+			if groupEntry != nil {
+				userDNList := groupEntry.GetAttributeValues(config.GroupAttribute)
+				for _, userDN := range userDNList {
+					if userEntry, err = m.getUser(ldapConnection, userDN, config.UserSearchBase); err == nil {
+						if userEntry != nil {
+							user := User{
+								UserDN: userEntry.DN,
+								UserID: userEntry.GetAttributeValue(config.UserNameAttribute),
+								Email:  userEntry.GetAttributeValue(config.UserMailAttribute),
+							}
+							users = append(users, user)
+						} else {
+							lo.G.Info("User entry not found", userDN)
 						}
-						users = append(users, user)
-					} else {
-						lo.G.Info("User entry not found", userDN)
 					}
 				}
+			} else {
+				lo.G.Info("Group not found", groupName)
 			}
-		} else {
-			lo.G.Info("Group not found", groupName)
 		}
 	}
 	return
 }
 
-func (m *DefaultManager) getUser(userDN string) (entry *l.Entry, err error) {
-	var ldapConnection *l.Conn
+func (m *DefaultManager) getUser(ldapConnection *l.Conn, userDN, userSearchBase string) (entry *l.Entry, err error) {
 	var sr *l.SearchResult
-	ldapURL := fmt.Sprintf("%s:%d", m.Config.LdapHost, m.Config.LdapPort)
-	lo.G.Info("Connecting to", ldapURL)
-	if ldapConnection, err = l.Dial("tcp", ldapURL); err == nil {
-		// be sure to add error checking!
-		defer ldapConnection.Close()
-		if err = ldapConnection.Bind(m.Config.BindDN, m.LdapBindPassword); err == nil {
-			//filter := fmt.Sprintf(userFilter, userObjectClass, userID)
-			lo.G.Debug("User DN:", userDN)
-			index := strings.Index(strings.ToUpper(userDN), ",OU=")
-			userCNTemp := strings.Replace(userDN[:index], "\\,", ",", 1)
-			userCN := ldap.EscapeFilterValue(userCNTemp)
-			lo.G.Debug("userCN", userCN)
-			filter := fmt.Sprintf(userFilter, userCN)
-			lo.G.Debug("Using user search filter", filter)
-			search := l.NewSearchRequest(
-				m.Config.UserSearchBase,
-				l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
-				filter,
-				attributes,
-				nil)
+	lo.G.Debug("User DN:", userDN)
+	index := strings.Index(strings.ToUpper(userDN), ",OU=")
+	userCN := l.EscapeFilter(unEscapeLDAPValue(userDN[:index]))
+	lo.G.Debug("userCN", userCN)
+	filter := fmt.Sprintf(userFilter, userCN)
+	lo.G.Info("Searching for user:", filter)
+	search := l.NewSearchRequest(
+		userSearchBase,
+		l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
+		filter,
+		attributes,
+		nil)
 
-			if sr, err = ldapConnection.Search(search); err == nil {
-				if (len(sr.Entries)) == 1 {
-					entry = sr.Entries[0]
-				}
-			} else {
-				lo.G.Error(err)
-			}
-		} else {
-			lo.G.Error(err)
+	if sr, err = ldapConnection.Search(search); err == nil {
+		if (len(sr.Entries)) == 1 {
+			entry = sr.Entries[0]
 		}
 	} else {
 		lo.G.Error(err)
 	}
+
 	return
 }
-func (m *DefaultManager) getGroup(groupName string) (entry *l.Entry, err error) {
-	var ldapConnection *l.Conn
-	var sr *l.SearchResult
-	ldapURL := fmt.Sprintf("%s:%d", m.Config.LdapHost, m.Config.LdapPort)
-	lo.G.Info("Connecting to", ldapURL)
-	if ldapConnection, err = l.Dial("tcp", ldapURL); err == nil {
-		// be sure to add error checking!
-		defer ldapConnection.Close()
-		filter := fmt.Sprintf(groupFilter, ldap.EscapeFilterValue(groupName))
-		lo.G.Debug("Using group filter", filter)
-		lo.G.Debug("Using group search base:", m.Config.GroupSearchBase)
-		if err = ldapConnection.Bind(m.Config.BindDN, m.LdapBindPassword); err == nil {
-			search := l.NewSearchRequest(
-				m.Config.GroupSearchBase,
-				l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
-				filter,
-				attributes,
-				nil)
+func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearchBase string) (entry *l.Entry, err error) {
 
-			if sr, err = ldapConnection.Search(search); err == nil {
-				if (len(sr.Entries)) == 1 {
-					entry = sr.Entries[0]
-				}
-			} else {
-				lo.G.Error(err)
-			}
-		} else {
-			lo.G.Error(err)
+	var sr *l.SearchResult
+	filter := fmt.Sprintf(groupFilter, l.EscapeFilter(groupName))
+	lo.G.Info("Searching for group:", filter)
+	lo.G.Debug("Using group search base:", groupSearchBase)
+
+	search := l.NewSearchRequest(
+		groupSearchBase,
+		l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
+		filter,
+		attributes,
+		nil)
+	if sr, err = ldapConnection.Search(search); err == nil {
+		if (len(sr.Entries)) == 1 {
+			entry = sr.Entries[0]
 		}
 	} else {
 		lo.G.Error(err)
 	}
+
 	return
+}
+
+func unEscapeLDAPValue(input string) string {
+	var returnString string
+	returnString = strings.Replace(input, "2C", ",", 1)
+	returnString = strings.Replace(returnString, "\\,", ",", 1)
+	return returnString
 }

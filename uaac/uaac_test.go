@@ -78,7 +78,7 @@ var _ = Describe("given uaac manager", func() {
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 	})
-	Context("CreateUser()", func() {
+	Context("CreateLdapUser()", func() {
 		It("should successfully create user", func() {
 			userName := "user"
 			userEmail := "email"
@@ -93,7 +93,7 @@ var _ = Describe("given uaac manager", func() {
 					ghttp.RespondWithJSONEncoded(http.StatusCreated, ""),
 				),
 			)
-			err := manager.CreateUser(userName, userEmail, userDN)
+			err := manager.CreateLdapUser(userName, userEmail, userDN)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -107,7 +107,7 @@ var _ = Describe("given uaac manager", func() {
 					ghttp.RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			err := manager.CreateUser("", "", "")
+			err := manager.CreateLdapUser("", "", "")
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})

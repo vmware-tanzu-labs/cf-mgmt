@@ -1,34 +1,34 @@
-hash: 4caf6bf71dfba947bdc70f25644a62a36845800d06247674b9a3520e2499da89
-updated: 2016-08-24T10:33:44.83579613-07:00
+hash: 557dd19ffd768964acf9f91f02ef8327616b074b3f191a107f2941e633d7ae63
+updated: 2016-09-10T08:54:06.808508176-07:00
 imports:
 - name: github.com/codegangsta/cli
-  version: 05fe449c81eb7305a34e9253c321c960a1c5e057
+  version: c723b19a84af34d905773672ffa1b8ead802e505
+- name: github.com/go-ldap/ldap
+  version: d0a5ced67b4dc310b9158d63a2c6f9c5ec13f105
+- name: github.com/golang/mock
+  version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
+  subpackages:
+  - gomock
 - name: github.com/golang/protobuf
-  version: 888eb0692c857ec880338addf316bd662d5e630e
-- name: github.com/mavricknz/asn1-ber
-  version: b9df1c2f4213e9acfe05cbd20696ac5fc0d5c70e
-- name: github.com/mavricknz/ldap
-  version: f5a958005e43f515b70d9b1a61d9c842ecd507a6
+  version: 1f49d83d9aa00e6ce4fc8258c71cc7786aec968a
 - name: github.com/moul/http2curl
   version: b1479103caacaa39319f75e7f57fc545287fca0d
-- name: github.com/nmcclain/asn1-ber
-  version: ec51d5ed21377b4023ca7b1e70ae4cb296ee6047
-- name: github.com/nmcclain/ldap
-  version: 6e14e82719330c918c5b4139cc80c51d7ebc5fba
 - name: github.com/onsi/ginkgo
-  version: 43e2af1f01ace55adbb6d7d0f30416476db1baae
+  version: 7b6efc7d7b052568b49ac02d3141c9d7a5a494a4
 - name: github.com/onsi/gomega
-  version: c90bd38f8da6e92f8b114953db2f0ad7361fb4b4
+  version: b48c9a8b2644326d0a44eaaacc8d83e35174a05d
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9
 - name: github.com/parnurzeal/gorequest
-  version: f9171eaf7698463d99521734b167d7afb1632bce
+  version: 827f321971c658c6c0201a49cda2581850b055d8
 - name: github.com/xchapter7x/lo
   version: e33b245fc7a8186582208abc2458c2691bff681c
 - name: golang.org/x/net
-  version: 7394c112eae4dba7e96bfcfe738e6373d61772b4
+  version: cfe3c2a7525b50c3d707256e371c90938cfef98a
   subpackages:
   - publicsuffix
+- name: gopkg.in/asn1-ber.v1
+  version: 4e86f4367175e39f69d9358a5f17b4dda270378d
 - name: gopkg.in/yaml.v2
   version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
 devImports: []

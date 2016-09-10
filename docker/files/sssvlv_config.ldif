@@ -1,0 +1,7 @@
+dn: olcOverlay={0}sssvlv,olcDatabase={2}hdb,cn=config
+changeType: add
+objectClass: olcOverlayConfig
+objectClass: olcSssVlvConfig
+olcOverlay: {0}sssvlv
+olcSssVlvMax: 8
+olcSssVlvMaxKeys: 5

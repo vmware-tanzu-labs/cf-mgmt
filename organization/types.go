@@ -1,15 +1,19 @@
 package organization
 
-import "github.com/pivotalservices/cf-mgmt/http"
+import (
+	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
+	"github.com/pivotalservices/cf-mgmt/ldap"
+	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/utils"
+)
 
 //Manager -
 type Manager interface {
-	CreateOrg(orgName string) (org *Resource, err error)
-	FindOrg(orgName string) (org *Resource, err error)
+	FindOrg(orgName string) (org *cloudcontroller.Org, err error)
 	CreateOrgs(configFile string) (err error)
-	AddUser(orgName, userName string) (err error)
 	UpdateOrgUsers(configDir, ldapBindPassword string) (err error)
 	CreateQuotas(configDir string) (err error)
+	GetOrgGUID(orgName string) (orgGUID string, err error)
 }
 
 //Resources -
@@ -69,8 +73,8 @@ type Org struct {
 
 //DefaultOrgManager -
 type DefaultOrgManager struct {
-	Token     string
-	UAACToken string
-	Host      string
-	HTTP      http.Manager
+	CloudController cloudcontroller.Manager
+	UAACMgr         uaac.Manager
+	UtilsMgr        utils.Manager
+	LdapMgr         ldap.Manager
 }

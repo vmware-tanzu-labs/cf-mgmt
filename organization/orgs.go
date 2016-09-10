@@ -1,11 +1,10 @@
 package organization
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/pivotalservices/cf-mgmt/http"
+	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	"github.com/pivotalservices/cf-mgmt/utils"
@@ -15,37 +14,37 @@ import (
 //NewManager -
 func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 	return &DefaultOrgManager{
-		Host:      fmt.Sprintf("https://api.%s", sysDomain),
-		Token:     token,
-		UAACToken: uaacToken,
-		HTTP:      http.NewManager(),
+		UAACMgr:         uaac.NewManager(sysDomain, uaacToken),
+		CloudController: cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token),
+		UtilsMgr:        utils.NewDefaultManager(),
+		LdapMgr:         ldap.NewManager(),
 	}
 }
 
 //CreateQuotas -
 func (m *DefaultOrgManager) CreateQuotas(configDir string) (err error) {
 	var quotas map[string]string
-	var org *Resource
+	var org *cloudcontroller.Org
 	var targetQuotaGUID string
-	if quotas, err = m.listQuotas(); err == nil {
-		files, _ := utils.NewDefaultManager().FindFiles(configDir, "orgConfig.yml")
+	if quotas, err = m.CloudController.ListQuotas(); err == nil {
+		files, _ := m.UtilsMgr.FindFiles(configDir, "orgConfig.yml")
 		for _, f := range files {
 			input := &InputUpdateOrgs{}
-			if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
+			if err = m.UtilsMgr.LoadFile(f, input); err == nil {
 				if input.EnableOrgQuota {
 					if org, err = m.FindOrg(input.Org); err == nil {
 						quotaName := org.Entity.Name
 						if quotaGUID, ok := quotas[quotaName]; ok {
 							lo.G.Info("Updating quota", quotaName)
-							if err = m.updateQuota(quotaGUID, quotaName, input); err == nil {
+							if err = m.CloudController.UpdateQuota(quotaGUID, quotaName, input.MemoryLimit, input.InstanceMemoryLimit, input.TotalRoutes, input.TotalServices, input.PaidServicePlansAllowed); err == nil {
 								lo.G.Info("Assigning", quotaName, "to", org.Entity.Name)
-								m.updateOrgQuota(org.MetaData.GUID, quotaGUID)
+								m.CloudController.AssignQuotaToOrg(org.MetaData.GUID, quotaGUID)
 							}
 						} else {
 							lo.G.Info("Creating quota", quotaName)
-							if targetQuotaGUID, err = m.createQuota(quotaName, input); err == nil {
+							if targetQuotaGUID, err = m.CloudController.CreateQuota(quotaName, input.MemoryLimit, input.InstanceMemoryLimit, input.TotalRoutes, input.TotalServices, input.PaidServicePlansAllowed); err == nil {
 								lo.G.Info("Assigning", quotaName, "to", org.Entity.Name)
-								m.updateOrgQuota(org.MetaData.GUID, targetQuotaGUID)
+								m.CloudController.AssignQuotaToOrg(org.MetaData.GUID, targetQuotaGUID)
 							}
 						}
 					}
@@ -60,55 +59,12 @@ func (m *DefaultOrgManager) CreateQuotas(configDir string) (err error) {
 	return
 }
 
-func (m *DefaultOrgManager) createQuota(quotaName string, quota *InputUpdateOrgs) (quotaGUID string, err error) {
-	var body string
-	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
-	sendString := fmt.Sprintf(`{"name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t}`, quotaName, quota.MemoryLimit, quota.InstanceMemoryLimit, quota.TotalRoutes, quota.TotalServices, quota.PaidServicePlansAllowed)
-	if body, err = m.HTTP.Post(url, m.Token, sendString); err == nil {
-		quotaResource := new(Resource)
-		if err = json.Unmarshal([]byte(body), &quotaResource); err == nil {
-			quotaGUID = quotaResource.MetaData.GUID
-		}
+func (m *DefaultOrgManager) GetOrgGUID(orgName string) (string, error) {
+	if org, err := m.FindOrg(orgName); err == nil {
+		return org.MetaData.GUID, nil
+	} else {
+		return "", err
 	}
-	return
-}
-func (m *DefaultOrgManager) updateQuota(quotaGUID, quotaName string, quota *InputUpdateOrgs) (err error) {
-	url := fmt.Sprintf("%s/v2/quota_definitions/%s", m.Host, quotaGUID)
-	sendString := fmt.Sprintf(`{"guid":"%s","name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t}`, quotaGUID, quotaName, quota.MemoryLimit, quota.InstanceMemoryLimit, quota.TotalRoutes, quota.TotalServices, quota.PaidServicePlansAllowed)
-	err = m.HTTP.Put(url, m.Token, sendString)
-	return
-}
-
-func (m *DefaultOrgManager) updateOrgQuota(orgGUID, quotaGUID string) (err error) {
-	url := fmt.Sprintf("%s/v2/organizations/%s", m.Host, orgGUID)
-	sendString := fmt.Sprintf(`{"quota_definition_guid":"%s"}`, quotaGUID)
-	err = m.HTTP.Put(url, m.Token, sendString)
-	return
-}
-
-func (m *DefaultOrgManager) listQuotas() (quotas map[string]string, err error) {
-	quotas = make(map[string]string)
-	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
-	quotaResources := new(Resources)
-	if err = m.HTTP.Get(url, m.Token, quotaResources); err == nil {
-		for _, quota := range quotaResources.Resource {
-			quotas[quota.Entity.Name] = quota.MetaData.GUID
-		}
-	}
-	return
-}
-
-//AddUser -
-func (m *DefaultOrgManager) AddUser(orgName, userName string) (err error) {
-	lo.G.Info("Adding", userName, "to", orgName)
-	var org *Resource
-	if org, err = m.FindOrg(orgName); err == nil {
-		orgGUID := org.MetaData.GUID
-		url := fmt.Sprintf("%s/v2/organizations/%s/users", m.Host, orgGUID)
-		sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
-		err = m.HTTP.Put(url, m.Token, sendString)
-	}
-	return
 }
 
 //CreateOrgs -
@@ -116,21 +72,16 @@ func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 	var configFile = configDir + "/orgs.yml"
 	lo.G.Info("Processing org file", configFile)
 	input := &InputOrgs{}
-	if err := utils.NewDefaultManager().LoadFile(configFile, input); err != nil {
+	if err := m.UtilsMgr.LoadFile(configFile, input); err != nil {
 		return err
 	}
-	if len(input.Orgs) == 0 {
-		lo.G.Info("No orgs in config file")
-		return nil
-	}
-
-	if orgs, err := m.fetchOrgs(); err == nil {
+	if orgs, err := m.CloudController.ListOrgs(); err == nil {
 		for _, orgName := range input.Orgs {
 			if m.doesOrgExist(orgName, orgs) {
 				lo.G.Info(fmt.Sprintf("[%s] org already exists", orgName))
 			} else {
 				lo.G.Info(fmt.Sprintf("Creating [%s] org", orgName))
-				m.CreateOrg(orgName)
+				err = m.CloudController.CreateOrg(orgName)
 			}
 		}
 	} else {
@@ -140,7 +91,7 @@ func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 	return nil
 }
 
-func (m *DefaultOrgManager) doesOrgExist(orgName string, orgs []*Resource) (result bool) {
+func (m *DefaultOrgManager) doesOrgExist(orgName string, orgs []*cloudcontroller.Org) (result bool) {
 	result = false
 	for _, org := range orgs {
 		if org.Entity.Name == orgName {
@@ -152,108 +103,85 @@ func (m *DefaultOrgManager) doesOrgExist(orgName string, orgs []*Resource) (resu
 
 }
 
-//CreateOrg -
-func (m *DefaultOrgManager) CreateOrg(orgName string) (org *Resource, err error) {
-	url := fmt.Sprintf("%s/v2/organizations", m.Host)
-	sendString := fmt.Sprintf(`{"name":"%s"}`, orgName)
-	if _, err = m.HTTP.Post(url, m.Token, sendString); err == nil {
-		org, err = m.FindOrg(orgName)
-	}
-	return
-}
-
 //FindOrg -
-func (m *DefaultOrgManager) FindOrg(orgName string) (*Resource, error) {
-	if orgs, err := m.fetchOrgs(); err == nil {
+func (m *DefaultOrgManager) FindOrg(orgName string) (*cloudcontroller.Org, error) {
+	if orgs, err := m.CloudController.ListOrgs(); err == nil {
 		for _, theOrg := range orgs {
+			fmt.Println(theOrg.Entity.Name)
 			if theOrg.Entity.Name == orgName {
 				return theOrg, nil
 			}
 		}
+		return nil, fmt.Errorf("Org named[%s] not found", orgName)
 	} else {
 		return nil, err
 	}
-	return nil, nil
 }
 
 //UpdateOrgUsers -
 func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) (err error) {
-	var org *Resource
-	var ldapMgr ldap.Manager
-	if ldapMgr, err = ldap.NewDefaultManager(configDir, ldapBindPassword); err == nil {
-		if ldapMgr.IsEnabled() {
-			files, _ := utils.NewDefaultManager().FindFiles(configDir, "orgConfig.yml")
-			for _, f := range files {
-				lo.G.Info("Processing org file", f)
-				input := &InputUpdateOrgs{}
-				if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
-					if org, err = m.FindOrg(input.Org); err == nil {
-						uaacMgr := uaac.NewManager(m.Host, m.UAACToken)
-						lo.G.Info("User sync for org", input.Org)
-						if err = m.updateUsers(ldapMgr, uaacMgr, org, "managers", input.ManagerGroup); err != nil {
-							return
-						}
-						if err = m.updateUsers(ldapMgr, uaacMgr, org, "auditors", input.AuditorGroup); err != nil {
-							return
-						}
-						if err = m.updateUsers(ldapMgr, uaacMgr, org, "billing_managers", input.BillingManagerGroup); err != nil {
-							return
-						}
-					}
-				}
-			}
-		}
-	}
-	return
-}
+	var org *cloudcontroller.Org
+	var config *ldap.Config
 
-func (m *DefaultOrgManager) updateUsers(ldapMgr ldap.Manager, uaacMgr uaac.Manager, org *Resource, role, groupName string) (err error) {
-	var groupUsers []ldap.User
-	var uaacUsers map[string]string
-	if groupName != "" {
-		lo.G.Info("Getting users for group", groupName)
-		if groupUsers, err = ldapMgr.GetUserIDs(groupName); err == nil {
-			if uaacUsers, err = uaacMgr.ListUsers(); err == nil {
-				for _, groupUser := range groupUsers {
-					if _, userExists := uaacUsers[strings.ToLower(groupUser.UserID)]; userExists {
-						lo.G.Info("User", groupUser.UserID, "already exists")
-					} else {
-						lo.G.Info("User", groupUser.UserID, "doesn't exist so creating in UAA")
-						if err = uaacMgr.CreateUser(groupUser.UserID, groupUser.Email, groupUser.UserDN); err != nil {
-							return
-						}
+	if config, err = m.LdapMgr.GetConfig(configDir, ldapBindPassword); err != nil {
+		return
+	}
+
+	if config.Enabled {
+		files, _ := m.UtilsMgr.FindFiles(configDir, "orgConfig.yml")
+		for _, f := range files {
+			lo.G.Info("Processing org file", f)
+			input := &InputUpdateOrgs{}
+			if err = m.UtilsMgr.LoadFile(f, input); err == nil {
+				if org, err = m.FindOrg(input.Org); err == nil {
+					lo.G.Info("User sync for org", input.Org)
+					if err = m.updateUsers(config, org, "managers", input.ManagerGroup); err != nil {
+						return
 					}
-					lo.G.Info("Adding user to groups")
-					if err = m.addRole(groupUser.UserID, role, org); err != nil {
-						lo.G.Error(err)
+					if err = m.updateUsers(config, org, "auditors", input.AuditorGroup); err != nil {
+						return
+					}
+					if err = m.updateUsers(config, org, "billing_managers", input.BillingManagerGroup); err != nil {
 						return
 					}
 				}
 			}
 		}
+
 	}
 	return
 }
 
-func (m *DefaultOrgManager) addRole(userName, role string, org *Resource) (err error) {
-	orgName := org.Entity.Name
-	if err = m.AddUser(orgName, userName); err != nil {
+func (m *DefaultOrgManager) updateUsers(config *ldap.Config, org *cloudcontroller.Org, role, groupName string) (err error) {
+	var groupUsers []ldap.User
+	var uaacUsers map[string]string
+	if uaacUsers, err = m.UAACMgr.ListUsers(); err != nil {
 		return
 	}
-	lo.G.Info("Adding", userName, "to", org.Entity.Name, "with role", role)
+	if groupName != "" {
+		lo.G.Info("Getting users for group", groupName)
+		if groupUsers, err = m.LdapMgr.GetUserIDs(config, groupName); err == nil {
+			for _, groupUser := range groupUsers {
+				if _, userExists := uaacUsers[strings.ToLower(groupUser.UserID)]; userExists {
+					lo.G.Info("User", groupUser.UserID, "already exists")
+				} else {
+					lo.G.Info("User", groupUser.UserID, "doesn't exist so creating in UAA")
+					if err = m.UAACMgr.CreateLdapUser(groupUser.UserID, groupUser.Email, groupUser.UserDN); err != nil {
+						return
+					}
+				}
+				lo.G.Info("Adding user to groups")
+				orgGUID := org.MetaData.GUID
+				userName := groupUser.UserID
+				if err = m.CloudController.AddUserToOrg(userName, orgGUID); err != nil {
+					return
+				}
+				lo.G.Info("Adding", userName, "to", org.Entity.Name, "with role", role)
+				err = m.CloudController.AddUserToOrgRole(userName, role, orgGUID)
+				return
+			}
 
-	url := fmt.Sprintf("%s/v2/organizations/%s/%s", m.Host, org.MetaData.GUID, role)
-	sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
-	err = m.HTTP.Put(url, m.Token, sendString)
-	return
-}
-
-func (m *DefaultOrgManager) fetchOrgs() ([]*Resource, error) {
-
-	url := fmt.Sprintf("%s/v2/organizations", m.Host)
-	orgResources := new(Resources)
-	if err := m.HTTP.Get(url, m.Token, orgResources); err != nil {
-		return nil, err
+		}
 	}
-	return orgResources.Resource, nil
+	return
 }

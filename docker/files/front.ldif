@@ -1,0 +1,13 @@
+dn: dc=pivotal,dc=org
+dc: pivotal
+objectClass: dcObject
+objectClass: organizationalUnit
+ou: pivotal
+
+dn: ou=groups,dc=pivotal,dc=org
+objectClass: organizationalUnit
+ou: groups
+
+dn: ou=users,dc=pivotal,dc=org
+objectClass: organizationalUnit
+ou: users

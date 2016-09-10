@@ -2,14 +2,12 @@ package ldap
 
 //Manager -
 type Manager interface {
-	GetUserIDs(groupName string) (users []User, err error)
-	IsEnabled() bool
+	GetUserIDs(config *Config, groupName string) (users []User, err error)
+	GetConfig(configDir, ldapBindPassword string) (*Config, error)
 }
 
 //DefaultManager -
 type DefaultManager struct {
-	Config           Config
-	LdapBindPassword string
 }
 
 //Config -
@@ -18,7 +16,7 @@ type Config struct {
 	LdapHost          string `yaml:"ldapHost"`
 	LdapPort          int    `yaml:"ldapPort"`
 	BindDN            string `yaml:"bindDN"`
-	BindPassword      string `yaml:"bindPwd"`
+	BindPassword      string `yaml:"bindPwd,omitempty"`
 	UserSearchBase    string `yaml:"userSearchBase"`
 	UserNameAttribute string `yaml:"userNameAttribute"`
 	UserMailAttribute string `yaml:"userMailAttribute"`

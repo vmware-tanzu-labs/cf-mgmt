@@ -1,38 +1,22 @@
 package space
 
 import (
-	"github.com/pivotalservices/cf-mgmt/http"
-	"github.com/pivotalservices/cf-mgmt/securitygroup"
+	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
+	"github.com/pivotalservices/cf-mgmt/ldap"
+	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/utils"
 )
-
-//{"name":"test2","organization_guid":"76c940e3-1c4c-411b-8672-3edc0651cae7"}
 
 //Manager -
 type Manager interface {
-	CreateSpace(orgName, spaceName string) (space Resource, err error)
-	FindSpace(orgName, spaceName string) (space Resource, err error)
+	CreateSpace(orgName, spaceName string) (space cloudcontroller.Space, err error)
+	FindSpace(orgName, spaceName string) (space cloudcontroller.Space, err error)
 	CreateSpaces(configDir string) (err error)
 	UpdateSpaces(configDir string) (err error)
 	UpdateSpaceUsers(configDir, ldapBindPassword string) (err error)
 	CreateQuotas(configDir string) (err error)
 	CreateApplicationSecurityGroups(configDir string) (err error)
-}
-
-//Resources -
-type Resources struct {
-	Resource []Resource `json:"resources"`
-}
-
-//Resource -
-type Resource struct {
-	MetaData MetaData `json:"metadata"`
-	Entity   Entity   `json:"entity"`
-}
-
-//MetaData -
-type MetaData struct {
-	GUID string `json:"guid"`
-	URL  string `json:"url"`
 }
 
 //InputCreateSpaces -
@@ -68,32 +52,13 @@ type InputUpdateSpaces struct {
 	EnableSecurityGroup     bool   `yaml:"enable-security-group"`
 }
 
-//Entity -
-type Entity struct {
-	Name           string                   `json:"name"`
-	AllowSSH       bool                     `json:"allow_ssh"`
-	SecurityGroups []securitygroup.Resource `json:"security_groups"`
-	OrgGUID        string                   `json:"organization_guid"`
-	Org            Org                      `json:"organization"`
-}
-
-//Org -
-type Org struct {
-	OrgEntity OrgEntity `json:"entity"`
-}
-
-//OrgEntity -
-type OrgEntity struct {
-	Name string `json:"name"`
-}
-
 //DefaultSpaceManager -
 type DefaultSpaceManager struct {
-	Token       string
-	UAACToken   string
-	SysDomain   string
-	Spaces      []Resource
-	FilePattern string
-	FilePaths   []string
-	HTTP        http.Manager
+	FilePattern     string
+	FilePaths       []string
+	CloudController cloudcontroller.Manager
+	UAACMgr         uaac.Manager
+	OrgMgr          organization.Manager
+	LdapMgr         ldap.Manager
+	UtilsMgr        utils.Manager
 }

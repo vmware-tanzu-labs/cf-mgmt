@@ -1,0 +1,1295 @@
+{
+  "total_results": 3,
+  "total_pages": 1,
+  "prev_url": null,
+  "next_url": null,
+  "resources": [
+    {
+      "metadata": {
+        "guid": "8a8726bd-5691-43b8-a7ea-de166e46c125",
+        "url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125",
+        "created_at": "2016-01-10T21:47:43Z",
+        "updated_at": null
+      },
+      "entity": {
+        "name": "development",
+        "organization_guid": "22d428d0-014a-473b-87b2-131367a31248",
+        "space_quota_definition_guid": null,
+        "allow_ssh": true,
+        "organization_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+        "organization": {
+          "metadata": {
+            "guid": "22d428d0-014a-473b-87b2-131367a31248",
+            "url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+            "created_at": "2016-01-10T21:47:43Z",
+            "updated_at": "2016-01-10T21:48:49Z"
+          },
+          "entity": {
+            "name": "test-org",
+            "billing_enabled": true,
+            "quota_definition_guid": "7dbdcbb7-edb6-4246-a217-2031a75388f7",
+            "status": "active",
+            "quota_definition_url": "/v2/quota_definitions/7dbdcbb7-edb6-4246-a217-2031a75388f7",
+            "spaces_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/spaces",
+            "domains_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/domains",
+            "private_domains_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/private_domains",
+            "users_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/users",
+            "managers_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/managers",
+            "billing_managers_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/billing_managers",
+            "auditors_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/auditors",
+            "app_events_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/app_events",
+            "space_quota_definitions_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/space_quota_definitions"
+          }
+        },
+        "developers_url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125/developers",
+        "developers": [
+          {
+            "metadata": {
+              "guid": "b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "created_at": "2015-08-30T16:30:39Z",
+              "updated_at": null
+            },
+            "entity": {
+              "admin": false,
+              "active": false,
+              "default_space_guid": null,
+              "spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/spaces",
+              "organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/organizations",
+              "managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_organizations",
+              "billing_managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/billing_managed_organizations",
+              "audited_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_organizations",
+              "managed_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_spaces",
+              "audited_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_spaces"
+            }
+          }
+        ],
+        "managers_url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125/managers",
+        "managers": [
+          {
+            "metadata": {
+              "guid": "b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "created_at": "2015-08-30T16:30:39Z",
+              "updated_at": null
+            },
+            "entity": {
+              "admin": false,
+              "active": false,
+              "default_space_guid": null,
+              "spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/spaces",
+              "organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/organizations",
+              "managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_organizations",
+              "billing_managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/billing_managed_organizations",
+              "audited_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_organizations",
+              "managed_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_spaces",
+              "audited_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_spaces"
+            }
+          }
+        ],
+        "auditors_url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125/auditors",
+        "auditors": [
+          {
+            "metadata": {
+              "guid": "b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "created_at": "2015-08-30T16:30:39Z",
+              "updated_at": null
+            },
+            "entity": {
+              "admin": false,
+              "active": false,
+              "default_space_guid": null,
+              "spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/spaces",
+              "organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/organizations",
+              "managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_organizations",
+              "billing_managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/billing_managed_organizations",
+              "audited_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_organizations",
+              "managed_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_spaces",
+              "audited_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_spaces"
+            }
+          }
+        ],
+        "apps_url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125/apps",
+        "apps": [
+
+        ],
+        "routes_url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125/routes",
+        "routes": [
+
+        ],
+        "domains_url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125/domains",
+        "domains": [
+          {
+            "metadata": {
+              "guid": "67a57317-b44d-4a96-9d19-b66377542bd9",
+              "url": "/v2/private_domains/67a57317-b44d-4a96-9d19-b66377542bd9",
+              "created_at": "2016-01-16T19:16:17Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "test.com",
+              "owning_organization_guid": "22d428d0-014a-473b-87b2-131367a31248",
+              "owning_organization_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+              "spaces_url": "/v2/domains/67a57317-b44d-4a96-9d19-b66377542bd9/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7",
+              "url": "/v2/private_domains/5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7",
+              "created_at": "2016-02-05T18:01:11Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "test2.com",
+              "owning_organization_guid": "22d428d0-014a-473b-87b2-131367a31248",
+              "owning_organization_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+              "spaces_url": "/v2/domains/5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "fb6bd89f-2ed9-49d4-9ad1-97951a573135",
+              "url": "/v2/shared_domains/fb6bd89f-2ed9-49d4-9ad1-97951a573135",
+              "created_at": "2013-05-04T00:29:46Z",
+              "updated_at": "2016-08-31T19:16:45Z"
+            },
+            "entity": {
+              "name": "cfapps.io",
+              "router_group_guid": null,
+              "router_group_type": null
+            }
+          }
+        ],
+        "service_instances_url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125/service_instances",
+        "service_instances": [
+
+        ],
+        "app_events_url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125/app_events",
+        "events_url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125/events",
+        "security_groups_url": "/v2/spaces/8a8726bd-5691-43b8-a7ea-de166e46c125/security_groups",
+        "security_groups": [
+          {
+            "metadata": {
+              "guid": "601d30e6-f16f-4c3d-88ab-723f7c51184a",
+              "url": "/v2/security_groups/601d30e6-f16f-4c3d-88ab-723f7c51184a",
+              "created_at": "2014-07-15T18:48:46Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "public_networks",
+              "rules": [
+                {
+                  "destination": "0.0.0.0-9.255.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "11.0.0.0-169.253.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "169.255.0.0-172.15.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "172.32.0.0-192.167.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "192.169.0.0-255.255.255.255",
+                  "protocol": "all"
+                }
+              ],
+              "running_default": true,
+              "staging_default": true,
+              "spaces_url": "/v2/security_groups/601d30e6-f16f-4c3d-88ab-723f7c51184a/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "91b2f6e6-8d38-4c83-88cb-d44e6581d92b",
+              "url": "/v2/security_groups/91b2f6e6-8d38-4c83-88cb-d44e6581d92b",
+              "created_at": "2014-07-15T18:48:46Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "dns",
+              "rules": [
+                {
+                  "destination": "0.0.0.0/0",
+                  "ports": "53",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "0.0.0.0/0",
+                  "ports": "53",
+                  "protocol": "udp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": true,
+              "spaces_url": "/v2/security_groups/91b2f6e6-8d38-4c83-88cb-d44e6581d92b/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "cf0bc380-857d-40cf-a20a-f6c1f0228b45",
+              "url": "/v2/security_groups/cf0bc380-857d-40cf-a20a-f6c1f0228b45",
+              "created_at": "2015-03-10T18:00:45Z",
+              "updated_at": "2015-03-10T18:01:14Z"
+            },
+            "entity": {
+              "name": "ssh-logging",
+              "rules": [
+                {
+                  "destination": "0.0.0.0/0",
+                  "log": true,
+                  "ports": "22",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/cf0bc380-857d-40cf-a20a-f6c1f0228b45/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "27e106c0-cc2d-4c0a-b293-b51c1cc4c515",
+              "url": "/v2/security_groups/27e106c0-cc2d-4c0a-b293-b51c1cc4c515",
+              "created_at": "2015-03-10T18:00:53Z",
+              "updated_at": "2015-07-28T00:45:49Z"
+            },
+            "entity": {
+              "name": "p-mysql",
+              "rules": [
+                {
+                  "destination": "10.10.2.0/24",
+                  "ports": "3306",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.66.0/24",
+                  "ports": "3306",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.130.0/24",
+                  "ports": "3306",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/27e106c0-cc2d-4c0a-b293-b51c1cc4c515/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "bff21eb5-afb9-4826-bc80-0c8d46d6d035",
+              "url": "/v2/security_groups/bff21eb5-afb9-4826-bc80-0c8d46d6d035",
+              "created_at": "2015-08-07T17:22:21Z",
+              "updated_at": "2015-08-11T17:30:27Z"
+            },
+            "entity": {
+              "name": "pcf-redis",
+              "rules": [
+                {
+                  "destination": "10.10.7.0/24",
+                  "ports": "6379",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.7.13/32",
+                  "ports": "32768-61000",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/bff21eb5-afb9-4826-bc80-0c8d46d6d035/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "a5eafd3f-414c-4a21-a951-4693de3051ae",
+              "url": "/v2/security_groups/a5eafd3f-414c-4a21-a951-4693de3051ae",
+              "created_at": "2015-11-21T01:16:35Z",
+              "updated_at": "2016-04-12T21:07:30Z"
+            },
+            "entity": {
+              "name": "rabbitmq",
+              "rules": [
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "5672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "5671",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "1883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "8883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "61613",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "61614",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "15672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "15674",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "5672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "5671",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "1883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "8883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "61613",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "61614",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "15672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "15674",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/a5eafd3f-414c-4a21-a951-4693de3051ae/spaces"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "guid": "46eb1425-1dfb-43da-85e4-58c50de60ecd",
+        "url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd",
+        "created_at": "2016-02-05T17:50:43Z",
+        "updated_at": null
+      },
+      "entity": {
+        "name": "space1",
+        "organization_guid": "22d428d0-014a-473b-87b2-131367a31248",
+        "space_quota_definition_guid": null,
+        "allow_ssh": true,
+        "organization_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+        "organization": {
+          "metadata": {
+            "guid": "22d428d0-014a-473b-87b2-131367a31248",
+            "url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+            "created_at": "2016-01-10T21:47:43Z",
+            "updated_at": "2016-01-10T21:48:49Z"
+          },
+          "entity": {
+            "name": "caleb.washburn",
+            "billing_enabled": true,
+            "quota_definition_guid": "7dbdcbb7-edb6-4246-a217-2031a75388f7",
+            "status": "active",
+            "quota_definition_url": "/v2/quota_definitions/7dbdcbb7-edb6-4246-a217-2031a75388f7",
+            "spaces_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/spaces",
+            "domains_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/domains",
+            "private_domains_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/private_domains",
+            "users_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/users",
+            "managers_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/managers",
+            "billing_managers_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/billing_managers",
+            "auditors_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/auditors",
+            "app_events_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/app_events",
+            "space_quota_definitions_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/space_quota_definitions"
+          }
+        },
+        "developers_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd/developers",
+        "developers": [
+          {
+            "metadata": {
+              "guid": "b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "created_at": "2015-08-30T16:30:39Z",
+              "updated_at": null
+            },
+            "entity": {
+              "admin": false,
+              "active": false,
+              "default_space_guid": null,
+              "spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/spaces",
+              "organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/organizations",
+              "managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_organizations",
+              "billing_managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/billing_managed_organizations",
+              "audited_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_organizations",
+              "managed_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_spaces",
+              "audited_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_spaces"
+            }
+          }
+        ],
+        "managers_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd/managers",
+        "managers": [
+          {
+            "metadata": {
+              "guid": "b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "created_at": "2015-08-30T16:30:39Z",
+              "updated_at": null
+            },
+            "entity": {
+              "admin": false,
+              "active": false,
+              "default_space_guid": null,
+              "spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/spaces",
+              "organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/organizations",
+              "managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_organizations",
+              "billing_managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/billing_managed_organizations",
+              "audited_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_organizations",
+              "managed_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_spaces",
+              "audited_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_spaces"
+            }
+          }
+        ],
+        "auditors_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd/auditors",
+        "auditors": [
+
+        ],
+        "apps_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd/apps",
+        "apps": [
+          {
+            "metadata": {
+              "guid": "27aa5948-c44a-42f9-ba2a-4a32c91adafc",
+              "url": "/v2/apps/27aa5948-c44a-42f9-ba2a-4a32c91adafc",
+              "created_at": "2016-04-24T16:50:36Z",
+              "updated_at": "2016-08-12T23:03:14Z"
+            },
+            "entity": {
+              "name": "app1",
+              "production": false,
+              "space_guid": "46eb1425-1dfb-43da-85e4-58c50de60ecd",
+              "stack_guid": "86205f38-84fc-4bc2-b2b8-af7f55669f04",
+              "buildpack": "java_buildpack",
+              "detected_buildpack": "",
+              "environment_json": {
+                "JAVA_OPTS": "-Djava.security.egd=file:///dev/urandom",
+                "LOGGING_LEVEL_ORG_SPRINGFRAMEWORK": "DEBUG"
+              },
+              "memory": 768,
+              "instances": 2,
+              "disk_quota": 1024,
+              "state": "STARTED",
+              "version": "dd6040d4-356b-4337-a4b3-1609d2357572",
+              "command": null,
+              "console": false,
+              "debug": null,
+              "staging_task_id": "fb7a0617dbd144cbbd23d4a4a52ac7ac",
+              "package_state": "STAGED",
+              "health_check_type": "port",
+              "health_check_timeout": 180,
+              "staging_failed_reason": null,
+              "staging_failed_description": null,
+              "diego": true,
+              "docker_image": null,
+              "package_updated_at": "2016-08-12T23:02:43Z",
+              "detected_start_command": "CALCULATED_MEMORY=$($PWD/.java-buildpack/open_jdk_jre/bin/java-buildpack-memory-calculator-2.0.2_RELEASE -memorySizes=metaspace:64m..,stack:228k.. -memoryWeights=heap:65,metaspace:10,native:15,stack:10 -memoryInitials=heap:100%,metaspace:100% -stackThreads=300 -totMemory=$MEMORY_LIMIT) && JAVA_OPTS=\"-Djava.io.tmpdir=$TMPDIR -XX:OnOutOfMemoryError=$PWD/.java-buildpack/open_jdk_jre/bin/killjava.sh $CALCULATED_MEMORY -Djava.security.egd=file:///dev/urandom\" && SERVER_PORT=$PORT eval exec $PWD/.java-buildpack/open_jdk_jre/bin/java $JAVA_OPTS -cp $PWD/. org.springframework.boot.loader.JarLauncher",
+              "enable_ssh": true,
+              "docker_credentials_json": {
+                "redacted_message": "[PRIVATE DATA HIDDEN]"
+              },
+              "ports": [
+                8080
+              ],
+              "space_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd",
+              "stack_url": "/v2/stacks/86205f38-84fc-4bc2-b2b8-af7f55669f04",
+              "routes_url": "/v2/apps/27aa5948-c44a-42f9-ba2a-4a32c91adafc/routes",
+              "events_url": "/v2/apps/27aa5948-c44a-42f9-ba2a-4a32c91adafc/events",
+              "service_bindings_url": "/v2/apps/27aa5948-c44a-42f9-ba2a-4a32c91adafc/service_bindings",
+              "route_mappings_url": "/v2/apps/27aa5948-c44a-42f9-ba2a-4a32c91adafc/route_mappings"
+            }
+          }
+        ],
+        "routes_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd/routes",
+        "routes": [
+          {
+            "metadata": {
+              "guid": "ed9b8b25-cf92-4ec1-bc1f-84dc033c2ed6",
+              "url": "/v2/routes/ed9b8b25-cf92-4ec1-bc1f-84dc033c2ed6",
+              "created_at": "2016-02-05T18:02:07Z",
+              "updated_at": null
+            },
+            "entity": {
+              "host": "testapp",
+              "path": "",
+              "domain_guid": "5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7",
+              "space_guid": "46eb1425-1dfb-43da-85e4-58c50de60ecd",
+              "service_instance_guid": null,
+              "port": null,
+              "domain_url": "/v2/private_domains/5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7",
+              "space_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd",
+              "apps_url": "/v2/routes/ed9b8b25-cf92-4ec1-bc1f-84dc033c2ed6/apps",
+              "route_mappings_url": "/v2/routes/ed9b8b25-cf92-4ec1-bc1f-84dc033c2ed6/route_mappings"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "956a201f-238a-4590-9296-96488f74547b",
+              "url": "/v2/routes/956a201f-238a-4590-9296-96488f74547b",
+              "created_at": "2016-02-05T18:12:44Z",
+              "updated_at": null
+            },
+            "entity": {
+              "host": "test",
+              "path": "",
+              "domain_guid": "fb6bd89f-2ed9-49d4-9ad1-97951a573135",
+              "space_guid": "46eb1425-1dfb-43da-85e4-58c50de60ecd",
+              "service_instance_guid": null,
+              "port": null,
+              "domain_url": "/v2/shared_domains/fb6bd89f-2ed9-49d4-9ad1-97951a573135",
+              "space_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd",
+              "apps_url": "/v2/routes/956a201f-238a-4590-9296-96488f74547b/apps",
+              "route_mappings_url": "/v2/routes/956a201f-238a-4590-9296-96488f74547b/route_mappings"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "abcdb310-f730-4e7e-88e5-b022554fcfff",
+              "url": "/v2/routes/abcdb310-f730-4e7e-88e5-b022554fcfff",
+              "created_at": "2016-03-07T18:33:51Z",
+              "updated_at": null
+            },
+            "entity": {
+              "host": "vantedgesolutions-com",
+              "path": "",
+              "domain_guid": "5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7",
+              "space_guid": "46eb1425-1dfb-43da-85e4-58c50de60ecd",
+              "service_instance_guid": null,
+              "port": null,
+              "domain_url": "/v2/private_domains/5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7",
+              "space_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd",
+              "apps_url": "/v2/routes/abcdb310-f730-4e7e-88e5-b022554fcfff/apps",
+              "route_mappings_url": "/v2/routes/abcdb310-f730-4e7e-88e5-b022554fcfff/route_mappings"
+            }
+          }
+        ],
+        "domains_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd/domains",
+        "domains": [
+          {
+            "metadata": {
+              "guid": "67a57317-b44d-4a96-9d19-b66377542bd9",
+              "url": "/v2/private_domains/67a57317-b44d-4a96-9d19-b66377542bd9",
+              "created_at": "2016-01-16T19:16:17Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "test.com",
+              "owning_organization_guid": "22d428d0-014a-473b-87b2-131367a31248",
+              "owning_organization_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+              "spaces_url": "/v2/domains/67a57317-b44d-4a96-9d19-b66377542bd9/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7",
+              "url": "/v2/private_domains/5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7",
+              "created_at": "2016-02-05T18:01:11Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "vantedgesolutions.com",
+              "owning_organization_guid": "22d428d0-014a-473b-87b2-131367a31248",
+              "owning_organization_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+              "spaces_url": "/v2/domains/5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "fb6bd89f-2ed9-49d4-9ad1-97951a573135",
+              "url": "/v2/shared_domains/fb6bd89f-2ed9-49d4-9ad1-97951a573135",
+              "created_at": "2013-05-04T00:29:46Z",
+              "updated_at": "2016-08-31T19:16:45Z"
+            },
+            "entity": {
+              "name": "cfapps.io",
+              "router_group_guid": null,
+              "router_group_type": null
+            }
+          }
+        ],
+        "service_instances_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd/service_instances",
+        "service_instances": [],
+        "app_events_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd/app_events",
+        "events_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd/events",
+        "security_groups_url": "/v2/spaces/46eb1425-1dfb-43da-85e4-58c50de60ecd/security_groups",
+        "security_groups": [
+          {
+            "metadata": {
+              "guid": "601d30e6-f16f-4c3d-88ab-723f7c51184a",
+              "url": "/v2/security_groups/601d30e6-f16f-4c3d-88ab-723f7c51184a",
+              "created_at": "2014-07-15T18:48:46Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "public_networks",
+              "rules": [
+                {
+                  "destination": "0.0.0.0-9.255.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "11.0.0.0-169.253.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "169.255.0.0-172.15.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "172.32.0.0-192.167.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "192.169.0.0-255.255.255.255",
+                  "protocol": "all"
+                }
+              ],
+              "running_default": true,
+              "staging_default": true,
+              "spaces_url": "/v2/security_groups/601d30e6-f16f-4c3d-88ab-723f7c51184a/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "91b2f6e6-8d38-4c83-88cb-d44e6581d92b",
+              "url": "/v2/security_groups/91b2f6e6-8d38-4c83-88cb-d44e6581d92b",
+              "created_at": "2014-07-15T18:48:46Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "dns",
+              "rules": [
+                {
+                  "destination": "0.0.0.0/0",
+                  "ports": "53",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "0.0.0.0/0",
+                  "ports": "53",
+                  "protocol": "udp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": true,
+              "spaces_url": "/v2/security_groups/91b2f6e6-8d38-4c83-88cb-d44e6581d92b/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "cf0bc380-857d-40cf-a20a-f6c1f0228b45",
+              "url": "/v2/security_groups/cf0bc380-857d-40cf-a20a-f6c1f0228b45",
+              "created_at": "2015-03-10T18:00:45Z",
+              "updated_at": "2015-03-10T18:01:14Z"
+            },
+            "entity": {
+              "name": "ssh-logging",
+              "rules": [
+                {
+                  "destination": "0.0.0.0/0",
+                  "log": true,
+                  "ports": "22",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/cf0bc380-857d-40cf-a20a-f6c1f0228b45/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "27e106c0-cc2d-4c0a-b293-b51c1cc4c515",
+              "url": "/v2/security_groups/27e106c0-cc2d-4c0a-b293-b51c1cc4c515",
+              "created_at": "2015-03-10T18:00:53Z",
+              "updated_at": "2015-07-28T00:45:49Z"
+            },
+            "entity": {
+              "name": "p-mysql",
+              "rules": [
+                {
+                  "destination": "10.10.2.0/24",
+                  "ports": "3306",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.66.0/24",
+                  "ports": "3306",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.130.0/24",
+                  "ports": "3306",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/27e106c0-cc2d-4c0a-b293-b51c1cc4c515/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "bff21eb5-afb9-4826-bc80-0c8d46d6d035",
+              "url": "/v2/security_groups/bff21eb5-afb9-4826-bc80-0c8d46d6d035",
+              "created_at": "2015-08-07T17:22:21Z",
+              "updated_at": "2015-08-11T17:30:27Z"
+            },
+            "entity": {
+              "name": "pcf-redis",
+              "rules": [
+                {
+                  "destination": "10.10.7.0/24",
+                  "ports": "6379",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.7.13/32",
+                  "ports": "32768-61000",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/bff21eb5-afb9-4826-bc80-0c8d46d6d035/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "a5eafd3f-414c-4a21-a951-4693de3051ae",
+              "url": "/v2/security_groups/a5eafd3f-414c-4a21-a951-4693de3051ae",
+              "created_at": "2015-11-21T01:16:35Z",
+              "updated_at": "2016-04-12T21:07:30Z"
+            },
+            "entity": {
+              "name": "rabbitmq",
+              "rules": [
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "5672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "5671",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "1883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "8883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "61613",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "61614",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "15672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "15674",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "5672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "5671",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "1883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "8883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "61613",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "61614",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "15672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "15674",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/a5eafd3f-414c-4a21-a951-4693de3051ae/spaces"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "guid": "b9ec9025-aca0-429a-aadd-1b6f6a784818",
+        "url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818",
+        "created_at": "2016-01-16T19:14:24Z",
+        "updated_at": null
+      },
+      "entity": {
+        "name": "space2",
+        "organization_guid": "22d428d0-014a-473b-87b2-131367a31248",
+        "space_quota_definition_guid": null,
+        "allow_ssh": true,
+        "organization_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+        "organization": {
+          "metadata": {
+            "guid": "22d428d0-014a-473b-87b2-131367a31248",
+            "url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+            "created_at": "2016-01-10T21:47:43Z",
+            "updated_at": "2016-01-10T21:48:49Z"
+          },
+          "entity": {
+            "name": "caleb.washburn",
+            "billing_enabled": true,
+            "quota_definition_guid": "7dbdcbb7-edb6-4246-a217-2031a75388f7",
+            "status": "active",
+            "quota_definition_url": "/v2/quota_definitions/7dbdcbb7-edb6-4246-a217-2031a75388f7",
+            "spaces_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/spaces",
+            "domains_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/domains",
+            "private_domains_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/private_domains",
+            "users_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/users",
+            "managers_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/managers",
+            "billing_managers_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/billing_managers",
+            "auditors_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/auditors",
+            "app_events_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/app_events",
+            "space_quota_definitions_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248/space_quota_definitions"
+          }
+        },
+        "developers_url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818/developers",
+        "developers": [
+          {
+            "metadata": {
+              "guid": "b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "created_at": "2015-08-30T16:30:39Z",
+              "updated_at": null
+            },
+            "entity": {
+              "admin": false,
+              "active": false,
+              "default_space_guid": null,
+              "spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/spaces",
+              "organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/organizations",
+              "managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_organizations",
+              "billing_managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/billing_managed_organizations",
+              "audited_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_organizations",
+              "managed_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_spaces",
+              "audited_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_spaces"
+            }
+          }
+        ],
+        "managers_url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818/managers",
+        "managers": [
+          {
+            "metadata": {
+              "guid": "b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032",
+              "created_at": "2015-08-30T16:30:39Z",
+              "updated_at": null
+            },
+            "entity": {
+              "admin": false,
+              "active": false,
+              "default_space_guid": null,
+              "spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/spaces",
+              "organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/organizations",
+              "managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_organizations",
+              "billing_managed_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/billing_managed_organizations",
+              "audited_organizations_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_organizations",
+              "managed_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/managed_spaces",
+              "audited_spaces_url": "/v2/users/b66b02cf-67ec-4d7b-8aea-e4107fb99032/audited_spaces"
+            }
+          }
+        ],
+        "auditors_url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818/auditors",
+        "auditors": [
+
+        ],
+        "apps_url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818/apps",
+        "apps": [
+
+        ],
+        "routes_url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818/routes",
+        "routes": [
+
+        ],
+        "domains_url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818/domains",
+        "domains": [
+          {
+            "metadata": {
+              "guid": "67a57317-b44d-4a96-9d19-b66377542bd9",
+              "url": "/v2/private_domains/67a57317-b44d-4a96-9d19-b66377542bd9",
+              "created_at": "2016-01-16T19:16:17Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "test.com",
+              "owning_organization_guid": "22d428d0-014a-473b-87b2-131367a31248",
+              "owning_organization_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+              "spaces_url": "/v2/domains/67a57317-b44d-4a96-9d19-b66377542bd9/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7",
+              "url": "/v2/private_domains/5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7",
+              "created_at": "2016-02-05T18:01:11Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "vantedgesolutions.com",
+              "owning_organization_guid": "22d428d0-014a-473b-87b2-131367a31248",
+              "owning_organization_url": "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248",
+              "spaces_url": "/v2/domains/5f4afb0f-ef87-4ac9-a41f-3a11a7fc4cc7/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "fb6bd89f-2ed9-49d4-9ad1-97951a573135",
+              "url": "/v2/shared_domains/fb6bd89f-2ed9-49d4-9ad1-97951a573135",
+              "created_at": "2013-05-04T00:29:46Z",
+              "updated_at": "2016-08-31T19:16:45Z"
+            },
+            "entity": {
+              "name": "cfapps.io",
+              "router_group_guid": null,
+              "router_group_type": null
+            }
+          }
+        ],
+        "service_instances_url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818/service_instances",
+        "service_instances": [
+
+        ],
+        "app_events_url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818/app_events",
+        "events_url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818/events",
+        "security_groups_url": "/v2/spaces/b9ec9025-aca0-429a-aadd-1b6f6a784818/security_groups",
+        "security_groups": [
+          {
+            "metadata": {
+              "guid": "601d30e6-f16f-4c3d-88ab-723f7c51184a",
+              "url": "/v2/security_groups/601d30e6-f16f-4c3d-88ab-723f7c51184a",
+              "created_at": "2014-07-15T18:48:46Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "public_networks",
+              "rules": [
+                {
+                  "destination": "0.0.0.0-9.255.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "11.0.0.0-169.253.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "169.255.0.0-172.15.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "172.32.0.0-192.167.255.255",
+                  "protocol": "all"
+                },
+                {
+                  "destination": "192.169.0.0-255.255.255.255",
+                  "protocol": "all"
+                }
+              ],
+              "running_default": true,
+              "staging_default": true,
+              "spaces_url": "/v2/security_groups/601d30e6-f16f-4c3d-88ab-723f7c51184a/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "91b2f6e6-8d38-4c83-88cb-d44e6581d92b",
+              "url": "/v2/security_groups/91b2f6e6-8d38-4c83-88cb-d44e6581d92b",
+              "created_at": "2014-07-15T18:48:46Z",
+              "updated_at": null
+            },
+            "entity": {
+              "name": "dns",
+              "rules": [
+                {
+                  "destination": "0.0.0.0/0",
+                  "ports": "53",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "0.0.0.0/0",
+                  "ports": "53",
+                  "protocol": "udp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": true,
+              "spaces_url": "/v2/security_groups/91b2f6e6-8d38-4c83-88cb-d44e6581d92b/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "cf0bc380-857d-40cf-a20a-f6c1f0228b45",
+              "url": "/v2/security_groups/cf0bc380-857d-40cf-a20a-f6c1f0228b45",
+              "created_at": "2015-03-10T18:00:45Z",
+              "updated_at": "2015-03-10T18:01:14Z"
+            },
+            "entity": {
+              "name": "ssh-logging",
+              "rules": [
+                {
+                  "destination": "0.0.0.0/0",
+                  "log": true,
+                  "ports": "22",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/cf0bc380-857d-40cf-a20a-f6c1f0228b45/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "27e106c0-cc2d-4c0a-b293-b51c1cc4c515",
+              "url": "/v2/security_groups/27e106c0-cc2d-4c0a-b293-b51c1cc4c515",
+              "created_at": "2015-03-10T18:00:53Z",
+              "updated_at": "2015-07-28T00:45:49Z"
+            },
+            "entity": {
+              "name": "p-mysql",
+              "rules": [
+                {
+                  "destination": "10.10.2.0/24",
+                  "ports": "3306",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.66.0/24",
+                  "ports": "3306",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.130.0/24",
+                  "ports": "3306",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/27e106c0-cc2d-4c0a-b293-b51c1cc4c515/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "bff21eb5-afb9-4826-bc80-0c8d46d6d035",
+              "url": "/v2/security_groups/bff21eb5-afb9-4826-bc80-0c8d46d6d035",
+              "created_at": "2015-08-07T17:22:21Z",
+              "updated_at": "2015-08-11T17:30:27Z"
+            },
+            "entity": {
+              "name": "pcf-redis",
+              "rules": [
+                {
+                  "destination": "10.10.7.0/24",
+                  "ports": "6379",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.7.13/32",
+                  "ports": "32768-61000",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/bff21eb5-afb9-4826-bc80-0c8d46d6d035/spaces"
+            }
+          },
+          {
+            "metadata": {
+              "guid": "a5eafd3f-414c-4a21-a951-4693de3051ae",
+              "url": "/v2/security_groups/a5eafd3f-414c-4a21-a951-4693de3051ae",
+              "created_at": "2015-11-21T01:16:35Z",
+              "updated_at": "2016-04-12T21:07:30Z"
+            },
+            "entity": {
+              "name": "rabbitmq",
+              "rules": [
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "5672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "5671",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "1883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "8883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "61613",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "61614",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "15672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.38.8/32",
+                  "ports": "15674",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "5672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "5671",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "1883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "8883",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "61613",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "61614",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "15672",
+                  "protocol": "tcp"
+                },
+                {
+                  "destination": "10.10.102.8/32",
+                  "ports": "15674",
+                  "protocol": "tcp"
+                }
+              ],
+              "running_default": true,
+              "staging_default": false,
+              "spaces_url": "/v2/security_groups/a5eafd3f-414c-4a21-a951-4693de3051ae/spaces"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
