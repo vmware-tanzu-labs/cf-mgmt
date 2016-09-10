@@ -58,36 +58,15 @@ crosscompile:
     - script:
         name: cross platform release
         code: |
-          (GOOS=linux GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64 && mv cf-mgmt ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64)
-          (GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/osx && mv cf-mgmt ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/osx)
-          (GOOS=windows GOARCH=amd64 go build -ldflags "-X main.VERSION=${NEXT_VERSION}" && mkdir -p ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/win64 && mv cf-mgmt.exe ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/win64)
+          (GOOS=linux GOARCH=amd64 go build -o cf-mgmt-linux -ldflags "-X main.VERSION=${NEXT_VERSION}")
+          (GOOS=darwin GOARCH=amd64 go build -o cf-mgmt-osx -ldflags "-X main.VERSION=${NEXT_VERSION}")
+          (GOOS=windows GOARCH=amd64 go build -o cf-mgmt.exe -ldflags "-X main.VERSION=${NEXT_VERSION}")
 
     - script:
         name: list output dir
         code: |
           echo ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}
           ls -al ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}
-    - script:
-        name: create tarball
-        code: |
-          tar -cvzf cf-mgmt_binaries.tgz ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/
-
-    - script:
-        name: copy to output dir
-        code: |
-          cp cf-mgmt_binaries.tgz ${WERCKER_OUTPUT_DIR}/.
-          cp ${WERCKER_OUTPUT_DIR}/${BUILD_DIR}/linux64/cf-mgmt ${WERCKER_OUTPUT_DIR}/.
-
-    - script:
-        name: add repo to artifact
-        code: |
-          cp -R ./ ${WERCKER_OUTPUT_DIR}
-
-    - script:
-        name: list output dir
-        code: |
-         ls -al ${WERCKER_OUTPUT_DIR}
-
 deploy:
   steps:
     - script:
@@ -120,6 +99,16 @@ deploy:
 
     - github-upload-asset:
         token: $GITHUB_TOKEN
-        file: cf-mgmt_binaries.tgz
+        file: cf-mgmt-linux
+        release_id: $WERCKER_GITHUB_CREATE_RELEASE_ID
+        content-type: application/x-gzip
+    - github-upload-asset:
+        token: $GITHUB_TOKEN
+        file: cf-mgmt-osx
+        release_id: $WERCKER_GITHUB_CREATE_RELEASE_ID
+        content-type: application/x-gzip
+    - github-upload-asset:
+        token: $GITHUB_TOKEN
+        file: cf-mgmt.exe
         release_id: $WERCKER_GITHUB_CREATE_RELEASE_ID
         content-type: application/x-gzip
