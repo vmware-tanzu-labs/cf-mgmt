@@ -63,6 +63,11 @@ crosscompile:
           (GOOS=windows GOARCH=amd64 go build -o cf-mgmt.exe -ldflags "-X main.VERSION=${NEXT_VERSION}")
 
     - script:
+        name: add repo to artifact
+        code: |
+          cp -R ./ ${WERCKER_OUTPUT_DIR}
+          
+    - script:
         name: list output dir
         code: |
           ls -al ${WERCKER_OUTPUT_DIR}
