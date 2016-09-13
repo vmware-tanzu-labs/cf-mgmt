@@ -1,0 +1,35 @@
+---
+org: test
+space: space1
+allow-ssh: yes
+space-manager:
+  ldap_users:
+    - cwashburn1
+    - cwashburn2
+  users:
+    - cwashburn@pivotal.io
+    - cwashburn2@pivotal.io
+  ldap_group: test_space1_managers
+space-auditor:
+  ldap_users:
+    - cwashburn1
+    - cwashburn2
+  users:
+    - cwashburn@pivotal.io
+    - cwashburn2@pivotal.io
+  ldap_group: test_space1_auditors
+space-developer:
+  ldap_users:
+    - cwashburn1
+    - cwashburn2
+  users:
+    - cwashburn@pivotal.io
+    - cwashburn2@pivotal.io
+  ldap_group: test_space1_developers
+enable-space-quota: true
+memory-limit: 10240
+instance-memory-limit: -1
+total-routes: 10
+total-services: -1
+paid-service-plans-allowed: true
+enable-security-group: false

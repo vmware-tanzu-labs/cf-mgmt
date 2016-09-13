@@ -17,7 +17,7 @@ func NewDefaultManager() (mgr Manager) {
 //FindFiles -
 func (m *DefaultManager) FindFiles(configDir, pattern string) (files []string, err error) {
 	m.filePattern = pattern
-	filepath.Walk(configDir, m.walkDirectories)
+	err = filepath.Walk(configDir, m.walkDirectories)
 	files = m.filePaths
 	return
 }
@@ -26,7 +26,7 @@ func (m *DefaultManager) walkDirectories(path string, info os.FileInfo, e error)
 	if strings.Contains(path, m.filePattern) {
 		m.filePaths = append(m.filePaths, path)
 	}
-	return
+	return e
 }
 
 //LoadFile -

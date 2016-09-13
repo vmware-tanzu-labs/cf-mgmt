@@ -49,16 +49,49 @@ func (s *InputOrgs) Contains(orgName string) bool {
 
 //InputUpdateOrgs -
 type InputUpdateOrgs struct {
-	Org                     string `yaml:"org"`
-	BillingManagerGroup     string `yaml:"org-billingmanager-group"`
-	ManagerGroup            string `yaml:"org-manager-group"`
-	AuditorGroup            string `yaml:"org-auditor-group"`
-	EnableOrgQuota          bool   `yaml:"enable-org-quota"`
-	MemoryLimit             int    `yaml:"memory-limit"`
-	InstanceMemoryLimit     int    `yaml:"instance-memory-limit"`
-	TotalRoutes             int    `yaml:"total-routes"`
-	TotalServices           int    `yaml:"total-services"`
-	PaidServicePlansAllowed bool   `yaml:"paid-service-plans-allowed"`
+	Org                     string   `yaml:"org"`
+	BillingManagerGroup     string   `yaml:"org-billingmanager-group,omitempty"`
+	ManagerGroup            string   `yaml:"org-manager-group,omitempty"`
+	AuditorGroup            string   `yaml:"org-auditor-group,omitempty"`
+	BillingManager          UserMgmt `yaml:"org-billingmanager"`
+	Manager                 UserMgmt `yaml:"org-manager"`
+	Auditor                 UserMgmt `yaml:"org-auditor"`
+	EnableOrgQuota          bool     `yaml:"enable-org-quota"`
+	MemoryLimit             int      `yaml:"memory-limit"`
+	InstanceMemoryLimit     int      `yaml:"instance-memory-limit"`
+	TotalRoutes             int      `yaml:"total-routes"`
+	TotalServices           int      `yaml:"total-services"`
+	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed"`
+}
+
+func (i *InputUpdateOrgs) GetBillingManagerGroup() string {
+	if i.BillingManager.LdapGroup != "" {
+		return i.BillingManager.LdapGroup
+	} else {
+		return i.BillingManagerGroup
+	}
+}
+
+func (i *InputUpdateOrgs) GetManagerGroup() string {
+	if i.Manager.LdapGroup != "" {
+		return i.Manager.LdapGroup
+	} else {
+		return i.ManagerGroup
+	}
+}
+
+func (i *InputUpdateOrgs) GetAuditorGroup() string {
+	if i.Manager.LdapGroup != "" {
+		return i.Auditor.LdapGroup
+	} else {
+		return i.AuditorGroup
+	}
+}
+
+type UserMgmt struct {
+	LdapUser  []string `yaml:"ldap_users"`
+	Users     []string `yaml:"users"`
+	LdapGroup string   `yaml:"ldap_group"`
 }
 
 //Entity -

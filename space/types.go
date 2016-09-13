@@ -10,8 +10,7 @@ import (
 
 //Manager -
 type Manager interface {
-	CreateSpace(orgName, spaceName string) (space cloudcontroller.Space, err error)
-	FindSpace(orgName, spaceName string) (space cloudcontroller.Space, err error)
+	FindSpace(orgName, spaceName string) (space *cloudcontroller.Space, err error)
 	CreateSpaces(configDir string) (err error)
 	UpdateSpaces(configDir string) (err error)
 	UpdateSpaceUsers(configDir, ldapBindPassword string) (err error)
@@ -37,19 +36,53 @@ func (s *InputCreateSpaces) Contains(spaceName string) bool {
 
 //InputUpdateSpaces -
 type InputUpdateSpaces struct {
-	Org                     string `yaml:"org"`
-	Space                   string `yaml:"space"`
-	DeveloperGroup          string `yaml:"space-developer-group"`
-	ManagerGroup            string `yaml:"space-manager-group"`
-	AuditorGroup            string `yaml:"space-auditor-group"`
-	AllowSSH                bool   `yaml:"allow-ssh"`
-	EnableSpaceQuota        bool   `yaml:"enable-space-quota"`
-	MemoryLimit             int    `yaml:"memory-limit"`
-	InstanceMemoryLimit     int    `yaml:"instance-memory-limit"`
-	TotalRoutes             int    `yaml:"total-routes"`
-	TotalServices           int    `yaml:"total-services"`
-	PaidServicePlansAllowed bool   `yaml:"paid-service-plans-allowed"`
-	EnableSecurityGroup     bool   `yaml:"enable-security-group"`
+	Org                     string   `yaml:"org"`
+	Space                   string   `yaml:"space"`
+	Developer               UserMgmt `yaml:"space-developer"`
+	Manager                 UserMgmt `yaml:"space-manager"`
+	Auditor                 UserMgmt `yaml:"space-auditor"`
+	DeveloperGroup          string   `yaml:"space-developer-group,omitempty"`
+	ManagerGroup            string   `yaml:"space-manager-group,omitempty"`
+	AuditorGroup            string   `yaml:"space-auditor-group,omitempty"`
+	AllowSSH                bool     `yaml:"allow-ssh"`
+	EnableSpaceQuota        bool     `yaml:"enable-space-quota"`
+	MemoryLimit             int      `yaml:"memory-limit"`
+	InstanceMemoryLimit     int      `yaml:"instance-memory-limit"`
+	TotalRoutes             int      `yaml:"total-routes"`
+	TotalServices           int      `yaml:"total-services"`
+	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed"`
+	EnableSecurityGroup     bool     `yaml:"enable-security-group"`
+	SecurityGroupContents   string   `yaml:"omitifempty"`
+}
+
+func (i *InputUpdateSpaces) GetDeveloperGroup() string {
+	if i.Manager.LdapGroup != "" {
+		return i.Developer.LdapGroup
+	} else {
+		return i.DeveloperGroup
+	}
+}
+
+func (i *InputUpdateSpaces) GetManagerGroup() string {
+	if i.Manager.LdapGroup != "" {
+		return i.Manager.LdapGroup
+	} else {
+		return i.ManagerGroup
+	}
+}
+
+func (i *InputUpdateSpaces) GetAuditorGroup() string {
+	if i.Manager.LdapGroup != "" {
+		return i.Auditor.LdapGroup
+	} else {
+		return i.AuditorGroup
+	}
+}
+
+type UserMgmt struct {
+	LdapUser  []string `yaml:"ldap_users"`
+	Users     []string `yaml:"users"`
+	LdapGroup string   `yaml:"ldap_group"`
 }
 
 //DefaultSpaceManager -

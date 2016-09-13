@@ -1,0 +1,7 @@
+org-manager:
+  ldap_users:
+    - 
+  users:
+    - blah@emai.com
+    - bleh
+  ldap_group:

@@ -51,5 +51,15 @@ var _ = Describe("Ldap", func() {
 				Ω(len(users)).Should(Equal(4))
 			})
 		})
+		Context("GetUser()", func() {
+			It("then it should return 1 user", func() {
+				user, err := ldapManager.GetUser(config, "cwashburn")
+				Ω(err).Should(BeNil())
+				Ω(user).ShouldNot(BeNil())
+				Ω(user.UserID).Should(Equal("cwashburn"))
+				Ω(user.UserDN).Should(Equal("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
+				Ω(user.Email).Should(Equal("cwashburn+cfmt@pivotal.io"))
+			})
+		})
 	})
 })

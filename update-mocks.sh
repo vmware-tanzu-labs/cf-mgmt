@@ -16,4 +16,9 @@ mockgen github.com/pivotalservices/cf-mgmt/uaac Manager \
   > uaac/mocks/mock_manager.go
 gofmt -w uaac/mocks/mock_manager.go
 
+mockgen github.com/pivotalservices/cf-mgmt/organization Manager \
+  > organization/mocks/mock_manager.go
+gofmt -w organization/mocks/mock_manager.go
+
+
 echo >&2 "OK"

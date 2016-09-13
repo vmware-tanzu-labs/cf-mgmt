@@ -24,34 +24,61 @@ func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 	}
 }
 
+func (m *DefaultSpaceManager) GetSpaceConfigs(configDir string) ([]*InputUpdateSpaces, error) {
+	if files, err := utils.NewDefaultManager().FindFiles(configDir, "spaceConfig.yml"); err == nil {
+		spaceConfigs := []*InputUpdateSpaces{}
+		for _, f := range files {
+			lo.G.Info("Processing space file", f)
+			input := &InputUpdateSpaces{}
+			if err = m.UtilsMgr.LoadFile(f, input); err == nil {
+				spaceConfigs = append(spaceConfigs, input)
+				if input.EnableSecurityGroup {
+					securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
+					lo.G.Debug("Loading security group contents", securityGroupFile)
+					var bytes []byte
+					if bytes, err = ioutil.ReadFile(securityGroupFile); err == nil {
+						lo.G.Debug("setting security group contents", string(bytes))
+						input.SecurityGroupContents = string(bytes)
+					} else {
+						return nil, err
+					}
+				}
+			} else {
+				return nil, err
+			}
+		}
+
+		return spaceConfigs, nil
+	} else {
+		return nil, err
+	}
+}
+
 //CreateApplicationSecurityGroups -
-func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) (err error) {
-	var contents string
+func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) error {
 	var targetSGGUID string
 	var sgs map[string]string
-	var space cloudcontroller.Space
-	files, _ := m.UtilsMgr.FindFiles(configDir, "spaceConfig.yml")
-	for _, f := range files {
-		input := &InputUpdateSpaces{}
-		if err = m.UtilsMgr.LoadFile(f, input); err == nil {
+	var space *cloudcontroller.Space
+
+	if spaceConfigs, err := m.GetSpaceConfigs(configDir); err != nil {
+		return err
+	} else {
+		for _, input := range spaceConfigs {
 			if input.EnableSecurityGroup {
 				if space, err = m.FindSpace(input.Org, input.Space); err == nil {
-					securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
-					if contents, err = m.getSecurityFileContents(securityGroupFile); err == nil {
-						sgName := fmt.Sprintf("%s-%s", input.Org, input.Space)
-						if sgs, err = m.CloudController.ListSecurityGroups(); err == nil {
-							if sgGUID, ok := sgs[sgName]; ok {
-								lo.G.Info("Updating security group", sgName)
-								if err = m.CloudController.UpdateSecurityGroup(sgGUID, sgName, contents); err == nil {
-									lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
-									m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgGUID)
-								}
-							} else {
-								lo.G.Info("Creating security group", sgName)
-								if targetSGGUID, err = m.CloudController.CreateSecurityGroup(sgName, contents); err == nil {
-									lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
-									m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, targetSGGUID)
-								}
+					sgName := fmt.Sprintf("%s-%s", input.Org, input.Space)
+					if sgs, err = m.CloudController.ListSecurityGroups(); err == nil {
+						if sgGUID, ok := sgs[sgName]; ok {
+							lo.G.Info("Updating security group", sgName)
+							if err = m.CloudController.UpdateSecurityGroup(sgGUID, sgName, input.SecurityGroupContents); err == nil {
+								lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
+								m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgGUID)
+							}
+						} else {
+							lo.G.Info("Creating security group", sgName)
+							if targetSGGUID, err = m.CloudController.CreateSecurityGroup(sgName, input.SecurityGroupContents); err == nil {
+								lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
+								m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, targetSGGUID)
 							}
 						}
 					}
@@ -59,28 +86,19 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 			}
 		}
 	}
-	return
-}
-
-func (m *DefaultSpaceManager) getSecurityFileContents(securityGroupFile string) (contents string, err error) {
-	var bytes []byte
-	if bytes, err = ioutil.ReadFile(securityGroupFile); err == nil {
-		contents = string(bytes)
-	}
-	return
+	return nil
 }
 
 //CreateQuotas -
-func (m *DefaultSpaceManager) CreateQuotas(configDir string) (err error) {
+func (m *DefaultSpaceManager) CreateQuotas(configDir string) error {
 	var quotas map[string]string
-	var space cloudcontroller.Space
+	var space *cloudcontroller.Space
 	var targetQuotaGUID string
 
-	files, _ := m.UtilsMgr.FindFiles(configDir, "spaceConfig.yml")
-	for _, f := range files {
-		input := &InputUpdateSpaces{}
-		if err = m.UtilsMgr.LoadFile(f, input); err == nil {
-			lo.G.Info("Processing file", f)
+	if spaceConfigs, err := m.GetSpaceConfigs(configDir); err != nil {
+		return err
+	} else {
+		for _, input := range spaceConfigs {
 			if input.EnableSpaceQuota {
 				if space, err = m.FindSpace(input.Org, input.Space); err == nil {
 					quotaName := space.Entity.Name
@@ -104,156 +122,227 @@ func (m *DefaultSpaceManager) CreateQuotas(configDir string) (err error) {
 				}
 			}
 		}
-
 	}
-
-	if err != nil {
-		lo.G.Error(err)
-	}
-	return
+	return nil
 }
 
 //UpdateSpaces -
-func (m *DefaultSpaceManager) UpdateSpaces(configDir string) (err error) {
-	var space cloudcontroller.Space
-	files, _ := m.UtilsMgr.FindFiles(configDir, "spaceConfig.yml")
-	for _, f := range files {
-		lo.G.Info("Processing space file", f)
-		input := &InputUpdateSpaces{}
-		if err = m.UtilsMgr.LoadFile(f, input); err == nil {
-			//if input, err = m.loadUpdateFile(f); err == nil {
+func (m *DefaultSpaceManager) UpdateSpaces(configDir string) error {
+	var space *cloudcontroller.Space
+
+	if spaceConfigs, err := m.GetSpaceConfigs(configDir); err != nil {
+		return err
+	} else {
+		for _, input := range spaceConfigs {
 			if space, err = m.FindSpace(input.Org, input.Space); err == nil {
 				lo.G.Info("Processing space", space.Entity.Name)
 				if input.AllowSSH != space.Entity.AllowSSH {
 					if err = m.CloudController.UpdateSpaceSSH(input.AllowSSH, space.MetaData.GUID); err != nil {
-						return
+						return err
 					}
 				}
 			}
 		}
 	}
-	return
+	return nil
 }
 
 //UpdateSpaceUsers -
-func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword string) (err error) {
-	var space cloudcontroller.Space
+func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword string) error {
+	var space *cloudcontroller.Space
 	var config *ldap.Config
-
+	var uaacUsers map[string]string
+	var err error
 	if config, err = m.LdapMgr.GetConfig(configDir, ldapBindPassword); err != nil {
-		return
+		return err
+	}
+
+	if uaacUsers, err = m.UAACMgr.ListUsers(); err != nil {
+		return err
 	}
 
 	if config.Enabled {
-		files, _ := utils.NewDefaultManager().FindFiles(configDir, "spaceConfig.yml")
-		for _, f := range files {
-			lo.G.Info("Processing space file", f)
-			input := &InputUpdateSpaces{}
-			if err = m.UtilsMgr.LoadFile(f, input); err == nil {
-				if space, err = m.FindSpace(input.Org, input.Space); err == nil {
-					lo.G.Info("User sync for space", space.Entity.Name)
-					if err = m.updateUsers(config, space, "developers", input.DeveloperGroup); err != nil {
-						return
-					}
-					if err = m.updateUsers(config, space, "managers", input.ManagerGroup); err != nil {
-						return
-					}
-					if err = m.updateUsers(config, space, "auditors", input.AuditorGroup); err != nil {
-						return
-					}
+		var spaceConfigs []*InputUpdateSpaces
+
+		if spaceConfigs, err = m.GetSpaceConfigs(configDir); err != nil {
+			return err
+		}
+
+		for _, input := range spaceConfigs {
+			if space, err = m.FindSpace(input.Org, input.Space); err == nil {
+				lo.G.Info("User sync for space", space.Entity.Name)
+				if err = m.UpdateSpaceDevelopers(config, space, input, uaacUsers); err != nil {
+					return err
+				}
+				if err = m.UpdateSpaceManagers(config, space, input, uaacUsers); err != nil {
+					return err
+				}
+				if err = m.UpdateSpaceAuditors(config, space, input, uaacUsers); err != nil {
+					return err
 				}
 			}
 		}
 	}
-
-	return
+	return nil
 }
-func (m *DefaultSpaceManager) updateUsers(config *ldap.Config, space cloudcontroller.Space, role, groupName string) (err error) {
-	var groupUsers []ldap.User
-	var uaacUsers map[string]string
-	if groupName != "" {
-		lo.G.Info("Getting users for group", groupName)
-		if groupUsers, err = m.LdapMgr.GetUserIDs(config, groupName); err == nil {
-			if uaacUsers, err = m.UAACMgr.ListUsers(); err == nil {
-				for _, groupUser := range groupUsers {
-					if _, userExists := uaacUsers[strings.ToLower(groupUser.UserID)]; userExists {
-						lo.G.Info("User", groupUser.UserID, "already exists")
-					} else {
-						lo.G.Info("User", groupUser.UserID, "doesn't exist so creating in UAA")
-						if err = m.UAACMgr.CreateLdapUser(groupUser.UserID, groupUser.Email, groupUser.UserDN); err != nil {
-							return
-						}
-					}
-					lo.G.Info("Adding user to groups")
-					if err = m.addRole(groupUser.UserID, role, space.Entity.OrgGUID, space.MetaData.GUID); err != nil {
-						lo.G.Error(err)
-						return
-					}
-				}
+
+func (m *DefaultSpaceManager) UpdateSpaceDevelopers(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
+	if users, err := m.getLdapUsers(config, input.GetDeveloperGroup(), input.Developer.LdapUser); err == nil {
+		if err = m.updateLdapUsers(config, space, "developers", uaacUsers, users); err != nil {
+			return err
+		}
+		for _, userID := range input.Developer.Users {
+			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "developers"); err != nil {
+				return err
 			}
 		}
-	}
-	return
-}
-
-func (m *DefaultSpaceManager) addRole(userName, role, orgGUID, spaceGUID string) error {
-	if err := m.CloudController.AddUserToOrg(userName, orgGUID); err != nil {
+	} else {
 		return err
 	}
-	return m.CloudController.AddUserToSpaceRole(userName, role, spaceGUID)
+	return nil
 }
 
-//CreateSpace -
-func (m *DefaultSpaceManager) CreateSpace(orgName, spaceName string) (space cloudcontroller.Space, err error) {
-	var orgGUID string
-	if orgGUID, err = m.OrgMgr.GetOrgGUID(orgName); err == nil {
-		if err = m.CloudController.CreateSpace(spaceName, orgGUID); err == nil {
-			space, err = m.FindSpace(orgGUID, spaceName)
+func (m *DefaultSpaceManager) UpdateSpaceManagers(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
+	if users, err := m.getLdapUsers(config, input.GetManagerGroup(), input.Manager.LdapUser); err == nil {
+		if err = m.updateLdapUsers(config, space, "managers", uaacUsers, users); err != nil {
+			return err
+		}
+		for _, userID := range input.Manager.Users {
+			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "managers"); err != nil {
+				return err
+			}
+		}
+	} else {
+		return err
+	}
+	return nil
+}
+
+func (m *DefaultSpaceManager) UpdateSpaceAuditors(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
+	if users, err := m.getLdapUsers(config, input.GetAuditorGroup(), input.Auditor.LdapUser); err == nil {
+		if err = m.updateLdapUsers(config, space, "auditors", uaacUsers, users); err != nil {
+			return err
+		}
+		for _, userID := range input.Auditor.Users {
+			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "auditors"); err != nil {
+				return err
+			}
+		}
+	} else {
+		return err
+	}
+	return nil
+}
+
+func (m *DefaultSpaceManager) getLdapUsers(config *ldap.Config, groupName string, userList []string) ([]ldap.User, error) {
+	users := []ldap.User{}
+	if groupName != "" {
+		if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
+			users = append(users, groupUsers...)
+		}
+		for _, user := range userList {
+			if ldapUser, err := m.LdapMgr.GetUser(config, user); err == nil {
+				users = append(users, *ldapUser)
+			} else {
+				return nil, err
+			}
 		}
 	}
-	return
+	return users, nil
+}
+func (m *DefaultSpaceManager) updateLdapUsers(config *ldap.Config, space *cloudcontroller.Space, role string, uaacUsers map[string]string, users []ldap.User) error {
+	for _, user := range users {
+		if _, userExists := uaacUsers[strings.ToLower(user.UserID)]; userExists {
+			lo.G.Info("User", user.UserID, "already exists")
+		} else {
+			lo.G.Info("User", user.UserID, "doesn't exist so creating in UAA")
+			if err := m.UAACMgr.CreateLdapUser(user.UserID, user.Email, user.UserDN); err != nil {
+				return err
+			} else {
+				uaacUsers[user.UserID] = user.UserID
+			}
+		}
+		if err := m.addUserToOrgAndRole(user.UserID, space.Entity.OrgGUID, space.MetaData.GUID, role); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DefaultSpaceManager) addUserToOrgAndRole(userID, orgGUID, spaceGUID, role string) error {
+	lo.G.Info("Adding user to groups")
+	if err := m.CloudController.AddUserToOrg(userID, orgGUID); err != nil {
+		return err
+	}
+	if err := m.CloudController.AddUserToSpaceRole(userID, role, spaceGUID); err != nil {
+		return err
+	}
+	return nil
 }
 
 //FindSpace -
-func (m *DefaultSpaceManager) FindSpace(orgName, spaceName string) (space cloudcontroller.Space, err error) {
-	var spaces []cloudcontroller.Space
-	if spaces, err = m.fetchSpaces(orgName); err == nil {
-		for _, theSpace := range spaces {
-			if theSpace.Entity.Name == spaceName {
-				space = theSpace
-				return
+func (m *DefaultSpaceManager) FindSpace(orgName, spaceName string) (*cloudcontroller.Space, error) {
+	if orgGUID, err := m.OrgMgr.GetOrgGUID(orgName); err != nil {
+		return nil, err
+	} else {
+		if spaces, err := m.CloudController.ListSpaces(orgGUID); err == nil {
+			for _, theSpace := range spaces {
+				if theSpace.Entity.Name == spaceName {
+					return &theSpace, nil
+				}
 			}
+			return nil, fmt.Errorf("Space [%s] not found in org [%s]", spaceName, orgName)
+		} else {
+			return nil, err
 		}
 	}
-	return
+}
+
+func (m *DefaultSpaceManager) GetSpaceConfigList(configDir string) ([]InputCreateSpaces, error) {
+
+	if files, err := m.UtilsMgr.FindFiles(configDir, "spaces.yml"); err != nil {
+		return nil, err
+	} else {
+		spaceList := []InputCreateSpaces{}
+		for _, f := range files {
+			lo.G.Info("Processing space file", f)
+			input := InputCreateSpaces{}
+			if err := m.UtilsMgr.LoadFile(f, &input); err == nil {
+				spaceList = append(spaceList, input)
+			}
+		}
+		return spaceList, nil
+	}
 }
 
 //CreateSpaces -
-func (m *DefaultSpaceManager) CreateSpaces(configDir string) (err error) {
-	files, _ := utils.NewDefaultManager().FindFiles(configDir, "spaces.yml")
-	for _, f := range files {
-		lo.G.Info("Processing space file", f)
-		input := &InputCreateSpaces{}
-		if err = utils.NewDefaultManager().LoadFile(f, input); err == nil {
-			if len(input.Spaces) == 0 {
-				lo.G.Info("No spaces in config file", f)
-			}
-			var spaces []cloudcontroller.Space
-			if spaces, err = m.fetchSpaces(input.Org); err == nil {
-				for _, spaceName := range input.Spaces {
-					if m.doesSpaceExist(spaces, spaceName) {
-						lo.G.Info(fmt.Sprintf("[%s] space already exists", spaceName))
-					} else {
-						lo.G.Info(fmt.Sprintf("Creating [%s] space in [%s] org", spaceName, input.Org))
-						m.CreateSpace(input.Org, spaceName)
+func (m *DefaultSpaceManager) CreateSpaces(configDir string) error {
+
+	if configSpaceList, err := m.GetSpaceConfigList(configDir); err != nil {
+		return err
+	} else {
+		for _, input := range configSpaceList {
+			if len(input.Spaces) >= 0 {
+				var orgGUID string
+				if orgGUID, err = m.OrgMgr.GetOrgGUID(input.Org); err != nil {
+					return err
+				}
+				var spaces []cloudcontroller.Space
+				if spaces, err = m.CloudController.ListSpaces(orgGUID); err == nil {
+					for _, spaceName := range input.Spaces {
+						if m.doesSpaceExist(spaces, spaceName) {
+							lo.G.Info(fmt.Sprintf("[%s] space already exists", spaceName))
+						} else {
+							lo.G.Info(fmt.Sprintf("Creating [%s] space in [%s] org", spaceName, input.Org))
+							m.CloudController.CreateSpace(spaceName, orgGUID)
+						}
 					}
 				}
-			} else {
-				return
 			}
 		}
+		return nil
 	}
-	return
 }
 
 func (m *DefaultSpaceManager) doesSpaceExist(spaces []cloudcontroller.Space, spaceName string) (result bool) {
@@ -266,12 +355,4 @@ func (m *DefaultSpaceManager) doesSpaceExist(spaces []cloudcontroller.Space, spa
 	}
 	return
 
-}
-
-func (m *DefaultSpaceManager) fetchSpaces(orgName string) (spaces []cloudcontroller.Space, err error) {
-	var orgGUID string
-	if orgGUID, err = m.OrgMgr.GetOrgGUID(orgName); err == nil {
-		spaces, err = m.CloudController.ListSpaces(orgGUID)
-	}
-	return
 }
