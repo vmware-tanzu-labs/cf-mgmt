@@ -5,7 +5,7 @@ sn: Washburn
 uid: cwashburn
 userpassword: password
 homephone: 555-111-2222
-mail: cwashburn+cfmt@pivotal.io
+mail: cwashburn+cfmt@testdomain.com
 
 dn: cn=cwashburn1,ou=users,dc=pivotal,dc=org
 objectclass: inetOrgPerson
@@ -14,7 +14,7 @@ sn: Washburn
 uid: cwashburn1
 userpassword: password
 homephone: 555-111-2222
-mail: cwashburn+cfmt1@pivotal.io
+mail: cwashburn+cfmt1@testdomain.com
 
 dn: cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org
 objectclass: inetOrgPerson
@@ -23,7 +23,7 @@ sn: Washburn
 uid: cwashburn2
 userpassword: password
 homephone: 555-111-2222
-mail: cwashburn+cfmt2@pivotal.io
+mail: cwashburn+cfmt2@testdomain.com
 
 dn: cn=special\, (char) - username,ou=users,dc=pivotal,dc=org
 objectclass: inetOrgPerson
@@ -32,7 +32,7 @@ sn: Washburn
 uid: cwashburn3
 userpassword: password
 homephone: 555-111-2222
-mail: cwashburn+cfmt3@pivotal.io
+mail: cwashburn+cfmt3@testdomain.com
 
 dn: cn=space_developers,ou=groups,dc=pivotal,dc=org
 objectClass: groupOfNames

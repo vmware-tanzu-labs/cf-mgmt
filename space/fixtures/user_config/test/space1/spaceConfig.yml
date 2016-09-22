@@ -7,24 +7,24 @@ space-manager:
     - cwashburn1
     - cwashburn2
   users:
-    - cwashburn@pivotal.io
-    - cwashburn2@pivotal.io
+    - cwashburn@testdomain.com
+    - cwashburn2@testdomain.com
   ldap_group: test_space1_managers
 space-auditor:
   ldap_users:
     - cwashburn1
     - cwashburn2
   users:
-    - cwashburn@pivotal.io
-    - cwashburn2@pivotal.io
+    - cwashburn@testdomain.com
+    - cwashburn2@testdomain.com
   ldap_group: test_space1_auditors
 space-developer:
   ldap_users:
     - cwashburn1
     - cwashburn2
   users:
-    - cwashburn@pivotal.io
-    - cwashburn2@pivotal.io
+    - cwashburn@testdomain.com
+    - cwashburn2@testdomain.com
   ldap_group: test_space1_developers
 enable-space-quota: true
 memory-limit: 10240

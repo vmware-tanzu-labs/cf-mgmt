@@ -38,11 +38,17 @@ func (m *DefaultManager) LoadFile(configFile string, dataType interface{}) (err 
 	return
 }
 
+//WriteFileBytes -
+func (m *DefaultManager) WriteFileBytes(configFile string, data []byte) (err error) {
+	err = ioutil.WriteFile(configFile, data, 0755)
+	return
+}
+
 //WriteFile -
 func (m *DefaultManager) WriteFile(configFile string, dataType interface{}) (err error) {
 	var data []byte
 	if data, err = yaml.Marshal(dataType); err == nil {
-		err = ioutil.WriteFile(configFile, data, 0755)
+		err = m.WriteFileBytes(configFile, data)
 	}
 	return
 }
@@ -52,6 +58,7 @@ type Manager interface {
 	FindFiles(directoryName, pattern string) (files []string, err error)
 	LoadFile(configFile string, dataType interface{}) (err error)
 	WriteFile(configFile string, dataType interface{}) (err error)
+	WriteFileBytes(configFile string, data []byte) (err error)
 }
 
 //DefaultManager -

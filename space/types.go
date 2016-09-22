@@ -52,7 +52,7 @@ type InputUpdateSpaces struct {
 	TotalServices           int      `yaml:"total-services"`
 	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed"`
 	EnableSecurityGroup     bool     `yaml:"enable-security-group"`
-	SecurityGroupContents   string   `yaml:"omitifempty"`
+	SecurityGroupContents   string   `yaml:"security-group-contents,omitempty"`
 }
 
 func (i *InputUpdateSpaces) GetDeveloperGroup() string {

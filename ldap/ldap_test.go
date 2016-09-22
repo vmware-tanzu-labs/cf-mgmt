@@ -19,7 +19,7 @@ var _ = Describe("Ldap", func() {
 			var port int
 			if os.Getenv("LDAP_PORT_389_TCP_ADDR") == "" {
 				host = "127.0.0.1"
-				port = 10389
+				port = 389
 			} else {
 				host = os.Getenv("LDAP_PORT_389_TCP_ADDR")
 				port, _ = strconv.Atoi(os.Getenv("LDAP_PORT_389_TCP_PORT"))
@@ -58,7 +58,7 @@ var _ = Describe("Ldap", func() {
 				Ω(user).ShouldNot(BeNil())
 				Ω(user.UserID).Should(Equal("cwashburn"))
 				Ω(user.UserDN).Should(Equal("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
-				Ω(user.Email).Should(Equal("cwashburn+cfmt@pivotal.io"))
+				Ω(user.Email).Should(Equal("cwashburn+cfmt@testdomain.com"))
 			})
 		})
 	})

@@ -369,7 +369,7 @@ var _ = Describe("given SpaceManager", func() {
 			uaacUsers["cwashburn1"] = "cwashburn1"
 			uaacUsers["cwashburn2"] = "cwashburn2"
 			users := []l.User{
-				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@pivotal.io"},
+				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@testdomain.com"},
 			}
 			mockLdap.EXPECT().GetConfig("./fixtures/user_config", "test").Return(config, nil)
 			mockUaac.EXPECT().ListUsers().Return(uaacUsers, nil)
@@ -382,13 +382,13 @@ var _ = Describe("given SpaceManager", func() {
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn1", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn2", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn@pivotal.io", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@pivotal.io", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn@testdomain.com", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@testdomain.com", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn", "developers", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn1", "developers", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2", "developers", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@pivotal.io", "developers", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@pivotal.io", "developers", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@testdomain.com", "developers", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@testdomain.com", "developers", "space1GUID").Return(nil)
 
 			mockLdap.EXPECT().GetUserIDs(config, "test_space1_managers").Return(users, nil)
 			mockLdap.EXPECT().GetUser(config, "cwashburn1").Return(&l.User{UserID: "cwashburn1", UserDN: "cn=cwashburn1", Email: "cwashburn1@test.io"}, nil)
@@ -396,14 +396,14 @@ var _ = Describe("given SpaceManager", func() {
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn1", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn2", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn@pivotal.io", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@pivotal.io", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn@testdomain.com", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@testdomain.com", "testOrgGUID").Return(nil)
 
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn", "managers", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn1", "managers", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2", "managers", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@pivotal.io", "managers", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@pivotal.io", "managers", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@testdomain.com", "managers", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@testdomain.com", "managers", "space1GUID").Return(nil)
 
 			mockLdap.EXPECT().GetUserIDs(config, "test_space1_auditors").Return(users, nil)
 			mockLdap.EXPECT().GetUser(config, "cwashburn1").Return(&l.User{UserID: "cwashburn1", UserDN: "cn=cwashburn1", Email: "cwashburn1@test.io"}, nil)
@@ -412,14 +412,14 @@ var _ = Describe("given SpaceManager", func() {
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn1", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn2", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn@pivotal.io", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@pivotal.io", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn@testdomain.com", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@testdomain.com", "testOrgGUID").Return(nil)
 
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn", "auditors", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn1", "auditors", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2", "auditors", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@pivotal.io", "auditors", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@pivotal.io", "auditors", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@testdomain.com", "auditors", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@testdomain.com", "auditors", "space1GUID").Return(nil)
 
 			err := spaceManager.UpdateSpaceUsers("./fixtures/user_config", "test")
 			Ω(err).Should(BeNil())
@@ -430,7 +430,7 @@ var _ = Describe("given SpaceManager", func() {
 			}
 			uaacUsers := make(map[string]string)
 			users := []l.User{
-				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@pivotal.io"},
+				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@testdomain.com"},
 			}
 			mockLdap.EXPECT().GetConfig("./fixtures/user_config", "test").Return(config, nil)
 			mockUaac.EXPECT().ListUsers().Return(uaacUsers, nil)
@@ -440,20 +440,20 @@ var _ = Describe("given SpaceManager", func() {
 			mockLdap.EXPECT().GetUser(config, "cwashburn1").Return(&l.User{UserID: "cwashburn1", UserDN: "cn=cwashburn1", Email: "cwashburn1@test.io"}, nil)
 			mockLdap.EXPECT().GetUser(config, "cwashburn2").Return(&l.User{UserID: "cwashburn2", UserDN: "cn=cwashburn2", Email: "cwashburn2@test.io"}, nil)
 
-			mockUaac.EXPECT().CreateLdapUser("cwashburn", "cwashburn@pivotal.io", "cn=cwashburn").Return(nil)
+			mockUaac.EXPECT().CreateLdapUser("cwashburn", "cwashburn@testdomain.com", "cn=cwashburn").Return(nil)
 			mockUaac.EXPECT().CreateLdapUser("cwashburn1", "cwashburn1@test.io", "cn=cwashburn1").Return(nil)
 			mockUaac.EXPECT().CreateLdapUser("cwashburn2", "cwashburn2@test.io", "cn=cwashburn2").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn1", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn2", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn@pivotal.io", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@pivotal.io", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn@testdomain.com", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@testdomain.com", "testOrgGUID").Return(nil)
 
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn", "developers", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn1", "developers", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2", "developers", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@pivotal.io", "developers", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@pivotal.io", "developers", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@testdomain.com", "developers", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@testdomain.com", "developers", "space1GUID").Return(nil)
 			mockLdap.EXPECT().GetUserIDs(config, "test_space1_managers").Return(users, nil)
 			mockLdap.EXPECT().GetUser(config, "cwashburn1").Return(&l.User{UserID: "cwashburn1", UserDN: "cn=cwashburn1", Email: "cwashburn1@test.io"}, nil)
 			mockLdap.EXPECT().GetUser(config, "cwashburn2").Return(&l.User{UserID: "cwashburn2", UserDN: "cn=cwashburn2", Email: "cwashburn2@test.io"}, nil)
@@ -461,14 +461,14 @@ var _ = Describe("given SpaceManager", func() {
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn1", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn2", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn@pivotal.io", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@pivotal.io", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn@testdomain.com", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@testdomain.com", "testOrgGUID").Return(nil)
 
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn", "managers", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn1", "managers", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2", "managers", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@pivotal.io", "managers", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@pivotal.io", "managers", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@testdomain.com", "managers", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@testdomain.com", "managers", "space1GUID").Return(nil)
 
 			mockLdap.EXPECT().GetUserIDs(config, "test_space1_auditors").Return(users, nil)
 			mockLdap.EXPECT().GetUser(config, "cwashburn1").Return(&l.User{UserID: "cwashburn1", UserDN: "cn=cwashburn1", Email: "cwashburn1@test.io"}, nil)
@@ -477,14 +477,14 @@ var _ = Describe("given SpaceManager", func() {
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn1", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn2", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn@pivotal.io", "testOrgGUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@pivotal.io", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn@testdomain.com", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn2@testdomain.com", "testOrgGUID").Return(nil)
 
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn", "auditors", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn1", "auditors", "space1GUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2", "auditors", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@pivotal.io", "auditors", "space1GUID").Return(nil)
-			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@pivotal.io", "auditors", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn@testdomain.com", "auditors", "space1GUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburn2@testdomain.com", "auditors", "space1GUID").Return(nil)
 
 			err := spaceManager.UpdateSpaceUsers("./fixtures/user_config", "test")
 			Ω(err).Should(BeNil())
