@@ -13,7 +13,7 @@ import (
 var _ = Describe("Ldap", func() {
 	var ldapManager Manager
 	var config *Config
-	Describe("given a GetUserIDs", func() {
+	Describe("given a ldap manager", func() {
 		BeforeEach(func() {
 			var host string
 			var port int
@@ -36,6 +36,13 @@ var _ = Describe("Ldap", func() {
 				LdapHost:          host,
 				LdapPort:          port,
 			}
+		})
+		Context("when cn with special characters", func() {
+			It("then it should return 1 Entry", func() {
+				entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org", "ou=users,dc=pivotal,dc=org")
+				Ω(err).Should(BeNil())
+				Ω(entry).ShouldNot(BeNil())
+			})
 		})
 		Context("when called with a valid group", func() {
 			It("then it should return 4 users", func() {

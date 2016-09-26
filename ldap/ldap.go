@@ -37,7 +37,7 @@ func (m *DefaultManager) GetConfig(configDir, ldapBindPassword string) (config *
 }
 
 //GetUserIDs -
-func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []User, err error) {
+func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []*User, err error) {
 	var ldapConnection *l.Conn
 	ldapURL := fmt.Sprintf("%s:%d", config.LdapHost, config.LdapPort)
 	lo.G.Debug("Connecting to", ldapURL)
@@ -48,18 +48,13 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []U
 			return
 		}
 		var groupEntry *l.Entry
-		var userEntry *l.Entry
+		var user *User
 		if groupEntry, err = m.getGroup(ldapConnection, groupName, config.GroupSearchBase); err == nil {
 			if groupEntry != nil {
 				userDNList := groupEntry.GetAttributeValues(config.GroupAttribute)
 				for _, userDN := range userDNList {
-					if userEntry, err = m.getUser(ldapConnection, userDN, config.UserSearchBase); err == nil {
-						if userEntry != nil {
-							user := User{
-								UserDN: userEntry.DN,
-								UserID: userEntry.GetAttributeValue(config.UserNameAttribute),
-								Email:  userEntry.GetAttributeValue(config.UserMailAttribute),
-							}
+					if user, err = m.getLdapUser(ldapConnection, userDN, config.UserSearchBase, config.UserNameAttribute, config.UserMailAttribute); err == nil {
+						if user != nil {
 							users = append(users, user)
 						} else {
 							lo.G.Info("User entry not found", userDN)
@@ -74,7 +69,26 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []U
 	return
 }
 
-func (m *DefaultManager) getUser(ldapConnection *l.Conn, userDN, userSearchBase string) (entry *l.Entry, err error) {
+func (m *DefaultManager) GetLdapUser(config *Config, userDN, userSearchBase string) (*User, error) {
+	ldapURL := fmt.Sprintf("%s:%d", config.LdapHost, config.LdapPort)
+	lo.G.Debug("Connecting to", ldapURL)
+	if ldapConnection, err := l.Dial("tcp", ldapURL); err == nil {
+		// be sure to add error checking!
+		defer ldapConnection.Close()
+		if err := ldapConnection.Bind(config.BindDN, config.BindPassword); err != nil {
+			return nil, err
+		}
+		if user, err := m.getLdapUser(ldapConnection, userDN, config.UserSearchBase, config.UserNameAttribute, config.UserMailAttribute); err == nil {
+			return user, nil
+		} else {
+			return nil, err
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN, userSearchBase, userNameAttribute, userMailAttribute string) (user *User, err error) {
 	var sr *l.SearchResult
 	lo.G.Debug("User DN:", userDN)
 	index := strings.Index(strings.ToUpper(userDN), ",OU=")
@@ -91,7 +105,12 @@ func (m *DefaultManager) getUser(ldapConnection *l.Conn, userDN, userSearchBase 
 
 	if sr, err = ldapConnection.Search(search); err == nil {
 		if (len(sr.Entries)) == 1 {
-			entry = sr.Entries[0]
+			userEntry := sr.Entries[0]
+			user = &User{
+				UserDN: userEntry.DN,
+				UserID: userEntry.GetAttributeValue(userNameAttribute),
+				Email:  userEntry.GetAttributeValue(userMailAttribute),
+			}
 		}
 	} else {
 		lo.G.Error(err)
@@ -133,9 +152,11 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 		// be sure to add error checking!
 		defer ldapConnection.Close()
 		if err := ldapConnection.Bind(config.BindDN, config.BindPassword); err != nil {
+			lo.G.Error(err)
 			return nil, err
 		}
 		theUserFilter := "(" + config.UserNameAttribute + "=%s)"
+		lo.G.Debug("User filter before escape:", theUserFilter)
 		filter := fmt.Sprintf(theUserFilter, l.EscapeFilter(userID))
 		lo.G.Info("Searching for group:", filter)
 		lo.G.Debug("Using user search base:", config.UserSearchBase)
@@ -158,6 +179,7 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 				return user, nil
 			}
 		} else {
+			lo.G.Error(err)
 			return nil, err
 		}
 	}
@@ -166,6 +188,7 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 
 func unEscapeLDAPValue(input string) string {
 	var returnString string
+	returnString = strings.Replace(input, ",", "\\,", 1)
 	returnString = strings.Replace(input, "2C", ",", 1)
 	returnString = strings.Replace(returnString, "\\,", ",", 1)
 	return returnString

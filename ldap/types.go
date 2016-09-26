@@ -2,9 +2,10 @@ package ldap
 
 //Manager -
 type Manager interface {
-	GetUserIDs(config *Config, groupName string) (users []User, err error)
+	GetUserIDs(config *Config, groupName string) (users []*User, err error)
 	GetUser(config *Config, userID string) (*User, error)
 	GetConfig(configDir, ldapBindPassword string) (*Config, error)
+	GetLdapUser(config *Config, userDN, userSearchBase string) (*User, error)
 }
 
 //DefaultManager -
