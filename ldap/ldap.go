@@ -37,7 +37,7 @@ func (m *DefaultManager) GetConfig(configDir, ldapBindPassword string) (config *
 }
 
 //GetUserIDs -
-func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []*User, err error) {
+func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []User, err error) {
 	var ldapConnection *l.Conn
 	ldapURL := fmt.Sprintf("%s:%d", config.LdapHost, config.LdapPort)
 	lo.G.Debug("Connecting to", ldapURL)
@@ -55,7 +55,7 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []*
 				for _, userDN := range userDNList {
 					if user, err = m.getLdapUser(ldapConnection, userDN, config.UserSearchBase, config.UserNameAttribute, config.UserMailAttribute); err == nil {
 						if user != nil {
-							users = append(users, user)
+							users = append(users, *user)
 						} else {
 							lo.G.Info("User entry not found", userDN)
 						}
@@ -188,7 +188,6 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 
 func unEscapeLDAPValue(input string) string {
 	var returnString string
-	returnString = strings.Replace(input, ",", "\\,", 1)
 	returnString = strings.Replace(input, "2C", ",", 1)
 	returnString = strings.Replace(returnString, "\\,", ",", 1)
 	return returnString

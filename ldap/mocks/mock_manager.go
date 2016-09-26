@@ -40,6 +40,17 @@ func (_mr *_MockManagerRecorder) GetConfig(arg0, arg1 interface{}) *gomock.Call 
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetConfig", arg0, arg1)
 }
 
+func (_m *MockManager) GetLdapUser(_param0 *ldap.Config, _param1 string, _param2 string) (*ldap.User, error) {
+	ret := _m.ctrl.Call(_m, "GetLdapUser", _param0, _param1, _param2)
+	ret0, _ := ret[0].(*ldap.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockManagerRecorder) GetLdapUser(arg0, arg1, arg2 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetLdapUser", arg0, arg1, arg2)
+}
+
 func (_m *MockManager) GetUser(_param0 *ldap.Config, _param1 string) (*ldap.User, error) {
 	ret := _m.ctrl.Call(_m, "GetUser", _param0, _param1)
 	ret0, _ := ret[0].(*ldap.User)
