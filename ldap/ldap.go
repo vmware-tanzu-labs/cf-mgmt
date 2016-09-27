@@ -23,9 +23,9 @@ func NewManager() Manager {
 	return &DefaultManager{}
 }
 
-func (m *DefaultManager) GetConfig(configDir, ldapBindPassword string) (config *Config, err error) {
-	var data []byte
-	if data, err = ioutil.ReadFile(configDir + "/ldap.yml"); err == nil {
+func (m *DefaultManager) GetConfig(configDir, ldapBindPassword string) (*Config, error) {
+
+	if data, err := ioutil.ReadFile(configDir + "/ldap.yml"); err == nil {
 		config := &Config{}
 		if err = yaml.Unmarshal(data, &config); err == nil {
 			if ldapBindPassword != "" {
@@ -33,9 +33,15 @@ func (m *DefaultManager) GetConfig(configDir, ldapBindPassword string) (config *
 			} else {
 				lo.G.Warning("Ldap bind password should be removed from ldap.yml as this will be deprecated in a future release.  Use --ldap-password flag instead.")
 			}
+			return config, nil
+		} else {
+			lo.G.Error(err)
+			return nil, err
 		}
+	} else {
+		lo.G.Error(err)
+		return nil, err
 	}
-	return
 }
 
 //GetUserIDs -

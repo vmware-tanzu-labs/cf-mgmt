@@ -13,6 +13,23 @@ import (
 var _ = Describe("Ldap", func() {
 	var ldapManager Manager
 	var config *Config
+	Describe("loading configuration", func() {
+		Context("when there is valid ldap.yml", func() {
+			It("then it should return a config", func() {
+				config, err := NewManager().GetConfig("./fixtures/config", "test")
+				Ω(err).Should(BeNil())
+				Ω(config).ShouldNot(BeNil())
+				Ω(config.Enabled).Should(BeTrue())
+			})
+		})
+		Context("when there is invalid ldap.yml", func() {
+			It("then it should return a config", func() {
+				config, err := NewManager().GetConfig("./fixtures/blah", "test")
+				Ω(err).Should(HaveOccurred())
+				Ω(config).Should(BeNil())
+			})
+		})
+	})
 	Describe("given a ldap manager", func() {
 		BeforeEach(func() {
 			var host string
