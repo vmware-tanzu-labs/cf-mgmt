@@ -1,8 +1,10 @@
 package ldap
 
 import (
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
+	"regexp"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -92,8 +94,11 @@ func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN, userSearchB
 	var sr *l.SearchResult
 	lo.G.Debug("User DN:", userDN)
 	index := strings.Index(strings.ToUpper(userDN), ",OU=")
-	userCN := l.EscapeFilter(unEscapeLDAPValue(userDN[:index]))
-	lo.G.Debug("userCN", userCN)
+	userCNTemp := m.UnescapeFilterValue(userDN[:index])
+	lo.G.Debug("CN unescaped:", userCNTemp)
+	userCN := m.EscapeFilterValue(userCNTemp)
+	//userCN := l.EscapeFilter(unEscapeLDAPValue(userDN[:index]))
+	lo.G.Debug("CN escaped", userCN)
 	filter := fmt.Sprintf(userFilter, userCN)
 	lo.G.Info("Searching for user:", filter)
 	search := l.NewSearchRequest(
@@ -191,4 +196,37 @@ func unEscapeLDAPValue(input string) string {
 	returnString = strings.Replace(input, "2C", ",", 1)
 	returnString = strings.Replace(returnString, "\\,", ",", 1)
 	return returnString
+}
+
+func (m *DefaultManager) EscapeFilterValue(filter string) string {
+	var escapeFilterRegex *regexp.Regexp
+	escapeFilterRegex = regexp.MustCompile(`([\\\(\)\*\0-\37\177-\377])`)
+	repl := escapeFilterRegex.ReplaceAllFunc(
+		[]byte(filter),
+		func(match []byte) []byte {
+			if len(match) == 2 {
+				return []byte(fmt.Sprintf("\\%02x", match[1]))
+			}
+			return []byte(fmt.Sprintf("\\%02x", match[0]))
+		},
+	)
+	return string(repl)
+}
+func (m *DefaultManager) UnescapeFilterValue(filter string) string {
+	var unescapeFilterRegex *regexp.Regexp
+	unescapeFilterRegex = regexp.MustCompile(`\\([\da-fA-F]{2}|[()\\*])`)
+	// regex wil only match \[)*\] or \xx x=a-fA-F
+	repl := unescapeFilterRegex.ReplaceAllFunc(
+		[]byte(filter),
+		func(match []byte) []byte {
+			// \( \) \\ \*
+			if len(match) == 2 {
+				return []byte{match[1]}
+			}
+			// had issues with Decode, TODO fix to use Decode?.
+			res, _ := hex.DecodeString(string(match[1:]))
+			return res
+		},
+	)
+	return string(repl)
 }

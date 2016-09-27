@@ -154,10 +154,12 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 	var uaacUsers map[string]string
 	var err error
 	if config, err = m.LdapMgr.GetConfig(configDir, ldapBindPassword); err != nil {
+		lo.G.Error(err)
 		return err
 	}
 
 	if uaacUsers, err = m.UAACMgr.ListUsers(); err != nil {
+		lo.G.Error(err)
 		return err
 	}
 
@@ -165,6 +167,7 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 		var spaceConfigs []*InputUpdateSpaces
 
 		if spaceConfigs, err = m.GetSpaceConfigs(configDir); err != nil {
+			lo.G.Error(err)
 			return err
 		}
 
@@ -172,12 +175,15 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 			if space, err = m.FindSpace(input.Org, input.Space); err == nil {
 				lo.G.Info("User sync for space", space.Entity.Name)
 				if err = m.UpdateSpaceDevelopers(config, space, input, uaacUsers); err != nil {
+					lo.G.Error(err)
 					return err
 				}
 				if err = m.UpdateSpaceManagers(config, space, input, uaacUsers); err != nil {
+					lo.G.Error(err)
 					return err
 				}
 				if err = m.UpdateSpaceAuditors(config, space, input, uaacUsers); err != nil {
+					lo.G.Error(err)
 					return err
 				}
 			}
@@ -189,14 +195,17 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 func (m *DefaultSpaceManager) UpdateSpaceDevelopers(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
 	if users, err := m.getLdapUsers(config, input.GetDeveloperGroup(), input.Developer.LdapUser); err == nil {
 		if err = m.updateLdapUsers(config, space, "developers", uaacUsers, users); err != nil {
+			lo.G.Error(err)
 			return err
 		}
 		for _, userID := range input.Developer.Users {
 			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "developers"); err != nil {
+				lo.G.Error(err)
 				return err
 			}
 		}
 	} else {
+		lo.G.Error(err)
 		return err
 	}
 	return nil
@@ -205,14 +214,17 @@ func (m *DefaultSpaceManager) UpdateSpaceDevelopers(config *ldap.Config, space *
 func (m *DefaultSpaceManager) UpdateSpaceManagers(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
 	if users, err := m.getLdapUsers(config, input.GetManagerGroup(), input.Manager.LdapUser); err == nil {
 		if err = m.updateLdapUsers(config, space, "managers", uaacUsers, users); err != nil {
+			lo.G.Error(err)
 			return err
 		}
 		for _, userID := range input.Manager.Users {
 			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "managers"); err != nil {
+				lo.G.Error(err)
 				return err
 			}
 		}
 	} else {
+		lo.G.Error(err)
 		return err
 	}
 	return nil
@@ -221,14 +233,17 @@ func (m *DefaultSpaceManager) UpdateSpaceManagers(config *ldap.Config, space *cl
 func (m *DefaultSpaceManager) UpdateSpaceAuditors(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
 	if users, err := m.getLdapUsers(config, input.GetAuditorGroup(), input.Auditor.LdapUser); err == nil {
 		if err = m.updateLdapUsers(config, space, "auditors", uaacUsers, users); err != nil {
+			lo.G.Error(err)
 			return err
 		}
 		for _, userID := range input.Auditor.Users {
 			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "auditors"); err != nil {
+				lo.G.Error(err)
 				return err
 			}
 		}
 	} else {
+		lo.G.Error(err)
 		return err
 	}
 	return nil
@@ -244,6 +259,7 @@ func (m *DefaultSpaceManager) getLdapUsers(config *ldap.Config, groupName string
 			if ldapUser, err := m.LdapMgr.GetUser(config, user); err == nil {
 				users = append(users, *ldapUser)
 			} else {
+				lo.G.Error(err)
 				return nil, err
 			}
 		}
@@ -257,12 +273,14 @@ func (m *DefaultSpaceManager) updateLdapUsers(config *ldap.Config, space *cloudc
 		} else {
 			lo.G.Info("User", user.UserID, "doesn't exist so creating in UAA")
 			if err := m.UAACMgr.CreateLdapUser(user.UserID, user.Email, user.UserDN); err != nil {
+				lo.G.Error(err)
 				return err
 			} else {
 				uaacUsers[user.UserID] = user.UserID
 			}
 		}
 		if err := m.addUserToOrgAndRole(user.UserID, space.Entity.OrgGUID, space.MetaData.GUID, role); err != nil {
+			lo.G.Error(err)
 			return err
 		}
 	}
@@ -273,9 +291,11 @@ func (m *DefaultSpaceManager) updateLdapUsers(config *ldap.Config, space *cloudc
 func (m *DefaultSpaceManager) addUserToOrgAndRole(userID, orgGUID, spaceGUID, role string) error {
 	lo.G.Info("Adding user to groups")
 	if err := m.CloudController.AddUserToOrg(userID, orgGUID); err != nil {
+		lo.G.Error(err)
 		return err
 	}
 	if err := m.CloudController.AddUserToSpaceRole(userID, role, spaceGUID); err != nil {
+		lo.G.Error(err)
 		return err
 	}
 	return nil
