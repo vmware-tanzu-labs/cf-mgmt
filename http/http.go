@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/parnurzeal/gorequest"
+	"github.com/xchapter7x/lo"
 )
 
 //NewManager -
@@ -58,10 +59,11 @@ func (m *DefaultManager) Get(url, token string, target interface{}) error {
 
 	res, body, errs := get.End()
 	if len(errs) > 0 {
+		lo.G.Error(errs)
 		return errs[0]
 	}
 	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf(body)
+		return fmt.Errorf("Status %d, body %s", res.StatusCode, body)
 	}
 	return json.Unmarshal([]byte(body), &target)
 }
