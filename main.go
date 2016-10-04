@@ -123,7 +123,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags(), eh),
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags(), eh),
 		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlagsWithLdap(), eh),
-		CreateCommand("create-spaces", runCreateSpaces, defaultFlags(), eh),
+		CreateCommand("create-spaces", runCreateSpaces, defaultFlagsWithLdap(), eh),
 		CreateCommand("update-spaces", runUpdateSpaces, defaultFlags(), eh),
 		CreateCommand("update-space-quotas", runCreateSpaceQuotas, defaultFlags(), eh),
 		CreateCommand("update-space-users", runUpdateSpaceUsers, defaultFlagsWithLdap(), eh),
@@ -157,6 +157,7 @@ func runInit(c *cli.Context) (err error) {
 	if err = os.MkdirAll(config, 0755); err == nil {
 		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/ldap.yml", config), &ldap.Config{})
 		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/orgs.yml", config), &organization.InputOrgs{})
+		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", config), &space.ConfigSpaceDefaults{})
 	}
 	return
 }
@@ -341,7 +342,7 @@ func runCreateSpaceSecurityGroups(c *cli.Context) (err error) {
 func runCreateSpaces(c *cli.Context) (err error) {
 	var cfMgmt *CFMgmt
 	if cfMgmt, err = InitializeManager(c); err == nil {
-		err = cfMgmt.SpaceManager.CreateSpaces(cfMgmt.ConfigDir)
+		err = cfMgmt.SpaceManager.CreateSpaces(cfMgmt.ConfigDir, cfMgmt.LdapBindPwd)
 	}
 	return
 }

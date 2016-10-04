@@ -149,7 +149,6 @@ func (m *DefaultSpaceManager) UpdateSpaces(configDir string) error {
 
 //UpdateSpaceUsers -
 func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword string) error {
-	var space *cloudcontroller.Space
 	var config *ldap.Config
 	var uaacUsers map[string]string
 	var err error
@@ -163,88 +162,104 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 		return err
 	}
 
-	if config.Enabled {
-		var spaceConfigs []*InputUpdateSpaces
+	var spaceConfigs []*InputUpdateSpaces
 
-		if spaceConfigs, err = m.GetSpaceConfigs(configDir); err != nil {
-			lo.G.Error(err)
-			return err
-		}
-
-		for _, input := range spaceConfigs {
-			if space, err = m.FindSpace(input.Org, input.Space); err == nil {
-				lo.G.Info("User sync for space", space.Entity.Name)
-				if err = m.UpdateSpaceDevelopers(config, space, input, uaacUsers); err != nil {
-					lo.G.Error(err)
-					return err
-				}
-				if err = m.UpdateSpaceManagers(config, space, input, uaacUsers); err != nil {
-					lo.G.Error(err)
-					return err
-				}
-				if err = m.UpdateSpaceAuditors(config, space, input, uaacUsers); err != nil {
-					lo.G.Error(err)
-					return err
-				}
-			}
-		}
-	}
-	return nil
-}
-
-func (m *DefaultSpaceManager) UpdateSpaceDevelopers(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
-	if users, err := m.getLdapUsers(config, input.GetDeveloperGroup(), input.Developer.LdapUser); err == nil {
-		if err = m.updateLdapUsers(config, space, "developers", uaacUsers, users); err != nil {
-			lo.G.Error(err)
-			return err
-		}
-		for _, userID := range input.Developer.Users {
-			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "developers"); err != nil {
-				lo.G.Error(err)
-				return err
-			}
-		}
-	} else {
+	if spaceConfigs, err = m.GetSpaceConfigs(configDir); err != nil {
 		lo.G.Error(err)
 		return err
 	}
+
+	for _, input := range spaceConfigs {
+		if err = m.updateSpaceUsers(config, input, uaacUsers); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *InputUpdateSpaces, uaacUsers map[string]string) error {
+	if space, err := m.FindSpace(input.Org, input.Space); err == nil {
+		lo.G.Info("User sync for space", space.Entity.Name)
+		if err = m.UpdateSpaceDevelopers(config, space, input, uaacUsers); err != nil {
+			lo.G.Error(err)
+			return err
+		}
+		if err = m.UpdateSpaceManagers(config, space, input, uaacUsers); err != nil {
+			lo.G.Error(err)
+			return err
+		}
+		if err = m.UpdateSpaceAuditors(config, space, input, uaacUsers); err != nil {
+			lo.G.Error(err)
+			return err
+		}
+		return nil
+	} else {
+		return err
+	}
+}
+
+func (m *DefaultSpaceManager) UpdateSpaceDevelopers(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
+	if config.Enabled {
+		if users, err := m.getLdapUsers(config, input.GetDeveloperGroup(), input.Developer.LdapUser); err == nil {
+			if err = m.updateLdapUsers(config, space, "developers", uaacUsers, users); err != nil {
+				lo.G.Error(err)
+				return err
+			}
+		} else {
+			lo.G.Error(err)
+			return err
+		}
+	}
+	for _, userID := range input.Developer.Users {
+		if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "developers"); err != nil {
+			lo.G.Error(err)
+			return err
+		}
+	}
+
 	return nil
 }
 
 func (m *DefaultSpaceManager) UpdateSpaceManagers(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
-	if users, err := m.getLdapUsers(config, input.GetManagerGroup(), input.Manager.LdapUser); err == nil {
-		if err = m.updateLdapUsers(config, space, "managers", uaacUsers, users); err != nil {
-			lo.G.Error(err)
-			return err
-		}
-		for _, userID := range input.Manager.Users {
-			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "managers"); err != nil {
+	if config.Enabled {
+		if users, err := m.getLdapUsers(config, input.GetManagerGroup(), input.Manager.LdapUser); err == nil {
+			if err = m.updateLdapUsers(config, space, "managers", uaacUsers, users); err != nil {
 				lo.G.Error(err)
 				return err
 			}
+		} else {
+			lo.G.Error(err)
+			return err
 		}
-	} else {
-		lo.G.Error(err)
-		return err
 	}
+	for _, userID := range input.Manager.Users {
+		if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "managers"); err != nil {
+			lo.G.Error(err)
+			return err
+		}
+	}
+
 	return nil
 }
 
 func (m *DefaultSpaceManager) UpdateSpaceAuditors(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
-	if users, err := m.getLdapUsers(config, input.GetAuditorGroup(), input.Auditor.LdapUser); err == nil {
-		if err = m.updateLdapUsers(config, space, "auditors", uaacUsers, users); err != nil {
-			lo.G.Error(err)
-			return err
-		}
-		for _, userID := range input.Auditor.Users {
-			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "auditors"); err != nil {
+	if config.Enabled {
+		if users, err := m.getLdapUsers(config, input.GetAuditorGroup(), input.Auditor.LdapUser); err == nil {
+			if err = m.updateLdapUsers(config, space, "auditors", uaacUsers, users); err != nil {
 				lo.G.Error(err)
 				return err
 			}
+		} else {
+			lo.G.Error(err)
+			return err
 		}
-	} else {
-		lo.G.Error(err)
-		return err
+	}
+	for _, userID := range input.Auditor.Users {
+		if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "auditors"); err != nil {
+			lo.G.Error(err)
+			return err
+		}
 	}
 	return nil
 }
@@ -337,7 +352,7 @@ func (m *DefaultSpaceManager) GetSpaceConfigList(configDir string) ([]InputCreat
 }
 
 //CreateSpaces -
-func (m *DefaultSpaceManager) CreateSpaces(configDir string) error {
+func (m *DefaultSpaceManager) CreateSpaces(configDir, ldapBindPassword string) error {
 
 	if configSpaceList, err := m.GetSpaceConfigList(configDir); err != nil {
 		return err
@@ -355,12 +370,62 @@ func (m *DefaultSpaceManager) CreateSpaces(configDir string) error {
 							lo.G.Info(fmt.Sprintf("[%s] space already exists", spaceName))
 						} else {
 							lo.G.Info(fmt.Sprintf("Creating [%s] space in [%s] org", spaceName, input.Org))
-							m.CloudController.CreateSpace(spaceName, orgGUID)
+							if err = m.CloudController.CreateSpace(spaceName, orgGUID); err == nil {
+								if err = m.UpdateSpaceWithDefaults(configDir, spaceName, input.Org, ldapBindPassword); err != nil {
+									lo.G.Error(err)
+									return err
+								}
+							} else {
+								lo.G.Error(err)
+								return err
+							}
 						}
 					}
 				}
 			}
 		}
+		return nil
+	}
+}
+
+func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgName, ldapBindPassword string) error {
+	defaultSpaceConfigFile := configDir + "/spaceDefaults.yml"
+	if m.UtilsMgr.DoesFileExist(defaultSpaceConfigFile) {
+		var config *ldap.Config
+		var uaacUsers map[string]string
+		var err error
+		if ldapBindPassword == "" {
+			config = &ldap.Config{
+				Enabled: false,
+			}
+		} else {
+			if config, err = m.LdapMgr.GetConfig(configDir, ldapBindPassword); err != nil {
+				lo.G.Error(err)
+				return err
+			}
+		}
+
+		if uaacUsers, err = m.UAACMgr.ListUsers(); err != nil {
+			lo.G.Error(err)
+			return err
+		}
+
+		var defaultSpaceConfig *InputUpdateSpaces
+
+		if err = m.UtilsMgr.LoadFile(defaultSpaceConfigFile, &defaultSpaceConfig); err == nil {
+			defaultSpaceConfig.Org = orgName
+			defaultSpaceConfig.Space = spaceName
+			if err = m.updateSpaceUsers(config, defaultSpaceConfig, uaacUsers); err != nil {
+				return err
+			} else {
+				return nil
+			}
+		} else {
+			lo.G.Error(err)
+			return err
+		}
+	} else {
+		lo.G.Info(defaultSpaceConfigFile, "doesn't exist")
 		return nil
 	}
 }

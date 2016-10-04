@@ -29,6 +29,15 @@ func (m *DefaultManager) walkDirectories(path string, info os.FileInfo, e error)
 	return e
 }
 
+//DoesFileExist - checks if file exists
+func (m *DefaultManager) DoesFileExist(configFile string) bool {
+	if _, err := os.Stat(configFile); err == nil {
+		return true
+	} else {
+		return false
+	}
+}
+
 //LoadFile -
 func (m *DefaultManager) LoadFile(configFile string, dataType interface{}) (err error) {
 	var data []byte
@@ -59,6 +68,7 @@ type Manager interface {
 	LoadFile(configFile string, dataType interface{}) (err error)
 	WriteFile(configFile string, dataType interface{}) (err error)
 	WriteFileBytes(configFile string, data []byte) (err error)
+	DoesFileExist(configFile string) bool
 }
 
 //DefaultManager -

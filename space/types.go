@@ -11,7 +11,7 @@ import (
 //Manager -
 type Manager interface {
 	FindSpace(orgName, spaceName string) (space *cloudcontroller.Space, err error)
-	CreateSpaces(configDir string) (err error)
+	CreateSpaces(configDir, ldapBindPassword string) (err error)
 	UpdateSpaces(configDir string) (err error)
 	UpdateSpaceUsers(configDir, ldapBindPassword string) (err error)
 	CreateQuotas(configDir string) (err error)
@@ -53,6 +53,13 @@ type InputUpdateSpaces struct {
 	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed"`
 	EnableSecurityGroup     bool     `yaml:"enable-security-group"`
 	SecurityGroupContents   string   `yaml:"security-group-contents,omitempty"`
+}
+
+//ConfigSpaceDefaults -
+type ConfigSpaceDefaults struct {
+	Developer UserMgmt `yaml:"space-developer"`
+	Manager   UserMgmt `yaml:"space-manager"`
+	Auditor   UserMgmt `yaml:"space-auditor"`
 }
 
 func (i *InputUpdateSpaces) GetDeveloperGroup() string {

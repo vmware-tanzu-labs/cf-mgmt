@@ -1,0 +1,18 @@
+space-manager:
+  ldap_users:
+    - cwashburndefault1
+  users:
+    - cwashburndefault1@testdomain.com
+  ldap_group: default_test_space1_managers
+space-auditor:
+  ldap_users:
+    - cwashburndefault1
+  users:
+    - cwashburndefault1@testdomain.com
+  ldap_group: default_test_space1_auditors
+space-developer:
+  ldap_users:
+    - cwashburndefault1
+  users:
+    - cwashburndefault1@testdomain.com
+  ldap_group: default_test_space1_developers

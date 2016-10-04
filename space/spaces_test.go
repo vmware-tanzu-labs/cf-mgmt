@@ -136,7 +136,7 @@ var _ = Describe("given SpaceManager", func() {
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockCloudController.EXPECT().CreateSpace("space1", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().CreateSpace("space2", "testOrgGUID").Return(nil)
-			err := spaceManager.CreateSpaces("./fixtures/config")
+			err := spaceManager.CreateSpaces("./fixtures/config", "")
 			Ω(err).Should(BeNil())
 		})
 		It("should create 1 space", func() {
@@ -151,13 +151,72 @@ var _ = Describe("given SpaceManager", func() {
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockCloudController.EXPECT().CreateSpace("space2", "testOrgGUID").Return(nil)
-			err := spaceManager.CreateSpaces("./fixtures/config")
+			err := spaceManager.CreateSpaces("./fixtures/config", "")
 			Ω(err).Should(BeNil())
 		})
 		It("should create error if unable to get orgGUID", func() {
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("", fmt.Errorf("test"))
-			err := spaceManager.CreateSpaces("./fixtures/config")
+			err := spaceManager.CreateSpaces("./fixtures/config", "")
 			Ω(err).Should(HaveOccurred())
+		})
+	})
+	Context("CreateSpaces()", func() {
+		It("should create 1 spaces with default users", func() {
+			config := &l.Config{
+				Enabled: true,
+			}
+			spaces := []cloudcontroller.Space{cloudcontroller.Space{
+				Entity: cloudcontroller.SpaceEntity{
+					Name:    "space1",
+					OrgGUID: "testOrgGUID",
+				},
+				MetaData: cloudcontroller.SpaceMetaData{
+					GUID: "space1GUID",
+				},
+			},
+			}
+			uaacUsers := make(map[string]string)
+			uaacUsers["cwashburn"] = "cwashburn"
+			users := []l.User{}
+			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return([]cloudcontroller.Space{}, nil)
+			mockLdap.EXPECT().GetConfig("./fixtures/default_config", "test_pwd").Return(config, nil)
+			mockCloudController.EXPECT().CreateSpace("space1", "testOrgGUID").Return(nil)
+			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
+
+			mockUaac.EXPECT().ListUsers().Return(uaacUsers, nil)
+			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
+
+			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
+			mockLdap.EXPECT().GetUserIDs(config, "default_test_space1_developers").Return(users, nil)
+			mockLdap.EXPECT().GetUser(config, "cwashburndefault1").Return(&l.User{UserID: "cwashburndefault1", UserDN: "cn=cwashburndefault1", Email: "cwashburndefault1@test.io"}, nil)
+
+			mockUaac.EXPECT().CreateLdapUser("cwashburndefault1", "cwashburndefault1@test.io", "cn=cwashburndefault1").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburndefault1", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburndefault1", "developers", "space1GUID").Return(nil)
+
+			mockCloudController.EXPECT().AddUserToOrg("cwashburndefault1@testdomain.com", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburndefault1@testdomain.com", "developers", "space1GUID").Return(nil)
+
+			mockLdap.EXPECT().GetUserIDs(config, "default_test_space1_managers").Return(users, nil)
+			mockLdap.EXPECT().GetUser(config, "cwashburndefault1").Return(&l.User{UserID: "cwashburndefault1", UserDN: "cn=cwashburndefault1", Email: "cwashburndefault1@test.io"}, nil)
+
+			mockCloudController.EXPECT().AddUserToOrg("cwashburndefault1", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburndefault1", "managers", "space1GUID").Return(nil)
+
+			mockCloudController.EXPECT().AddUserToOrg("cwashburndefault1@testdomain.com", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburndefault1@testdomain.com", "managers", "space1GUID").Return(nil)
+
+			mockLdap.EXPECT().GetUserIDs(config, "default_test_space1_auditors").Return(users, nil)
+			mockLdap.EXPECT().GetUser(config, "cwashburndefault1").Return(&l.User{UserID: "cwashburndefault1", UserDN: "cn=cwashburndefault1", Email: "cwashburndefault1@test.io"}, nil)
+
+			mockCloudController.EXPECT().AddUserToOrg("cwashburndefault1", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburndefault1", "auditors", "space1GUID").Return(nil)
+
+			mockCloudController.EXPECT().AddUserToOrg("cwashburndefault1@testdomain.com", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("cwashburndefault1@testdomain.com", "auditors", "space1GUID").Return(nil)
+
+			err := spaceManager.CreateSpaces("./fixtures/default_config", "test_pwd")
+			Ω(err).Should(BeNil())
 		})
 	})
 
