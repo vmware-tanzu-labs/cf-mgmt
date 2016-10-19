@@ -184,7 +184,7 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 				entry := sr.Entries[0]
 				user := &User{
 					UserDN: entry.DN,
-					UserID: entry.GetAttributeValue(config.UserNameAttribute),
+					UserID: userID,
 					Email:  entry.GetAttributeValue(config.UserMailAttribute),
 				}
 				return user, nil
