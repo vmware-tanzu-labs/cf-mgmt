@@ -169,7 +169,7 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 		theUserFilter := "(" + config.UserNameAttribute + "=%s)"
 		lo.G.Debug("User filter before escape:", theUserFilter)
 		filter := fmt.Sprintf(theUserFilter, l.EscapeFilter(userID))
-		lo.G.Info("Searching for group:", filter)
+		lo.G.Info("Searching for user:", filter)
 		lo.G.Debug("Using user search base:", config.UserSearchBase)
 
 		search := l.NewSearchRequest(
