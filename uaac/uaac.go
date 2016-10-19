@@ -29,7 +29,7 @@ func (m *DefaultUAACManager) CreateLdapUser(userName, userEmail, userDN string) 
 //ListUsers -
 func (m *DefaultUAACManager) ListUsers() (map[string]string, error) {
 	users := make(map[string]string)
-	url := fmt.Sprintf("%s/Users", m.Host)
+	url := fmt.Sprintf("%s/Users?count=5000", m.Host)
 	userList := new(UserList)
 	if err := http.NewManager().Get(url, m.UUACToken, userList); err != nil {
 		return nil, err
