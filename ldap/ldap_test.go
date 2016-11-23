@@ -1,6 +1,7 @@
 package ldap_test
 
 import (
+	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -83,6 +84,17 @@ var _ = Describe("Ldap", func() {
 				Ω(user.UserID).Should(Equal("cwashburn"))
 				Ω(user.UserDN).Should(Equal("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
 				Ω(user.Email).Should(Equal("cwashburn+cfmt@testdomain.com"))
+			})
+		})
+
+		Context("GetLdapUser()", func() {
+			It("then it should return 1 user", func() {
+				data, _ := ioutil.ReadFile("./fixtures/user1.txt")
+				user, err := ldapManager.GetLdapUser(config, string(data), "ou=users,dc=pivotal,dc=org")
+				Ω(err).Should(BeNil())
+				Ω(user).ShouldNot(BeNil())
+				Ω(user.UserID).Should(Equal("cwashburn2"))
+				Ω(user.Email).Should(Equal("cwashburn+cfmt2@testdomain.com"))
 			})
 		})
 	})

@@ -102,7 +102,7 @@ func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN, userSearchB
 	index := strings.Index(strings.ToUpper(userDN), ",OU=")
 	userCNTemp := m.UnescapeFilterValue(userDN[:index])
 	lo.G.Debug("CN unescaped:", userCNTemp)
-	userCN := m.EscapeFilterValue(userCNTemp)
+	userCN := l.EscapeFilter(strings.Replace(userCNTemp, "\\", "", -1))
 	//userCN := l.EscapeFilter(unEscapeLDAPValue(userDN[:index]))
 	lo.G.Debug("CN escaped", userCN)
 	filter := fmt.Sprintf(userFilter, userCN)
