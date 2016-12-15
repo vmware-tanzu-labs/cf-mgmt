@@ -1,6 +1,7 @@
 package ldap
 
 import (
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
@@ -44,12 +45,21 @@ func (m *DefaultManager) GetConfig(configDir, ldapBindPassword string) (*Config,
 	}
 }
 
+func (m *DefaultManager) getLdapConnection(config *Config) (*l.Conn, error) {
+	ldapURL := fmt.Sprintf("%s:%d", config.LdapHost, config.LdapPort)
+	lo.G.Debug("Connecting to", ldapURL)
+	if config.TLS {
+		return l.DialTLS("tcp", ldapURL, &tls.Config{InsecureSkipVerify: true})
+	} else {
+		return l.Dial("tcp", ldapURL)
+	}
+
+}
+
 //GetUserIDs -
 func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []User, err error) {
 	var ldapConnection *l.Conn
-	ldapURL := fmt.Sprintf("%s:%d", config.LdapHost, config.LdapPort)
-	lo.G.Debug("Connecting to", ldapURL)
-	if ldapConnection, err = l.Dial("tcp", ldapURL); err == nil {
+	if ldapConnection, err = m.getLdapConnection(config); err == nil {
 		// be sure to add error checking!
 		defer ldapConnection.Close()
 		if err = ldapConnection.Bind(config.BindDN, config.BindPassword); err != nil {
@@ -78,9 +88,7 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []U
 }
 
 func (m *DefaultManager) GetLdapUser(config *Config, userDN, userSearchBase string) (*User, error) {
-	ldapURL := fmt.Sprintf("%s:%d", config.LdapHost, config.LdapPort)
-	lo.G.Debug("Connecting to", ldapURL)
-	if ldapConnection, err := l.Dial("tcp", ldapURL); err == nil {
+	if ldapConnection, err := m.getLdapConnection(config); err == nil {
 		// be sure to add error checking!
 		defer ldapConnection.Close()
 		if err := ldapConnection.Bind(config.BindDN, config.BindPassword); err != nil {
@@ -154,10 +162,7 @@ func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearch
 }
 
 func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
-
-	ldapURL := fmt.Sprintf("%s:%d", config.LdapHost, config.LdapPort)
-	lo.G.Debug("Connecting to", ldapURL)
-	if ldapConnection, err := l.Dial("tcp", ldapURL); err != nil {
+	if ldapConnection, err := m.getLdapConnection(config); err != nil {
 		return nil, err
 	} else {
 		// be sure to add error checking!

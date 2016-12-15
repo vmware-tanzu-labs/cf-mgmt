@@ -155,7 +155,7 @@ func CreateInitCommand(eh *ErrorHandler) (command cli.Command) {
 func runInit(c *cli.Context) (err error) {
 	config := getConfigDir(c)
 	if err = os.MkdirAll(config, 0755); err == nil {
-		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/ldap.yml", config), &ldap.Config{})
+		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/ldap.yml", config), &ldap.Config{TLS: false})
 		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/orgs.yml", config), &organization.InputOrgs{})
 		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", config), &space.ConfigSpaceDefaults{})
 	}

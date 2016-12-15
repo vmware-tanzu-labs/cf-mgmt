@@ -17,6 +17,7 @@ type Config struct {
 	Enabled           bool   `yaml:"enabled"`
 	LdapHost          string `yaml:"ldapHost"`
 	LdapPort          int    `yaml:"ldapPort"`
+	TLS               bool   `yaml:"use_tls"`
 	BindDN            string `yaml:"bindDN"`
 	BindPassword      string `yaml:"bindPwd,omitempty"`
 	UserSearchBase    string `yaml:"userSearchBase"`
