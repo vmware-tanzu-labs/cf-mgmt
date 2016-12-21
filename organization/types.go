@@ -81,7 +81,7 @@ func (i *InputUpdateOrgs) GetManagerGroup() string {
 }
 
 func (i *InputUpdateOrgs) GetAuditorGroup() string {
-	if i.Manager.LdapGroup != "" {
+	if i.Auditor.LdapGroup != "" {
 		return i.Auditor.LdapGroup
 	} else {
 		return i.AuditorGroup
