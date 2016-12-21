@@ -276,36 +276,3 @@ func (m *DefaultOrgManager) addUserToOrgAndRole(userID, orgGUID, role string) er
 	}
 	return nil
 }
-
-func (m *DefaultOrgManager) updateUsers(config *ldap.Config, org *cloudcontroller.Org, role, groupName string, uaacUsers map[string]string) (err error) {
-	var groupUsers []ldap.User
-
-	if groupName != "" {
-		lo.G.Info("Getting users for group", groupName)
-		if groupUsers, err = m.LdapMgr.GetUserIDs(config, groupName); err == nil {
-			for _, groupUser := range groupUsers {
-				if _, userExists := uaacUsers[strings.ToLower(groupUser.UserID)]; userExists {
-					lo.G.Info("User", groupUser.UserID, "already exists")
-				} else {
-					lo.G.Info("User", groupUser.UserID, "doesn't exist so creating in UAA")
-					if err = m.UAACMgr.CreateLdapUser(groupUser.UserID, groupUser.Email, groupUser.UserDN); err != nil {
-						return
-					} else {
-						uaacUsers[groupUser.UserID] = groupUser.UserID
-					}
-				}
-				lo.G.Info("Adding user to groups")
-				orgGUID := org.MetaData.GUID
-				userName := groupUser.UserID
-				if err = m.CloudController.AddUserToOrg(userName, orgGUID); err != nil {
-					return
-				}
-				lo.G.Info("Adding", userName, "to", org.Entity.Name, "with role", role)
-				err = m.CloudController.AddUserToOrgRole(userName, role, orgGUID)
-				return
-			}
-
-		}
-	}
-	return
-}
