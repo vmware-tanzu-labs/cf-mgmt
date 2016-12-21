@@ -55,6 +55,17 @@ var _ = Describe("Ldap", func() {
 				LdapPort:          port,
 			}
 		})
+		Context("when ldap is unreachable", func() {
+			BeforeEach(func() { config.LdapHost = "unreachable-host" })
+			It("then GetUserIDs should return an error", func() {
+				_, err := ldapManager.GetUserIDs(config, "space_developers")
+				Ω(err).ShouldNot(BeNil())
+			})
+			It("then GetUserIDs should return an error", func() {
+				_, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org", "ou=users,dc=pivotal,dc=org")
+				Ω(err).ShouldNot(BeNil())
+			})
+		})
 		Context("when cn with special characters", func() {
 			It("then it should return 1 Entry", func() {
 				entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org", "ou=users,dc=pivotal,dc=org")
