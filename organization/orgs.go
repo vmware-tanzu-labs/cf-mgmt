@@ -232,6 +232,9 @@ func (m *DefaultOrgManager) getLdapUsers(config *ldap.Config, groupName string, 
 	if groupName != "" {
 		if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
 			users = append(users, groupUsers...)
+		} else {
+			lo.G.Error(err)
+			return nil, err
 		}
 	}
 	for _, user := range userList {
@@ -240,6 +243,7 @@ func (m *DefaultOrgManager) getLdapUsers(config *ldap.Config, groupName string, 
 				users = append(users, *ldapUser)
 			}
 		} else {
+			lo.G.Error(err)
 			return nil, err
 		}
 	}

@@ -60,10 +60,9 @@ func (m *DefaultManager) getLdapConnection(config *Config) (*l.Conn, error) {
 func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []User, err error) {
 	var ldapConnection *l.Conn
 	if ldapConnection, err = m.getLdapConnection(config); err == nil {
-		// be sure to add error checking!
 		defer ldapConnection.Close()
 		if err = ldapConnection.Bind(config.BindDN, config.BindPassword); err != nil {
-			return
+			return nil, err
 		}
 		var groupEntry *l.Entry
 		var user *User
@@ -83,13 +82,14 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []U
 				lo.G.Info("Group not found", groupName)
 			}
 		}
+	} else {
+		return nil, err
 	}
 	return
 }
 
 func (m *DefaultManager) GetLdapUser(config *Config, userDN, userSearchBase string) (*User, error) {
 	if ldapConnection, err := m.getLdapConnection(config); err == nil {
-		// be sure to add error checking!
 		defer ldapConnection.Close()
 		if err := ldapConnection.Bind(config.BindDN, config.BindPassword); err != nil {
 			return nil, err
