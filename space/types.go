@@ -63,7 +63,7 @@ type ConfigSpaceDefaults struct {
 }
 
 func (i *InputUpdateSpaces) GetDeveloperGroup() string {
-	if i.Manager.LdapGroup != "" {
+	if i.Developer.LdapGroup != "" {
 		return i.Developer.LdapGroup
 	} else {
 		return i.DeveloperGroup
@@ -79,7 +79,7 @@ func (i *InputUpdateSpaces) GetManagerGroup() string {
 }
 
 func (i *InputUpdateSpaces) GetAuditorGroup() string {
-	if i.Manager.LdapGroup != "" {
+	if i.Auditor.LdapGroup != "" {
 		return i.Auditor.LdapGroup
 	} else {
 		return i.AuditorGroup
