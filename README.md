@@ -13,6 +13,16 @@ go get github.com/pivotalservices/cf-mgmt
 
 ## Testing
 
+Get ready for tests:
+```
+go get github.com/onsi/ginkgo
+go get github.com/onsi/gomega
+go get github.com/golang/mock/gomock
+go get github.com/golang/mock/mockgen
+go get github.com/golang/protobuf/proto
+./update-mocks.sh
+```
+Run tests:
 ```
 docker pull cwashburn/ldap
 docker run -d -p 389:389 --name ldap -t cwashburn/ldap
