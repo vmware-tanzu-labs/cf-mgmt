@@ -108,7 +108,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 	app.Name = "cf-mgmt"
 	app.Usage = "cf-mgmt"
 	app.Commands = []cli.Command{
-		{
+		cli.Command{
 			Name:  "version",
 			Usage: "shows the application version currently in use",
 			Action: func(c *cli.Context) (err error) {
@@ -136,7 +136,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 //CreateInitCommand -
 func CreateInitCommand(eh *ErrorHandler) (command cli.Command) {
 	flagList := map[string]flagBucket{
-		configDir: {
+		configDir: flagBucket{
 			Desc:   "config dir.  Default is config",
 			EnvVar: configDir,
 		},
@@ -165,11 +165,11 @@ func runInit(c *cli.Context) (err error) {
 //CreateAddOrgCommand -
 func CreateAddOrgCommand(eh *ErrorHandler) (command cli.Command) {
 	flagList := map[string]flagBucket{
-		configDir: {
+		configDir: flagBucket{
 			Desc:   "config dir.  Default is config",
 			EnvVar: configDir,
 		},
-		orgName: {
+		orgName: flagBucket{
 			Desc:   "org name to add",
 			EnvVar: orgName,
 		},
@@ -199,15 +199,15 @@ func runAddOrg(c *cli.Context) (err error) {
 //CreateAddSpaceCommand -
 func CreateAddSpaceCommand(eh *ErrorHandler) (command cli.Command) {
 	flagList := map[string]flagBucket{
-		configDir: {
+		configDir: flagBucket{
 			Desc:   "config dir.  Default is config",
 			EnvVar: configDir,
 		},
-		orgName: {
+		orgName: flagBucket{
 			Desc:   "org name of space",
 			EnvVar: orgName,
 		},
-		spaceName: {
+		spaceName: flagBucket{
 			Desc:   "space name to add",
 			EnvVar: spaceName,
 		},
@@ -390,23 +390,23 @@ func defaultFlags() (flags []cli.Flag) {
 
 func buildDefaultFlags() (flagList map[string]flagBucket) {
 	flagList = map[string]flagBucket{
-		systemDomain: {
+		systemDomain: flagBucket{
 			Desc:   "system domain",
 			EnvVar: systemDomain,
 		},
-		userID: {
+		userID: flagBucket{
 			Desc:   "user id that has admin priv",
 			EnvVar: userID,
 		},
-		password: {
+		password: flagBucket{
 			Desc:   "password for user account that has admin priv",
 			EnvVar: password,
 		},
-		clientSecret: {
+		clientSecret: flagBucket{
 			Desc:   "secret for user account that has admin priv",
 			EnvVar: clientSecret,
 		},
-		configDir: {
+		configDir: flagBucket{
 			Desc:   "config dir.  Default is config",
 			EnvVar: configDir,
 		},
