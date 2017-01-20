@@ -10,6 +10,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"errors"
 	l "github.com/go-ldap/ldap"
 	"github.com/xchapter7x/lo"
 )
@@ -107,7 +108,12 @@ func (m *DefaultManager) GetLdapUser(config *Config, userDN, userSearchBase stri
 func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN, userSearchBase, userNameAttribute, userMailAttribute string) (user *User, err error) {
 	var sr *l.SearchResult
 	lo.G.Debug("User DN:", userDN)
-	index := strings.Index(strings.ToUpper(userDN), ",OU=")
+	regex, _ := regexp.Compile(",[A-Z]+=")
+	indexes := regex.FindStringIndex(strings.ToUpper(userDN))
+	if len(indexes) == 0 {
+		return nil, errors.New(fmt.Sprintf("%s %s ", "Can't find CN for user DN:", userDN))
+	}
+	index := indexes[0]
 	userCNTemp := m.UnescapeFilterValue(userDN[:index])
 	lo.G.Debug("CN unescaped:", userCNTemp)
 	userCN := l.EscapeFilter(strings.Replace(userCNTemp, "\\", "", -1))
