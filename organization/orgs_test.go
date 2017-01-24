@@ -335,6 +335,7 @@ var _ = Describe("given OrgManager", func() {
 		It("update org users where users are already in uaac", func() {
 			config := &l.Config{
 				Enabled: true,
+				Origin:  "ldap",
 			}
 			uaacUsers := make(map[string]string)
 			uaacUsers["cwashburn"] = "cwashburn"
@@ -397,6 +398,7 @@ var _ = Describe("given OrgManager", func() {
 		It("update org users where users aren't in uaac", func() {
 			config := &l.Config{
 				Enabled: true,
+				Origin:  "ldap",
 			}
 			uaacUsers := make(map[string]string)
 			users := []l.User{
@@ -405,9 +407,9 @@ var _ = Describe("given OrgManager", func() {
 			mockLdap.EXPECT().GetConfig("./fixtures/user_config", "test").Return(config, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockUaac.EXPECT().ListUsers().Return(uaacUsers, nil)
-			mockUaac.EXPECT().CreateLdapUser("cwashburn", "cwashburn@testdomain.com", "cn=cwashburn").Return(nil)
-			mockUaac.EXPECT().CreateLdapUser("cwashburn1", "cwashburn1@test.io", "cn=cwashburn1").Return(nil)
-			mockUaac.EXPECT().CreateLdapUser("cwashburn2", "cwashburn2@test.io", "cn=cwashburn2").Return(nil)
+			mockUaac.EXPECT().CreateExternalUser("cwashburn", "cwashburn@testdomain.com", "cn=cwashburn", "ldap").Return(nil)
+			mockUaac.EXPECT().CreateExternalUser("cwashburn1", "cwashburn1@test.io", "cn=cwashburn1", "ldap").Return(nil)
+			mockUaac.EXPECT().CreateExternalUser("cwashburn2", "cwashburn2@test.io", "cn=cwashburn2", "ldap").Return(nil)
 			mockLdap.EXPECT().GetUserIDs(config, "test_billing_managers").Return(users, nil)
 			mockLdap.EXPECT().GetUserIDs(config, "test_org_managers").Return(users, nil)
 			mockLdap.EXPECT().GetUserIDs(config, "test_org_auditors").Return(users, nil)
@@ -450,6 +452,56 @@ var _ = Describe("given OrgManager", func() {
 			mockCloudController.EXPECT().AddUserToOrgRole("cwashburn@testdomain.com", "auditors", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrgRole("cwashburn2@testdomain.com", "auditors", "testOrgGUID").Return(nil)
 			err := orgManager.UpdateOrgUsers("./fixtures/user_config", "test")
+			Ω(err).Should(BeNil())
+		})
+	})
+	Context("UpdateOrgUsers() for Saml", func() {
+		var orgs []*cloudcontroller.Org
+		BeforeEach(func() {
+			orgs = []*cloudcontroller.Org{
+				&cloudcontroller.Org{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "testOrgGUID",
+					},
+				},
+				&cloudcontroller.Org{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test2",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "test2OrgGUID",
+					},
+				},
+			}
+		})
+		It("update org users where users aren't in uaac", func() {
+			config := &l.Config{
+				Enabled: true,
+				Origin:  "saml",
+			}
+			uaacUsers := make(map[string]string)
+			users := []l.User{
+				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@test.io"},
+			}
+			mockLdap.EXPECT().GetConfig("./fixtures/user_saml_config", "test").Return(config, nil)
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockUaac.EXPECT().ListUsers().Return(uaacUsers, nil)
+			mockUaac.EXPECT().CreateExternalUser("cwashburn@test.io", "cwashburn@test.io", "cwashburn@test.io", "saml").Return(nil)
+			mockLdap.EXPECT().GetUserIDs(config, "test_billing_managers").Return(users, nil)
+			mockLdap.EXPECT().GetUserIDs(config, "test_org_managers").Return(users, nil)
+			mockLdap.EXPECT().GetUserIDs(config, "test_org_auditors").Return(users, nil)
+
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn@test.io", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn@test.io", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("cwashburn@test.io", "testOrgGUID").Return(nil)
+
+			mockCloudController.EXPECT().AddUserToOrgRole("cwashburn@test.io", "billing_managers", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrgRole("cwashburn@test.io", "managers", "testOrgGUID").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrgRole("cwashburn@test.io", "auditors", "testOrgGUID").Return(nil)
+			err := orgManager.UpdateOrgUsers("./fixtures/user_saml_config", "test")
 			Ω(err).Should(BeNil())
 		})
 	})

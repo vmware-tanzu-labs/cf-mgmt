@@ -289,18 +289,25 @@ func (m *DefaultSpaceManager) getLdapUsers(config *ldap.Config, groupName string
 }
 func (m *DefaultSpaceManager) updateLdapUsers(config *ldap.Config, space *cloudcontroller.Space, role string, uaacUsers map[string]string, users []ldap.User) error {
 	for _, user := range users {
-		if _, userExists := uaacUsers[strings.ToLower(user.UserID)]; userExists {
-			lo.G.Info("User", user.UserID, "already exists")
+		userID := user.UserID
+		externalID := user.UserDN
+		if config.Origin != "ldap" {
+			userID = user.Email
+			externalID = user.Email
+		}
+		if _, userExists := uaacUsers[strings.ToLower(userID)]; userExists {
+			lo.G.Info("User", userID, "already exists")
 		} else {
-			lo.G.Info("User", user.UserID, "doesn't exist so creating in UAA")
-			if err := m.UAACMgr.CreateLdapUser(user.UserID, user.Email, user.UserDN); err != nil {
+
+			lo.G.Info("User", userID, "doesn't exist so creating in UAA")
+			if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
 				lo.G.Error(err)
 				return err
 			} else {
-				uaacUsers[user.UserID] = user.UserID
+				uaacUsers[userID] = userID
 			}
 		}
-		if err := m.addUserToOrgAndRole(user.UserID, space.Entity.OrgGUID, space.MetaData.GUID, role); err != nil {
+		if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, role); err != nil {
 			lo.G.Error(err)
 			return err
 		}

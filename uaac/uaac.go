@@ -15,10 +15,10 @@ func NewManager(systemDomain, uuacToken string) (mgr Manager) {
 	}
 }
 
-//CreateLdapUser -
-func (m *DefaultUAACManager) CreateLdapUser(userName, userEmail, userDN string) error {
+//CreateExternalUser -
+func (m *DefaultUAACManager) CreateExternalUser(userName, userEmail, externalID, origin string) error {
 	url := fmt.Sprintf("%s/Users", m.Host)
-	payload := fmt.Sprintf(`{"userName":"%s","emails":[{"value":"%s"}],"origin":"ldap","externalId":"%s"}`, userName, userEmail, strings.Replace(userDN, "\\,", ",", 1))
+	payload := fmt.Sprintf(`{"userName":"%s","emails":[{"value":"%s"}],"origin":"%s","externalId":"%s"}`, userName, userEmail, origin, strings.Replace(externalID, "\\,", ",", 1))
 	if _, err := http.NewManager().Post(url, m.UUACToken, payload); err != nil {
 		return err
 	}

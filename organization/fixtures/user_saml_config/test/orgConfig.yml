@@ -1,0 +1,20 @@
+org: test
+org-billingmanager:
+  ldap_users: []
+  users: []
+  ldap_group: test_billing_managers
+org-manager:
+  ldap_users: []
+  users: []
+  ldap_group: test_org_managers
+org-auditor:
+  ldap_users: []
+  users: []
+  ldap_group: test_org_auditors
+
+enable-org-quota: true
+memory-limit: 10240
+instance-memory-limit: -1
+total-routes: 10
+total-services: -1
+paid-service-plans-allowed: true

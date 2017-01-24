@@ -11,6 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"errors"
+
 	l "github.com/go-ldap/ldap"
 	"github.com/xchapter7x/lo"
 )
@@ -34,6 +35,9 @@ func (m *DefaultManager) GetConfig(configDir, ldapBindPassword string) (*Config,
 				config.BindPassword = ldapBindPassword
 			} else {
 				lo.G.Warning("Ldap bind password should be removed from ldap.yml as this will be deprecated in a future release.  Use --ldap-password flag instead.")
+			}
+			if config.Origin == "" {
+				config.Origin = "ldap"
 			}
 			return config, nil
 		} else {

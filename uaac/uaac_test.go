@@ -82,18 +82,19 @@ var _ = Describe("given uaac manager", func() {
 		It("should successfully create user", func() {
 			userName := "user"
 			userEmail := "email"
-			userDN := "userDN"
+			externalID := "userDN"
 
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/Users"),
+					ghttp.VerifyBody([]byte(`{"emails":[{"value":"email"}],"externalId":"userDN","origin":"ldap","userName":"user"}`)),
 					ghttp.VerifyHeader(http.Header{
 						"Authorization": []string{"BEARER secret"},
 					}),
 					ghttp.RespondWithJSONEncoded(http.StatusCreated, ""),
 				),
 			)
-			err := manager.CreateLdapUser(userName, userEmail, userDN)
+			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -107,8 +108,30 @@ var _ = Describe("given uaac manager", func() {
 					ghttp.RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			err := manager.CreateLdapUser("", "", "")
+			err := manager.CreateExternalUser("", "", "", "ldap")
 			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+	Context("CreateSamlUser()", func() {
+		It("should successfully create user", func() {
+			userName := "user@test.com"
+			userEmail := "user@test.com"
+			externalID := "user@test.com"
+			origin := "saml"
+
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/Users"),
+					ghttp.VerifyBody([]byte(`{"emails":[{"value":"user@test.com"}],"externalId":"user@test.com","origin":"saml","userName":"user@test.com"}`)),
+					ghttp.VerifyHeader(http.Header{
+						"Authorization": []string{"BEARER secret"},
+					}),
+					ghttp.RespondWithJSONEncoded(http.StatusCreated, ""),
+				),
+			)
+			err := manager.CreateExternalUser(userName, userEmail, externalID, origin)
+			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 	})

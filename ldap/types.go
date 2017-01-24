@@ -25,6 +25,7 @@ type Config struct {
 	UserMailAttribute string `yaml:"userMailAttribute"`
 	GroupSearchBase   string `yaml:"groupSearchBase"`
 	GroupAttribute    string `yaml:"groupAttribute"`
+	Origin            string `yaml:"origin"`
 }
 
 //User -
