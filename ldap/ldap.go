@@ -13,6 +13,7 @@ import (
 	"errors"
 
 	l "github.com/go-ldap/ldap"
+	"github.com/op/go-logging"
 	"github.com/xchapter7x/lo"
 )
 
@@ -50,25 +51,35 @@ func (m *DefaultManager) GetConfig(configDir, ldapBindPassword string) (*Config,
 	}
 }
 
-func (m *DefaultManager) getLdapConnection(config *Config) (*l.Conn, error) {
+func (m *DefaultManager) LdapConnection(config *Config) (*l.Conn, error) {
 	ldapURL := fmt.Sprintf("%s:%d", config.LdapHost, config.LdapPort)
 	lo.G.Debug("Connecting to", ldapURL)
+	var connection *l.Conn
+	var err error
 	if config.TLS {
-		return l.DialTLS("tcp", ldapURL, &tls.Config{InsecureSkipVerify: true})
+		connection, err = l.DialTLS("tcp", ldapURL, &tls.Config{InsecureSkipVerify: true})
 	} else {
-		return l.Dial("tcp", ldapURL)
+		connection, err = l.Dial("tcp", ldapURL)
 	}
+	if connection != nil {
+		if logging.GetLevel(lo.LOG_MODULE) == logging.DEBUG {
+			connection.Debug = true
+		}
+		if err = connection.Bind(config.BindDN, config.BindPassword); err != nil {
+			connection.Close()
+			lo.G.Error(fmt.Sprintf("Error binding with %s", config.BindDN), err)
+			return nil, err
+		}
+	}
+	return connection, err
 
 }
 
 //GetUserIDs -
 func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []User, err error) {
 	var ldapConnection *l.Conn
-	if ldapConnection, err = m.getLdapConnection(config); err == nil {
+	if ldapConnection, err = m.LdapConnection(config); err == nil {
 		defer ldapConnection.Close()
-		if err = ldapConnection.Bind(config.BindDN, config.BindPassword); err != nil {
-			return nil, err
-		}
 		var groupEntry *l.Entry
 		var user *User
 		if groupEntry, err = m.getGroup(ldapConnection, groupName, config.GroupSearchBase); err == nil {
@@ -94,11 +105,8 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []U
 }
 
 func (m *DefaultManager) GetLdapUser(config *Config, userDN, userSearchBase string) (*User, error) {
-	if ldapConnection, err := m.getLdapConnection(config); err == nil {
+	if ldapConnection, err := m.LdapConnection(config); err == nil {
 		defer ldapConnection.Close()
-		if err := ldapConnection.Bind(config.BindDN, config.BindPassword); err != nil {
-			return nil, err
-		}
 		if user, err := m.getLdapUser(ldapConnection, userDN, config.UserSearchBase, config.UserNameAttribute, config.UserMailAttribute); err == nil {
 			return user, nil
 		} else {
@@ -172,15 +180,10 @@ func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearch
 }
 
 func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
-	if ldapConnection, err := m.getLdapConnection(config); err != nil {
+	if ldapConnection, err := m.LdapConnection(config); err != nil {
 		return nil, err
 	} else {
-		// be sure to add error checking!
 		defer ldapConnection.Close()
-		if err := ldapConnection.Bind(config.BindDN, config.BindPassword); err != nil {
-			lo.G.Error(err)
-			return nil, err
-		}
 		theUserFilter := "(" + config.UserNameAttribute + "=%s)"
 		lo.G.Debug("User filter before escape:", theUserFilter)
 		filter := fmt.Sprintf(theUserFilter, l.EscapeFilter(userID))

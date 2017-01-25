@@ -66,6 +66,13 @@ var _ = Describe("Ldap", func() {
 				Ω(err).ShouldNot(BeNil())
 			})
 		})
+		Context("when bad password", func() {
+			BeforeEach(func() { config.BindPassword = "foo" })
+			It("then LdapConnection should return an error", func() {
+				_, err := ldapManager.LdapConnection(config)
+				Ω(err).ShouldNot(BeNil())
+			})
+		})
 		Context("when cn with special characters", func() {
 			It("then it should return 1 Entry", func() {
 				entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org", "ou=users,dc=pivotal,dc=org")
