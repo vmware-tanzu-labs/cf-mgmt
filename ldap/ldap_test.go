@@ -73,6 +73,16 @@ var _ = Describe("Ldap", func() {
 				Ω(err).ShouldNot(BeNil())
 			})
 		})
+		Context("when bind user id has spaces", func() {
+			BeforeEach(func() {
+				config.BindDN = "cn=bind_account,ou=something with spaces,dc=pivotal,dc=org"
+				config.BindPassword = "password"
+			})
+			It("then LdapConnection should not return an error", func() {
+				_, err := ldapManager.LdapConnection(config)
+				Ω(err).Should(BeNil())
+			})
+		})
 		Context("when cn with special characters", func() {
 			It("then it should return 1 Entry", func() {
 				entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org", "ou=users,dc=pivotal,dc=org")

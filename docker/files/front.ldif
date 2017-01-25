@@ -11,3 +11,7 @@ ou: groups
 dn: ou=users,dc=pivotal,dc=org
 objectClass: organizationalUnit
 ou: users
+
+dn: ou=something with spaces,dc=pivotal,dc=org
+objectClass: organizationalUnit
+ou: something with spaces

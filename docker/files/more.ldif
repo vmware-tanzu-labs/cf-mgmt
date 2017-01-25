@@ -1,3 +1,12 @@
+dn: cn=bind_account,ou=something with spaces,dc=pivotal,dc=org
+objectclass: inetOrgPerson
+cn: Caleb Washburn
+sn: Washburn
+uid: bind_account
+userpassword: password
+homephone: 555-111-2222
+mail: bind_account+cfmt@testdomain.com
+
 dn: cn=cwashburn,ou=users,dc=pivotal,dc=org
 objectclass: inetOrgPerson
 cn: Caleb Washburn
