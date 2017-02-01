@@ -147,7 +147,7 @@ func (m *DefaultManager) CreateOrg(orgName string) error {
 }
 
 func (m *DefaultManager) ListOrgs() ([]*Org, error) {
-	url := fmt.Sprintf("%s/v2/organizations?results-per-page=500", m.Host)
+	url := fmt.Sprintf("%s/v2/organizations?results-per-page=100", m.Host)
 	orgResources := &Orgs{}
 	if err := m.HTTP.Get(url, m.Token, orgResources); err != nil {
 		return nil, err
