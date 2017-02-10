@@ -87,7 +87,7 @@ func filesCfMgmtSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "files/cf-mgmt.sh", size: 67, mode: os.FileMode(420), modTime: time.Unix(1468948194, 0)}
+	info := bindataFileInfo{name: "files/cf-mgmt.sh", size: 67, mode: os.FileMode(493), modTime: time.Unix(1486745709, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
