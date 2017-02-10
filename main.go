@@ -278,7 +278,7 @@ func runGeneratePipeline(c *cli.Context) (err error) {
 	}
 	fmt.Println("1) Update vars.yml with the appropriate values")
 	fmt.Println("2) Using following command to set your pipeline in concourse after you have checked all files in to GIT")
-	fmt.Println("fly -t lite set-pipeline -p cf-mgmt -c pipeline.yml --load-vars-from=vars.yml --var \"git_private_key=$(cat ~/.ssh/id_rsa)\"")
+	fmt.Println("fly -t lite set-pipeline -p cf-mgmt -c pipeline.yml --load-vars-from=vars.yml")
 	return
 }
 
