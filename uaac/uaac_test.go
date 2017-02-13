@@ -98,7 +98,7 @@ var _ = Describe("given uaac manager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
-		It("should return an error", func() {
+		It("should not invoke post", func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/Users"),
@@ -109,8 +109,8 @@ var _ = Describe("given uaac manager", func() {
 				),
 			)
 			err := manager.CreateExternalUser("", "", "", "ldap")
-			Ω(err).Should(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			Ω(err).Should(Not(HaveOccurred()))
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
 		})
 	})
 	Context("CreateSamlUser()", func() {
