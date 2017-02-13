@@ -261,15 +261,19 @@ func (m *DefaultOrgManager) updateLdapUsers(config *ldap.Config, org *cloudcontr
 		if _, userExists := uaacUsers[strings.ToLower(userID)]; userExists {
 			lo.G.Info("User", userID, "already exists")
 		} else {
-			lo.G.Info("User", userID, "doesn't exist so creating in UAA")
-			if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
-				return err
-			} else {
-				uaacUsers[userID] = userID
+			if userID != "" {
+				lo.G.Info("User", userID, "doesn't exist so creating in UAA")
+				if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
+					return err
+				} else {
+					uaacUsers[userID] = userID
+				}
 			}
 		}
-		if err := m.addUserToOrgAndRole(userID, org.MetaData.GUID, role); err != nil {
-			return err
+		if userID != "" {
+			if err := m.addUserToOrgAndRole(userID, org.MetaData.GUID, role); err != nil {
+				return err
+			}
 		}
 	}
 

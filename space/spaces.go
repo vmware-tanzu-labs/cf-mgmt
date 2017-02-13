@@ -298,18 +298,21 @@ func (m *DefaultSpaceManager) updateLdapUsers(config *ldap.Config, space *cloudc
 		if _, userExists := uaacUsers[strings.ToLower(userID)]; userExists {
 			lo.G.Info("User", userID, "already exists")
 		} else {
-
-			lo.G.Info("User", userID, "doesn't exist so creating in UAA")
-			if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
-				lo.G.Error(err)
-				return err
-			} else {
-				uaacUsers[userID] = userID
+			if userID != "" {
+				lo.G.Info("User", userID, "doesn't exist so creating in UAA")
+				if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
+					lo.G.Error(err)
+					return err
+				} else {
+					uaacUsers[userID] = userID
+				}
 			}
 		}
-		if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, role); err != nil {
-			lo.G.Error(err)
-			return err
+		if userID != "" {
+			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, role); err != nil {
+				lo.G.Error(err)
+				return err
+			}
 		}
 	}
 
