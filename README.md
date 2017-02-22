@@ -88,7 +88,7 @@ OPTIONS:
 ```
 
 ### Configuration
-After running the above commands there will be a config directory in the working directory.  This will have a folder per org and within each org there will be a foler for each space.
+After running the above commands there will be a config directory in the working directory.  This will have a folder per org and within each org there will be a folder for each space.
 
 ```
 ├── ldap.yml
@@ -108,7 +108,7 @@ After running the above commands there will be a config directory in the working
 ```
 
 #### Org Configuration
-There is a orgs.yml that contains list of orgs that will be created.  This should have a cooresponding folder with name of the orgs cf-mgmt is managing.  This will contain a orgConfig.yml and folder for each space.  Each orgConfig.yml consists of the following.
+There is a orgs.yml that contains list of orgs that will be created.  This should have a corresponding folder with name of the orgs cf-mgmt is managing.  This will contain a orgConfig.yml and folder for each space.  Each orgConfig.yml consists of the following.
 
 ```
 # org name
