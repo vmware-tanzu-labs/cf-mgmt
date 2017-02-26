@@ -175,6 +175,8 @@ func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) (
 				}
 			}
 		}
+	} else {
+		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	return
 }

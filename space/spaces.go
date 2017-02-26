@@ -210,6 +210,8 @@ func (m *DefaultSpaceManager) UpdateSpaceDevelopers(config *ldap.Config, space *
 			lo.G.Error(err)
 			return err
 		}
+	} else {
+		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	for _, userID := range input.Developer.Users {
 		if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "developers"); err != nil {
@@ -232,6 +234,8 @@ func (m *DefaultSpaceManager) UpdateSpaceManagers(config *ldap.Config, space *cl
 			lo.G.Error(err)
 			return err
 		}
+	} else {
+		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	for _, userID := range input.Manager.Users {
 		if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "managers"); err != nil {
@@ -254,6 +258,8 @@ func (m *DefaultSpaceManager) UpdateSpaceAuditors(config *ldap.Config, space *cl
 			lo.G.Error(err)
 			return err
 		}
+	} else {
+		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	for _, userID := range input.Auditor.Users {
 		if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "auditors"); err != nil {

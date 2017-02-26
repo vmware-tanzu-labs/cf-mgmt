@@ -6,3 +6,4 @@ main
 .wercker
 brownbag
 cf-mgmt
+*.iml
