@@ -170,10 +170,9 @@ paid-service-plans-allowed: true
 ```
 
 #### Space Configuration
-There will be a spaces.yml that will list all the spaces for each org.  There will also be a folder for each space with the same name.  Each folder will contain a spaceConfig.yml and security-group.json file with an empty json file.  Each spaceConfig.yml will have the following configuration options.  
+There will be a spaces.yml that will list all the spaces for each org.  There will also be a folder for each space with the same name.  Each folder will contain a spaceConfig.yml and security-group.json file with an empty json file.  Each spaceConfig.yml will have the following configuration options:  
 
 ```
----
 # org that is space belongs to
 org: test
 
@@ -238,10 +237,10 @@ paid-service-plans-allowed: true
 
 # to enable custom asg for the space.  If true will deploy asg defined in security-group.json within space folder
 enable-security-group: false
-
+```
 
 ### LDAP Configuration
-LDAP configuration file ```ldap.yml``` is located in the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
+LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
 
 
 ### Recommended workflow
@@ -251,8 +250,8 @@ Operations team can setup a a git repo seeded with cf-mgmt configuration.  This 
 #### generate-concourse-pipeline
 
 This will generate a pipeline.yml, vars.yml and necessary task yml files for running all the tasks listed below.  Just need to update your vars.yml check in all your code to GIT and execute the fly command to register your pipeline.  
-
 ```
+
 USAGE:
    cf-mgmt generate-concourse-pipeline [arguments...]
 
