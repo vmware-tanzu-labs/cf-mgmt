@@ -490,6 +490,32 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(orgs).Should(HaveLen(1))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+
+		It("should retrieve all results when there are more results than the initial size of 100", func() {
+			bytes, err := ioutil.ReadFile("fixtures/orgs-with-paging.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			bytes, err = ioutil.ReadFile("fixtures/orgs.json")
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			orgs, err := manager.ListOrgs()
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(orgs).ShouldNot(BeNil())
+			Ω(orgs).Should(HaveLen(3))
+			Ω(server.ReceivedRequests()).Should(HaveLen(2))
+		})
+
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(

@@ -1,0 +1,58 @@
+{
+  "total_results": 2,
+  "total_pages": 2,
+  "prev_url": null,
+  "next_url": "/v2/organizations?order-direction=asc&page=2&results-per-page=2",
+  "resources": [
+    {
+      "metadata": {
+        "guid": "b595b988-00ec-477b-a61e-af75fad737fc",
+        "url": "/v2/organizations/b595b988-00ec-477b-a61e-af75fad737fc",
+        "created_at": "2017-02-23T04:42:56Z",
+        "updated_at": "2017-02-23T04:42:56Z"
+      },
+      "entity": {
+        "name": "pcfdev-org",
+        "billing_enabled": false,
+        "quota_definition_guid": "1e58d7ab-2f9d-4e56-9a27-428f7ac2f232",
+        "status": "active",
+        "default_isolation_segment_guid": null,
+        "quota_definition_url": "/v2/quota_definitions/1e58d7ab-2f9d-4e56-9a27-428f7ac2f232",
+        "spaces_url": "/v2/organizations/b595b988-00ec-477b-a61e-af75fad737fc/spaces",
+        "domains_url": "/v2/organizations/b595b988-00ec-477b-a61e-af75fad737fc/domains",
+        "private_domains_url": "/v2/organizations/b595b988-00ec-477b-a61e-af75fad737fc/private_domains",
+        "users_url": "/v2/organizations/b595b988-00ec-477b-a61e-af75fad737fc/users",
+        "managers_url": "/v2/organizations/b595b988-00ec-477b-a61e-af75fad737fc/managers",
+        "billing_managers_url": "/v2/organizations/b595b988-00ec-477b-a61e-af75fad737fc/billing_managers",
+        "auditors_url": "/v2/organizations/b595b988-00ec-477b-a61e-af75fad737fc/auditors",
+        "app_events_url": "/v2/organizations/b595b988-00ec-477b-a61e-af75fad737fc/app_events",
+        "space_quota_definitions_url": "/v2/organizations/b595b988-00ec-477b-a61e-af75fad737fc/space_quota_definitions"
+      }
+    },
+    {
+      "metadata": {
+        "guid": "fc3a7dd4-4331-4f57-aa3b-7c038c20320e",
+        "url": "/v2/organizations/fc3a7dd4-4331-4f57-aa3b-7c038c20320e",
+        "created_at": "2017-02-23T04:49:12Z",
+        "updated_at": "2017-02-23T04:49:12Z"
+      },
+      "entity": {
+        "name": "system",
+        "billing_enabled": false,
+        "quota_definition_guid": "1e58d7ab-2f9d-4e56-9a27-428f7ac2f232",
+        "status": "active",
+        "default_isolation_segment_guid": null,
+        "quota_definition_url": "/v2/quota_definitions/1e58d7ab-2f9d-4e56-9a27-428f7ac2f232",
+        "spaces_url": "/v2/organizations/fc3a7dd4-4331-4f57-aa3b-7c038c20320e/spaces",
+        "domains_url": "/v2/organizations/fc3a7dd4-4331-4f57-aa3b-7c038c20320e/domains",
+        "private_domains_url": "/v2/organizations/fc3a7dd4-4331-4f57-aa3b-7c038c20320e/private_domains",
+        "users_url": "/v2/organizations/fc3a7dd4-4331-4f57-aa3b-7c038c20320e/users",
+        "managers_url": "/v2/organizations/fc3a7dd4-4331-4f57-aa3b-7c038c20320e/managers",
+        "billing_managers_url": "/v2/organizations/fc3a7dd4-4331-4f57-aa3b-7c038c20320e/billing_managers",
+        "auditors_url": "/v2/organizations/fc3a7dd4-4331-4f57-aa3b-7c038c20320e/auditors",
+        "app_events_url": "/v2/organizations/fc3a7dd4-4331-4f57-aa3b-7c038c20320e/app_events",
+        "space_quota_definitions_url": "/v2/organizations/fc3a7dd4-4331-4f57-aa3b-7c038c20320e/space_quota_definitions"
+      }
+    }
+  ]
+}

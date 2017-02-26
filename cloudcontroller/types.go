@@ -68,7 +68,11 @@ type SpaceEntity struct {
 
 //Orgs -
 type Orgs struct {
-	Orgs []*Org `json:"resources"`
+	TotalResults int    `json:"total_results"`
+	TotalPages   int    `json:"total_pages"`
+	PrevURL      string `json:"prev_url"`
+	NextURL      string `json:"next_url"`
+	Orgs         []*Org `json:"resources"`
 }
 
 //Org -

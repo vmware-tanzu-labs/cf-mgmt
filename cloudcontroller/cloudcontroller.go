@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pivotalservices/cf-mgmt/http"
+	"github.com/xchapter7x/lo"
 )
 
 func NewManager(host, token string) Manager {
@@ -146,13 +147,31 @@ func (m *DefaultManager) CreateOrg(orgName string) error {
 	return err
 }
 
+//ListOrgs : Returns all orgs in the given foundation
 func (m *DefaultManager) ListOrgs() ([]*Org, error) {
 	url := fmt.Sprintf("%s/v2/organizations?results-per-page=100", m.Host)
-	orgResources := &Orgs{}
-	if err := m.HTTP.Get(url, m.Token, orgResources); err != nil {
+	orgs := &Orgs{}
+	var err = m.HTTP.Get(url, m.Token, orgs)
+	if err != nil {
 		return nil, err
 	}
-	return orgResources.Orgs, nil
+	if orgs.NextURL == "" {
+		return orgs.Orgs, nil
+	}
+	nextURL := orgs.NextURL
+	orgsTemp := &Orgs{}
+	for nextURL != "" {
+		url = fmt.Sprintf("%s%s", m.Host, nextURL)
+		lo.G.Info("getOrgs() URL :", url)
+		err = m.HTTP.Get(url, m.Token, orgsTemp)
+		if err != nil {
+			return nil, err
+		}
+		orgs.Orgs = append(orgs.Orgs, orgsTemp.Orgs...)
+		nextURL = orgsTemp.NextURL
+	}
+	lo.G.Info("Total orgs returned :", len(orgs.Orgs))
+	return orgs.Orgs, nil
 }
 
 func (m *DefaultManager) AddUserToOrgRole(userName, role, orgGUID string) error {

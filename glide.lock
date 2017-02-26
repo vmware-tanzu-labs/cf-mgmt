@@ -1,34 +1,63 @@
 hash: 557dd19ffd768964acf9f91f02ef8327616b074b3f191a107f2941e633d7ae63
-updated: 2016-09-10T08:54:06.808508176-07:00
+updated: 2017-02-25T00:26:36.944466001-06:00
 imports:
 - name: github.com/codegangsta/cli
-  version: c723b19a84af34d905773672ffa1b8ead802e505
+  version: 2526b57c56f30b50466c96c4133b1a4ad0f0191f
 - name: github.com/go-ldap/ldap
-  version: d0a5ced67b4dc310b9158d63a2c6f9c5ec13f105
+  version: 931bf64d9da4d3d241757d12f1f1420b8605f6fa
 - name: github.com/golang/mock
   version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
   subpackages:
   - gomock
 - name: github.com/golang/protobuf
-  version: 1f49d83d9aa00e6ce4fc8258c71cc7786aec968a
+  version: 87c000235d3d852c1628dc9490cd21ab36a7d69f
 - name: github.com/moul/http2curl
-  version: b1479103caacaa39319f75e7f57fc545287fca0d
+  version: 4e24498b31dba4683efb9d35c1c8a91e2eda28c8
 - name: github.com/onsi/ginkgo
-  version: 7b6efc7d7b052568b49ac02d3141c9d7a5a494a4
+  version: 462326b1628e124b23f42e87a8f2750e3c4e2d24
+  subpackages:
+  - config
+  - internal/codelocation
+  - internal/containernode
+  - internal/failer
+  - internal/leafnodes
+  - internal/remote
+  - internal/spec
+  - internal/specrunner
+  - internal/suite
+  - internal/testingtproxy
+  - internal/writer
+  - reporters
+  - reporters/stenographer
+  - types
 - name: github.com/onsi/gomega
   version: b48c9a8b2644326d0a44eaaacc8d83e35174a05d
+  subpackages:
+  - format
+  - ghttp
+  - internal/assertion
+  - internal/asyncassertion
+  - internal/testingtsupport
+  - matchers
+  - matchers/support/goraph/bipartitegraph
+  - matchers/support/goraph/edge
+  - matchers/support/goraph/node
+  - matchers/support/goraph/util
+  - types
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9
 - name: github.com/parnurzeal/gorequest
-  version: 827f321971c658c6c0201a49cda2581850b055d8
+  version: ea779001e09326d30d455dbf37bc0d08c49941a2
+- name: github.com/pkg/errors
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/xchapter7x/lo
   version: e33b245fc7a8186582208abc2458c2691bff681c
 - name: golang.org/x/net
-  version: cfe3c2a7525b50c3d707256e371c90938cfef98a
+  version: 69d4b8aa71caaaa75c3dfc11211d1be495abec7c
   subpackages:
   - publicsuffix
 - name: gopkg.in/asn1-ber.v1
   version: 4e86f4367175e39f69d9358a5f17b4dda270378d
 - name: gopkg.in/yaml.v2
-  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
-devImports: []
+  version: a83829b6f1293c91addabc89d0571c246397bbf4
+testImports: []
