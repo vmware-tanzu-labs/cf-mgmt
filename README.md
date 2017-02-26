@@ -240,8 +240,8 @@ paid-service-plans-allowed: true
 enable-security-group: false
 
 
-## LDAP Configuration
-LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
+### LDAP Configuration
+LDAP configuration file ```ldap.yml``` is located in the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
 
 
 ### Recommended workflow
