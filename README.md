@@ -249,15 +249,21 @@ Operations team can setup a a git repo seeded with cf-mgmt configuration.  This 
 
 #### generate-concourse-pipeline
 
-This will generate a pipeline.yml, vars.yml and necessary task yml files for running all the tasks listed below.  Just need to update your vars.yml check in all your code to GIT and execute the fly command to register your pipeline.  
-```
+This will generate a pipeline.yml, vars.yml and necessary task yml files for running all the tasks listed below.  Just need to update your vars.yml and check in all your code to GIT and execute the fly command to register your pipeline. ```vars.yml``` contains place holders for LDAP and CF user credentials. If you do not prefer storing the credentials in ```vars.yml```, you can pass them via the ```fly``` command line arguments.
 
+```
 USAGE:
    cf-mgmt generate-concourse-pipeline [arguments...]
 
 DESCRIPTION:
-   generate-concourse-pipeline
+   generate-concourse-pipeline   
 ```   
+Once the pipeline files are generated, you can create a pipeline as follows:
+```
+fly -t  login -c <concourse_instance>
+fly -t <targetname> set-pipeline -p <pipeline_name> -c pipeline.yml -l vars.yml —-var "ldap_password=<ldap_password>" --var "client_secret=<client_sercret>" —-var "password=<org/space_admin_password>"
+```
+If both ```vars.yml``` and ```--var``` are specified, ```--vars``` values takes precedence.
 
 ### Known Issues
 Currently does not remove anything that is not in configuration.  All functions are additive.  So removing users, orgs, spaces is not currently a function if they are not configured in cf-mgmt but future plans are to have a flag to opt-in for this feature.  This will likely start with removing users that are not configured in the orgs/spaces managed by cf-mgmt.
