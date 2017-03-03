@@ -50,16 +50,15 @@ var _ = Describe("given OrgManager", func() {
 	Context("FindOrg()", func() {
 		It("should return an org", func() {
 			orgs := []*cloudcontroller.Org{
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
+				{
+				Entity: cloudcontroller.OrgEntity{
+					Name: "test",
 				},
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test2",
-					},
 				},
+				{Entity: cloudcontroller.OrgEntity{
+					Name: "test2",
+				},
+								},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			org, err := orgManager.FindOrg("test")
@@ -85,14 +84,14 @@ var _ = Describe("given OrgManager", func() {
 	Context("GetOrgGUID()", func() {
 		It("should return an GUID", func() {
 			orgs := []*cloudcontroller.Org{
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "theGUID",
-					},
-				},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test",
+									},
+									MetaData: cloudcontroller.OrgMetaData{
+										GUID: "theGUID",
+									},
+								},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			guid, err := orgManager.GetOrgGUID("test")
@@ -111,14 +110,14 @@ var _ = Describe("given OrgManager", func() {
 	Context("DoesOrgExist()", func() {
 		It("should return true", func() {
 			orgs := []*cloudcontroller.Org{
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "theGUID",
-					},
-				},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test",
+									},
+									MetaData: cloudcontroller.OrgMetaData{
+										GUID: "theGUID",
+									},
+								},
 			}
 			exists := orgManager.DoesOrgExist("test", orgs)
 			Ω(exists).Should(BeTrue())
@@ -126,14 +125,14 @@ var _ = Describe("given OrgManager", func() {
 	})
 	It("should return false", func() {
 		orgs := []*cloudcontroller.Org{
-			&cloudcontroller.Org{
-				Entity: cloudcontroller.OrgEntity{
-					Name: "test",
-				},
-				MetaData: cloudcontroller.OrgMetaData{
-					GUID: "theGUID",
-				},
-			},
+			{
+							Entity: cloudcontroller.OrgEntity{
+								Name: "test",
+							},
+							MetaData: cloudcontroller.OrgMetaData{
+								GUID: "theGUID",
+							},
+						},
 		}
 		exists := orgManager.DoesOrgExist("blah", orgs)
 		Ω(exists).Should(BeFalse())
@@ -176,16 +175,16 @@ var _ = Describe("given OrgManager", func() {
 		})
 		It("should not create any orgs", func() {
 			orgs := []*cloudcontroller.Org{
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-				},
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test2",
-					},
-				},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test",
+									},
+								},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test2",
+									},
+								},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			err := orgManager.CreateOrgs("./fixtures/config")
@@ -193,11 +192,11 @@ var _ = Describe("given OrgManager", func() {
 		})
 		It("should not create test2 org", func() {
 			orgs := []*cloudcontroller.Org{
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-				},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test",
+									},
+								},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().CreateOrg("test2").Return(nil)
@@ -210,22 +209,22 @@ var _ = Describe("given OrgManager", func() {
 		var orgs []*cloudcontroller.Org
 		BeforeEach(func() {
 			orgs = []*cloudcontroller.Org{
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "testOrgGUID",
-					},
-				},
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test2",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "test2OrgGUID",
-					},
-				},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test",
+									},
+									MetaData: cloudcontroller.OrgMetaData{
+										GUID: "testOrgGUID",
+									},
+								},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test2",
+									},
+									MetaData: cloudcontroller.OrgMetaData{
+										GUID: "test2OrgGUID",
+									},
+								},
 			}
 		})
 		It("should create 2 quotas", func() {
@@ -314,22 +313,22 @@ var _ = Describe("given OrgManager", func() {
 		var orgs []*cloudcontroller.Org
 		BeforeEach(func() {
 			orgs = []*cloudcontroller.Org{
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "testOrgGUID",
-					},
-				},
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test2",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "test2OrgGUID",
-					},
-				},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test",
+									},
+									MetaData: cloudcontroller.OrgMetaData{
+										GUID: "testOrgGUID",
+									},
+								},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test2",
+									},
+									MetaData: cloudcontroller.OrgMetaData{
+										GUID: "test2OrgGUID",
+									},
+								},
 			}
 		})
 		It("update org users where users are already in uaac", func() {
@@ -343,7 +342,7 @@ var _ = Describe("given OrgManager", func() {
 			uaacUsers["cwashburn2"] = "cwashburn2"
 
 			users := []l.User{
-				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@testdomain.com"},
+				{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@testdomain.com"},
 			}
 			mockLdap.EXPECT().GetConfig("./fixtures/user_config", "test").Return(config, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
@@ -402,7 +401,7 @@ var _ = Describe("given OrgManager", func() {
 			}
 			uaacUsers := make(map[string]string)
 			users := []l.User{
-				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@testdomain.com"},
+				{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@testdomain.com"},
 			}
 			mockLdap.EXPECT().GetConfig("./fixtures/user_config", "test").Return(config, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
@@ -459,22 +458,22 @@ var _ = Describe("given OrgManager", func() {
 		var orgs []*cloudcontroller.Org
 		BeforeEach(func() {
 			orgs = []*cloudcontroller.Org{
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "testOrgGUID",
-					},
-				},
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test2",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "test2OrgGUID",
-					},
-				},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test",
+									},
+									MetaData: cloudcontroller.OrgMetaData{
+										GUID: "testOrgGUID",
+									},
+								},
+				{
+									Entity: cloudcontroller.OrgEntity{
+										Name: "test2",
+									},
+									MetaData: cloudcontroller.OrgMetaData{
+										GUID: "test2OrgGUID",
+									},
+								},
 			}
 		})
 		It("update org users where users aren't in uaac", func() {
@@ -484,7 +483,7 @@ var _ = Describe("given OrgManager", func() {
 			}
 			uaacUsers := make(map[string]string)
 			users := []l.User{
-				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@test.io"},
+				{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@test.io"},
 			}
 			mockLdap.EXPECT().GetConfig("./fixtures/user_saml_config", "test").Return(config, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)

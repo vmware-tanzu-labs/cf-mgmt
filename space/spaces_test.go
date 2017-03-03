@@ -85,12 +85,12 @@ var _ = Describe("given SpaceManager", func() {
 	Context("FindSpace()", func() {
 		It("should return an space", func() {
 			spaces := []cloudcontroller.Space{
-				cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "testSpace",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{},
-				},
+				{
+									Entity: cloudcontroller.SpaceEntity{
+										Name: "testSpace",
+									},
+									MetaData: cloudcontroller.SpaceMetaData{},
+								},
 			}
 			mockOrgMgr.EXPECT().GetOrgGUID("testOrg").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
@@ -101,12 +101,12 @@ var _ = Describe("given SpaceManager", func() {
 		})
 		It("should return an error if space not found", func() {
 			spaces := []cloudcontroller.Space{
-				cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "testSpace",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{},
-				},
+				{
+									Entity: cloudcontroller.SpaceEntity{
+										Name: "testSpace",
+									},
+									MetaData: cloudcontroller.SpaceMetaData{},
+								},
 			}
 			mockOrgMgr.EXPECT().GetOrgGUID("testOrg").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
@@ -141,12 +141,12 @@ var _ = Describe("given SpaceManager", func() {
 		})
 		It("should create 1 space", func() {
 			spaces := []cloudcontroller.Space{
-				cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space1",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{},
-				},
+				{
+									Entity: cloudcontroller.SpaceEntity{
+										Name: "space1",
+									},
+									MetaData: cloudcontroller.SpaceMetaData{},
+								},
 			}
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
@@ -166,15 +166,15 @@ var _ = Describe("given SpaceManager", func() {
 				Enabled: true,
 				Origin:  "ldap",
 			}
-			spaces := []cloudcontroller.Space{cloudcontroller.Space{
-				Entity: cloudcontroller.SpaceEntity{
-					Name:    "space1",
-					OrgGUID: "testOrgGUID",
-				},
-				MetaData: cloudcontroller.SpaceMetaData{
-					GUID: "space1GUID",
-				},
-			},
+			spaces := []cloudcontroller.Space{{
+							Entity: cloudcontroller.SpaceEntity{
+								Name:    "space1",
+								OrgGUID: "testOrgGUID",
+							},
+							MetaData: cloudcontroller.SpaceMetaData{
+								GUID: "space1GUID",
+							},
+						},
 			}
 			uaacUsers := make(map[string]string)
 			uaacUsers["cwashburn"] = "cwashburn"
@@ -226,14 +226,14 @@ var _ = Describe("given SpaceManager", func() {
 			bytes, e := ioutil.ReadFile("./fixtures/config/test/space1/security-group.json")
 			Ω(e).Should(BeNil())
 			spaces := []cloudcontroller.Space{
-				cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space1",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1GUID",
-					},
-				},
+				{
+									Entity: cloudcontroller.SpaceEntity{
+										Name: "space1",
+									},
+									MetaData: cloudcontroller.SpaceMetaData{
+										GUID: "space1GUID",
+									},
+								},
 			}
 			sgs := make(map[string]string)
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
@@ -249,14 +249,14 @@ var _ = Describe("given SpaceManager", func() {
 			bytes, e := ioutil.ReadFile("./fixtures/config/test/space1/security-group.json")
 			Ω(e).Should(BeNil())
 			spaces := []cloudcontroller.Space{
-				cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space1",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1GUID",
-					},
-				},
+				{
+									Entity: cloudcontroller.SpaceEntity{
+										Name: "space1",
+									},
+									MetaData: cloudcontroller.SpaceMetaData{
+										GUID: "space1GUID",
+									},
+								},
 			}
 			sgs := make(map[string]string)
 			sgs["test-space1"] = "SGGUID"
@@ -273,24 +273,24 @@ var _ = Describe("given SpaceManager", func() {
 	Context("CreateQuotas()", func() {
 		It("should create 2 quotas", func() {
 			spaces := []cloudcontroller.Space{
-				cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name:    "space1",
-						OrgGUID: "testOrgGUID",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1GUID",
-					},
-				},
-				cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name:    "space2",
-						OrgGUID: "testOrgGUID",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space2GUID",
-					},
-				},
+				{
+									Entity: cloudcontroller.SpaceEntity{
+										Name:    "space1",
+										OrgGUID: "testOrgGUID",
+									},
+									MetaData: cloudcontroller.SpaceMetaData{
+										GUID: "space1GUID",
+									},
+								},
+				{
+									Entity: cloudcontroller.SpaceEntity{
+										Name:    "space2",
+										OrgGUID: "testOrgGUID",
+									},
+									MetaData: cloudcontroller.SpaceMetaData{
+										GUID: "space2GUID",
+									},
+								},
 			}
 			quotas := make(map[string]string)
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
@@ -310,24 +310,24 @@ var _ = Describe("given SpaceManager", func() {
 
 		It("should update 2 quota", func() {
 			spaces := []cloudcontroller.Space{
-				cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name:    "space1",
-						OrgGUID: "testOrgGUID",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1GUID",
-					},
-				},
-				cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name:    "space2",
-						OrgGUID: "testOrgGUID",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space2GUID",
-					},
-				},
+				{
+									Entity: cloudcontroller.SpaceEntity{
+										Name:    "space1",
+										OrgGUID: "testOrgGUID",
+									},
+									MetaData: cloudcontroller.SpaceMetaData{
+										GUID: "space1GUID",
+									},
+								},
+				{
+									Entity: cloudcontroller.SpaceEntity{
+										Name:    "space2",
+										OrgGUID: "testOrgGUID",
+									},
+									MetaData: cloudcontroller.SpaceMetaData{
+										GUID: "space2GUID",
+									},
+								},
 			}
 			quotas := make(map[string]string)
 			quotas["space1"] = "space1QuotaGUID"
@@ -350,24 +350,24 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("UpdateSpaces()", func() {
 		spaces := []cloudcontroller.Space{
-			cloudcontroller.Space{
-				Entity: cloudcontroller.SpaceEntity{
-					Name:    "space1",
-					OrgGUID: "testOrgGUID",
-				},
-				MetaData: cloudcontroller.SpaceMetaData{
-					GUID: "space1GUID",
-				},
-			},
-			cloudcontroller.Space{
-				Entity: cloudcontroller.SpaceEntity{
-					Name:    "space2",
-					OrgGUID: "testOrgGUID",
-				},
-				MetaData: cloudcontroller.SpaceMetaData{
-					GUID: "space2GUID",
-				},
-			},
+			{
+							Entity: cloudcontroller.SpaceEntity{
+								Name:    "space1",
+								OrgGUID: "testOrgGUID",
+							},
+							MetaData: cloudcontroller.SpaceMetaData{
+								GUID: "space1GUID",
+							},
+						},
+			{
+							Entity: cloudcontroller.SpaceEntity{
+								Name:    "space2",
+								OrgGUID: "testOrgGUID",
+							},
+							MetaData: cloudcontroller.SpaceMetaData{
+								GUID: "space2GUID",
+							},
+						},
 		}
 		It("should turn on allow ssh", func() {
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
@@ -401,24 +401,24 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("UpdateSpaceUsers()", func() {
 		spaces := []cloudcontroller.Space{
-			cloudcontroller.Space{
-				Entity: cloudcontroller.SpaceEntity{
-					Name:    "space1",
-					OrgGUID: "testOrgGUID",
-				},
-				MetaData: cloudcontroller.SpaceMetaData{
-					GUID: "space1GUID",
-				},
-			},
-			cloudcontroller.Space{
-				Entity: cloudcontroller.SpaceEntity{
-					Name:    "space2",
-					OrgGUID: "testOrgGUID",
-				},
-				MetaData: cloudcontroller.SpaceMetaData{
-					GUID: "space2GUID",
-				},
-			},
+			{
+							Entity: cloudcontroller.SpaceEntity{
+								Name:    "space1",
+								OrgGUID: "testOrgGUID",
+							},
+							MetaData: cloudcontroller.SpaceMetaData{
+								GUID: "space1GUID",
+							},
+						},
+			{
+							Entity: cloudcontroller.SpaceEntity{
+								Name:    "space2",
+								OrgGUID: "testOrgGUID",
+							},
+							MetaData: cloudcontroller.SpaceMetaData{
+								GUID: "space2GUID",
+							},
+						},
 		}
 		It("update org users where users are already in uaac", func() {
 			config := &l.Config{
@@ -430,7 +430,7 @@ var _ = Describe("given SpaceManager", func() {
 			uaacUsers["cwashburn1"] = "cwashburn1"
 			uaacUsers["cwashburn2"] = "cwashburn2"
 			users := []l.User{
-				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@testdomain.com"},
+				{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@testdomain.com"},
 			}
 			mockLdap.EXPECT().GetConfig("./fixtures/user_config", "test").Return(config, nil)
 			mockUaac.EXPECT().ListUsers().Return(uaacUsers, nil)
@@ -492,7 +492,7 @@ var _ = Describe("given SpaceManager", func() {
 			}
 			uaacUsers := make(map[string]string)
 			users := []l.User{
-				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@testdomain.com"},
+				{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@testdomain.com"},
 			}
 			mockLdap.EXPECT().GetConfig("./fixtures/user_config", "test").Return(config, nil)
 			mockUaac.EXPECT().ListUsers().Return(uaacUsers, nil)
@@ -554,24 +554,24 @@ var _ = Describe("given SpaceManager", func() {
 	})
 	Context("UpdateSpaceUsers() for SAML", func() {
 		spaces := []cloudcontroller.Space{
-			cloudcontroller.Space{
-				Entity: cloudcontroller.SpaceEntity{
-					Name:    "space1",
-					OrgGUID: "testOrgGUID",
-				},
-				MetaData: cloudcontroller.SpaceMetaData{
-					GUID: "space1GUID",
-				},
-			},
-			cloudcontroller.Space{
-				Entity: cloudcontroller.SpaceEntity{
-					Name:    "space2",
-					OrgGUID: "testOrgGUID",
-				},
-				MetaData: cloudcontroller.SpaceMetaData{
-					GUID: "space2GUID",
-				},
-			},
+			{
+							Entity: cloudcontroller.SpaceEntity{
+								Name:    "space1",
+								OrgGUID: "testOrgGUID",
+							},
+							MetaData: cloudcontroller.SpaceMetaData{
+								GUID: "space1GUID",
+							},
+						},
+			{
+							Entity: cloudcontroller.SpaceEntity{
+								Name:    "space2",
+								OrgGUID: "testOrgGUID",
+							},
+							MetaData: cloudcontroller.SpaceMetaData{
+								GUID: "space2GUID",
+							},
+						},
 		}
 		It("update org users where users aren't in uaac", func() {
 			config := &l.Config{
@@ -580,7 +580,7 @@ var _ = Describe("given SpaceManager", func() {
 			}
 			uaacUsers := make(map[string]string)
 			users := []l.User{
-				l.User{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@test.io"},
+				{UserID: "cwashburn", UserDN: "cn=cwashburn", Email: "cwashburn@test.io"},
 			}
 			mockLdap.EXPECT().GetConfig("./fixtures/user_saml_config", "test").Return(config, nil)
 			mockUaac.EXPECT().ListUsers().Return(uaacUsers, nil)
