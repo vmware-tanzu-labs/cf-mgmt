@@ -271,13 +271,13 @@ type bintree struct {
 	Children map[string]*bintree
 }
 var _bintree = &bintree{nil, map[string]*bintree{
-	"files": &bintree{nil, map[string]*bintree{
-		"cf-mgmt.sh": &bintree{filesCfMgmtSh, map[string]*bintree{}},
-		"cf-mgmt.yml": &bintree{filesCfMgmtYml, map[string]*bintree{}},
-		"pipeline.yml": &bintree{filesPipelineYml, map[string]*bintree{}},
-		"security-group.json": &bintree{filesSecurityGroupJson, map[string]*bintree{}},
-		"vars.yml": &bintree{filesVarsYml, map[string]*bintree{}},
-	}},
+	"files": {nil, map[string]*bintree{
+			"cf-mgmt.sh": {filesCfMgmtSh, map[string]*bintree{}},
+			"cf-mgmt.yml": {filesCfMgmtYml, map[string]*bintree{}},
+			"pipeline.yml": {filesPipelineYml, map[string]*bintree{}},
+			"security-group.json": {filesSecurityGroupJson, map[string]*bintree{}},
+			"vars.yml": {filesVarsYml, map[string]*bintree{}},
+		}},
 }}
 
 // RestoreAsset restores an asset under the given directory

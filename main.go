@@ -78,14 +78,20 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 }
 
 const (
-	systemDomain string = "SYSTEM_DOMAIN"
-	userID       string = "USER_ID"
-	password     string = "PASSWORD"
-	clientSecret string = "CLIENT_SECRET"
-	configDir    string = "CONFIG_DIR"
-	orgName      string = "ORG"
-	spaceName    string = "SPACE"
-	ldapPassword string = "LDAP_PASSWORD"
+	systemDomain     string = "SYSTEM_DOMAIN"
+	userID           string = "USER_ID"
+	password         string = "PASSWORD"
+	clientSecret     string = "CLIENT_SECRET"
+	configDir        string = "CONFIG_DIR"
+	orgName          string = "ORG"
+	spaceName        string = "SPACE"
+	ldapPassword     string = "LDAP_PASSWORD"
+	orgBillingMgrGrp string = "ORG_BILLING_MGR_GRP"
+	orgMgrGrp        string = "ORG_MGR_GRP"
+	orgAuditorGrp    string = "ORG_AUDITOR_GRP"
+	spaceDevGrp      string = "SPACE_DEV_GRP"
+	spaceMgrGrp      string = "SPACE_MGR_GRP"
+	spaceAuditorGrp  string = "SPACE_AUDITOR_GRP"
 )
 
 func main() {
@@ -108,7 +114,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 	app.Name = "cf-mgmt"
 	app.Usage = "cf-mgmt"
 	app.Commands = []cli.Command{
-		cli.Command{
+		{
 			Name:  "version",
 			Usage: "shows the application version currently in use",
 			Action: func(c *cli.Context) (err error) {
@@ -136,7 +142,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 //CreateInitCommand -
 func CreateInitCommand(eh *ErrorHandler) (command cli.Command) {
 	flagList := map[string]flagBucket{
-		configDir: flagBucket{
+		configDir: {
 			Desc:   "config dir.  Default is config",
 			EnvVar: configDir,
 		},
@@ -165,13 +171,25 @@ func runInit(c *cli.Context) (err error) {
 //CreateAddOrgCommand -
 func CreateAddOrgCommand(eh *ErrorHandler) (command cli.Command) {
 	flagList := map[string]flagBucket{
-		configDir: flagBucket{
+		configDir: {
 			Desc:   "config dir.  Default is config",
 			EnvVar: configDir,
 		},
-		orgName: flagBucket{
+		orgName: {
 			Desc:   "org name to add",
 			EnvVar: orgName,
+		},
+		orgBillingMgrGrp: {
+			Desc:   "LDAP group for Org Billing Manager",
+			EnvVar: orgBillingMgrGrp,
+		},
+		orgMgrGrp: {
+			Desc:   "LDAP group for Org Manager",
+			EnvVar: orgMgrGrp,
+		},
+		orgAuditorGrp: {
+			Desc:   "LDAP group for Org Auditor",
+			EnvVar: orgAuditorGrp,
 		},
 	}
 
@@ -187,11 +205,18 @@ func CreateAddOrgCommand(eh *ErrorHandler) (command cli.Command) {
 
 func runAddOrg(c *cli.Context) (err error) {
 	inputOrg := c.String(getFlag(orgName))
-	configDir := getConfigDir(c)
+
+	orgConfig := &config.OrgConfig{OrgName: inputOrg,
+		OrgBillingMgrGrp: c.String(getFlag(orgBillingMgrGrp)),
+		OrgMgrGrp:        c.String(getFlag(orgMgrGrp)),
+		OrgAuditorGrp:    c.String(getFlag(orgAuditorGrp)),
+	}
+
+	configDr := getConfigDir(c)
 	if inputOrg == "" {
 		err = fmt.Errorf("Must provide org name")
 	} else {
-		err = config.NewManager(configDir).AddOrgToConfig(inputOrg)
+		err = config.NewManager(configDr).AddOrgToConfig(orgConfig)
 	}
 	return
 }
@@ -199,17 +224,29 @@ func runAddOrg(c *cli.Context) (err error) {
 //CreateAddSpaceCommand -
 func CreateAddSpaceCommand(eh *ErrorHandler) (command cli.Command) {
 	flagList := map[string]flagBucket{
-		configDir: flagBucket{
+		configDir: {
 			Desc:   "config dir.  Default is config",
 			EnvVar: configDir,
 		},
-		orgName: flagBucket{
+		orgName: {
 			Desc:   "org name of space",
 			EnvVar: orgName,
 		},
-		spaceName: flagBucket{
+		spaceName: {
 			Desc:   "space name to add",
 			EnvVar: spaceName,
+		},
+		spaceDevGrp: {
+			Desc:   "LDAP group for Space Developer",
+			EnvVar: spaceDevGrp,
+		},
+		spaceMgrGrp: {
+			Desc:   "LDAP group for Space Manager",
+			EnvVar: spaceMgrGrp,
+		},
+		spaceAuditorGrp: {
+			Desc:   "LDAP group for Space Auditor",
+			EnvVar: spaceAuditorGrp,
 		},
 	}
 
@@ -227,11 +264,19 @@ func runAddSpace(c *cli.Context) (err error) {
 
 	inputOrg := c.String(getFlag(orgName))
 	inputSpace := c.String(getFlag(spaceName))
-	configDir := getConfigDir(c)
+
+	spaceConfig := &config.SpaceConfig{OrgName: inputOrg,
+		SpaceName:       inputSpace,
+		SpaceDevGrp:     c.String(getFlag(spaceDevGrp)),
+		SpaceMgrGrp:     c.String(getFlag(spaceMgrGrp)),
+		SpaceAuditorGrp: c.String(getFlag(spaceAuditorGrp)),
+	}
+
+	configDr := getConfigDir(c)
 	if inputOrg == "" || inputSpace == "" {
 		err = fmt.Errorf("Must provide org name and space name")
 	} else {
-		err = config.NewManager(configDir).AddSpaceToConfig(inputOrg, inputSpace)
+		err = config.NewManager(configDr).AddSpaceToConfig(spaceConfig)
 	}
 	return
 }
@@ -390,23 +435,23 @@ func defaultFlags() (flags []cli.Flag) {
 
 func buildDefaultFlags() (flagList map[string]flagBucket) {
 	flagList = map[string]flagBucket{
-		systemDomain: flagBucket{
+		systemDomain: {
 			Desc:   "system domain",
 			EnvVar: systemDomain,
 		},
-		userID: flagBucket{
+		userID: {
 			Desc:   "user id that has admin priv",
 			EnvVar: userID,
 		},
-		password: flagBucket{
+		password: {
 			Desc:   "password for user account that has admin priv",
 			EnvVar: password,
 		},
-		clientSecret: flagBucket{
+		clientSecret: {
 			Desc:   "secret for user account that has admin priv",
 			EnvVar: clientSecret,
 		},
-		configDir: flagBucket{
+		configDir: {
 			Desc:   "config dir.  Default is config",
 			EnvVar: configDir,
 		},
@@ -433,9 +478,8 @@ func buildFlags(flagList map[string]flagBucket) (flags []cli.Flag) {
 	return
 }
 
-func getFlag(input string) (flag string) {
-	flag = strings.ToLower(strings.Replace(input, "_", "-", -1))
-	return
+func getFlag(input string) string {
+	return strings.ToLower(strings.Replace(input, "_", "-", -1))
 }
 
 func getConfigDir(c *cli.Context) (cDir string) {

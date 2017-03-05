@@ -43,8 +43,8 @@ var _ = Describe("given uaac manager", func() {
 		It("should return list of users", func() {
 			userList := UserList{
 				Users: []User{
-					User{ID: "ID1", Name: "Test1"},
-					User{ID: "ID2", Name: "Test2"},
+					{ID: "ID1", Name: "Test1"},
+					{ID: "ID2", Name: "Test2"},
 				},
 			}
 			server.AppendHandlers(

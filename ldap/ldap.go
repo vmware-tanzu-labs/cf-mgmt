@@ -85,17 +85,22 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []U
 		if groupEntry, err = m.getGroup(ldapConnection, groupName, config.GroupSearchBase); err == nil {
 			if groupEntry != nil {
 				userDNList := groupEntry.GetAttributeValues(config.GroupAttribute)
-				for _, userDN := range userDNList {
-					if user, err = m.getLdapUser(ldapConnection, userDN, config.UserSearchBase, config.UserNameAttribute, config.UserMailAttribute); err == nil {
-						if user != nil {
-							users = append(users, *user)
-						} else {
-							lo.G.Info("User entry not found", userDN)
+				if len(userDNList) == 0 {
+					lo.G.Info("No users found under group : ", config.GroupAttribute)
+				} else {
+					for _, userDN := range userDNList {
+						lo.G.Info("Getting details about user : ", userDN)
+						if user, err = m.getLdapUser(ldapConnection, userDN, config); err == nil {
+							if user != nil {
+								users = append(users, *user)
+							} else {
+								lo.G.Info("User entry not found", userDN)
+							}
 						}
 					}
 				}
 			} else {
-				lo.G.Info("Group not found", groupName)
+				lo.G.Info("Group not found : ", groupName)
 			}
 		}
 	} else {
@@ -107,9 +112,10 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []U
 func (m *DefaultManager) GetLdapUser(config *Config, userDN, userSearchBase string) (*User, error) {
 	if ldapConnection, err := m.LdapConnection(config); err == nil {
 		defer ldapConnection.Close()
-		if user, err := m.getLdapUser(ldapConnection, userDN, config.UserSearchBase, config.UserNameAttribute, config.UserMailAttribute); err == nil {
+		if user, err := m.getLdapUser(ldapConnection, userDN, config); err == nil {
 			return user, nil
 		} else {
+			lo.G.Info("User not found :", user)
 			return nil, err
 		}
 	} else {
@@ -117,7 +123,7 @@ func (m *DefaultManager) GetLdapUser(config *Config, userDN, userSearchBase stri
 	}
 }
 
-func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN, userSearchBase, userNameAttribute, userMailAttribute string) (user *User, err error) {
+func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN string, config *Config) (user *User, err error) {
 	var sr *l.SearchResult
 	lo.G.Debug("User DN:", userDN)
 	regex, _ := regexp.Compile(",[A-Z]+=")
@@ -134,8 +140,12 @@ func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN, userSearchB
 	filter := fmt.Sprintf(userFilter, userCN)
 	lo.G.Info("Searching for user:", filter)
 	search := l.NewSearchRequest(
-		userSearchBase,
-		l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
+		config.UserSearchBase,
+		l.ScopeWholeSubtree,
+		l.NeverDerefAliases,
+		0,
+		0,
+		false,
 		filter,
 		attributes,
 		nil)
@@ -145,22 +155,23 @@ func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN, userSearchB
 			userEntry := sr.Entries[0]
 			user = &User{
 				UserDN: userEntry.DN,
-				UserID: userEntry.GetAttributeValue(userNameAttribute),
-				Email:  userEntry.GetAttributeValue(userMailAttribute),
+				UserID: userEntry.GetAttributeValue(config.UserNameAttribute),
+				Email:  userEntry.GetAttributeValue(config.UserMailAttribute),
 			}
 		}
 	} else {
 		lo.G.Error(err)
 	}
-
 	return
 }
 func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearchBase string) (entry *l.Entry, err error) {
 
 	var sr *l.SearchResult
 	filter := fmt.Sprintf(groupFilter, l.EscapeFilter(groupName))
-	lo.G.Info("Searching for group:", filter)
-	lo.G.Debug("Using group search base:", groupSearchBase)
+
+	lo.G.Info("Searching for group : ", filter)
+
+	lo.G.Info("Using group search base : ", groupSearchBase)
 
 	search := l.NewSearchRequest(
 		groupSearchBase,
@@ -171,6 +182,8 @@ func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearch
 	if sr, err = ldapConnection.Search(search); err == nil {
 		if (len(sr.Entries)) == 1 {
 			entry = sr.Entries[0]
+		} else {
+			lo.G.Info("Group not found : ", groupName)
 		}
 	} else {
 		lo.G.Error(err)
@@ -184,11 +197,16 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 		return nil, err
 	} else {
 		defer ldapConnection.Close()
+
 		theUserFilter := "(" + config.UserNameAttribute + "=%s)"
+
 		lo.G.Debug("User filter before escape:", theUserFilter)
+
 		filter := fmt.Sprintf(theUserFilter, l.EscapeFilter(userID))
+
 		lo.G.Info("Searching for user:", filter)
-		lo.G.Debug("Using user search base:", config.UserSearchBase)
+
+		lo.G.Info("Using user search base:", config.UserSearchBase)
 
 		search := l.NewSearchRequest(
 			config.UserSearchBase,
@@ -197,7 +215,9 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 			attributes,
 			nil)
 		if sr, err := ldapConnection.Search(search); err == nil {
-			lo.G.Debug(fmt.Sprintf("Found %d number of entries for filter %s", len(sr.Entries), filter))
+
+			lo.G.Info(fmt.Sprintf("Found %d number of entries for filter %s", len(sr.Entries), filter))
+
 			if (len(sr.Entries)) == 1 {
 				entry := sr.Entries[0]
 				user := &User{
@@ -215,12 +235,6 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 	return nil, nil
 }
 
-func unEscapeLDAPValue(input string) string {
-	var returnString string
-	returnString = strings.Replace(input, "2C", ",", 1)
-	returnString = strings.Replace(returnString, "\\,", ",", 1)
-	return returnString
-}
 
 func (m *DefaultManager) EscapeFilterValue(filter string) string {
 	var escapeFilterRegex *regexp.Regexp

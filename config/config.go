@@ -11,13 +11,30 @@ import (
 
 //Manager -
 type Manager interface {
-	AddOrgToConfig(inputOrg string) (err error)
-	AddSpaceToConfig(inputOrg, inputSpace string) (err error)
+	AddOrgToConfig(orgConfig *OrgConfig) (err error)
+	AddSpaceToConfig(spaceConfig *SpaceConfig) (err error)
 }
 
 //DefaultManager -
 type DefaultManager struct {
 	Config string
+}
+
+//OrgConfig Describes attributes for an org
+type OrgConfig struct {
+	OrgName          string
+	OrgBillingMgrGrp string
+	OrgMgrGrp        string
+	OrgAuditorGrp    string
+}
+
+//SpaceConfig Describes attributes for a space
+type SpaceConfig struct {
+	OrgName         string
+	SpaceName       string
+	SpaceDevGrp     string
+	SpaceMgrGrp     string
+	SpaceAuditorGrp string
 }
 
 //NewManager -
@@ -28,19 +45,24 @@ func NewManager(config string) Manager {
 }
 
 //AddOrgToConfig -
-func (m *DefaultManager) AddOrgToConfig(inputOrg string) (err error) {
+func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) (err error) {
 	orgList := &organization.InputOrgs{}
 	orgFileName := fmt.Sprintf("%s/orgs.yml", m.Config)
+	orgName := orgConfig.OrgName
+
 	if err = utils.NewDefaultManager().LoadFile(orgFileName, orgList); err == nil {
-		if orgList.Contains(inputOrg) {
-			fmt.Println(inputOrg, "already added to config")
+		if orgList.Contains(orgName) {
+			fmt.Println(orgName, "already added to config")
 		} else {
-			fmt.Println("Adding org", inputOrg)
-			orgList.Orgs = append(orgList.Orgs, inputOrg)
+			fmt.Println("Adding org", orgName)
+			orgList.Orgs = append(orgList.Orgs, orgName)
 			if err = utils.NewDefaultManager().WriteFile(orgFileName, orgList); err == nil {
-				if err = os.MkdirAll(fmt.Sprintf("%s/%s", m.Config, inputOrg), 0755); err == nil {
-					orgConfig := &organization.InputUpdateOrgs{
-						Org:                     inputOrg,
+				if err = os.MkdirAll(fmt.Sprintf("%s/%s", m.Config, orgName), 0755); err == nil {
+					orgConfigYml := &organization.InputUpdateOrgs{
+						Org:                     orgName,
+						BillingManager:          organization.UserMgmt{LdapGroup: orgConfig.OrgBillingMgrGrp},
+						Manager:                 organization.UserMgmt{LdapGroup: orgConfig.OrgMgrGrp},
+						Auditor:                 organization.UserMgmt{LdapGroup: orgConfig.OrgAuditorGrp},
 						EnableOrgQuota:          false,
 						MemoryLimit:             10240,
 						InstanceMemoryLimit:     -1,
@@ -48,11 +70,11 @@ func (m *DefaultManager) AddOrgToConfig(inputOrg string) (err error) {
 						TotalServices:           -1,
 						PaidServicePlansAllowed: true,
 					}
-					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/orgConfig.yml", m.Config, inputOrg), orgConfig)
+					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/orgConfig.yml", m.Config, orgName), orgConfigYml)
 					spaces := &space.InputCreateSpaces{
-						Org: inputOrg,
+						Org: orgName,
 					}
-					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/spaces.yml", m.Config, inputOrg), spaces)
+					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/spaces.yml", m.Config, orgName), spaces)
 				}
 			}
 		}
@@ -61,20 +83,25 @@ func (m *DefaultManager) AddOrgToConfig(inputOrg string) (err error) {
 }
 
 //AddSpaceToConfig -
-func (m *DefaultManager) AddSpaceToConfig(inputOrg, inputSpace string) (err error) {
+func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) (err error) {
 	spaceList := &space.InputCreateSpaces{}
-	spaceFileName := fmt.Sprintf("%s/%s/spaces.yml", m.Config, inputOrg)
+	spaceName := spaceConfig.SpaceName
+	orgName := spaceConfig.OrgName
+	spaceFileName := fmt.Sprintf("%s/%s/spaces.yml", m.Config, orgName)
 	if err = utils.NewDefaultManager().LoadFile(spaceFileName, spaceList); err == nil {
-		if spaceList.Contains(inputSpace) {
-			fmt.Println(inputSpace, "already added to config")
+		if spaceList.Contains(spaceName) {
+			fmt.Println(spaceName, "already added to config")
 		} else {
-			fmt.Println("Adding space", inputSpace)
-			spaceList.Spaces = append(spaceList.Spaces, inputSpace)
+			fmt.Println("Adding space", spaceName)
+			spaceList.Spaces = append(spaceList.Spaces, spaceName)
 			if err = utils.NewDefaultManager().WriteFile(spaceFileName, spaceList); err == nil {
-				if err = os.MkdirAll(fmt.Sprintf("%s/%s/%s", m.Config, inputOrg, inputSpace), 0755); err == nil {
-					spaceConfig := &space.InputUpdateSpaces{
-						Org:                     inputOrg,
-						Space:                   inputSpace,
+				if err = os.MkdirAll(fmt.Sprintf("%s/%s/%s", m.Config, orgName, spaceName), 0755); err == nil {
+					spaceConfigYml := &space.InputUpdateSpaces{
+						Org:                     orgName,
+						Space:                   spaceName,
+						Developer:               space.UserMgmt{LdapGroup: spaceConfig.SpaceDevGrp},
+						Manager:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceMgrGrp},
+						Auditor:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceAuditorGrp},
 						EnableSpaceQuota:        false,
 						MemoryLimit:             10240,
 						InstanceMemoryLimit:     -1,
@@ -82,8 +109,8 @@ func (m *DefaultManager) AddSpaceToConfig(inputOrg, inputSpace string) (err erro
 						TotalServices:           -1,
 						PaidServicePlansAllowed: true,
 					}
-					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.Config, inputOrg, inputSpace), spaceConfig)
-					utils.NewDefaultManager().WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.Config, inputOrg, inputSpace), []byte("[]"))
+					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.Config, orgName, spaceName), spaceConfigYml)
+					utils.NewDefaultManager().WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.Config, orgName, spaceName), []byte("[]"))
 				}
 			}
 		}
