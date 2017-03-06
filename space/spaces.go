@@ -152,12 +152,16 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 	var config *ldap.Config
 	var uaacUsers map[string]string
 	var err error
-	if config, err = m.LdapMgr.GetConfig(configDir, ldapBindPassword); err != nil {
+
+	config, err = m.LdapMgr.GetConfig(configDir, ldapBindPassword)
+	if err != nil {
 		lo.G.Error(err)
 		return err
 	}
 
-	if uaacUsers, err = m.UAACMgr.ListUsers(); err != nil {
+	uaacUsers, err = m.UAACMgr.ListUsers()
+
+	if err != nil {
 		lo.G.Error(err)
 		return err
 	}
