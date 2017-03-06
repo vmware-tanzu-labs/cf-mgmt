@@ -142,6 +142,17 @@ func (_mr *_MockManagerRecorder) CreateSpaceQuota(arg0, arg1, arg2, arg3, arg4, 
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateSpaceQuota", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
+func (_m *MockManager) GetSpaceDeveloperUsers(_param0 string) ([]*cloudcontroller.OrgSpaceUser, error) {
+	ret := _m.ctrl.Call(_m, "GetSpaceDeveloperUsers", _param0)
+	ret0, _ := ret[0].([]*cloudcontroller.OrgSpaceUser)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockManagerRecorder) GetSpaceDeveloperUsers(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetSpaceDeveloperUsers", arg0)
+}
+
 func (_m *MockManager) ListOrgs() ([]*cloudcontroller.Org, error) {
 	ret := _m.ctrl.Call(_m, "ListOrgs")
 	ret0, _ := ret[0].([]*cloudcontroller.Org)
@@ -195,6 +206,16 @@ func (_m *MockManager) ListSpaces(_param0 string) ([]cloudcontroller.Space, erro
 
 func (_mr *_MockManagerRecorder) ListSpaces(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListSpaces", arg0)
+}
+
+func (_m *MockManager) RemoveSpaceDeveloper(_param0 string, _param1 string) error {
+	ret := _m.ctrl.Call(_m, "RemoveSpaceDeveloper", _param0, _param1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockManagerRecorder) RemoveSpaceDeveloper(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "RemoveSpaceDeveloper", arg0, arg1)
 }
 
 func (_m *MockManager) UpdateQuota(_param0 string, _param1 string, _param2 int, _param3 int, _param4 int, _param5 int, _param6 bool) error {
