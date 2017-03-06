@@ -224,3 +224,35 @@ func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {
 	sendString := fmt.Sprintf(`{"quota_definition_guid":"%s"}`, quotaGUID)
 	return m.HTTP.Put(url, m.Token, sendString)
 }
+
+//GetSpaceDeveloperUsers Returns list of space users who has developer roles
+func (m *DefaultManager) GetSpaceDeveloperUsers(spaceGUID string) ([]*OrgSpaceUser, error) {
+	url := fmt.Sprintf("%s/v2/spaces/%s/developers?results-per-page=1000", m.Host, spaceGUID)
+	users := &OrgSpaceUsers{}
+	var err = m.HTTP.Get(url, m.Token, users)
+	if err != nil {
+		return nil, err
+	}
+	if users.NextURL == "" {
+		return users.Users, nil
+	}
+	nextURL := users.NextURL
+	usersTemp := &OrgSpaceUsers{}
+	for nextURL != "" {
+		url = fmt.Sprintf("%s%s", m.Host, nextURL)
+		err = m.HTTP.Get(url, m.Token, usersTemp)
+		if err != nil {
+			return nil, err
+		}
+		users.Users = append(users.Users, usersTemp.Users...)
+		nextURL = usersTemp.NextURL
+	}
+	lo.G.Info(fmt.Sprintf("Total %d users with developer role returned for space : %s", len(users.Users), spaceGUID))
+	return users.Users, nil
+}
+
+//RemoveSpaceDeveloper removes space developer role for the given user in the given space
+func (m *DefaultManager) RemoveSpaceDeveloper(spaceGUID string, userGUID string) error {
+	url := fmt.Sprintf("%s/v2/spaces/%s/developers/%s", m.Host, spaceGUID, userGUID)
+	return m.HTTP.Delete(url, m.Token)
+}

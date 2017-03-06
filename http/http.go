@@ -68,11 +68,30 @@ func (m *DefaultManager) Get(url, token string, target interface{}) error {
 	return json.Unmarshal([]byte(body), &target)
 }
 
+//Delete- Deletes a given resource on the server
+func (m *DefaultManager) Delete(url, token string) error {
+	request := gorequest.New()
+	get := request.Delete(url)
+	get.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	get.Set("Authorization", "BEARER "+token)
+
+	res, _, errs := get.End()
+	if len(errs) > 0 {
+		lo.G.Error(errs)
+		return errs[0]
+	}
+	if res.StatusCode != http.StatusOK || res.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("Delete call failed with Status : %d", res.StatusCode)
+	}
+	return nil
+}
+
 //Manager -
 type Manager interface {
 	Put(url, token, payload string) (err error)
 	Post(url, token, payload string) (body string, err error)
 	Get(url, token string, target interface{}) (err error)
+	Delete(url, token string) error
 }
 
 //DefaultManager -

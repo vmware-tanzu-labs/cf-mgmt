@@ -235,7 +235,6 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 	return nil, nil
 }
 
-
 func (m *DefaultManager) EscapeFilterValue(filter string) string {
 	var escapeFilterRegex *regexp.Regexp
 	escapeFilterRegex = regexp.MustCompile(`([\\\(\)\*\0-\37\177-\377])`)

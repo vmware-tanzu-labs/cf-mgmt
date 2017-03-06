@@ -199,16 +199,40 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 	}
 }
 
+//UpdateSpaceDevelopers Retrieves users from the Given `LDAP and adds them as space developers
 func (m *DefaultSpaceManager) UpdateSpaceDevelopers(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
 	if config.Enabled {
-		if users, err := m.getLdapUsers(config, input.GetDeveloperGroup(), input.Developer.LdapUser); err == nil {
-			if err = m.updateLdapUsers(config, space, "developers", uaacUsers, users); err != nil {
+		var err error
+		var users []ldap.User
+		var ldapUserIDMap map[string]string
+
+		users, err = m.getLdapUsers(config, input.GetDeveloperGroup(), input.Developer.LdapUser)
+		if err != nil {
+			ldapUserIDMap, err = m.updateLdapUsers(config, space, "developers", uaacUsers, users)
+			if err != nil {
 				lo.G.Error(err)
 				return err
 			}
 		} else {
 			lo.G.Error(err)
 			return err
+		}
+
+		//Remove users from space developers role if the LDAP users doesn't contain their user id
+		if len(ldapUserIDMap) > 0 {
+			spaceUsers, err := m.CloudController.GetSpaceDeveloperUsers(space.MetaData.GUID)
+			if err != nil {
+				return err
+			}
+			for _, spaceUser := range spaceUsers {
+				if _, ok := ldapUserIDMap[spaceUser.Entity.UserName]; !ok {
+					err = m.CloudController.RemoveSpaceDeveloper(space.MetaData.GUID, spaceUser.MetaData.GUID)
+					if err != nil {
+						lo.G.Error(fmt.Sprintf("Unable to remove user : %s from space developer role in spce : %s", spaceUser.Entity.UserName, space.Entity.Name))
+						lo.G.Error(fmt.Errorf("Cloud controller API error : %s", err))
+					}
+				}
+			}
 		}
 	} else {
 		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
@@ -219,14 +243,13 @@ func (m *DefaultSpaceManager) UpdateSpaceDevelopers(config *ldap.Config, space *
 			return err
 		}
 	}
-
 	return nil
 }
 
 func (m *DefaultSpaceManager) UpdateSpaceManagers(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
 	if config.Enabled {
 		if users, err := m.getLdapUsers(config, input.GetManagerGroup(), input.Manager.LdapUser); err == nil {
-			if err = m.updateLdapUsers(config, space, "managers", uaacUsers, users); err != nil {
+			if _, err = m.updateLdapUsers(config, space, "managers", uaacUsers, users); err != nil {
 				lo.G.Error(err)
 				return err
 			}
@@ -250,7 +273,7 @@ func (m *DefaultSpaceManager) UpdateSpaceManagers(config *ldap.Config, space *cl
 func (m *DefaultSpaceManager) UpdateSpaceAuditors(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
 	if config.Enabled {
 		if users, err := m.getLdapUsers(config, input.GetAuditorGroup(), input.Auditor.LdapUser); err == nil {
-			if err = m.updateLdapUsers(config, space, "auditors", uaacUsers, users); err != nil {
+			if _, err = m.updateLdapUsers(config, space, "auditors", uaacUsers, users); err != nil {
 				lo.G.Error(err)
 				return err
 			}
@@ -273,6 +296,7 @@ func (m *DefaultSpaceManager) UpdateSpaceAuditors(config *ldap.Config, space *cl
 func (m *DefaultSpaceManager) getLdapUsers(config *ldap.Config, groupName string, userList []string) ([]ldap.User, error) {
 	users := []ldap.User{}
 	if groupName != "" {
+		lo.G.Info("Finding LDAP usere for group : ", groupName)
 		if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
 			users = append(users, groupUsers...)
 		} else {
@@ -290,10 +314,17 @@ func (m *DefaultSpaceManager) getLdapUsers(config *ldap.Config, groupName string
 			return nil, err
 		}
 	}
-
 	return users, nil
 }
-func (m *DefaultSpaceManager) updateLdapUsers(config *ldap.Config, space *cloudcontroller.Space, role string, uaacUsers map[string]string, users []ldap.User) error {
+
+func (m *DefaultSpaceManager) updateLdapUsers(config *ldap.Config,
+	space *cloudcontroller.Space,
+	role string, uaacUsers map[string]string,
+	users []ldap.User) (map[string]string, error) {
+
+	//Keep tracks for current LDAP users that are being iterated in the loop below
+	var ldpaUserIDMap map[string]string
+
 	for _, user := range users {
 		userID := user.UserID
 		externalID := user.UserDN
@@ -301,36 +332,40 @@ func (m *DefaultSpaceManager) updateLdapUsers(config *ldap.Config, space *cloudc
 			userID = user.Email
 			externalID = user.Email
 		}
-		if _, userExists := uaacUsers[strings.ToLower(userID)]; userExists {
-			lo.G.Info("User", userID, "already exists")
+		userID = strings.ToLower(userID)
+		// Add the current user id to the map, where key and value are the same
+		// Using a Map helps us not having to iterate through the same for loop`
+		ldpaUserIDMap[userID] = userID
+
+		if _, userExists := uaacUsers[userID]; userExists {
+			lo.G.Info("User : ", userID, "already exists in PCF")
 		} else {
 			if userID != "" {
-				lo.G.Info("User", userID, "doesn't exist so creating in UAA")
+				lo.G.Info("User", userID, "doesn't exist in PCF, so creating user")
 				if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
 					lo.G.Error(err)
-					return err
-				} else {
-					uaacUsers[userID] = userID
+					return nil, err
 				}
+				uaacUsers[userID] = userID
 			}
 		}
 		if userID != "" {
 			if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, role); err != nil {
 				lo.G.Error(err)
-				return err
+				return nil, err
 			}
 		}
 	}
-
-	return nil
+	return ldpaUserIDMap, nil
 }
 
 func (m *DefaultSpaceManager) addUserToOrgAndRole(userID, orgGUID, spaceGUID, role string) error {
-	lo.G.Info("Adding user to groups")
+	lo.G.Info(fmt.Sprintf("Adding user to org :  %s and space: %s ", orgGUID, spaceGUID))
 	if err := m.CloudController.AddUserToOrg(userID, orgGUID); err != nil {
 		lo.G.Error(err)
 		return err
 	}
+	lo.G.Info(fmt.Sprintf("Adding user to space: %s  with role: %s", spaceGUID, role))
 	if err := m.CloudController.AddUserToSpaceRole(userID, role, spaceGUID); err != nil {
 		lo.G.Error(err)
 		return err
