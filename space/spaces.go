@@ -205,45 +205,45 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 
 //UpdateSpaceDevelopers Retrieves users from the Given `LDAP and adds them as space developers
 func (m *DefaultSpaceManager) UpdateSpaceDevelopers(config *ldap.Config, space *cloudcontroller.Space, input *InputUpdateSpaces, uaacUsers map[string]string) error {
+	spaceUsers, err := m.CloudController.GetSpaceUsers(space.MetaData.GUID, "developers")
+	if err != nil {
+		return err
+	}
 	if config.Enabled {
-		var err error
 		var users []ldap.User
-		var ldapUserIDMap map[string]string
-
 		users, err = m.getLdapUsers(config, input.GetDeveloperGroup(), input.Developer.LdapUser)
 		if err != nil {
-			ldapUserIDMap, err = m.updateLdapUsers(config, space, "developers", uaacUsers, users)
-			if err != nil {
-				lo.G.Error(err)
-				return err
-			}
-		} else {
-			lo.G.Error(err)
 			return err
 		}
-
-		//Remove users from space developers role if the LDAP users doesn't contain their user id
-		if len(ldapUserIDMap) > 0 {
-			spaceUsers, err := m.CloudController.GetSpaceDeveloperUsers(space.MetaData.GUID)
-			if err != nil {
-				return err
-			}
-			for _, spaceUser := range spaceUsers {
-				if _, ok := ldapUserIDMap[spaceUser.Entity.UserName]; !ok {
-					err = m.CloudController.RemoveSpaceDeveloper(space.MetaData.GUID, spaceUser.MetaData.GUID)
-					if err != nil {
-						lo.G.Error(fmt.Sprintf("Unable to remove user : %s from space developer role in spce : %s", spaceUser.Entity.UserName, space.Entity.Name))
-						lo.G.Error(fmt.Errorf("Cloud controller API error : %s", err))
-					}
+		for _, user := range users {
+			if _, ok := spaceUsers[user.UserID]; !ok {
+				err = m.updateLdapUser(config, space, "developers", uaacUsers, user)
+				if err != nil {
+					return err
 				}
+			} else {
+				delete(spaceUsers, user.UserID)
 			}
 		}
 	} else {
 		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	for _, userID := range input.Developer.Users {
-		if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "developers"); err != nil {
-			lo.G.Error(err)
+		if _, ok := spaceUsers[userID]; !ok {
+			if err = m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, "developers"); err != nil {
+				lo.G.Error(err)
+				return err
+			}
+		} else {
+			delete(spaceUsers, userID)
+		}
+	}
+	for spaceUser, spaceUserGUID := range spaceUsers {
+		lo.G.Info(fmt.Sprintf("removing %s from %s", spaceUser, space.Entity.Name))
+		err = m.CloudController.RemoveSpaceUser(space.MetaData.GUID, spaceUserGUID, "developers")
+		if err != nil {
+			lo.G.Error(fmt.Sprintf("Unable to remove user : %s from space developer role in spce : %s", spaceUser, space.Entity.Name))
+			lo.G.Error(fmt.Errorf("Cloud controller API error : %s", err))
 			return err
 		}
 	}
@@ -300,7 +300,7 @@ func (m *DefaultSpaceManager) UpdateSpaceAuditors(config *ldap.Config, space *cl
 func (m *DefaultSpaceManager) getLdapUsers(config *ldap.Config, groupName string, userList []string) ([]ldap.User, error) {
 	users := []ldap.User{}
 	if groupName != "" {
-		lo.G.Info("Finding LDAP usere for group : ", groupName)
+		lo.G.Info("Finding LDAP user for group : ", groupName)
 		if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
 			users = append(users, groupUsers...)
 		} else {
@@ -321,13 +321,47 @@ func (m *DefaultSpaceManager) getLdapUsers(config *ldap.Config, groupName string
 	return users, nil
 }
 
+func (m *DefaultSpaceManager) updateLdapUser(config *ldap.Config,
+	space *cloudcontroller.Space,
+	role string, uaacUsers map[string]string,
+	user ldap.User) error {
+
+	userID := user.UserID
+	externalID := user.UserDN
+	if config.Origin != "ldap" {
+		userID = user.Email
+		externalID = user.Email
+	}
+	userID = strings.ToLower(userID)
+
+	if _, userExists := uaacUsers[userID]; userExists {
+		lo.G.Info("User : ", userID, "already exists in cloud foundry")
+	} else {
+		if userID != "" {
+			lo.G.Info("User", userID, "doesn't exist in cloud foundry, so creating user")
+			if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
+				lo.G.Error(err)
+				return err
+			}
+			uaacUsers[userID] = userID
+		}
+	}
+	if userID != "" {
+		if err := m.addUserToOrgAndRole(userID, space.Entity.OrgGUID, space.MetaData.GUID, role); err != nil {
+			lo.G.Error(err)
+			return err
+		}
+	}
+	return nil
+}
+
 func (m *DefaultSpaceManager) updateLdapUsers(config *ldap.Config,
 	space *cloudcontroller.Space,
 	role string, uaacUsers map[string]string,
 	users []ldap.User) (map[string]string, error) {
 
 	//Keep tracks for current LDAP users that are being iterated in the loop below
-	var ldpaUserIDMap map[string]string
+	ldpaUserIDMap := make(map[string]string)
 
 	for _, user := range users {
 		userID := user.UserID

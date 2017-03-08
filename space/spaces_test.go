@@ -183,7 +183,7 @@ var _ = Describe("given SpaceManager", func() {
 			mockLdap.EXPECT().GetConfig("./fixtures/default_config", "test_pwd").Return(config, nil)
 			mockCloudController.EXPECT().CreateSpace("space1", "testOrgGUID").Return(nil)
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
-
+			mockCloudController.EXPECT().GetSpaceUsers("space1GUID", "developers").Return(make(map[string]string), nil)
 			mockUaac.EXPECT().ListUsers().Return(uaacUsers, nil)
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 
@@ -440,6 +440,7 @@ var _ = Describe("given SpaceManager", func() {
 			mockLdap.EXPECT().GetUserIDs(config, "test_space1_developers").Return(users, nil)
 			mockLdap.EXPECT().GetUser(config, "cwashburn1").Return(&l.User{UserID: "cwashburn1", UserDN: "cn=cwashburn1", Email: "cwashburn1@test.io"}, nil)
 			mockLdap.EXPECT().GetUser(config, "cwashburn2").Return(&l.User{UserID: "cwashburn2", UserDN: "cn=cwashburn2", Email: "cwashburn2@test.io"}, nil)
+			mockCloudController.EXPECT().GetSpaceUsers("space1GUID", "developers").Return(make(map[string]string), nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn1", "testOrgGUID").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn2", "testOrgGUID").Return(nil)
@@ -501,6 +502,7 @@ var _ = Describe("given SpaceManager", func() {
 			mockLdap.EXPECT().GetUserIDs(config, "test_space1_developers").Return(users, nil)
 			mockLdap.EXPECT().GetUser(config, "cwashburn1").Return(&l.User{UserID: "cwashburn1", UserDN: "cn=cwashburn1", Email: "cwashburn1@test.io"}, nil)
 			mockLdap.EXPECT().GetUser(config, "cwashburn2").Return(&l.User{UserID: "cwashburn2", UserDN: "cn=cwashburn2", Email: "cwashburn2@test.io"}, nil)
+			mockCloudController.EXPECT().GetSpaceUsers("space1GUID", "developers").Return(make(map[string]string), nil)
 
 			mockUaac.EXPECT().CreateExternalUser("cwashburn", "cwashburn@testdomain.com", "cn=cwashburn", "ldap").Return(nil)
 			mockUaac.EXPECT().CreateExternalUser("cwashburn1", "cwashburn1@test.io", "cn=cwashburn1", "ldap").Return(nil)
@@ -587,6 +589,7 @@ var _ = Describe("given SpaceManager", func() {
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockLdap.EXPECT().GetUserIDs(config, "test_space1_developers").Return(users, nil)
+			mockCloudController.EXPECT().GetSpaceUsers("space1GUID", "developers").Return(make(map[string]string), nil)
 
 			mockUaac.EXPECT().CreateExternalUser("cwashburn@test.io", "cwashburn@test.io", "cwashburn@test.io", "saml").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("cwashburn@test.io", "testOrgGUID").Return(nil)
