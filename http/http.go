@@ -80,7 +80,7 @@ func (m *DefaultManager) Delete(url, token string) error {
 		lo.G.Error(errs)
 		return errs[0]
 	}
-	if res.StatusCode != http.StatusOK || res.StatusCode != http.StatusNoContent {
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("Delete call failed with Status : %d", res.StatusCode)
 	}
 	return nil

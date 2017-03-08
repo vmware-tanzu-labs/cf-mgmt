@@ -134,8 +134,8 @@ type QuotaEntity struct {
 
 //OrgSpaceUsers -
 type OrgSpaceUsers struct {
-	NextURL string `json:"next_url"`
-	Users   []*OrgSpaceUser
+	NextURL string          `json:"next_url"`
+	Users   []*OrgSpaceUser `json:"resources"`
 }
 
 //OrgSpaceUser -

@@ -75,7 +75,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 	}
 	for spaceUser, spaceUserGUID := range spaceUsers {
 		lo.G.Info(fmt.Sprintf("removing %s from %s", spaceUser, updateUsersInput.SpaceGUID))
-		err = m.cloudController.RemoveSpaceUser(updateUsersInput.SpaceGUID, spaceUserGUID, "developers")
+		err = m.cloudController.RemoveSpaceUser(updateUsersInput.SpaceGUID, spaceUserGUID, updateUsersInput.Role)
 		if err != nil {
 			lo.G.Error(fmt.Sprintf("Unable to remove user : %s from space %s role in spce : %s", spaceUser, updateUsersInput.Role, updateUsersInput.SpaceGUID))
 			lo.G.Error(fmt.Errorf("Cloud controller API error : %s", err))

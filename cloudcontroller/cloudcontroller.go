@@ -225,10 +225,10 @@ func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
-//GetSpaceDeveloperUsers Returns list of space users who has developer roles
+//GetSpaceUsers Returns list of space users who has developer roles
 func (m *DefaultManager) GetSpaceUsers(spaceGUID, role string) (map[string]string, error) {
 	userMap := make(map[string]string)
-	url := fmt.Sprintf("%s/v2/spaces/%s/developers?results-per-page=1000", m.Host, spaceGUID)
+	url := fmt.Sprintf("%s/v2/spaces/%s/%s?results-per-page=100", m.Host, spaceGUID, role)
 	users := &OrgSpaceUsers{}
 	var err = m.HTTP.Get(url, m.Token, users)
 	if err != nil {
@@ -245,7 +245,7 @@ func (m *DefaultManager) GetSpaceUsers(spaceGUID, role string) (map[string]strin
 		users.Users = append(users.Users, usersTemp.Users...)
 		nextURL = usersTemp.NextURL
 	}
-	lo.G.Info(fmt.Sprintf("Total %d users with developer role returned for space : %s", len(users.Users), spaceGUID))
+	lo.G.Info(fmt.Sprintf("Total %d users with %s role returned for space : %s", len(users.Users), role, spaceGUID))
 	for _, user := range users.Users {
 		userMap[user.Entity.UserName] = user.MetaData.GUID
 	}
