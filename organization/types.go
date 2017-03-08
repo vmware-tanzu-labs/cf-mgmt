@@ -110,4 +110,5 @@ type DefaultOrgManager struct {
 	UAACMgr         uaac.Manager
 	UtilsMgr        utils.Manager
 	LdapMgr         ldap.Manager
+	UserMgr         UserMgr
 }

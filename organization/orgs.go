@@ -13,11 +13,18 @@ import (
 
 //NewManager -
 func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
+
+	cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token)
+	ldapMgr := ldap.NewManager()
+	uaacMgr := uaac.NewManager(sysDomain, uaacToken)
+	UserMgr := NewUserManager(cloudController, ldapMgr, uaacMgr)
+
 	return &DefaultOrgManager{
-		UAACMgr:         uaac.NewManager(sysDomain, uaacToken),
-		CloudController: cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token),
+		CloudController: cloudController,
+		UAACMgr:         uaacMgr,
 		UtilsMgr:        utils.NewDefaultManager(),
-		LdapMgr:         ldap.NewManager(),
+		LdapMgr:         ldapMgr,
+		UserMgr:         UserMgr,
 	}
 }
 
@@ -144,41 +151,100 @@ func (m *DefaultOrgManager) FindOrg(orgName string) (*cloudcontroller.Org, error
 }
 
 //UpdateOrgUsers -
-func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) (err error) {
-	var org *cloudcontroller.Org
+func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) error {
+
 	var config *ldap.Config
-	var orgs []*InputUpdateOrgs
-	if orgs, err = m.GetOrgConfigs(configDir); err != nil {
+	var uaacUsers map[string]string
+	var err error
+
+	config, err = m.LdapMgr.GetConfig(configDir, ldapBindPassword)
+	if err != nil {
+		lo.G.Error(err)
 		return err
 	}
-	if config, err = m.LdapMgr.GetConfig(configDir, ldapBindPassword); err != nil {
-		return
+
+	uaacUsers, err = m.UAACMgr.ListUsers()
+
+	if err != nil {
+		lo.G.Error(err)
+		return err
 	}
 
-	var uaacUsers map[string]string
-	if uaacUsers, err = m.UAACMgr.ListUsers(); err != nil {
-		return
+	var orgConfigs []*InputUpdateOrgs
+
+	orgConfigs, err = m.GetOrgConfigs(configDir)
+
+	if err != nil {
+		lo.G.Error(err)
+		return err
 	}
 
-	if config.Enabled {
-		for _, input := range orgs {
-			if org, err = m.FindOrg(input.Org); err == nil {
-				lo.G.Info("User sync for org", input.Org)
-				if err = m.UpdateBillingManagers(config, org, input, uaacUsers); err != nil {
-					return err
-				}
-				if err = m.UpdateManagers(config, org, input, uaacUsers); err != nil {
-					return err
-				}
-				if err = m.UpdateAuditors(config, org, input, uaacUsers); err != nil {
-					return err
-				}
-			}
+	for _, input := range orgConfigs {
+		err = m.updateOrgUsers(config, input, uaacUsers)
+		if err != nil {
+			return err
 		}
-	} else {
-		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
-	return
+
+	return nil
+}
+
+func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpdateOrgs, uaacUsers map[string]string) error {
+
+	var err error
+	var org *cloudcontroller.Org
+
+	org, err = m.FindOrg(input.Org)
+
+	if err != nil {
+		lo.G.Error(err)
+		return err
+	}
+
+	lo.G.Info("User sync for org : ", org.Entity.Name)
+
+	err = m.UserMgr.UpdateOrgUsers(
+		config, uaacUsers, UpdateUsersInput{
+			OrgGUID:       org.MetaData.GUID,
+			Role:          "billing_managers",
+			LdapGroupName: input.GetBillingManagerGroup(),
+			LdapUsers:     input.BillingManager.LdapUser,
+			Users:         input.BillingManager.Users,
+		})
+
+	if err != nil {
+		lo.G.Error(err)
+		return err
+	}
+
+	err = m.UserMgr.UpdateOrgUsers(
+		config, uaacUsers, UpdateUsersInput{
+			OrgGUID:       org.MetaData.GUID,
+			Role:          "auditors",
+			LdapGroupName: input.GetAuditorGroup(),
+			LdapUsers:     input.Auditor.LdapUser,
+			Users:         input.Auditor.Users,
+		})
+
+	if err != nil {
+		lo.G.Error(err)
+		return err
+	}
+
+	err = m.UserMgr.UpdateOrgUsers(
+		config, uaacUsers, UpdateUsersInput{
+			OrgGUID:       org.MetaData.GUID,
+			Role:          "managers",
+			LdapGroupName: input.GetManagerGroup(),
+			LdapUsers:     input.Manager.LdapUser,
+			Users:         input.Manager.Users,
+		})
+
+	if err != nil {
+		lo.G.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (m *DefaultOrgManager) UpdateBillingManagers(config *ldap.Config, org *cloudcontroller.Org, input *InputUpdateOrgs, uaacUsers map[string]string) error {
@@ -188,38 +254,6 @@ func (m *DefaultOrgManager) UpdateBillingManagers(config *ldap.Config, org *clou
 		}
 		for _, userID := range input.BillingManager.Users {
 			if err := m.addUserToOrgAndRole(userID, org.MetaData.GUID, "billing_managers"); err != nil {
-				return err
-			}
-		}
-	} else {
-		return err
-	}
-	return nil
-}
-
-func (m *DefaultOrgManager) UpdateManagers(config *ldap.Config, org *cloudcontroller.Org, input *InputUpdateOrgs, uaacUsers map[string]string) error {
-	if users, err := m.getLdapUsers(config, input.GetManagerGroup(), input.Manager.LdapUser); err == nil {
-		if err = m.updateLdapUsers(config, org, "managers", uaacUsers, users); err != nil {
-			return err
-		}
-		for _, userID := range input.Manager.Users {
-			if err := m.addUserToOrgAndRole(userID, org.MetaData.GUID, "managers"); err != nil {
-				return err
-			}
-		}
-	} else {
-		return err
-	}
-	return nil
-}
-
-func (m *DefaultOrgManager) UpdateAuditors(config *ldap.Config, org *cloudcontroller.Org, input *InputUpdateOrgs, uaacUsers map[string]string) error {
-	if users, err := m.getLdapUsers(config, input.GetAuditorGroup(), input.Auditor.LdapUser); err == nil {
-		if err = m.updateLdapUsers(config, org, "auditors", uaacUsers, users); err != nil {
-			return err
-		}
-		for _, userID := range input.Auditor.Users {
-			if err := m.addUserToOrgAndRole(userID, org.MetaData.GUID, "auditors"); err != nil {
 				return err
 			}
 		}

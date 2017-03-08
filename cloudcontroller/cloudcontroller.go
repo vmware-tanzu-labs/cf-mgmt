@@ -225,10 +225,10 @@ func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
-//GetSpaceUsers Returns list of space users who has developer roles
-func (m *DefaultManager) GetSpaceUsers(spaceGUID, role string) (map[string]string, error) {
+//GetCFUsers Returns list of space users who has developer roles
+func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[string]string, error) {
 	userMap := make(map[string]string)
-	url := fmt.Sprintf("%s/v2/spaces/%s/%s?results-per-page=100", m.Host, spaceGUID, role)
+	url := fmt.Sprintf("%s/v2/%s/%s/%s?results-per-page=100", m.Host, entityType, entityGUID, role)
 	users := &OrgSpaceUsers{}
 	var err = m.HTTP.Get(url, m.Token, users)
 	if err != nil {
@@ -245,15 +245,15 @@ func (m *DefaultManager) GetSpaceUsers(spaceGUID, role string) (map[string]strin
 		users.Users = append(users.Users, usersTemp.Users...)
 		nextURL = usersTemp.NextURL
 	}
-	lo.G.Info(fmt.Sprintf("Total %d users with %s role returned for space : %s", len(users.Users), role, spaceGUID))
+	lo.G.Info(fmt.Sprintf("Total %d users with %s role returned for %s  %s", len(users.Users), role, entityType, entityGUID))
 	for _, user := range users.Users {
 		userMap[user.Entity.UserName] = user.MetaData.GUID
 	}
 	return userMap, nil
 }
 
-//RemoveSpaceUser removes space developer role for the given user in the given space
-func (m *DefaultManager) RemoveSpaceUser(spaceGUID, userGUID, role string) error {
-	url := fmt.Sprintf("%s/v2/spaces/%s/%s/%s", m.Host, spaceGUID, role, userGUID)
+//RemoveCFUser -
+func (m *DefaultManager) RemoveCFUser(entityGUID, entityType, userGUID, role string) error {
+	url := fmt.Sprintf("%s/v2/%s/%s/%s/%s", m.Host, entityType, entityGUID, role, userGUID)
 	return m.HTTP.Delete(url, m.Token)
 }

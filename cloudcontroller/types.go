@@ -37,9 +37,9 @@ type Manager interface {
 
 	AssignQuotaToOrg(orgGUID, quotaGUID string) error
 
-	GetSpaceUsers(spaceGUID, role string) (map[string]string, error)
+	GetCFUsers(entityGUID, entityType, role string) (map[string]string, error)
 
-	RemoveSpaceUser(spaceGUID, userGUID, role string) error
+	RemoveCFUser(entityGUID, entityType, userGUID, role string) error
 }
 
 type DefaultManager struct {

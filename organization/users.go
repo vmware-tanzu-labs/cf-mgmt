@@ -1,4 +1,4 @@
-package space
+package organization
 
 import (
 	"fmt"
@@ -10,9 +10,9 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-// UpdateSpaceUsers - interface type encapsulating Update space users behavior
+// UserMgr -
 type UserMgr interface {
-	UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error
+	UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error
 }
 
 // NewUserManager -
@@ -27,25 +27,25 @@ func NewUserManager(
 	}
 }
 
+// UserManager -
 type UserManager struct {
 	cloudController cloudcontroller.Manager
 	LdapMgr         ldap.Manager
 	UAACMgr         uaac.Manager
 }
 
-// UpdateSpaceUserInput
+// UpdateUsersInput -
 type UpdateUsersInput struct {
-	SpaceGUID        string
 	OrgGUID          string
 	Role             string
 	LdapGroupName    string
 	LdapUsers, Users []string
 }
 
-//UpdateSpaceUsers Update space users
-func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+//UpdateOrgUsers -
+func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error {
 
-	spaceUsers, err := m.cloudController.GetCFUsers(updateUsersInput.SpaceGUID, "spaces", updateUsersInput.Role)
+	orgUsers, err := m.cloudController.GetCFUsers(updateUsersInput.OrgGUID, "organizations", updateUsersInput.Role)
 
 	if err != nil {
 		return err
@@ -57,32 +57,32 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 			return err
 		}
 		for _, user := range ldapUsers {
-			err = m.updateLdapUser(config, updateUsersInput.SpaceGUID, updateUsersInput.OrgGUID, updateUsersInput.Role, uaacUsers, user)
+			err = m.updateLdapUser(config, updateUsersInput.OrgGUID, updateUsersInput.Role, uaacUsers, user)
 			if err != nil {
 				return err
 			}
-			if _, ok := spaceUsers[user.UserID]; !ok {
-				delete(spaceUsers, user.UserID)
+			if _, ok := orgUsers[user.UserID]; !ok {
+				delete(orgUsers, user.UserID)
 			}
 		}
 	} else {
 		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	for _, userID := range updateUsersInput.Users {
-		if _, ok := spaceUsers[userID]; !ok {
-			if err = m.addUserToOrgAndRole(userID, updateUsersInput.OrgGUID, updateUsersInput.SpaceGUID, updateUsersInput.Role); err != nil {
+		if _, ok := orgUsers[userID]; !ok {
+			if err = m.addUserToOrgAndRole(userID, updateUsersInput.OrgGUID, updateUsersInput.Role); err != nil {
 				lo.G.Error(err)
 				return err
 			}
 		} else {
-			delete(spaceUsers, userID)
+			delete(orgUsers, userID)
 		}
 	}
-	for spaceUser, spaceUserGUID := range spaceUsers {
-		lo.G.Info(fmt.Sprintf("removing %s from %s", spaceUser, updateUsersInput.SpaceGUID))
-		err = m.cloudController.RemoveCFUser(updateUsersInput.SpaceGUID, "spaces", spaceUserGUID, updateUsersInput.Role)
+	for orgUser, orgUserGUID := range orgUsers {
+		lo.G.Info(fmt.Sprintf("removing %s from %s", orgUser, updateUsersInput.OrgGUID))
+		err = m.cloudController.RemoveCFUser(updateUsersInput.OrgGUID, "organizations", orgUserGUID, updateUsersInput.Role)
 		if err != nil {
-			lo.G.Error(fmt.Sprintf("Unable to remove user : %s from space %s role in spce : %s", spaceUser, updateUsersInput.Role, updateUsersInput.SpaceGUID))
+			lo.G.Error(fmt.Sprintf("Unable to remove user : %s from org %s with role %s", orgUser, updateUsersInput.OrgGUID, updateUsersInput.Role))
 			lo.G.Error(fmt.Errorf("Cloud controller API error : %s", err))
 			return err
 		}
@@ -90,7 +90,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 	return nil
 }
 
-func (m *UserManager) updateLdapUser(config *ldap.Config, spaceGUID, orgGUID string,
+func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 	role string, uaacUsers map[string]string,
 	user ldap.User) error {
 
@@ -109,7 +109,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, spaceGUID, orgGUID str
 			return err
 		}
 		uaacUsers[userID] = userID
-		if err := m.addUserToOrgAndRole(userID, orgGUID, spaceGUID, role); err != nil {
+		if err := m.addUserToOrgAndRole(userID, orgGUID, role); err != nil {
 			lo.G.Error(err)
 			return err
 		}
@@ -141,14 +141,9 @@ func (m *UserManager) getLdapUsers(config *ldap.Config, groupName string, userLi
 	return users, nil
 }
 
-func (m *UserManager) addUserToOrgAndRole(userID, orgGUID, spaceGUID, role string) error {
-	lo.G.Info(fmt.Sprintf("Adding user to org :  %s and space: %s ", orgGUID, spaceGUID))
+func (m *UserManager) addUserToOrgAndRole(userID, orgGUID, role string) error {
+	lo.G.Info(fmt.Sprintf("Adding user to org :  %s ", orgGUID))
 	if err := m.cloudController.AddUserToOrg(userID, orgGUID); err != nil {
-		lo.G.Error(err)
-		return err
-	}
-	lo.G.Info(fmt.Sprintf("Adding user to space: %s  with role: %s", spaceGUID, role))
-	if err := m.cloudController.AddUserToSpaceRole(userID, role, spaceGUID); err != nil {
 		lo.G.Error(err)
 		return err
 	}
