@@ -49,7 +49,7 @@ var _ = Describe("given uaac manager", func() {
 			}
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/users"),
+					ghttp.VerifyRequest("GET", "/Users"),
 					ghttp.VerifyHeader(http.Header{
 						"Authorization": []string{"BEARER secret"},
 					}),
@@ -66,7 +66,7 @@ var _ = Describe("given uaac manager", func() {
 		It("should return an error", func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/users"),
+					ghttp.VerifyRequest("GET", "/Users"),
 					ghttp.VerifyHeader(http.Header{
 						"Authorization": []string{"BEARER secret"},
 					}),
