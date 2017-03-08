@@ -142,15 +142,15 @@ func (_mr *_MockManagerRecorder) CreateSpaceQuota(arg0, arg1, arg2, arg3, arg4, 
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateSpaceQuota", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
-func (_m *MockManager) GetSpaceUsers(_param0 string, _param1 string) (map[string]string, error) {
-	ret := _m.ctrl.Call(_m, "GetSpaceUsers", _param0, _param1)
+func (_m *MockManager) GetCFUsers(_param0 string, _param1 string, _param2 string) (map[string]string, error) {
+	ret := _m.ctrl.Call(_m, "GetCFUsers", _param0, _param1, _param2)
 	ret0, _ := ret[0].(map[string]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockManagerRecorder) GetSpaceUsers(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetSpaceUsers", arg0, arg1)
+func (_mr *_MockManagerRecorder) GetCFUsers(arg0, arg1, arg2 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetCFUsers", arg0, arg1, arg2)
 }
 
 func (_m *MockManager) ListOrgs() ([]*cloudcontroller.Org, error) {
@@ -208,14 +208,14 @@ func (_mr *_MockManagerRecorder) ListSpaces(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListSpaces", arg0)
 }
 
-func (_m *MockManager) RemoveSpaceUser(_param0 string, _param1 string, _param2 string) error {
-	ret := _m.ctrl.Call(_m, "RemoveSpaceUser", _param0, _param1, _param2)
+func (_m *MockManager) RemoveCFUser(_param0 string, _param1 string, _param2 string, _param3 string) error {
+	ret := _m.ctrl.Call(_m, "RemoveCFUser", _param0, _param1, _param2, _param3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockManagerRecorder) RemoveSpaceUser(arg0, arg1, arg2 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "RemoveSpaceUser", arg0, arg1, arg2)
+func (_mr *_MockManagerRecorder) RemoveCFUser(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "RemoveCFUser", arg0, arg1, arg2, arg3)
 }
 
 func (_m *MockManager) UpdateQuota(_param0 string, _param1 string, _param2 int, _param3 int, _param4 int, _param5 int, _param6 bool) error {

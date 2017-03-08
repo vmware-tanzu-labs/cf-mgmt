@@ -45,7 +45,7 @@ type UpdateUsersInput struct {
 //UpdateOrgUsers -
 func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error {
 
-	orgUsers, err := m.cloudController.GetCFUsers(updateUsersInput.OrgGUID, "organizations", updateUsersInput.Role)
+	orgUsers, err := m.cloudController.GetCFUsers(updateUsersInput.OrgGUID, ORGS, updateUsersInput.Role)
 
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 	}
 	for orgUser, orgUserGUID := range orgUsers {
 		lo.G.Info(fmt.Sprintf("removing %s from %s", orgUser, updateUsersInput.OrgGUID))
-		err = m.cloudController.RemoveCFUser(updateUsersInput.OrgGUID, "organizations", orgUserGUID, updateUsersInput.Role)
+		err = m.cloudController.RemoveCFUser(updateUsersInput.OrgGUID, ORGS, orgUserGUID, updateUsersInput.Role)
 		if err != nil {
 			lo.G.Error(fmt.Sprintf("Unable to remove user : %s from org %s with role %s", orgUser, updateUsersInput.OrgGUID, updateUsersInput.Role))
 			lo.G.Error(fmt.Errorf("Cloud controller API error : %s", err))

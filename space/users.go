@@ -45,7 +45,7 @@ type UpdateUsersInput struct {
 //UpdateSpaceUsers Update space users
 func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error {
 
-	spaceUsers, err := m.cloudController.GetCFUsers(updateUsersInput.SpaceGUID, "spaces", updateUsersInput.Role)
+	spaceUsers, err := m.cloudController.GetCFUsers(updateUsersInput.SpaceGUID, SPACES, updateUsersInput.Role)
 
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 	}
 	for spaceUser, spaceUserGUID := range spaceUsers {
 		lo.G.Info(fmt.Sprintf("removing %s from %s", spaceUser, updateUsersInput.SpaceGUID))
-		err = m.cloudController.RemoveCFUser(updateUsersInput.SpaceGUID, "spaces", spaceUserGUID, updateUsersInput.Role)
+		err = m.cloudController.RemoveCFUser(updateUsersInput.SpaceGUID, SPACES, spaceUserGUID, updateUsersInput.Role)
 		if err != nil {
 			lo.G.Error(fmt.Sprintf("Unable to remove user : %s from space %s role in spce : %s", spaceUser, updateUsersInput.Role, updateUsersInput.SpaceGUID))
 			lo.G.Error(fmt.Errorf("Cloud controller API error : %s", err))

@@ -8,6 +8,8 @@ import (
 	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
+const SPACES = "spaces"
+
 //Manager -
 type Manager interface {
 	FindSpace(orgName, spaceName string) (space *cloudcontroller.Space, err error)

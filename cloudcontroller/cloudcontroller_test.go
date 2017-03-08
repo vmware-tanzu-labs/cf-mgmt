@@ -678,4 +678,31 @@ var _ = Describe("given CloudControllerManager", func() {
 		})
 	})
 
+	Context("GetCFUser()", func() {
+		It("should retrieve all results when there are more results", func() {
+			bytes, err := ioutil.ReadFile("fixtures/space-developers-paging.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/spaces/2ae52bf0-6f0a-4461-b683-8fa96c15d350/developers"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			bytes, err = ioutil.ReadFile("fixtures/space-developers.json")
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/spaces/2ae52bf0-6f0a-4461-b683-8fa96c15d350/developers"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			devs, err := manager.GetCFUsers("2ae52bf0-6f0a-4461-b683-8fa96c15d350", "spaces", "developers")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(devs).ShouldNot(BeNil())
+			Ω(devs).Should(HaveLen(4))
+			Ω(server.ReceivedRequests()).Should(HaveLen(2))
+		})
+	})
+
 })
