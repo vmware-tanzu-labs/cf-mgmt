@@ -101,4 +101,5 @@ type DefaultSpaceManager struct {
 	OrgMgr          organization.Manager
 	LdapMgr         ldap.Manager
 	UtilsMgr        utils.Manager
+	UserMgr         UserMgr
 }
