@@ -16,6 +16,9 @@ type Manager interface {
 	GetOrgGUID(orgName string) (orgGUID string, err error)
 }
 
+// ORGS represents orgs constant
+const ORGS = "organizations"
+
 //Resources -
 type Resources struct {
 	Resource []*Resource `json:"resources"`
@@ -62,6 +65,7 @@ type InputUpdateOrgs struct {
 	TotalRoutes             int      `yaml:"total-routes"`
 	TotalServices           int      `yaml:"total-services"`
 	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed"`
+	RemoveUsers             bool     `yaml:"remove-users"`
 }
 
 func (i *InputUpdateOrgs) GetBillingManagerGroup() string {
@@ -110,4 +114,5 @@ type DefaultOrgManager struct {
 	UAACMgr         uaac.Manager
 	UtilsMgr        utils.Manager
 	LdapMgr         ldap.Manager
+	UserMgr         UserMgr
 }

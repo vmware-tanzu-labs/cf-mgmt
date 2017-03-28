@@ -36,6 +36,10 @@ type Manager interface {
 		paidServicePlansAllowed bool) error
 
 	AssignQuotaToOrg(orgGUID, quotaGUID string) error
+
+	GetCFUsers(entityGUID, entityType, role string) (map[string]string, error)
+
+	RemoveCFUser(entityGUID, entityType, userGUID, role string) error
 }
 
 type DefaultManager struct {
@@ -68,11 +72,8 @@ type SpaceEntity struct {
 
 //Orgs -
 type Orgs struct {
-	TotalResults int    `json:"total_results"`
-	TotalPages   int    `json:"total_pages"`
-	PrevURL      string `json:"prev_url"`
-	NextURL      string `json:"next_url"`
-	Orgs         []*Org `json:"resources"`
+	NextURL string `json:"next_url"`
+	Orgs    []*Org `json:"resources"`
 }
 
 //Org -
@@ -129,4 +130,26 @@ type QuotaMetaData struct {
 //QuotaEntity -
 type QuotaEntity struct {
 	Name string `json:"name"`
+}
+
+//OrgSpaceUsers -
+type OrgSpaceUsers struct {
+	NextURL string          `json:"next_url"`
+	Users   []*OrgSpaceUser `json:"resources"`
+}
+
+//OrgSpaceUser -
+type OrgSpaceUser struct {
+	Entity   UserEntity   `json:"entity"`
+	MetaData UserMetaData `json:"metadata"`
+}
+
+//UserEntity -
+type UserEntity struct {
+	UserName string `json:"username"`
+}
+
+//UserMetaData -
+type UserMetaData struct {
+	GUID string `json:"guid"`
 }

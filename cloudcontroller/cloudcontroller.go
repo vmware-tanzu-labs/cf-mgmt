@@ -224,3 +224,36 @@ func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {
 	sendString := fmt.Sprintf(`{"quota_definition_guid":"%s"}`, quotaGUID)
 	return m.HTTP.Put(url, m.Token, sendString)
 }
+
+//GetCFUsers Returns list of space users who has developer roles
+func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[string]string, error) {
+	userMap := make(map[string]string)
+	url := fmt.Sprintf("%s/v2/%s/%s/%s?results-per-page=100", m.Host, entityType, entityGUID, role)
+	users := &OrgSpaceUsers{}
+	var err = m.HTTP.Get(url, m.Token, users)
+	if err != nil {
+		return nil, err
+	}
+	nextURL := users.NextURL
+	usersTemp := &OrgSpaceUsers{}
+	for nextURL != "" {
+		url = fmt.Sprintf("%s%s", m.Host, nextURL)
+		err = m.HTTP.Get(url, m.Token, usersTemp)
+		if err != nil {
+			return nil, err
+		}
+		users.Users = append(users.Users, usersTemp.Users...)
+		nextURL = usersTemp.NextURL
+	}
+	lo.G.Info(fmt.Sprintf("Total %d users with %s role returned for %s  %s", len(users.Users), role, entityType, entityGUID))
+	for _, user := range users.Users {
+		userMap[user.Entity.UserName] = user.MetaData.GUID
+	}
+	return userMap, nil
+}
+
+//RemoveCFUser -
+func (m *DefaultManager) RemoveCFUser(entityGUID, entityType, userGUID, role string) error {
+	url := fmt.Sprintf("%s/v2/%s/%s/%s/%s", m.Host, entityType, entityGUID, role, userGUID)
+	return m.HTTP.Delete(url, m.Token)
+}

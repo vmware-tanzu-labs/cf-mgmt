@@ -69,6 +69,7 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) (err error) {
 						TotalRoutes:             10,
 						TotalServices:           -1,
 						PaidServicePlansAllowed: true,
+						RemoveUsers:             true,
 					}
 					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/orgConfig.yml", m.Config, orgName), orgConfigYml)
 					spaces := &space.InputCreateSpaces{
@@ -108,6 +109,7 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) (err error) 
 						TotalRoutes:             10,
 						TotalServices:           -1,
 						PaidServicePlansAllowed: true,
+						RemoveUsers:             true,
 					}
 					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.Config, orgName, spaceName), spaceConfigYml)
 					utils.NewDefaultManager().WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.Config, orgName, spaceName), []byte("[]"))

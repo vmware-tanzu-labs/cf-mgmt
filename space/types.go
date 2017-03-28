@@ -8,6 +8,8 @@ import (
 	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
+const SPACES = "spaces"
+
 //Manager -
 type Manager interface {
 	FindSpace(orgName, spaceName string) (space *cloudcontroller.Space, err error)
@@ -53,6 +55,7 @@ type InputUpdateSpaces struct {
 	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed"`
 	EnableSecurityGroup     bool     `yaml:"enable-security-group"`
 	SecurityGroupContents   string   `yaml:"security-group-contents,omitempty"`
+	RemoveUsers             bool     `yaml:"remove-users"`
 }
 
 //ConfigSpaceDefaults -
@@ -101,4 +104,5 @@ type DefaultSpaceManager struct {
 	OrgMgr          organization.Manager
 	LdapMgr         ldap.Manager
 	UtilsMgr        utils.Manager
+	UserMgr         UserMgr
 }
