@@ -197,7 +197,6 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 	org, err = m.FindOrg(input.Org)
 
 	if err != nil {
-		lo.G.Error(err)
 		return err
 	}
 
@@ -205,43 +204,46 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 
 	err = m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
+			OrgName:       org.Entity.Name,
 			OrgGUID:       org.MetaData.GUID,
 			Role:          "billing_managers",
 			LdapGroupName: input.GetBillingManagerGroup(),
 			LdapUsers:     input.BillingManager.LdapUser,
 			Users:         input.BillingManager.Users,
+			RemoveUsers:   input.RemoveUsers,
 		})
 
 	if err != nil {
-		lo.G.Error(err)
 		return err
 	}
 
 	err = m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
+			OrgName:       org.Entity.Name,
 			OrgGUID:       org.MetaData.GUID,
 			Role:          "auditors",
 			LdapGroupName: input.GetAuditorGroup(),
 			LdapUsers:     input.Auditor.LdapUser,
 			Users:         input.Auditor.Users,
+			RemoveUsers:   input.RemoveUsers,
 		})
 
 	if err != nil {
-		lo.G.Error(err)
 		return err
 	}
 
 	err = m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
+			OrgName:       org.Entity.Name,
 			OrgGUID:       org.MetaData.GUID,
 			Role:          "managers",
 			LdapGroupName: input.GetManagerGroup(),
 			LdapUsers:     input.Manager.LdapUser,
 			Users:         input.Manager.Users,
+			RemoveUsers:   input.RemoveUsers,
 		})
 
 	if err != nil {
-		lo.G.Error(err)
 		return err
 	}
 	return nil
@@ -269,7 +271,6 @@ func (m *DefaultOrgManager) getLdapUsers(config *ldap.Config, groupName string, 
 		if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
 			users = append(users, groupUsers...)
 		} else {
-			lo.G.Error(err)
 			return nil, err
 		}
 	}
@@ -279,7 +280,6 @@ func (m *DefaultOrgManager) getLdapUsers(config *ldap.Config, groupName string, 
 				users = append(users, *ldapUser)
 			}
 		} else {
-			lo.G.Error(err)
 			return nil, err
 		}
 	}

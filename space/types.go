@@ -55,6 +55,7 @@ type InputUpdateSpaces struct {
 	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed"`
 	EnableSecurityGroup     bool     `yaml:"enable-security-group"`
 	SecurityGroupContents   string   `yaml:"security-group-contents,omitempty"`
+	RemoveUsers             bool     `yaml:"remove-users"`
 }
 
 //ConfigSpaceDefaults -

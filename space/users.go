@@ -35,11 +35,13 @@ type UserManager struct {
 
 // UpdateSpaceUserInput
 type UpdateUsersInput struct {
+	SpaceName        string
 	SpaceGUID        string
 	OrgGUID          string
 	Role             string
 	LdapGroupName    string
 	LdapUsers, Users []string
+	RemoveUsers      bool
 }
 
 //UpdateSpaceUsers Update space users
@@ -69,6 +71,9 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	for _, userID := range updateUsersInput.Users {
+		if _, userExists := uaacUsers[userID]; !userExists {
+			return fmt.Errorf("User %s doesn't exist in cloud foundry, so must add internal user first", userID)
+		}
 		if _, ok := spaceUsers[userID]; !ok {
 			if err = m.addUserToOrgAndRole(userID, updateUsersInput.OrgGUID, updateUsersInput.SpaceGUID, updateUsersInput.Role); err != nil {
 				lo.G.Error(err)
@@ -78,14 +83,18 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 			delete(spaceUsers, userID)
 		}
 	}
-	for spaceUser, spaceUserGUID := range spaceUsers {
-		lo.G.Info(fmt.Sprintf("removing %s from %s", spaceUser, updateUsersInput.SpaceGUID))
-		err = m.cloudController.RemoveCFUser(updateUsersInput.SpaceGUID, SPACES, spaceUserGUID, updateUsersInput.Role)
-		if err != nil {
-			lo.G.Error(fmt.Sprintf("Unable to remove user : %s from space %s role in spce : %s", spaceUser, updateUsersInput.Role, updateUsersInput.SpaceGUID))
-			lo.G.Error(fmt.Errorf("Cloud controller API error : %s", err))
-			return err
+	if updateUsersInput.RemoveUsers == true {
+		for spaceUser, spaceUserGUID := range spaceUsers {
+			lo.G.Info(fmt.Sprintf("removing %s from %s", spaceUser, updateUsersInput.SpaceGUID))
+			err = m.cloudController.RemoveCFUser(updateUsersInput.SpaceGUID, SPACES, spaceUserGUID, updateUsersInput.Role)
+			if err != nil {
+				lo.G.Error(fmt.Sprintf("Unable to remove user : %s from space %s role in spce : %s", spaceUser, updateUsersInput.Role, updateUsersInput.SpaceGUID))
+				lo.G.Error(fmt.Errorf("Cloud controller API error : %s", err))
+				return err
+			}
 		}
+	} else {
+		lo.G.Info(fmt.Sprintf("not removing users add remove-users: true to spaceConfig for %s", updateUsersInput.SpaceName))
 	}
 	return nil
 }
@@ -105,14 +114,12 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, spaceGUID, orgGUID str
 	if _, userExists := uaacUsers[userID]; !userExists {
 		lo.G.Info("User", userID, "doesn't exist in cloud foundry, so creating user")
 		if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
-			lo.G.Error(err)
 			return err
 		}
-		uaacUsers[userID] = userID
-		if err := m.addUserToOrgAndRole(userID, orgGUID, spaceGUID, role); err != nil {
-			lo.G.Error(err)
-			return err
-		}
+	}
+	uaacUsers[userID] = userID
+	if err := m.addUserToOrgAndRole(userID, orgGUID, spaceGUID, role); err != nil {
+		return err
 	}
 	return nil
 }

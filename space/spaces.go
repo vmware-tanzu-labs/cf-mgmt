@@ -191,39 +191,42 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 	if space, err := m.FindSpace(input.Org, input.Space); err == nil {
 		lo.G.Info("User sync for space", space.Entity.Name)
 		if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers, UpdateUsersInput{
+			SpaceName:     space.Entity.Name,
 			SpaceGUID:     space.MetaData.GUID,
 			OrgGUID:       space.Entity.OrgGUID,
 			Role:          "developers",
 			LdapGroupName: input.GetDeveloperGroup(),
 			LdapUsers:     input.Developer.LdapUser,
 			Users:         input.Developer.Users,
+			RemoveUsers:   input.RemoveUsers,
 		}); err != nil {
-			lo.G.Error(err)
 			return err
 		}
 
 		if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers,
 			UpdateUsersInput{
+				SpaceName:     space.Entity.Name,
 				SpaceGUID:     space.MetaData.GUID,
 				OrgGUID:       space.Entity.OrgGUID,
 				Role:          "managers",
 				LdapGroupName: input.GetManagerGroup(),
 				LdapUsers:     input.Manager.LdapUser,
 				Users:         input.Manager.Users,
+				RemoveUsers:   input.RemoveUsers,
 			}); err != nil {
-			lo.G.Error(err)
 			return err
 		}
 		if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers,
 			UpdateUsersInput{
+				SpaceName:     space.Entity.Name,
 				SpaceGUID:     space.MetaData.GUID,
 				OrgGUID:       space.Entity.OrgGUID,
 				Role:          "auditors",
 				LdapGroupName: input.GetAuditorGroup(),
 				LdapUsers:     input.Auditor.LdapUser,
 				Users:         input.Auditor.Users,
+				RemoveUsers:   input.RemoveUsers,
 			}); err != nil {
-			lo.G.Error(err)
 			return err
 		}
 		return nil

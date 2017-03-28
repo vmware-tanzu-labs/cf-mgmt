@@ -192,6 +192,7 @@ var _ = Describe("given SpaceManager", func() {
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockUserMgr.EXPECT().UpdateSpaceUsers(config, uaacUsers,
 				UpdateUsersInput{
+					SpaceName:     "space1",
 					SpaceGUID:     "space1GUID",
 					OrgGUID:       "testOrgGUID",
 					Role:          "developers",
@@ -201,6 +202,7 @@ var _ = Describe("given SpaceManager", func() {
 				}).Return(nil)
 			mockUserMgr.EXPECT().UpdateSpaceUsers(config, uaacUsers,
 				UpdateUsersInput{
+					SpaceName:     "space1",
 					SpaceGUID:     "space1GUID",
 					OrgGUID:       "testOrgGUID",
 					Role:          "managers",
@@ -210,6 +212,7 @@ var _ = Describe("given SpaceManager", func() {
 				}).Return(nil)
 			mockUserMgr.EXPECT().UpdateSpaceUsers(config, uaacUsers,
 				UpdateUsersInput{
+					SpaceName:     "space1",
 					SpaceGUID:     "space1GUID",
 					OrgGUID:       "testOrgGUID",
 					Role:          "auditors",
