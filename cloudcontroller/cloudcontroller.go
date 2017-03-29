@@ -225,7 +225,7 @@ func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
-//GetCFUsers Returns list of space users who has developer roles
+//GetCFUsers Returns a list of space users who has a given role
 func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[string]string, error) {
 	userMap := make(map[string]string)
 	url := fmt.Sprintf("%s/v2/%s/%s/%s?results-per-page=100", m.Host, entityType, entityGUID, role)
@@ -252,7 +252,7 @@ func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[st
 	return userMap, nil
 }
 
-//RemoveCFUser -
+//RemoveCFUser - Un assigns a given from the given user for a given org and space
 func (m *DefaultManager) RemoveCFUser(entityGUID, entityType, userGUID, role string) error {
 	url := fmt.Sprintf("%s/v2/%s/%s/%s/%s", m.Host, entityType, entityGUID, role, userGUID)
 	return m.HTTP.Delete(url, m.Token)

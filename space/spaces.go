@@ -312,7 +312,7 @@ func (m *DefaultSpaceManager) CreateSpaces(configDir, ldapBindPassword string) e
 
 func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgName, ldapBindPassword string) error {
 	defaultSpaceConfigFile := configDir + "/spaceDefaults.yml"
-	if m.UtilsMgr.DoesFileExist(defaultSpaceConfigFile) {
+	if m.UtilsMgr.DoesFileOrDirectoryExists(defaultSpaceConfigFile) {
 		var config *ldap.Config
 		var uaacUsers map[string]string
 		var err error
