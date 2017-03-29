@@ -6,8 +6,10 @@ import (
 	"strings"
 
 	"github.com/codegangsta/cli"
+	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/generated"
+	"github.com/pivotalservices/cf-mgmt/importconfig"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
@@ -35,20 +37,27 @@ type flagBucket struct {
 
 //CFMgmt -
 type CFMgmt struct {
-	UAAManager   uaa.Manager
-	OrgManager   organization.Manager
-	SpaceManager space.Manager
-	ConfigDir    string
-	LdapBindPwd  string
+	UAAManager    uaa.Manager
+	OrgManager    organization.Manager
+	SpaceManager  space.Manager
+	ConfigManager config.Manager
+	ConfigDir     string
+	LdapBindPwd   string
+	uaacToken     string
+	systemDomain  string
 }
 
 //InitializeManager -
 func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	var err error
+	configDir := getConfigDir(c)
+	if configDir == "" {
+		err = fmt.Errorf("Config directory name is required")
+		return nil, err
+	}
 	sysDomain := c.String(getFlag(systemDomain))
 	user := c.String(getFlag(userID))
 	pwd := c.String(getFlag(password))
-	config := getConfigDir(c)
 	secret := c.String(getFlag(clientSecret))
 	ldapPwd := c.String(getFlag(ldapPassword))
 
@@ -70,11 +79,13 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	if uaacToken, err = cfMgmt.UAAManager.GetUAACToken(secret); err != nil {
 		return nil, err
 	}
+	cfMgmt.uaacToken = uaacToken
+	cfMgmt.systemDomain = systemDomain
 	cfMgmt.OrgManager = organization.NewManager(sysDomain, cfToken, uaacToken)
 	cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken)
-	cfMgmt.ConfigDir = config
+	cfMgmt.ConfigManager = config.NewManager(configDir)
+	cfMgmt.ConfigDir = configDir
 	return cfMgmt, nil
-
 }
 
 const (
@@ -126,6 +137,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateAddOrgCommand(eh),
 		CreateAddSpaceCommand(eh),
 		CreateGeneratePipelineCommand(runGeneratePipeline, eh),
+		CreateCommand("import-config", runImportConfig, defaultFlags(), eh),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags(), eh),
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags(), eh),
 		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlagsWithLdap(), eh),
@@ -139,19 +151,58 @@ func NewApp(eh *ErrorHandler) *cli.App {
 	return app
 }
 
+// CreateImportConfigCommand -
+func CreateImportConfigCommand(eh *ErrorHandler) (command cli.Command) {
+	flagList := map[string]flagBucket{
+		systemDomain: {
+			Desc:   "System domain",
+			EnvVar: systemDomain,
+		},
+		orgName: {
+			Desc:   "org name of space",
+			EnvVar: orgName,
+		},
+		spaceName: {
+			Desc:   "space name to add",
+			EnvVar: spaceName,
+		},
+		spaceDevGrp: {
+			Desc:   "LDAP group for Space Developer",
+			EnvVar: spaceDevGrp,
+		},
+		spaceMgrGrp: {
+			Desc:   "LDAP group for Space Manager",
+			EnvVar: spaceMgrGrp,
+		},
+		spaceAuditorGrp: {
+			Desc:   "LDAP group for Space Auditor",
+			EnvVar: spaceAuditorGrp,
+		},
+	}
+
+	command = cli.Command{
+		Name:        "add-space-to-config",
+		Usage:       "adds specified space to configuration for org",
+		Description: "adds specified space to configuration for org",
+		Action:      runAddSpace,
+		Flags:       buildFlags(flagList),
+	}
+	return
+}
+
 //CreateInitCommand -
 func CreateInitCommand(eh *ErrorHandler) (command cli.Command) {
 	flagList := map[string]flagBucket{
 		configDir: {
-			Desc:   "config dir.  Default is config",
+			Desc:   "Name of the config directory. Default config directory is `config`",
 			EnvVar: configDir,
 		},
 	}
 
 	command = cli.Command{
 		Name:        "init-config",
-		Usage:       "initializes folder structure for configuration",
-		Description: "initializes folder structure for configuration",
+		Usage:       "Initializes folder structure for configuration",
+		Description: "Initializes folder structure for configuration",
 		Action:      runInit,
 		Flags:       buildFlags(flagList),
 	}
@@ -159,11 +210,13 @@ func CreateInitCommand(eh *ErrorHandler) (command cli.Command) {
 }
 
 func runInit(c *cli.Context) (err error) {
-	config := getConfigDir(c)
-	if err = os.MkdirAll(config, 0755); err == nil {
-		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/ldap.yml", config), &ldap.Config{TLS: false, Origin: "ldap"})
-		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/orgs.yml", config), &organization.InputOrgs{})
-		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", config), &space.ConfigSpaceDefaults{})
+	configDir := getConfigDir(c)
+	configManager := config.NewManager(configDir)
+	configManager.CreateConfigIfNotExists()
+	if err = os.MkdirAll(configDir, 0755); err == nil {
+		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/ldap.yml", configDir), &ldap.Config{TLS: false, Origin: "ldap"})
+		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/orgs.yml", configDir), &organization.InputOrgs{})
+		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", configDir), &space.ConfigSpaceDefaults{})
 	}
 	return
 }
@@ -172,11 +225,11 @@ func runInit(c *cli.Context) (err error) {
 func CreateAddOrgCommand(eh *ErrorHandler) (command cli.Command) {
 	flagList := map[string]flagBucket{
 		configDir: {
-			Desc:   "config dir.  Default is config",
+			Desc:   "Config directory name.  Default is config",
 			EnvVar: configDir,
 		},
 		orgName: {
-			Desc:   "org name to add",
+			Desc:   "Org name to add",
 			EnvVar: orgName,
 		},
 		orgBillingMgrGrp: {
@@ -195,30 +248,23 @@ func CreateAddOrgCommand(eh *ErrorHandler) (command cli.Command) {
 
 	command = cli.Command{
 		Name:        "add-org-to-config",
-		Usage:       "adds specified org to configuration",
-		Description: "adds specified org to configuration",
+		Usage:       "Adds specified org to configuration",
+		Description: "Adds specified org to configuration",
 		Action:      runAddOrg,
 		Flags:       buildFlags(flagList),
 	}
 	return
 }
 
-func runAddOrg(c *cli.Context) (err error) {
+func runAddOrg(c *cli.Context) error {
 	inputOrg := c.String(getFlag(orgName))
-
+	var cfMgmt *CFMgmt
 	orgConfig := &config.OrgConfig{OrgName: inputOrg,
-		OrgBillingMgrGrp: c.String(getFlag(orgBillingMgrGrp)),
-		OrgMgrGrp:        c.String(getFlag(orgMgrGrp)),
-		OrgAuditorGrp:    c.String(getFlag(orgAuditorGrp)),
+		OrgBillingMgrLDAPGrp: c.String(getFlag(orgBillingMgrGrp)),
+		OrgMgrLDAPGrp:        c.String(getFlag(orgMgrGrp)),
+		OrgAuditorLDAPGrp:    c.String(getFlag(orgAuditorGrp)),
 	}
-
-	configDr := getConfigDir(c)
-	if inputOrg == "" {
-		err = fmt.Errorf("Must provide org name")
-	} else {
-		err = config.NewManager(configDr).AddOrgToConfig(orgConfig)
-	}
-	return
+	return cfMgmt.ConfigManager.AddOrgToConfig(orgConfig)
 }
 
 //CreateAddSpaceCommand -
@@ -352,68 +398,76 @@ func CreateCommand(commandName string, action func(c *cli.Context) (err error), 
 	return
 }
 
-func runCreateOrgs(c *cli.Context) (err error) {
+func runCreateOrgs(c *cli.Context) error {
 	var cfMgmt *CFMgmt
+	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.OrgManager.CreateOrgs(cfMgmt.ConfigDir)
 	}
-	return
+	return err
 }
 
-func runCreateOrgQuotas(c *cli.Context) (err error) {
+func runCreateOrgQuotas(c *cli.Context) error {
 	var cfMgmt *CFMgmt
+	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.OrgManager.CreateQuotas(cfMgmt.ConfigDir)
 	}
-	return
+	return err
 }
 
-func runCreateSpaceQuotas(c *cli.Context) (err error) {
+func runCreateSpaceQuotas(c *cli.Context) error {
 	var cfMgmt *CFMgmt
+	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.CreateQuotas(cfMgmt.ConfigDir)
 	}
-	return
+	return err
 }
 
-func runCreateSpaceSecurityGroups(c *cli.Context) (err error) {
+func runCreateSpaceSecurityGroups(c *cli.Context) error {
 	var cfMgmt *CFMgmt
+	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.CreateApplicationSecurityGroups(cfMgmt.ConfigDir)
 	}
-	return
+	return err
 }
 
-func runCreateSpaces(c *cli.Context) (err error) {
+func runCreateSpaces(c *cli.Context) error {
 	var cfMgmt *CFMgmt
+	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.CreateSpaces(cfMgmt.ConfigDir, cfMgmt.LdapBindPwd)
 	}
-	return
+	return err
 }
 
-func runUpdateSpaces(c *cli.Context) (err error) {
+func runUpdateSpaces(c *cli.Context) error {
 	var cfMgmt *CFMgmt
+	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.UpdateSpaces(cfMgmt.ConfigDir)
 	}
-	return
+	return err
 }
 
-func runUpdateSpaceUsers(c *cli.Context) (err error) {
+func runUpdateSpaceUsers(c *cli.Context) error {
 	var cfMgmt *CFMgmt
+	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.SpaceManager.UpdateSpaceUsers(cfMgmt.ConfigDir, cfMgmt.LdapBindPwd)
 	}
-	return
+	return err
 }
 
-func runUpdateOrgUsers(c *cli.Context) (err error) {
+func runUpdateOrgUsers(c *cli.Context) error {
 	var cfMgmt *CFMgmt
+	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.OrgManager.UpdateOrgUsers(cfMgmt.ConfigDir, cfMgmt.LdapBindPwd)
 	}
-	return
+	return err
 }
 
 func defaultFlagsWithLdap() (flags []cli.Flag) {
@@ -487,5 +541,18 @@ func getConfigDir(c *cli.Context) (cDir string) {
 	if cDir == "" {
 		return "config"
 	}
-	return
+	return cDir
+}
+
+func runImportConfig(c *cli.Context) error {
+	var cfMgmt *CFMgmt
+	var err error
+	cfMgmt, err = InitializeManager(c)
+	if cfMgmt != nil {
+		cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.systemDomain), cfMgmt.uaacToken)
+		importManager := importconfig.NewManager(cfMgmt.ConfigDir, cfMgmt.UAAManager, cfMgmt.OrgManager, cfMgmt.SpaceManager, cloudController)
+		ignoredOrgs := make(map[string]string)
+		err = importManager.ImportConfig(ignoredOrgs)
+	}
+	return err
 }
