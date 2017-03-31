@@ -194,6 +194,7 @@ var _ = Describe("given SpaceManager", func() {
 				UpdateUsersInput{
 					SpaceName:     "space1",
 					SpaceGUID:     "space1GUID",
+					OrgName:       "test",
 					OrgGUID:       "testOrgGUID",
 					Role:          "developers",
 					LdapGroupName: "default_test_space1_developers",
@@ -204,6 +205,7 @@ var _ = Describe("given SpaceManager", func() {
 				UpdateUsersInput{
 					SpaceName:     "space1",
 					SpaceGUID:     "space1GUID",
+					OrgName:       "test",
 					OrgGUID:       "testOrgGUID",
 					Role:          "managers",
 					LdapGroupName: "default_test_space1_managers",
@@ -214,6 +216,7 @@ var _ = Describe("given SpaceManager", func() {
 				UpdateUsersInput{
 					SpaceName:     "space1",
 					SpaceGUID:     "space1GUID",
+					OrgName:       "test",
 					OrgGUID:       "testOrgGUID",
 					Role:          "auditors",
 					LdapGroupName: "default_test_space1_auditors",

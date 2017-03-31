@@ -59,7 +59,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			return err
 		}
 		for _, user := range ldapUsers {
-			err = m.updateLdapUser(config, updateUsersInput.OrgGUID, updateUsersInput.Role, uaacUsers, user)
+			err = m.updateLdapUser(config, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName, uaacUsers, user)
 			if err != nil {
 				return err
 			}
@@ -75,7 +75,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			if _, userExists := uaacUsers[userID]; !userExists {
 				return fmt.Errorf("User %s doesn't exist in cloud foundry, so must add internal user first", userID)
 			}
-			if err = m.addUserToOrgAndRole(userID, updateUsersInput.OrgGUID, updateUsersInput.Role); err != nil {
+			if err = m.addUserToOrgAndRole(userID, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName); err != nil {
 				lo.G.Error(err)
 				return err
 			}
@@ -85,7 +85,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 	}
 	if updateUsersInput.RemoveUsers == true {
 		for orgUser, orgUserGUID := range orgUsers {
-			lo.G.Info(fmt.Sprintf("removing %s from %s", orgUser, updateUsersInput.OrgGUID))
+			lo.G.Info(fmt.Sprintf("removing %s from org %s", orgUser, updateUsersInput.OrgName))
 			err = m.cloudController.RemoveCFUser(updateUsersInput.OrgGUID, ORGS, orgUserGUID, updateUsersInput.Role)
 			if err != nil {
 				lo.G.Error(fmt.Sprintf("Unable to remove user : %s from org %s with role %s", orgUser, updateUsersInput.OrgGUID, updateUsersInput.Role))
@@ -100,7 +100,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 }
 
 func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
-	role string, uaacUsers map[string]string,
+	role string, orgName string, uaacUsers map[string]string,
 	user ldap.User) error {
 
 	userID := user.UserID
@@ -119,7 +119,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 		}
 		uaacUsers[userID] = userID
 	}
-	if err := m.addUserToOrgAndRole(userID, orgGUID, role); err != nil {
+	if err := m.addUserToOrgAndRole(userID, orgGUID, role, orgName); err != nil {
 		lo.G.Error(err)
 		return err
 	}
@@ -151,13 +151,13 @@ func (m *UserManager) getLdapUsers(config *ldap.Config, groupName string, userLi
 	return users, nil
 }
 
-func (m *UserManager) addUserToOrgAndRole(userID, orgGUID, role string) error {
-	lo.G.Info(fmt.Sprintf("Adding user to org :  %s ", orgGUID))
+func (m *UserManager) addUserToOrgAndRole(userID, orgGUID, role, orgName string) error {
+	lo.G.Info(fmt.Sprintf("Adding user to org :  %s ", orgName))
 	if err := m.cloudController.AddUserToOrg(userID, orgGUID); err != nil {
 		lo.G.Error(err)
 		return err
 	}
-	lo.G.Info(fmt.Sprintf("Adding user to org: %s  with role: %s", orgGUID, role))
+	lo.G.Info(fmt.Sprintf("Adding user to org: %s  with role: %s", orgName, role))
 	if err := m.cloudController.AddUserToOrgRole(userID, role, orgGUID); err != nil {
 		lo.G.Error(err)
 		return err

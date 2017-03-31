@@ -34,14 +34,13 @@ func (m *DefaultUAACManager) CreateExternalUser(userName, userEmail, externalID,
 
 //ListUsers -
 func (m *DefaultUAACManager) ListUsers() (map[string]string, error) {
-	lo.G.Info("Getting UAAC users from PCF")
+	lo.G.Info("Getting UAAC users from Cloud Foundry")
 	users := make(map[string]string)
 	url := fmt.Sprintf("%s/Users?count=5000", m.Host)
 	userList := new(UserList)
 	if err := http.NewManager().Get(url, m.UUACToken, userList); err != nil {
 		return nil, err
 	}
-	lo.G.Info(fmt.Printf("Found %d users in the system : ", len(userList.Users)))
 	for _, user := range userList.Users {
 		users[strings.ToLower(user.Name)] = user.ID
 	}

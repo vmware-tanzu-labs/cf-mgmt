@@ -193,6 +193,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 		if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers, UpdateUsersInput{
 			SpaceName:     space.Entity.Name,
 			SpaceGUID:     space.MetaData.GUID,
+			OrgName:       input.Org,
 			OrgGUID:       space.Entity.OrgGUID,
 			Role:          "developers",
 			LdapGroupName: input.GetDeveloperGroup(),
@@ -208,6 +209,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 				SpaceName:     space.Entity.Name,
 				SpaceGUID:     space.MetaData.GUID,
 				OrgGUID:       space.Entity.OrgGUID,
+				OrgName:       input.Org,
 				Role:          "managers",
 				LdapGroupName: input.GetManagerGroup(),
 				LdapUsers:     input.Manager.LdapUser,
@@ -221,6 +223,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 				SpaceName:     space.Entity.Name,
 				SpaceGUID:     space.MetaData.GUID,
 				OrgGUID:       space.Entity.OrgGUID,
+				OrgName:       input.Org,
 				Role:          "auditors",
 				LdapGroupName: input.GetAuditorGroup(),
 				LdapUsers:     input.Auditor.LdapUser,
