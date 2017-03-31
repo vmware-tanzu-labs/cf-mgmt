@@ -167,6 +167,9 @@ total-routes: 10
 # unlimited
 total-services: -1
 paid-service-plans-allowed: true
+
+# added in 0.48+ which will remove users from roles if not configured in cf-mgmt
+enable-remove-users: true/false
 ```
 
 #### Space Configuration
@@ -237,6 +240,9 @@ paid-service-plans-allowed: true
 
 # to enable custom asg for the space.  If true will deploy asg defined in security-group.json within space folder
 enable-security-group: false
+
+# added in 0.48+ which will remove users from roles if not configured in cf-mgmt
+enable-remove-users: true/false
 ```
 
 ### LDAP Configuration
@@ -266,7 +272,7 @@ fly -t <targetname> set-pipeline -p <pipeline_name> -c pipeline.yml -l vars.yml 
 If both ```vars.yml``` and ```--var``` are specified, ```--vars``` values takes precedence.
 
 ### Known Issues
-Currently does not remove anything that is not in configuration.  All functions are additive.  So removing users, orgs, spaces is not currently a function if they are not configured in cf-mgmt but future plans are to have a flag to opt-in for this feature.  This will likely start with removing users that are not configured in the orgs/spaces managed by cf-mgmt.
+Currently does not remove orgs, spaces, asgs, quotas that are not in configuration does remove users from roles as of 0.48+.  All functions are additive.  So removing orgs, spaces is not currently a function if they are not configured in cf-mgmt but future plans are to have a flag to opt-in for this feature.
 
 ### The following operation are enabled with cf-mgmt that will leverage configuration to modify your Cloud Foundry installation
 
