@@ -248,6 +248,8 @@ enable-remove-users: true/false
 ### LDAP Configuration
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
 
+### Features
+- Removing users from cf that are not in cf-mgmt metadata was added in 0.48+ release.  This is an opt-in feature for existing cf-mgmt users at an org and space config level.  For any new orgs/config created with cf-mgmt cli 0.48+ it will default this parameter to true.  To opt-in ensure you are using latest cf-mgmt version when running pipeline and add `enable-remove-users: true` to your configuration.
 
 ### Recommended workflow
 
