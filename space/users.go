@@ -117,8 +117,8 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, spaceGUID, orgGUID str
 		if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
 			return err
 		}
+		uaacUsers[userID] = userID
 	}
-	uaacUsers[userID] = userID
 	if err := m.addUserToOrgAndRole(userID, orgGUID, spaceGUID, role, orgName, spaceName); err != nil {
 		return err
 	}

@@ -70,6 +70,9 @@ var _ = Describe("given SpaceManager", func() {
 
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(1))
+			_, ok := uaacUsers["user-id"]
+			Ω(ok).Should(BeTrue())
 		})
 		It("update ldap group users where users are not uaac", func() {
 			config := &l.Config{
@@ -100,6 +103,9 @@ var _ = Describe("given SpaceManager", func() {
 
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(1))
+			_, ok := uaacUsers["user-id"]
+			Ω(ok).Should(BeTrue())
 		})
 
 		It("update ldap users where users are not in uaac", func() {
@@ -138,6 +144,11 @@ var _ = Describe("given SpaceManager", func() {
 
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
+			_, ok := uaacUsers["user-1-id"]
+			Ω(ok).Should(BeTrue())
+			_, ok = uaacUsers["user-2-id"]
+			Ω(ok).Should(BeTrue())
 		})
 
 		It("update ldap users where users are in uaac", func() {
@@ -176,6 +187,12 @@ var _ = Describe("given SpaceManager", func() {
 
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
+
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
+			_, ok := uaacUsers["user-1-id"]
+			Ω(ok).Should(BeTrue())
+			_, ok = uaacUsers["user-2-id"]
+			Ω(ok).Should(BeTrue())
 		})
 
 		It("update users where users are in uaac", func() {
@@ -203,6 +220,12 @@ var _ = Describe("given SpaceManager", func() {
 
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
+
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
+			_, ok := uaacUsers["user-1"]
+			Ω(ok).Should(BeTrue())
+			_, ok = uaacUsers["user-2"]
+			Ω(ok).Should(BeTrue())
 		})
 
 		It("update users where users are not in uaac", func() {
@@ -224,6 +247,8 @@ var _ = Describe("given SpaceManager", func() {
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(Not(BeNil()))
 			Ω(err.Error()).Should(BeEquivalentTo("User user-1 doesn't exist in cloud foundry, so must add internal user first"))
+
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(0))
 		})
 
 		It("remove users that in space but not in config", func() {
