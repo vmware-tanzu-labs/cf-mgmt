@@ -10,11 +10,10 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/generated"
 	"github.com/pivotalservices/cf-mgmt/importconfig"
-	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
-	"github.com/pivotalservices/cf-mgmt/utils"
+	"github.com/pivotalservices/cf-mgmt/uaac"
 	"github.com/xchapter7x/lo"
 )
 
@@ -45,6 +44,7 @@ type CFMgmt struct {
 	LdapBindPwd   string
 	uaacToken     string
 	systemDomain  string
+	UAACManager   uaac.Manager
 }
 
 //InitializeManager -
@@ -85,6 +85,7 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken)
 	cfMgmt.ConfigManager = config.NewManager(configDir)
 	cfMgmt.ConfigDir = configDir
+	cfMgmt.UAACManager = uaac.NewManager(systemDomain, uaacToken)
 	return cfMgmt, nil
 }
 
@@ -136,8 +137,8 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateInitCommand(eh),
 		CreateAddOrgCommand(eh),
 		CreateAddSpaceCommand(eh),
+		CreateImportConfigCommand(eh),
 		CreateGeneratePipelineCommand(runGeneratePipeline, eh),
-		CreateCommand("import-config", runImportConfig, defaultFlags(), eh),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags(), eh),
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags(), eh),
 		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlagsWithLdap(), eh),
@@ -153,39 +154,18 @@ func NewApp(eh *ErrorHandler) *cli.App {
 
 // CreateImportConfigCommand -
 func CreateImportConfigCommand(eh *ErrorHandler) (command cli.Command) {
-	flagList := map[string]flagBucket{
-		systemDomain: {
-			Desc:   "System domain",
-			EnvVar: systemDomain,
-		},
-		orgName: {
-			Desc:   "org name of space",
-			EnvVar: orgName,
-		},
-		spaceName: {
-			Desc:   "space name to add",
-			EnvVar: spaceName,
-		},
-		spaceDevGrp: {
-			Desc:   "LDAP group for Space Developer",
-			EnvVar: spaceDevGrp,
-		},
-		spaceMgrGrp: {
-			Desc:   "LDAP group for Space Manager",
-			EnvVar: spaceMgrGrp,
-		},
-		spaceAuditorGrp: {
-			Desc:   "LDAP group for Space Auditor",
-			EnvVar: spaceAuditorGrp,
-		},
+	flags := defaultFlags()
+	flag := cli.StringSliceFlag{
+		Name:  "excluded-org",
+		Usage: "Orgs to be excluded from import",
 	}
-
+	flags = append(flags, flag)
 	command = cli.Command{
-		Name:        "add-space-to-config",
-		Usage:       "adds specified space to configuration for org",
-		Description: "adds specified space to configuration for org",
-		Action:      runAddSpace,
-		Flags:       buildFlags(flagList),
+		Name:        "import-config",
+		Usage:       "import-config --excluded-org <orgname> (Repeat the flag for specifying multiple org names)  ",
+		Description: "Imports org and space configurations from an existing Cloud Foundry instance. [Warning: This operation will delete existing config folder]",
+		Action:      runImportConfig,
+		Flags:       flags,
 	}
 	return
 }
@@ -212,13 +192,8 @@ func CreateInitCommand(eh *ErrorHandler) (command cli.Command) {
 func runInit(c *cli.Context) (err error) {
 	configDir := getConfigDir(c)
 	configManager := config.NewManager(configDir)
-	configManager.CreateConfigIfNotExists()
-	if err = os.MkdirAll(configDir, 0755); err == nil {
-		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/ldap.yml", configDir), &ldap.Config{TLS: false, Origin: "ldap"})
-		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/orgs.yml", configDir), &organization.InputOrgs{})
-		utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", configDir), &space.ConfigSpaceDefaults{})
-	}
-	return
+	err = configManager.CreateConfigIfNotExists("ldap")
+	return err
 }
 
 //CreateAddOrgCommand -
@@ -550,8 +525,13 @@ func runImportConfig(c *cli.Context) error {
 	cfMgmt, err = InitializeManager(c)
 	if cfMgmt != nil {
 		cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.systemDomain), cfMgmt.uaacToken)
-		importManager := importconfig.NewManager(cfMgmt.ConfigDir, cfMgmt.UAAManager, cfMgmt.OrgManager, cfMgmt.SpaceManager, cloudController)
+		importManager := importconfig.NewManager(cfMgmt.ConfigDir, cfMgmt.UAACManager, cfMgmt.OrgManager, cfMgmt.SpaceManager, cloudController)
 		ignoredOrgs := make(map[string]string)
+		ignoredOrgs["system"] = "system"
+		ignoreOrgs := c.StringSlice(getFlag(configDir))
+		for _, org := range ignoreOrgs {
+			ignoredOrgs[org] = org
+		}
 		err = importManager.ImportConfig(ignoredOrgs)
 	}
 	return err

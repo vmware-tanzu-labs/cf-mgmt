@@ -4,7 +4,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
-	"github.com/pivotalservices/cf-mgmt/uaa"
+	"github.com/pivotalservices/cf-mgmt/uaac"
 )
 
 //Manager -
@@ -15,7 +15,7 @@ type Manager interface {
 //DefaultImportManager  -
 type DefaultImportManager struct {
 	ConfigDir       string
-	UAACMgr         uaa.Manager
+	UAACMgr         uaac.Manager
 	OrgMgr          organization.Manager
 	SpaceMgr        space.Manager
 	CloudController cloudcontroller.Manager

@@ -14,7 +14,8 @@ import (
 type Manager interface {
 	AddOrgToConfig(orgConfig *OrgConfig) (err error)
 	AddSpaceToConfig(spaceConfig *SpaceConfig) (err error)
-	CreateConfigIfNotExists() error
+	CreateConfigIfNotExists(uaaOrigin string) error
+	DeleteConfigIfExists() error
 }
 
 //DefaultManager -
@@ -24,13 +25,16 @@ type DefaultManager struct {
 
 //OrgConfig Describes attributes for an org
 type OrgConfig struct {
-	OrgName               string
-	OrgBillingMgrLDAPGrp  string
-	OrgMgrLDAPGrp         string
-	OrgAuditorLDAPGrp     string
-	OrgBillingMgrUAAUsers []string
-	OrgMgrUAAUsers        []string
-	OrgAuditorUAAUsers    []string
+	OrgName                string
+	OrgBillingMgrLDAPGrp   string
+	OrgMgrLDAPGrp          string
+	OrgAuditorLDAPGrp      string
+	OrgBillingMgrUAAUsers  []string
+	OrgMgrUAAUsers         []string
+	OrgAuditorUAAUsers     []string
+	OrgBillingMgrLDAPUsers []string
+	OrgMgrLDAPUsers        []string
+	OrgAuditorLDAPUsers    []string
 }
 
 //SpaceConfig Describes attributes for a space
@@ -124,16 +128,29 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) (err error) 
 }
 
 //CreateConfigIfNotExists Create org and space config directory. If directory already exists, it is left as is
-func (m *DefaultManager) CreateConfigIfNotExists() error {
+func (m *DefaultManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	var err error
-	if !utils.NewDefaultManager().DoesFileOrDirectoryExists(m.ConfigDir) {
+	utilsManager := utils.NewDefaultManager()
+	if !utilsManager.DoesFileOrDirectoryExists(m.ConfigDir) {
 		if err = os.MkdirAll(m.ConfigDir, 0755); err == nil {
-			utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: "ldap"})
-			utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &organization.InputOrgs{})
-			utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", m.ConfigDir), &space.ConfigSpaceDefaults{})
+			utilsManager.WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin})
+			utilsManager.WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &organization.InputOrgs{})
+			utilsManager.WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", m.ConfigDir), &space.ConfigSpaceDefaults{})
 		}
 	} else {
 		fmt.Println(m.ConfigDir, "already exists, skipping creation")
+	}
+	return err
+}
+
+//DeleteConfigIfExists Deletes config directory if it exists
+func (m *DefaultManager) DeleteConfigIfExists() error {
+	var err error
+	utilsManager := utils.NewDefaultManager()
+	if utilsManager.DoesFileOrDirectoryExists(m.ConfigDir) {
+		err = os.Remove(m.ConfigDir)
+	} else {
+		fmt.Println(m.ConfigDir, "doesn't exists, nothing to delete")
 	}
 	return err
 }
