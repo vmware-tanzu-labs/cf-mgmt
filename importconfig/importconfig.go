@@ -8,12 +8,15 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
-	"github.com/pivotalservices/cf-mgmt/uaa"
+	"github.com/pivotalservices/cf-mgmt/uaac"
 )
+
+const LDAP string = "ldap"
+const SAML string = "saml"
 
 func NewManager(
 	configDir string,
-	uaacMgr uaa.Manager,
+	uaacMgr uaac.Manager,
 	orgMgr organization.Manager,
 	spaceMgr space.Manager,
 	cloudController cloudcontroller.Manager) Manager {
@@ -30,30 +33,89 @@ func (im *DefaultImportManager) ImportConfig(excludedOrgs map[string]string) err
 	var err error
 	var orgs []*cloudcontroller.Org
 	var configMgr config.Manager
+	var userIDToUserMap map[string]uaac.User
+
+	//Get all the users from the foundation
+	userIDToUserMap, err = im.UAACMgr.UsersByID()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to retrieve users. Error : %s", err)
+		return err
+	}
+	//Get all the orgs
 	orgs, err = im.CloudController.ListOrgs()
-	if err != nil && len(orgs) > 0 {
-		configMgr = config.NewManager(im.ConfigDir)
-		err = configMgr.CreateConfigIfNotExists()
-		if err != nil {
-			for _, org := range orgs {
-				if _, ok := excludedOrgs[org.Entity.Name]; !ok {
-					var orgUsers map[string]string
-					orgUsers, err = im.CloudController.GetCFUsers(org.MetaData.GUID, organization.ORGS, organization.ROLE_ORG_AUDITORS)
-					if err != nil && len(orgUsers) > 0 {
-
-					} else {
-						fmt.Fprintf(os.Stdout, "No org auditors found for org : %s", org.Entity.Name)
-					}
-					orgConfig := &config.OrgConfig{OrgName: org.Entity.Name}
-					configMgr.AddOrgToConfig(orgConfig)
-				}
-			}
-		} else {
-			fmt.Fprintf(os.Stdout, "Unable to create config directory : %s", im.ConfigDir)
-			return err
-		}
-
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to retrieve orgs. Error : %s", err)
+		return err
 	}
 
+	configMgr = config.NewManager(im.ConfigDir)
+
+	//Delete existing config directory
+	configMgr.DeleteConfigIfExists()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to delete config directory %s . Error:  %s", im.ConfigDir, err)
+		return err
+	}
+
+	//Create a brand new directory
+	err = configMgr.CreateConfigIfNotExists("ldap")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to create config directory %s. Error : %s", im.ConfigDir, err)
+		return err
+	}
+
+	for _, org := range orgs {
+		if _, ok := excludedOrgs[org.Entity.Name]; !ok {
+			orgConfig := &config.OrgConfig{OrgName: org.Entity.Name}
+			//Get Org manager users for this org
+			orgMgrs := getCFUsers(im.CloudController, org.MetaData.GUID, organization.ORGS, organization.ROLE_ORG_MANAGERS)
+			for _, orgMgrUser := range orgMgrs {
+				if usr, ok := userIDToUserMap[orgMgrUser]; ok {
+					if usr.Origin == LDAP || usr.Origin == SAML {
+						orgConfig.OrgMgrLDAPUsers = append(orgConfig.OrgMgrLDAPUsers, usr.UserName)
+					} else {
+						orgConfig.OrgMgrUAAUsers = append(orgConfig.OrgMgrUAAUsers, usr.UserName)
+					}
+				}
+			}
+
+			orgBillingMgrs := getCFUsers(im.CloudController, org.MetaData.GUID, organization.ORGS, organization.ROLE_ORG_BILLING_MANAGERS)
+			for _, orgBillingMgrUser := range orgBillingMgrs {
+				if usr, ok := userIDToUserMap[orgBillingMgrUser]; ok {
+					if usr.Origin == LDAP || usr.Origin == SAML {
+						orgConfig.OrgBillingMgrLDAPUsers = append(orgConfig.OrgBillingMgrLDAPUsers, usr.UserName)
+					} else {
+						orgConfig.OrgBillingMgrUAAUsers = append(orgConfig.OrgBillingMgrUAAUsers, usr.UserName)
+					}
+				}
+			}
+
+			orgAuditors := getCFUsers(im.CloudController, org.MetaData.GUID, organization.ORGS, organization.ROLE_ORG_AUDITORS)
+			for _, orgAuditorUser := range orgAuditors {
+				if usr, ok := userIDToUserMap[orgAuditorUser]; ok {
+					if usr.Origin == LDAP || usr.Origin == SAML {
+						orgConfig.OrgAuditorLDAPUsers = append(orgConfig.OrgAuditorLDAPUsers, usr.UserName)
+					} else {
+						orgConfig.OrgAuditorUAAUsers = append(orgConfig.OrgAuditorUAAUsers, usr.UserName)
+					}
+				}
+			}
+			configMgr.AddOrgToConfig(orgConfig)
+		} else {
+			fmt.Fprintf(os.Stdout, "Skipping org : %s as it is ignored from import", org.Entity.Name)
+		}
+	}
 	return nil
+}
+
+func getCFUsers(cc cloudcontroller.Manager, entityGUID, entityType, role string) []string {
+	userIDMap, err := cc.GetCFUsers(entityGUID, entityType, role)
+	if err != nil && len(userIDMap) > 0 {
+		orgUsers := make([]string, len(userIDMap))
+		for userID := range userIDMap {
+			orgUsers = append(orgUsers, userID)
+		}
+		return orgUsers
+	}
+	return make([]string, 0)
 }
