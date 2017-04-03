@@ -95,7 +95,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 			}
 		}
 	} else {
-		lo.G.Info(fmt.Sprintf("not removing users add remove-users: true to spaceConfig for %s", updateUsersInput.SpaceName))
+		lo.G.Info(fmt.Sprintf("not removing users add enable-remove-users: true to spaceConfig for %s", updateUsersInput.SpaceName))
 	}
 	return nil
 }

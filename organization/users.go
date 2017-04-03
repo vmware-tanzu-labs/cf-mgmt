@@ -94,7 +94,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			}
 		}
 	} else {
-		lo.G.Info(fmt.Sprintf("not removing users add remove-users: true to orgConfig for %s", updateUsersInput.OrgName))
+		lo.G.Info(fmt.Sprintf("not removing users add enable-remove-users: true to orgConfig for %s", updateUsersInput.OrgName))
 	}
 	return nil
 }
