@@ -114,14 +114,19 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 	if _, userExists := uaacUsers[userID]; !userExists {
 		lo.G.Info("User", userID, "doesn't exist in cloud foundry, so creating user")
 		if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
+			lo.G.Info("Unable to create user", userID)
+		} else {
+			uaacUsers[userID] = userID
+			if err := m.addUserToOrgAndRole(userID, orgGUID, role, orgName); err != nil {
+				lo.G.Error(err)
+				return err
+			}
+		}
+	} else {
+		if err := m.addUserToOrgAndRole(userID, orgGUID, role, orgName); err != nil {
 			lo.G.Error(err)
 			return err
 		}
-		uaacUsers[userID] = userID
-	}
-	if err := m.addUserToOrgAndRole(userID, orgGUID, role, orgName); err != nil {
-		lo.G.Error(err)
-		return err
 	}
 
 	return nil

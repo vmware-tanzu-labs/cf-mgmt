@@ -109,7 +109,7 @@ var _ = Describe("given uaac manager", func() {
 				),
 			)
 			err := manager.CreateExternalUser("", "", "", "ldap")
-			Ω(err).Should(Not(HaveOccurred()))
+			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(0))
 		})
 	})
