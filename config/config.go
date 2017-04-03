@@ -70,7 +70,7 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) (err error) {
 		if orgList.Contains(orgName) {
 			lo.G.Infof("%s already added to config", orgName)
 		} else {
-			lo.G.Infof("Adding org %s ", orgName)
+			lo.G.Infof("Adding org: %s ", orgName)
 			orgList.Orgs = append(orgList.Orgs, orgName)
 			if err = utils.NewDefaultManager().WriteFile(orgFileName, orgList); err == nil {
 				if err = os.MkdirAll(fmt.Sprintf("%s/%s", m.ConfigDir, orgName), 0755); err == nil {
@@ -109,7 +109,7 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) (err error) 
 		if spaceList.Contains(spaceName) {
 			lo.G.Infof("%s already added to config", spaceName)
 		} else {
-			lo.G.Infof("Adding org %s ", spaceName)
+			lo.G.Infof("Adding space: %s ", spaceName)
 			spaceList.Spaces = append(spaceList.Spaces, spaceName)
 			if err = utils.NewDefaultManager().WriteFile(spaceFileName, spaceList); err == nil {
 				if err = os.MkdirAll(fmt.Sprintf("%s/%s/%s", m.ConfigDir, orgName, spaceName), 0755); err == nil {

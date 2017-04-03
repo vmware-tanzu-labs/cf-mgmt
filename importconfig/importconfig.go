@@ -26,7 +26,8 @@ func NewManager(
 }
 
 //ImportConfig Imports org and space configuration from an existing CF instance
-func (im *DefaultImportManager) ImportConfig(excludedOrgs map[string]string) error {
+//Entries part of excludedOrgs and excludedSpaces are not included in the import
+func (im *DefaultImportManager) ImportConfig(excludedOrgs map[string]string, excludedSpaces map[string]string) error {
 	var err error
 	var orgs []*cloudcontroller.Org
 	var configMgr config.Manager
@@ -54,33 +55,40 @@ func (im *DefaultImportManager) ImportConfig(excludedOrgs map[string]string) err
 	}
 	//Create a brand new directory
 	lo.G.Info("Trying to create new config folder")
-	err = configMgr.CreateConfigIfNotExists("ldap")
+
+	var uaaUserOrigin string
+	for _, usr := range userIDToUserMap {
+		if usr.Origin != "" {
+			uaaUserOrigin = usr.Origin
+			break
+		}
+	}
+	lo.G.Infof("Using UAA user origin: %s", uaaUserOrigin)
+
+	err = configMgr.CreateConfigIfNotExists(uaaUserOrigin)
+
 	if err != nil {
 		return err
 	}
 
 	for _, org := range orgs {
 		if _, ok := excludedOrgs[org.Entity.Name]; !ok {
-
 			lo.G.Infof("Processing org: %s ", org.Entity.Name)
-
 			orgConfig := &config.OrgConfig{OrgName: org.Entity.Name}
-
 			addOrgUsers(orgConfig, im.CloudController, userIDToUserMap, org.MetaData.GUID)
-
 			configMgr.AddOrgToConfig(orgConfig)
 
 			spaces, _ = im.CloudController.ListSpaces(org.MetaData.GUID)
 
-			for _, orgSpace := range spaces {
-
-				lo.G.Infof("Processing space: %s", orgSpace.Entity.Name)
-
-				spaceConfig := &config.SpaceConfig{OrgName: org.Entity.Name, SpaceName: orgSpace.Entity.Name}
-
-				addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, orgSpace.MetaData.GUID)
-
-				configMgr.AddSpaceToConfig(spaceConfig)
+			for _, space := range spaces {
+				if _, ok := excludedSpaces[space.Entity.Name]; !ok {
+					lo.G.Infof("Processing space: %s", space.Entity.Name)
+					spaceConfig := &config.SpaceConfig{OrgName: org.Entity.Name, SpaceName: space.Entity.Name}
+					addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, space.MetaData.GUID)
+					configMgr.AddSpaceToConfig(spaceConfig)
+				} else {
+					lo.G.Infof("Skipping space: %s as it is ignored from import", space.Entity.Name)
+				}
 			}
 		} else {
 			lo.G.Infof("Skipping org: %s as it is ignored from import", org.Entity.Name)

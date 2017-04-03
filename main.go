@@ -157,12 +157,17 @@ func CreateImportConfigCommand(eh *ErrorHandler) (command cli.Command) {
 	flags := defaultFlags()
 	flag := cli.StringSliceFlag{
 		Name:  "excluded-org",
-		Usage: "Orgs to be excluded from import. Repeat the flag for multiple orgs",
+		Usage: "Org to be excluded from import. Repeat the flag to specify multiple orgs",
+	}
+	flags = append(flags, flag)
+	flag = cli.StringSliceFlag{
+		Name:  "excluded-space",
+		Usage: "Space to be excluded from import. Repeat the flag to specify multiple spaces",
 	}
 	flags = append(flags, flag)
 	command = cli.Command{
 		Name:        "import-config",
-		Usage:       "import-config",
+		Usage:       "Imports org, space and user configuration from an existing CF instance. Try import-config --help for more options",
 		Description: "Imports org and space configurations from an existing Cloud Foundry instance. [Warning: This operation will delete existing config folder]",
 		Action:      runImportConfig,
 		Flags:       flags,
@@ -525,14 +530,23 @@ func runImportConfig(c *cli.Context) error {
 	cfMgmt, err = InitializeManager(c)
 	if cfMgmt != nil {
 		importManager := importconfig.NewManager(cfMgmt.ConfigDirectory, cfMgmt.UAACManager, cfMgmt.OrgManager, cfMgmt.SpaceManager, cfMgmt.CloudController)
-		ignoredOrgsMap := make(map[string]string)
-		ignoredOrgsMap["system"] = "system"
-		ignoredOrgs := c.StringSlice(getFlag("excluded-org"))
-		for _, org := range ignoredOrgs {
-			ignoredOrgsMap[org] = org
+		excludedOrgs := make(map[string]string)
+		excludedOrgs["system"] = "system"
+		orgsExcludedByUser := c.StringSlice(getFlag("excluded-org"))
+		for _, org := range orgsExcludedByUser {
+			excludedOrgs[org] = org
 		}
-		lo.G.Infof("Orgs ignored from import:  %v ", ignoredOrgsMap)
-		err = importManager.ImportConfig(ignoredOrgsMap)
+		excludedSpaces := make(map[string]string)
+		spacesExcludedByUser := c.StringSlice(getFlag("excluded-space"))
+		for _, space := range spacesExcludedByUser {
+			excludedSpaces[space] = space
+		}
+
+		lo.G.Infof("Orgs excluded from import:  %v ", excludedOrgs)
+
+		lo.G.Infof("Spaces excluded from import:  %v ", excludedSpaces)
+
+		err = importManager.ImportConfig(excludedOrgs, excludedSpaces)
 		if err != nil {
 			lo.G.Errorf("Import failed with error:  %s", err)
 		}

@@ -51,7 +51,8 @@ func (m *DefaultUAACManager) UsersByID() (userIDMap map[string]User, err error) 
 	if err != nil {
 		return nil, err
 	}
-	for _, user := range userList.Users {
+	sortedUserList := NewUserListSorter(userList, DirAsc).Sort()
+	for _, user := range sortedUserList.Users {
 		userIDMap[user.UserName] = user
 	}
 	return userIDMap, nil
