@@ -85,7 +85,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 	}
 	if updateUsersInput.RemoveUsers == true {
 		for orgUser, orgUserGUID := range orgUsers {
-			lo.G.Info(fmt.Sprintf("removing %s from org %s", orgUser, updateUsersInput.OrgName))
+			lo.G.Info(fmt.Sprintf("removing user: %s from org: %s and role: %s", orgUser, updateUsersInput.OrgName, updateUsersInput.Role))
 			err = m.cloudController.RemoveCFUser(updateUsersInput.OrgGUID, ORGS, orgUserGUID, updateUsersInput.Role)
 			if err != nil {
 				lo.G.Error(fmt.Sprintf("Unable to remove user : %s from org %s with role %s", orgUser, updateUsersInput.OrgGUID, updateUsersInput.Role))
@@ -94,7 +94,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			}
 		}
 	} else {
-		lo.G.Info(fmt.Sprintf("not removing users add enable-remove-users: true to orgConfig for %s", updateUsersInput.OrgName))
+		lo.G.Info(fmt.Sprintf("not removing users add enable-remove-users: true to orgConfig for org: %s", updateUsersInput.OrgName))
 	}
 	return nil
 }
@@ -130,7 +130,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 func (m *UserManager) getLdapUsers(config *ldap.Config, groupName string, userList []string) ([]ldap.User, error) {
 	users := []ldap.User{}
 	if groupName != "" {
-		lo.G.Info("Finding LDAP user for group : ", groupName)
+		lo.G.Info("Finding LDAP user for group:", groupName)
 		if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
 			users = append(users, groupUsers...)
 		} else {
@@ -152,12 +152,11 @@ func (m *UserManager) getLdapUsers(config *ldap.Config, groupName string, userLi
 }
 
 func (m *UserManager) addUserToOrgAndRole(userID, orgGUID, role, orgName string) error {
-	lo.G.Info(fmt.Sprintf("Adding user to org :  %s ", orgName))
 	if err := m.cloudController.AddUserToOrg(userID, orgGUID); err != nil {
 		lo.G.Error(err)
 		return err
 	}
-	lo.G.Info(fmt.Sprintf("Adding user to org: %s  with role: %s", orgName, role))
+	lo.G.Info(fmt.Sprintf("Adding user: %s to org: %s with role: %s", userID, orgName, role))
 	if err := m.cloudController.AddUserToOrgRole(userID, role, orgGUID); err != nil {
 		lo.G.Error(err)
 		return err

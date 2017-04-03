@@ -86,7 +86,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 	}
 	if updateUsersInput.RemoveUsers == true {
 		for spaceUser, spaceUserGUID := range spaceUsers {
-			lo.G.Info(fmt.Sprintf("removing %s from space %s", spaceUser, updateUsersInput.SpaceName))
+			lo.G.Info(fmt.Sprintf("removing user: %s from space: %s and role: %s", spaceUser, updateUsersInput.SpaceName, updateUsersInput.Role))
 			err = m.cloudController.RemoveCFUser(updateUsersInput.SpaceGUID, SPACES, spaceUserGUID, updateUsersInput.Role)
 			if err != nil {
 				lo.G.Error(fmt.Sprintf("Unable to remove user : %s from space %s role in space : %s", spaceUser, updateUsersInput.Role, updateUsersInput.SpaceName))
@@ -95,7 +95,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 			}
 		}
 	} else {
-		lo.G.Info(fmt.Sprintf("not removing users add enable-remove-users: true to spaceConfig for %s", updateUsersInput.SpaceName))
+		lo.G.Info(fmt.Sprintf("not removing users add enable-remove-users: true to spaceConfig for org/space: %s/%s", updateUsersInput.OrgName, updateUsersInput.SpaceName))
 	}
 	return nil
 }
@@ -128,7 +128,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, spaceGUID, orgGUID str
 func (m *UserManager) getLdapUsers(config *ldap.Config, groupName string, userList []string) ([]ldap.User, error) {
 	users := []ldap.User{}
 	if groupName != "" {
-		lo.G.Info("Finding LDAP user for group : ", groupName)
+		lo.G.Info("Finding LDAP user for group:", groupName)
 		if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
 			users = append(users, groupUsers...)
 		} else {
@@ -150,12 +150,11 @@ func (m *UserManager) getLdapUsers(config *ldap.Config, groupName string, userLi
 }
 
 func (m *UserManager) addUserToOrgAndRole(userID, orgGUID, spaceGUID, role, orgName, spaceName string) error {
-	lo.G.Info(fmt.Sprintf("Adding user to org :  %s and space: %s ", orgName, spaceName))
 	if err := m.cloudController.AddUserToOrg(userID, orgGUID); err != nil {
 		lo.G.Error(err)
 		return err
 	}
-	lo.G.Info(fmt.Sprintf("Adding user to org/space: %s/%s  with role: %s", orgName, spaceName, role))
+	lo.G.Info(fmt.Sprintf("Adding user: %s to org/space: %s/%s with role: %s", userID, orgName, spaceName, role))
 	if err := m.cloudController.AddUserToSpaceRole(userID, role, spaceGUID); err != nil {
 		lo.G.Error(err)
 		return err
