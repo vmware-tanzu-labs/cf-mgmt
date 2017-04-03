@@ -7,6 +7,9 @@ import (
 	"github.com/pivotalservices/cf-mgmt/uaac"
 )
 
+const LDAP string = "ldap"
+const SAML string = "saml"
+
 //Manager -
 type Manager interface {
 	ImportConfig(excludedOrgs map[string]string) error

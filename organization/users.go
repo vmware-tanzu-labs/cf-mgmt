@@ -83,7 +83,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			delete(orgUsers, userID)
 		}
 	}
-	if updateUsersInput.RemoveUsers == true {
+	if updateUsersInput.RemoveUsers {
 		for orgUser, orgUserGUID := range orgUsers {
 			lo.G.Info(fmt.Sprintf("removing %s from org %s", orgUser, updateUsersInput.OrgName))
 			err = m.cloudController.RemoveCFUser(updateUsersInput.OrgGUID, ORGS, orgUserGUID, updateUsersInput.Role)

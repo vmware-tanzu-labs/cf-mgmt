@@ -208,7 +208,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			OrgGUID:       org.MetaData.GUID,
 			Role:          "billing_managers",
 			LdapGroupName: input.GetBillingManagerGroup(),
-			LdapUsers:     input.BillingManager.LdapUser,
+			LdapUsers:     input.BillingManager.LdapUsers,
 			Users:         input.BillingManager.Users,
 			RemoveUsers:   input.RemoveUsers,
 		})
@@ -223,7 +223,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			OrgGUID:       org.MetaData.GUID,
 			Role:          "auditors",
 			LdapGroupName: input.GetAuditorGroup(),
-			LdapUsers:     input.Auditor.LdapUser,
+			LdapUsers:     input.Auditor.LdapUsers,
 			Users:         input.Auditor.Users,
 			RemoveUsers:   input.RemoveUsers,
 		})
@@ -238,7 +238,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			OrgGUID:       org.MetaData.GUID,
 			Role:          "managers",
 			LdapGroupName: input.GetManagerGroup(),
-			LdapUsers:     input.Manager.LdapUser,
+			LdapUsers:     input.Manager.LdapUsers,
 			Users:         input.Manager.Users,
 			RemoveUsers:   input.RemoveUsers,
 		})
@@ -250,7 +250,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 }
 
 func (m *DefaultOrgManager) UpdateBillingManagers(config *ldap.Config, org *cloudcontroller.Org, input *InputUpdateOrgs, uaacUsers map[string]string) error {
-	if users, err := m.getLdapUsers(config, input.GetBillingManagerGroup(), input.BillingManager.LdapUser); err == nil {
+	if users, err := m.getLdapUsers(config, input.GetBillingManagerGroup(), input.BillingManager.LdapUsers); err == nil {
 		if err = m.updateLdapUsers(config, org, "billing_managers", uaacUsers, users); err != nil {
 			return err
 		}

@@ -93,7 +93,7 @@ func (i *InputUpdateSpaces) GetAuditorGroup() string {
 }
 
 type UserMgmt struct {
-	LdapUser  []string `yaml:"ldap_users"`
+	LdapUsers []string `yaml:"ldap_users"`
 	Users     []string `yaml:"users"`
 	LdapGroup string   `yaml:"ldap_group"`
 }

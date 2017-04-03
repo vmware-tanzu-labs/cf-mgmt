@@ -59,14 +59,14 @@ func (m *DefaultUAACManager) UsersByID() (userIDMap map[string]User, err error) 
 
 //TODO Anwar - Make this API use pagination
 func getUsers(host string, uaacToken string) (userList *UserList, err error) {
-	lo.G.Info("Getting UAAC users from PCF")
+	lo.G.Info("Getting users from Cloud Foundry")
 	url := fmt.Sprintf("%s/Users?count=5000", host)
 	userList = new(UserList)
 	if err := http.NewManager().Get(url, uaacToken, userList); err != nil {
 		fmt.Println("Error retreiving users %s", err)
 		return nil, err
 	}
-	lo.G.Info(fmt.Printf("Found %d users in the system : ", len(userList.Users)))
+	lo.G.Infof("Found %d users in the CF instance", len(userList.Users))
 	return userList, nil
 }
 

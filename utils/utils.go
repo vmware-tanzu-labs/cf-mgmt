@@ -29,7 +29,7 @@ func (m *DefaultManager) walkDirectories(path string, info os.FileInfo, e error)
 	return e
 }
 
-//DoesFileExist - checks if file exists
+//DoesFileOrDirectoryExists - checks if file exists
 func (m *DefaultManager) DoesFileOrDirectoryExists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {

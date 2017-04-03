@@ -112,14 +112,14 @@ func (m *DefaultSpaceManager) CreateQuotas(configDir string) error {
 							if err = m.CloudController.UpdateSpaceQuota(space.Entity.OrgGUID, quotaGUID,
 								quotaName, input.MemoryLimit, input.InstanceMemoryLimit, input.TotalRoutes, input.TotalServices, input.PaidServicePlansAllowed); err == nil {
 								lo.G.Info("Assigning", quotaName, "to", space.Entity.Name)
-								err = m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, quotaGUID)
+								m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, quotaGUID)
 							}
 						} else {
 							lo.G.Info("Creating quota", quotaName)
 							if targetQuotaGUID, err = m.CloudController.CreateSpaceQuota(space.Entity.OrgGUID,
 								quotaName, input.MemoryLimit, input.InstanceMemoryLimit, input.TotalRoutes, input.TotalServices, input.PaidServicePlansAllowed); err == nil {
 								lo.G.Info("Assigning", quotaName, "to", space.Entity.Name)
-								err = m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, targetQuotaGUID)
+								m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, targetQuotaGUID)
 							}
 						}
 					}
@@ -197,7 +197,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 			OrgGUID:       space.Entity.OrgGUID,
 			Role:          "developers",
 			LdapGroupName: input.GetDeveloperGroup(),
-			LdapUsers:     input.Developer.LdapUser,
+			LdapUsers:     input.Developer.LdapUsers,
 			Users:         input.Developer.Users,
 			RemoveUsers:   input.RemoveUsers,
 		}); err != nil {
@@ -212,7 +212,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 				OrgName:       input.Org,
 				Role:          "managers",
 				LdapGroupName: input.GetManagerGroup(),
-				LdapUsers:     input.Manager.LdapUser,
+				LdapUsers:     input.Manager.LdapUsers,
 				Users:         input.Manager.Users,
 				RemoveUsers:   input.RemoveUsers,
 			}); err != nil {
@@ -226,7 +226,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 				OrgName:       input.Org,
 				Role:          "auditors",
 				LdapGroupName: input.GetAuditorGroup(),
-				LdapUsers:     input.Auditor.LdapUser,
+				LdapUsers:     input.Auditor.LdapUsers,
 				Users:         input.Auditor.Users,
 				RemoveUsers:   input.RemoveUsers,
 			}); err != nil {

@@ -245,7 +245,7 @@ func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[st
 		users.Users = append(users.Users, usersTemp.Users...)
 		nextURL = usersTemp.NextURL
 	}
-	lo.G.Debug(fmt.Sprintf("Total %d users with %s role returned for %s %s", len(users.Users), role, entityType, entityGUID))
+	lo.G.Debugf("Total %d users with %s role returned for %s %s", len(users.Users), role, entityType, entityGUID)
 	for _, user := range users.Users {
 		userMap[user.Entity.UserName] = user.MetaData.GUID
 	}

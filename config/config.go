@@ -8,6 +8,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/utils"
+	"github.com/xchapter7x/lo"
 )
 
 //Manager -
@@ -39,11 +40,17 @@ type OrgConfig struct {
 
 //SpaceConfig Describes attributes for a space
 type SpaceConfig struct {
-	OrgName         string
-	SpaceName       string
-	SpaceDevGrp     string
-	SpaceMgrGrp     string
-	SpaceAuditorGrp string
+	OrgName               string
+	SpaceName             string
+	SpaceDevLDAPGrp       string
+	SpaceMgrLDAPGrp       string
+	SpaceAuditorLDAPGrp   string
+	SpaceDevUAAUsers      []string
+	SpaceMgrUAAUsers      []string
+	SpaceAuditorUAAUsers  []string
+	SpaceDevLDAPUsers     []string
+	SpaceMgrLDAPUsers     []string
+	SpaceAuditorLDAPUsers []string
 }
 
 //NewManager -
@@ -61,17 +68,17 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) (err error) {
 
 	if err = utils.NewDefaultManager().LoadFile(orgFileName, orgList); err == nil {
 		if orgList.Contains(orgName) {
-			fmt.Println(orgName, "already added to config")
+			lo.G.Infof("%s already added to config", orgName)
 		} else {
-			fmt.Println("Adding org", orgName)
+			lo.G.Infof("Adding org %s ", orgName)
 			orgList.Orgs = append(orgList.Orgs, orgName)
 			if err = utils.NewDefaultManager().WriteFile(orgFileName, orgList); err == nil {
 				if err = os.MkdirAll(fmt.Sprintf("%s/%s", m.ConfigDir, orgName), 0755); err == nil {
 					orgConfigYml := &organization.InputUpdateOrgs{
 						Org:                     orgName,
-						BillingManager:          organization.UserMgmt{LdapGroup: orgConfig.OrgBillingMgrLDAPGrp, Users: orgConfig.OrgBillingMgrUAAUsers},
-						Manager:                 organization.UserMgmt{LdapGroup: orgConfig.OrgMgrLDAPGrp, Users: orgConfig.OrgMgrUAAUsers},
-						Auditor:                 organization.UserMgmt{LdapGroup: orgConfig.OrgAuditorLDAPGrp, Users: orgConfig.OrgAuditorUAAUsers},
+						BillingManager:          organization.UserMgmt{LdapGroup: orgConfig.OrgBillingMgrLDAPGrp, Users: orgConfig.OrgBillingMgrUAAUsers, LdapUsers: orgConfig.OrgBillingMgrLDAPUsers},
+						Manager:                 organization.UserMgmt{LdapGroup: orgConfig.OrgMgrLDAPGrp, Users: orgConfig.OrgMgrUAAUsers, LdapUsers: orgConfig.OrgMgrLDAPUsers},
+						Auditor:                 organization.UserMgmt{LdapGroup: orgConfig.OrgAuditorLDAPGrp, Users: orgConfig.OrgAuditorUAAUsers, LdapUsers: orgConfig.OrgAuditorLDAPUsers},
 						EnableOrgQuota:          false,
 						MemoryLimit:             10240,
 						InstanceMemoryLimit:     -1,
@@ -100,18 +107,18 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) (err error) 
 	spaceFileName := fmt.Sprintf("%s/%s/spaces.yml", m.ConfigDir, orgName)
 	if err = utils.NewDefaultManager().LoadFile(spaceFileName, spaceList); err == nil {
 		if spaceList.Contains(spaceName) {
-			fmt.Println(spaceName, "already added to config")
+			lo.G.Infof("%s already added to config", spaceName)
 		} else {
-			fmt.Println("Adding space", spaceName)
+			lo.G.Infof("Adding org %s ", spaceName)
 			spaceList.Spaces = append(spaceList.Spaces, spaceName)
 			if err = utils.NewDefaultManager().WriteFile(spaceFileName, spaceList); err == nil {
 				if err = os.MkdirAll(fmt.Sprintf("%s/%s/%s", m.ConfigDir, orgName, spaceName), 0755); err == nil {
 					spaceConfigYml := &space.InputUpdateSpaces{
 						Org:                     orgName,
 						Space:                   spaceName,
-						Developer:               space.UserMgmt{LdapGroup: spaceConfig.SpaceDevGrp},
-						Manager:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceMgrGrp},
-						Auditor:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceAuditorGrp},
+						Developer:               space.UserMgmt{LdapGroup: spaceConfig.SpaceDevLDAPGrp, Users: spaceConfig.SpaceDevUAAUsers, LdapUsers: spaceConfig.SpaceDevLDAPUsers},
+						Manager:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceMgrLDAPGrp, Users: spaceConfig.SpaceMgrUAAUsers, LdapUsers: spaceConfig.SpaceMgrLDAPUsers},
+						Auditor:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceAuditorLDAPGrp, Users: spaceConfig.SpaceAuditorUAAUsers, LdapUsers: spaceConfig.SpaceAuditorLDAPUsers},
 						EnableSpaceQuota:        false,
 						MemoryLimit:             10240,
 						InstanceMemoryLimit:     -1,
@@ -135,12 +142,15 @@ func (m *DefaultManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	utilsManager := utils.NewDefaultManager()
 	if !utilsManager.DoesFileOrDirectoryExists(m.ConfigDir) {
 		if err = os.MkdirAll(m.ConfigDir, 0755); err == nil {
+			lo.G.Infof("Config directory %s created", m.ConfigDir)
 			utilsManager.WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin})
 			utilsManager.WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &organization.InputOrgs{})
 			utilsManager.WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", m.ConfigDir), &space.ConfigSpaceDefaults{})
+		} else {
+			lo.G.Errorf("Error creating config directory %s. Error : %s", m.ConfigDir, err)
 		}
 	} else {
-		fmt.Println(m.ConfigDir, "already exists, skipping creation")
+		lo.G.Infof("Config directory %s already exists, skipping creation", m.ConfigDir)
 	}
 	return err
 }
@@ -150,9 +160,14 @@ func (m *DefaultManager) DeleteConfigIfExists() error {
 	var err error
 	utilsManager := utils.NewDefaultManager()
 	if utilsManager.DoesFileOrDirectoryExists(m.ConfigDir) {
-		err = os.Remove(m.ConfigDir)
+		err = os.RemoveAll(m.ConfigDir)
+		if err != nil {
+			lo.G.Errorf("Error deleting config folder. Error : %s", err)
+			return err
+		}
+		lo.G.Info("Config directory deleted")
 	} else {
-		fmt.Println(m.ConfigDir, "doesn't exists, nothing to delete")
+		lo.G.Infof("%s doesn't exists, nothing to delete", m.ConfigDir)
 	}
 	return err
 }

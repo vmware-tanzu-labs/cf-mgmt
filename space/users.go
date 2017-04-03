@@ -10,7 +10,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-// UpdateSpaceUsers - interface type encapsulating Update space users behavior
+// UserMgr - interface type encapsulating Update space users behavior
 type UserMgr interface {
 	UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error
 }
@@ -35,13 +35,13 @@ type UserManager struct {
 
 // UpdateSpaceUserInput
 type UpdateUsersInput struct {
-	SpaceName        string
 	SpaceGUID        string
-	OrgName          string
 	OrgGUID          string
 	Role             string
 	LdapGroupName    string
 	LdapUsers, Users []string
+	SpaceName        string
+	OrgName          string
 	RemoveUsers      bool
 }
 
@@ -84,7 +84,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 			delete(spaceUsers, userID)
 		}
 	}
-	if updateUsersInput.RemoveUsers == true {
+	if updateUsersInput.RemoveUsers {
 		for spaceUser, spaceUserGUID := range spaceUsers {
 			lo.G.Info(fmt.Sprintf("removing %s from space %s", spaceUser, updateUsersInput.SpaceName))
 			err = m.cloudController.RemoveCFUser(updateUsersInput.SpaceGUID, SPACES, spaceUserGUID, updateUsersInput.Role)
