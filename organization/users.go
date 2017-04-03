@@ -59,11 +59,12 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			return err
 		}
 		for _, user := range ldapUsers {
-			err = m.updateLdapUser(config, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName, uaacUsers, user)
-			if err != nil {
-				return err
-			}
 			if _, ok := orgUsers[user.UserID]; !ok {
+				err = m.updateLdapUser(config, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName, uaacUsers, user)
+				if err != nil {
+					return err
+				}
+			} else {
 				delete(orgUsers, user.UserID)
 			}
 		}

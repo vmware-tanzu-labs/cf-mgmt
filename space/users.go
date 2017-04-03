@@ -60,11 +60,12 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 			return err
 		}
 		for _, user := range ldapUsers {
-			err = m.updateLdapUser(config, updateUsersInput.SpaceGUID, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName, updateUsersInput.SpaceName, uaacUsers, user)
-			if err != nil {
-				return err
-			}
 			if _, ok := spaceUsers[user.UserID]; !ok {
+				err = m.updateLdapUser(config, updateUsersInput.SpaceGUID, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName, updateUsersInput.SpaceName, uaacUsers, user)
+				if err != nil {
+					return err
+				}
+			} else {
 				delete(spaceUsers, user.UserID)
 			}
 		}
