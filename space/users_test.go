@@ -275,7 +275,7 @@ var _ = Describe("given SpaceManager", func() {
 				SpaceGUID: "my-space-guid",
 				OrgGUID:   "my-org-guid",
 				Role:      "my-role",
-				Users:     []string{"user-1", "user-2"},
+				Users:     []string{"USER-1", "user-2"},
 			}
 
 			mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)

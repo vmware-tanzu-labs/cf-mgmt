@@ -3,6 +3,7 @@ package cloudcontroller
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/http"
 	"github.com/xchapter7x/lo"
@@ -262,7 +263,7 @@ func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[st
 	}
 	lo.G.Debug(fmt.Sprintf("Total %d users with %s role returned for %s %s", len(users.Users), role, entityType, entityGUID))
 	for _, user := range users.Users {
-		userMap[user.Entity.UserName] = user.MetaData.GUID
+		userMap[strings.ToLower(user.Entity.UserName)] = user.MetaData.GUID
 	}
 	return userMap, nil
 }

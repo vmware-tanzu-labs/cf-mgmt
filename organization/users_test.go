@@ -271,7 +271,7 @@ var _ = Describe("given UserManager", func() {
 			updateUsersInput := UpdateUsersInput{
 				OrgGUID: "my-org-guid",
 				Role:    "my-role",
-				Users:   []string{"user-1", "user-2"},
+				Users:   []string{"USER-1", "user-2"},
 			}
 
 			mockCloudController.EXPECT().GetCFUsers("my-org-guid", "organizations", "my-role").Return(orgUsers, nil)

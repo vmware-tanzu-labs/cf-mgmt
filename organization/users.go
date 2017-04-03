@@ -59,21 +59,21 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			return err
 		}
 		for _, user := range ldapUsers {
-			if _, ok := orgUsers[user.UserID]; !ok {
+			if _, ok := orgUsers[strings.ToLower(user.UserID)]; !ok {
 				err = m.updateLdapUser(config, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName, uaacUsers, user)
 				if err != nil {
 					return err
 				}
 			} else {
-				delete(orgUsers, user.UserID)
+				delete(orgUsers, strings.ToLower(user.UserID))
 			}
 		}
 	} else {
 		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	for _, userID := range updateUsersInput.Users {
-		if _, ok := orgUsers[userID]; !ok {
-			if _, userExists := uaacUsers[userID]; !userExists {
+		if _, ok := orgUsers[strings.ToLower(userID)]; !ok {
+			if _, userExists := uaacUsers[strings.ToLower(userID)]; !userExists {
 				return fmt.Errorf("User %s doesn't exist in cloud foundry, so must add internal user first", userID)
 			}
 			if err = m.addUserToOrgAndRole(userID, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName); err != nil {
@@ -81,7 +81,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 				return err
 			}
 		} else {
-			delete(orgUsers, userID)
+			delete(orgUsers, strings.ToLower(userID))
 		}
 	}
 	if updateUsersInput.RemoveUsers == true {
