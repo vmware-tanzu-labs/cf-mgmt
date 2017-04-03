@@ -200,8 +200,6 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 		return err
 	}
 
-	lo.G.Info("User sync for org : ", org.Entity.Name)
-
 	err = m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
 			OrgName:       org.Entity.Name,

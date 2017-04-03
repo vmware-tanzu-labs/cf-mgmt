@@ -59,13 +59,9 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			return err
 		}
 		for _, user := range ldapUsers {
-			if _, ok := orgUsers[strings.ToLower(user.UserID)]; !ok {
-				err = m.updateLdapUser(config, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName, uaacUsers, user)
-				if err != nil {
-					return err
-				}
-			} else {
-				delete(orgUsers, strings.ToLower(user.UserID))
+			err = m.updateLdapUser(config, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName, uaacUsers, user, orgUsers)
+			if err != nil {
+				return err
 			}
 		}
 	} else {
@@ -102,7 +98,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 
 func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 	role string, orgName string, uaacUsers map[string]string,
-	user ldap.User) error {
+	user ldap.User, orgUsers map[string]string) error {
 
 	userID := user.UserID
 	externalID := user.UserDN
@@ -112,24 +108,27 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 	}
 	userID = strings.ToLower(userID)
 
-	if _, userExists := uaacUsers[userID]; !userExists {
-		lo.G.Info("User", userID, "doesn't exist in cloud foundry, so creating user")
-		if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
-			lo.G.Info("Unable to create user", userID)
+	if _, ok := orgUsers[userID]; !ok {
+		if _, userExists := uaacUsers[userID]; !userExists {
+			lo.G.Info("User", userID, "doesn't exist in cloud foundry, so creating user")
+			if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
+				lo.G.Info("Unable to create user", userID)
+			} else {
+				uaacUsers[userID] = userID
+				if err := m.addUserToOrgAndRole(userID, orgGUID, role, orgName); err != nil {
+					lo.G.Error(err)
+					return err
+				}
+			}
 		} else {
-			uaacUsers[userID] = userID
 			if err := m.addUserToOrgAndRole(userID, orgGUID, role, orgName); err != nil {
 				lo.G.Error(err)
 				return err
 			}
 		}
 	} else {
-		if err := m.addUserToOrgAndRole(userID, orgGUID, role, orgName); err != nil {
-			lo.G.Error(err)
-			return err
-		}
+		delete(orgUsers, strings.ToLower(user.UserID))
 	}
-
 	return nil
 }
 
