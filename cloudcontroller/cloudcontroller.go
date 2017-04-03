@@ -23,7 +23,7 @@ func (m *DefaultManager) CreateSpace(spaceName, orgGUID string) error {
 	return err
 }
 
-func (m *DefaultManager) ListSpaces(orgGUID string) ([]Space, error) {
+func (m *DefaultManager) ListSpaces(orgGUID string) ([]*Space, error) {
 	spaceResources := &SpaceResources{}
 	url := fmt.Sprintf("%s/v2/organizations/%s/spaces?inline-relations-depth=1", m.Host, orgGUID)
 	if err := m.HTTP.Get(url, m.Token, spaceResources); err == nil {
@@ -144,6 +144,21 @@ func (m *DefaultManager) CreateOrg(orgName string) error {
 	url := fmt.Sprintf("%s/v2/organizations", m.Host)
 	sendString := fmt.Sprintf(`{"name":"%s"}`, orgName)
 	_, err := m.HTTP.Post(url, m.Token, sendString)
+	return err
+}
+
+func (m *DefaultManager) DeleteOrg(orgName string) error {
+	orgs, err := m.ListOrgs()
+	if err != nil {
+		return err
+	}
+	for _, org := range orgs {
+		if org.Entity.Name == orgName {
+			url := fmt.Sprintf("%s/v2/organizations/%s?recursive=true", m.Host, org.MetaData.GUID)
+			err = m.HTTP.Delete(url, m.Token)
+		}
+	}
+
 	return err
 }
 

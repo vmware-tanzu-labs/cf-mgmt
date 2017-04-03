@@ -89,7 +89,7 @@ var _ = Describe("given SpaceManager", func() {
 	})
 	Context("FindSpace()", func() {
 		It("should return an space", func() {
-			spaces := []cloudcontroller.Space{
+			spaces := []*cloudcontroller.Space{
 				{
 					Entity: cloudcontroller.SpaceEntity{
 						Name: "testSpace",
@@ -105,7 +105,7 @@ var _ = Describe("given SpaceManager", func() {
 			Ω(space.Entity.Name).Should(Equal("testSpace"))
 		})
 		It("should return an error if space not found", func() {
-			spaces := []cloudcontroller.Space{
+			spaces := []*cloudcontroller.Space{
 				{
 					Entity: cloudcontroller.SpaceEntity{
 						Name: "testSpace",
@@ -136,7 +136,7 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("CreateSpaces()", func() {
 		It("should create 2 spaces", func() {
-			spaces := []cloudcontroller.Space{}
+			spaces := []*cloudcontroller.Space{}
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockCloudController.EXPECT().CreateSpace("space1", "testOrgGUID").Return(nil)
@@ -145,7 +145,7 @@ var _ = Describe("given SpaceManager", func() {
 			Ω(err).Should(BeNil())
 		})
 		It("should create 1 space", func() {
-			spaces := []cloudcontroller.Space{
+			spaces := []*cloudcontroller.Space{
 				{
 					Entity: cloudcontroller.SpaceEntity{
 						Name: "space1",
@@ -171,7 +171,7 @@ var _ = Describe("given SpaceManager", func() {
 				Enabled: true,
 				Origin:  "ldap",
 			}
-			spaces := []cloudcontroller.Space{{
+			spaces := []*cloudcontroller.Space{{
 				Entity: cloudcontroller.SpaceEntity{
 					Name:    "space1",
 					OrgGUID: "testOrgGUID",
@@ -183,7 +183,7 @@ var _ = Describe("given SpaceManager", func() {
 			}
 			uaacUsers := make(map[string]string)
 			uaacUsers["cwashburn"] = "cwashburn"
-			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return([]cloudcontroller.Space{}, nil)
+			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return([]*cloudcontroller.Space{}, nil)
 			mockLdap.EXPECT().GetConfig("./fixtures/default_config", "test_pwd").Return(config, nil)
 			mockCloudController.EXPECT().CreateSpace("space1", "testOrgGUID").Return(nil)
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
@@ -233,7 +233,7 @@ var _ = Describe("given SpaceManager", func() {
 		It("should create 1 asg", func() {
 			bytes, e := ioutil.ReadFile("./fixtures/config/test/space1/security-group.json")
 			Ω(e).Should(BeNil())
-			spaces := []cloudcontroller.Space{
+			spaces := []*cloudcontroller.Space{
 				{
 					Entity: cloudcontroller.SpaceEntity{
 						Name: "space1",
@@ -256,7 +256,7 @@ var _ = Describe("given SpaceManager", func() {
 		It("should create update 1 asg", func() {
 			bytes, e := ioutil.ReadFile("./fixtures/config/test/space1/security-group.json")
 			Ω(e).Should(BeNil())
-			spaces := []cloudcontroller.Space{
+			spaces := []*cloudcontroller.Space{
 				{
 					Entity: cloudcontroller.SpaceEntity{
 						Name: "space1",
@@ -280,7 +280,7 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("CreateQuotas()", func() {
 		It("should create 2 quotas", func() {
-			spaces := []cloudcontroller.Space{
+			spaces := []*cloudcontroller.Space{
 				{
 					Entity: cloudcontroller.SpaceEntity{
 						Name:    "space1",
@@ -317,7 +317,7 @@ var _ = Describe("given SpaceManager", func() {
 		})
 
 		It("should update 2 quota", func() {
-			spaces := []cloudcontroller.Space{
+			spaces := []*cloudcontroller.Space{
 				{
 					Entity: cloudcontroller.SpaceEntity{
 						Name:    "space1",
@@ -357,7 +357,7 @@ var _ = Describe("given SpaceManager", func() {
 	})
 
 	Context("UpdateSpaces()", func() {
-		spaces := []cloudcontroller.Space{
+		spaces := []*cloudcontroller.Space{
 			{
 				Entity: cloudcontroller.SpaceEntity{
 					Name:    "space1",
