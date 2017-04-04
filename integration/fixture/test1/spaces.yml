@@ -1,0 +1,4 @@
+org: test1
+spaces:
+- dev
+- prod
