@@ -126,7 +126,7 @@ func (m *DefaultManager) UpdateSpaceQuota(orgGUID, quotaGUID, quotaName string,
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
-func (m *DefaultManager) ListSpaceQuotas(orgGUID string) (map[string]string, error) {
+func (m *DefaultManager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]string, error) {
 	quotas := make(map[string]string)
 	url := fmt.Sprintf("%s/v2/organizations/%s/space_quota_definitions", m.Host, orgGUID)
 	quotaResources := &Quotas{}
@@ -180,7 +180,7 @@ func (m *DefaultManager) AddUserToOrgRole(userName, role, orgGUID string) error 
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
-func (m *DefaultManager) ListQuotas() (map[string]string, error) {
+func (m *DefaultManager) ListAllOrgQuotas() (map[string]string, error) {
 	quotas := make(map[string]string)
 	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
 	quotaResources := &Quotas{}
@@ -256,4 +256,23 @@ func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[st
 func (m *DefaultManager) RemoveCFUser(entityGUID, entityType, userGUID, role string) error {
 	url := fmt.Sprintf("%s/v2/%s/%s/%s/%s", m.Host, entityType, entityGUID, role, userGUID)
 	return m.HTTP.Delete(url, m.Token)
+}
+
+//QuotaDef Returns quota definition for a given Quota
+func (m *DefaultManager) QuotaDef(quotaDefGUID string, entityType string) (*Quota, error) {
+	var apiPath string
+	if "organizations" == entityType {
+		apiPath = "quota_definitions"
+	} else {
+		apiPath = "space_quota_definitions"
+	}
+	url := fmt.Sprintf("%s/v2/%s/%s", m.Host, apiPath, quotaDefGUID)
+	var err error
+	quotaResource := &Quota{}
+	if err = m.HTTP.Get(url, m.Token, quotaResource); err == nil {
+		lo.G.Debugf("Quota returned : %v", quotaResource.Entity)
+		return quotaResource, nil
+	}
+	lo.G.Errorf("Error from quota API call : %v", err)
+	return nil, err
 }

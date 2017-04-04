@@ -56,7 +56,7 @@ func (m *DefaultOrgManager) CreateQuotas(configDir string) error {
 	if orgs, err = m.GetOrgConfigs(configDir); err != nil {
 		return err
 	}
-	if quotas, err = m.CloudController.ListQuotas(); err != nil {
+	if quotas, err = m.CloudController.ListAllOrgQuotas(); err != nil {
 		return err
 	}
 	for _, input := range orgs {

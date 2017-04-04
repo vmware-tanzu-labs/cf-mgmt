@@ -106,7 +106,7 @@ func (m *DefaultSpaceManager) CreateQuotas(configDir string) error {
 			if input.EnableSpaceQuota {
 				if space, err = m.FindSpace(input.Org, input.Space); err == nil {
 					quotaName := space.Entity.Name
-					if quotas, err = m.CloudController.ListSpaceQuotas(space.Entity.OrgGUID); err == nil {
+					if quotas, err = m.CloudController.ListAllSpaceQuotasForOrg(space.Entity.OrgGUID); err == nil {
 						if quotaGUID, ok := quotas[quotaName]; ok {
 							lo.G.Info("Updating quota", quotaName)
 							if err = m.CloudController.UpdateSpaceQuota(space.Entity.OrgGUID, quotaGUID,

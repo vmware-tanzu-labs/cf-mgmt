@@ -425,7 +425,7 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWith(http.StatusOK, string(bytes)),
 				),
 			)
-			spaceQuotas, err := manager.ListSpaceQuotas(orgGUID)
+			spaceQuotas, err := manager.ListAllSpaceQuotasForOrg(orgGUID)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(spaceQuotas).ShouldNot(BeNil())
 			Ω(spaceQuotas).Should(HaveLen(2))
@@ -438,7 +438,7 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			_, err := manager.ListSpaceQuotas(orgGUID)
+			_, err := manager.ListAllSpaceQuotasForOrg(orgGUID)
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -569,7 +569,7 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWith(http.StatusOK, string(bytes)),
 				),
 			)
-			quotas, err := manager.ListQuotas()
+			quotas, err := manager.ListAllOrgQuotas()
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(quotas).ShouldNot(BeNil())
 			Ω(quotas).Should(HaveLen(19))
@@ -582,7 +582,7 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			_, err := manager.ListQuotas()
+			_, err := manager.ListAllOrgQuotas()
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})

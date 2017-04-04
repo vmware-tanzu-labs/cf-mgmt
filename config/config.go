@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
@@ -36,6 +37,7 @@ type OrgConfig struct {
 	OrgBillingMgrLDAPUsers []string
 	OrgMgrLDAPUsers        []string
 	OrgAuditorLDAPUsers    []string
+	OrgQuota               cloudcontroller.QuotaEntity
 }
 
 //SpaceConfig Describes attributes for a space
@@ -51,6 +53,7 @@ type SpaceConfig struct {
 	SpaceDevLDAPUsers     []string
 	SpaceMgrLDAPUsers     []string
 	SpaceAuditorLDAPUsers []string
+	SpaceQuota            cloudcontroller.QuotaEntity
 }
 
 //NewManager -
@@ -65,7 +68,7 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) (err error) {
 	orgList := &organization.InputOrgs{}
 	orgFileName := fmt.Sprintf("%s/orgs.yml", m.ConfigDir)
 	orgName := orgConfig.OrgName
-
+	orgQuota := orgConfig.OrgQuota
 	if err = utils.NewDefaultManager().LoadFile(orgFileName, orgList); err == nil {
 		if orgList.Contains(orgName) {
 			lo.G.Infof("%s already added to config", orgName)
@@ -79,12 +82,12 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) (err error) {
 						BillingManager:          organization.UserMgmt{LdapGroup: orgConfig.OrgBillingMgrLDAPGrp, Users: orgConfig.OrgBillingMgrUAAUsers, LdapUsers: orgConfig.OrgBillingMgrLDAPUsers},
 						Manager:                 organization.UserMgmt{LdapGroup: orgConfig.OrgMgrLDAPGrp, Users: orgConfig.OrgMgrUAAUsers, LdapUsers: orgConfig.OrgMgrLDAPUsers},
 						Auditor:                 organization.UserMgmt{LdapGroup: orgConfig.OrgAuditorLDAPGrp, Users: orgConfig.OrgAuditorUAAUsers, LdapUsers: orgConfig.OrgAuditorLDAPUsers},
-						EnableOrgQuota:          false,
-						MemoryLimit:             10240,
-						InstanceMemoryLimit:     -1,
-						TotalRoutes:             10,
-						TotalServices:           -1,
-						PaidServicePlansAllowed: true,
+						EnableOrgQuota:          orgQuota.IsQuotaEnabled(),
+						MemoryLimit:             orgQuota.GetMemoryLimit(),
+						InstanceMemoryLimit:     orgQuota.GetInstanceMemoryLimit(),
+						TotalRoutes:             orgQuota.GetTotalRoutes(),
+						TotalServices:           orgQuota.GetTotalServices(),
+						PaidServicePlansAllowed: orgQuota.IsPaidServicesAllowed(),
 						RemoveUsers:             true,
 					}
 					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/orgConfig.yml", m.ConfigDir, orgName), orgConfigYml)
@@ -105,6 +108,7 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) (err error) 
 	spaceName := spaceConfig.SpaceName
 	orgName := spaceConfig.OrgName
 	spaceFileName := fmt.Sprintf("%s/%s/spaces.yml", m.ConfigDir, orgName)
+	spaceQuota := spaceConfig.SpaceQuota
 	if err = utils.NewDefaultManager().LoadFile(spaceFileName, spaceList); err == nil {
 		if spaceList.Contains(spaceName) {
 			lo.G.Infof("%s already added to config", spaceName)
@@ -119,12 +123,12 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) (err error) 
 						Developer:               space.UserMgmt{LdapGroup: spaceConfig.SpaceDevLDAPGrp, Users: spaceConfig.SpaceDevUAAUsers, LdapUsers: spaceConfig.SpaceDevLDAPUsers},
 						Manager:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceMgrLDAPGrp, Users: spaceConfig.SpaceMgrUAAUsers, LdapUsers: spaceConfig.SpaceMgrLDAPUsers},
 						Auditor:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceAuditorLDAPGrp, Users: spaceConfig.SpaceAuditorUAAUsers, LdapUsers: spaceConfig.SpaceAuditorLDAPUsers},
-						EnableSpaceQuota:        false,
-						MemoryLimit:             10240,
-						InstanceMemoryLimit:     -1,
-						TotalRoutes:             10,
-						TotalServices:           -1,
-						PaidServicePlansAllowed: true,
+						EnableSpaceQuota:        spaceQuota.IsQuotaEnabled(),
+						MemoryLimit:             spaceQuota.GetMemoryLimit(),
+						InstanceMemoryLimit:     spaceQuota.GetInstanceMemoryLimit(),
+						TotalRoutes:             spaceQuota.GetTotalRoutes(),
+						TotalServices:           spaceQuota.GetTotalServices(),
+						PaidServicePlansAllowed: spaceQuota.IsPaidServicesAllowed(),
 						RemoveUsers:             true,
 					}
 					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.ConfigDir, orgName, spaceName), spaceConfigYml)

@@ -529,7 +529,7 @@ func runImportConfig(c *cli.Context) error {
 	var err error
 	cfMgmt, err = InitializeManager(c)
 	if cfMgmt != nil {
-		importManager := importconfig.NewManager(cfMgmt.ConfigDirectory, cfMgmt.UAACManager, cfMgmt.OrgManager, cfMgmt.SpaceManager, cfMgmt.CloudController)
+		importManager := importconfig.NewManager(cfMgmt.ConfigDirectory, cfMgmt.UAACManager, cfMgmt.CloudController)
 		excludedOrgs := make(map[string]string)
 		excludedOrgs["system"] = "system"
 		orgsExcludedByUser := c.StringSlice(getFlag("excluded-org"))
@@ -541,11 +541,9 @@ func runImportConfig(c *cli.Context) error {
 		for _, space := range spacesExcludedByUser {
 			excludedSpaces[space] = space
 		}
-
-		lo.G.Infof("Orgs excluded from import:  %v ", excludedOrgs)
-
-		lo.G.Infof("Spaces excluded from import:  %v ", excludedSpaces)
-
+		lo.G.Info("Orgs excluded from import by default: [system]")
+		lo.G.Infof("Orgs excluded from import by user:  %v ", orgsExcludedByUser)
+		lo.G.Infof("Spaces excluded from import by user:  %v ", spacesExcludedByUser)
 		err = importManager.ImportConfig(excludedOrgs, excludedSpaces)
 		if err != nil {
 			lo.G.Errorf("Import failed with error:  %s", err)
