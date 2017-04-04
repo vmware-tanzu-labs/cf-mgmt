@@ -74,7 +74,7 @@ var _ = Describe("given SpaceManager", func() {
 			_, ok := uaacUsers["user-id"]
 			Ω(ok).Should(BeTrue())
 		})
-		It("update ldap group users where users are not uaac", func() {
+		It("update ldap group users where users are in uaac", func() {
 			config := &l.Config{
 				Enabled: true,
 				Origin:  "ldap",
@@ -105,6 +105,70 @@ var _ = Describe("given SpaceManager", func() {
 			Ω(err).Should(BeNil())
 			Ω(len(uaacUsers)).Should(BeEquivalentTo(1))
 			_, ok := uaacUsers["user-id"]
+			Ω(ok).Should(BeTrue())
+		})
+
+		It("update ldap group users where users are in uaac and already in space", func() {
+			config := &l.Config{
+				Enabled: true,
+				Origin:  "ldap",
+			}
+			uaacUsers := make(map[string]string)
+			uaacUsers["user-id"] = "user-id"
+			spaceUsers := make(map[string]string)
+			spaceUsers["user-id"] = "user-id"
+			updateUsersInput := UpdateUsersInput{
+				SpaceGUID:     "my-space-guid",
+				OrgGUID:       "my-org-guid",
+				Role:          "my-role",
+				LdapGroupName: "ldap-group-name",
+			}
+
+			ldapGroupUsers := []l.User{l.User{
+				UserDN: "user-dn",
+				UserID: "user-id",
+				Email:  "user@test.com",
+			}}
+
+			mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
+			mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
+
+			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
+			Ω(err).Should(BeNil())
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(1))
+			_, ok := uaacUsers["user-id"]
+			Ω(ok).Should(BeTrue())
+		})
+
+		It("update other origin users where users are in uaac and already in space", func() {
+			config := &l.Config{
+				Enabled: true,
+				Origin:  "other",
+			}
+			uaacUsers := make(map[string]string)
+			uaacUsers["user@test.com"] = "user@test.com"
+			spaceUsers := make(map[string]string)
+			spaceUsers["user@test.com"] = "user@test.com"
+			updateUsersInput := UpdateUsersInput{
+				SpaceGUID:     "my-space-guid",
+				OrgGUID:       "my-org-guid",
+				Role:          "my-role",
+				LdapGroupName: "ldap-group-name",
+			}
+
+			ldapGroupUsers := []l.User{l.User{
+				UserDN: "user-dn",
+				UserID: "user-id",
+				Email:  "user@test.com",
+			}}
+
+			mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
+			mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
+
+			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
+			Ω(err).Should(BeNil())
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(1))
+			_, ok := uaacUsers["user@test.com"]
 			Ω(ok).Should(BeTrue())
 		})
 
@@ -217,6 +281,36 @@ var _ = Describe("given SpaceManager", func() {
 
 			mockCloudController.EXPECT().AddUserToOrg("user-2", "my-org-guid").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("user-2", "my-role", "my-space-guid").Return(nil)
+
+			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
+			Ω(err).Should(BeNil())
+
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
+			_, ok := uaacUsers["user-1"]
+			Ω(ok).Should(BeTrue())
+			_, ok = uaacUsers["user-2"]
+			Ω(ok).Should(BeTrue())
+		})
+
+		It("update users where users are in uaac and in a space", func() {
+			config := &l.Config{
+				Enabled: true,
+				Origin:  "ldap",
+			}
+			uaacUsers := make(map[string]string)
+			uaacUsers["user-1"] = "user-1"
+			uaacUsers["user-2"] = "user-2"
+			spaceUsers := make(map[string]string)
+			spaceUsers["user-1"] = "asfdsdf-1"
+			spaceUsers["user-2"] = "asdfsaf-2"
+			updateUsersInput := UpdateUsersInput{
+				SpaceGUID: "my-space-guid",
+				OrgGUID:   "my-org-guid",
+				Role:      "my-role",
+				Users:     []string{"USER-1", "user-2"},
+			}
+
+			mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
 
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())

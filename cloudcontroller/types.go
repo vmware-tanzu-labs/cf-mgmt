@@ -4,7 +4,7 @@ import "github.com/pivotalservices/cf-mgmt/http"
 
 type Manager interface {
 	CreateSpace(spaceName, orgGUID string) error
-	ListSpaces(orgGUID string) ([]Space, error)
+	ListSpaces(orgGUID string) ([]*Space, error)
 	AddUserToSpaceRole(userName, role, spaceGUID string) error
 	UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 
@@ -23,6 +23,7 @@ type Manager interface {
 	AssignQuotaToSpace(spaceGUID, quotaGUID string) error
 
 	CreateOrg(orgName string) error
+	DeleteOrg(orgName string) error
 	ListOrgs() ([]*Org, error)
 	AddUserToOrgRole(userName, role, orgGUID string) error
 	AddUserToOrg(userName, orgGUID string) error
@@ -40,7 +41,7 @@ type Manager interface {
 	GetCFUsers(entityGUID, entityType, role string) (map[string]string, error)
 
 	RemoveCFUser(entityGUID, entityType, userGUID, role string) error
-        //Return a specific quota definition for either org or space
+	//Returns a specific quota definition for either an org or space
 	QuotaDef(quotaDefGUID string, entityType string) (*Quota, error)
 }
 
@@ -52,7 +53,7 @@ type DefaultManager struct {
 
 //SpaceResources -
 type SpaceResources struct {
-	Spaces []Space `json:"resources"`
+	Spaces []*Space `json:"resources"`
 }
 
 type Space struct {

@@ -73,7 +73,7 @@ var _ = Describe("given UserManager", func() {
 			_, ok := uaacUsers["user-id"]
 			Ω(ok).Should(BeTrue())
 		})
-		It("update ldap group users where users are not uaac", func() {
+		It("update ldap group users where users are in uaac", func() {
 			config := &l.Config{
 				Enabled: true,
 				Origin:  "ldap",
@@ -98,6 +98,38 @@ var _ = Describe("given UserManager", func() {
 
 			mockCloudController.EXPECT().AddUserToOrg("user-id", "my-org-guid").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrgRole("user-id", "my-role", "my-org-guid").Return(nil)
+
+			err := userManager.UpdateOrgUsers(config, uaacUsers, updateUsersInput)
+			Ω(err).Should(BeNil())
+
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(1))
+			_, ok := uaacUsers["user-id"]
+			Ω(ok).Should(BeTrue())
+		})
+
+		It("update ldap group users where users are in uaac and in org", func() {
+			config := &l.Config{
+				Enabled: true,
+				Origin:  "ldap",
+			}
+			uaacUsers := make(map[string]string)
+			uaacUsers["user-id"] = "user-id"
+			orgUsers := make(map[string]string)
+			orgUsers["user-id"] = "user-id"
+			updateUsersInput := UpdateUsersInput{
+				OrgGUID:       "my-org-guid",
+				Role:          "my-role",
+				LdapGroupName: "ldap-group-name",
+			}
+
+			ldapGroupUsers := []l.User{l.User{
+				UserDN: "user-dn",
+				UserID: "user-id",
+				Email:  "user@test.com",
+			}}
+
+			mockCloudController.EXPECT().GetCFUsers("my-org-guid", "organizations", "my-role").Return(orgUsers, nil)
+			mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
 
 			err := userManager.UpdateOrgUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
@@ -214,6 +246,35 @@ var _ = Describe("given UserManager", func() {
 
 			mockCloudController.EXPECT().AddUserToOrg("user-2", "my-org-guid").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrgRole("user-2", "my-role", "my-org-guid").Return(nil)
+
+			err := userManager.UpdateOrgUsers(config, uaacUsers, updateUsersInput)
+			Ω(err).Should(BeNil())
+
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
+			_, ok := uaacUsers["user-1"]
+			Ω(ok).Should(BeTrue())
+			_, ok = uaacUsers["user-2"]
+			Ω(ok).Should(BeTrue())
+		})
+
+		It("update users where users are in uaac and in org", func() {
+			config := &l.Config{
+				Enabled: true,
+				Origin:  "ldap",
+			}
+			uaacUsers := make(map[string]string)
+			uaacUsers["user-1"] = "user-1"
+			uaacUsers["user-2"] = "user-2"
+			orgUsers := make(map[string]string)
+			orgUsers["user-1"] = "user-1"
+			orgUsers["user-2"] = "user-2"
+			updateUsersInput := UpdateUsersInput{
+				OrgGUID: "my-org-guid",
+				Role:    "my-role",
+				Users:   []string{"USER-1", "user-2"},
+			}
+
+			mockCloudController.EXPECT().GetCFUsers("my-org-guid", "organizations", "my-role").Return(orgUsers, nil)
 
 			err := userManager.UpdateOrgUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())

@@ -86,15 +86,15 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []U
 			if groupEntry != nil {
 				userDNList := groupEntry.GetAttributeValues(config.GroupAttribute)
 				if len(userDNList) == 0 {
-					lo.G.Info("No users found under group : ", config.GroupAttribute)
+					lo.G.Info("No users found under group:", config.GroupAttribute)
 				} else {
 					for _, userDN := range userDNList {
-						lo.G.Info("Getting details about user : ", userDN)
+						lo.G.Debug("Getting details about user: ", userDN)
 						if user, err = m.getLdapUser(ldapConnection, userDN, config); err == nil {
 							if user != nil {
 								users = append(users, *user)
 							} else {
-								lo.G.Info("User entry not found", userDN)
+								lo.G.Infof("User entry: %s not found", userDN)
 							}
 						}
 					}
@@ -136,9 +136,9 @@ func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN string, conf
 	lo.G.Debug("CN unescaped:", userCNTemp)
 	userCN := l.EscapeFilter(strings.Replace(userCNTemp, "\\", "", -1))
 	//userCN := l.EscapeFilter(unEscapeLDAPValue(userDN[:index]))
-	lo.G.Debug("CN escaped", userCN)
+	lo.G.Debug("CN escaped:", userCN)
 	filter := fmt.Sprintf(userFilter, userCN)
-	lo.G.Info("Searching for user:", filter)
+	lo.G.Debug("Searching for user:", filter)
 	search := l.NewSearchRequest(
 		config.UserSearchBase,
 		l.ScopeWholeSubtree,
@@ -169,9 +169,8 @@ func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearch
 	var sr *l.SearchResult
 	filter := fmt.Sprintf(groupFilter, l.EscapeFilter(groupName))
 
-	lo.G.Info("Searching for group : ", filter)
-
-	lo.G.Info("Using group search base : ", groupSearchBase)
+	lo.G.Debug("Searching for group:", filter)
+	lo.G.Debug("Using group search base:", groupSearchBase)
 
 	search := l.NewSearchRequest(
 		groupSearchBase,
@@ -183,7 +182,7 @@ func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearch
 		if (len(sr.Entries)) == 1 {
 			entry = sr.Entries[0]
 		} else {
-			lo.G.Info("Group not found : ", groupName)
+			lo.G.Info("Group not found:", groupName)
 		}
 	} else {
 		lo.G.Error(err)
@@ -204,9 +203,8 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 
 		filter := fmt.Sprintf(theUserFilter, l.EscapeFilter(userID))
 
-		lo.G.Info("Searching for user:", filter)
-
-		lo.G.Info("Using user search base:", config.UserSearchBase)
+		lo.G.Debug("Searching for user:", filter)
+		lo.G.Debug("Using user search base:", config.UserSearchBase)
 
 		search := l.NewSearchRequest(
 			config.UserSearchBase,

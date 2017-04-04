@@ -1,6 +1,7 @@
 package uaac
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -19,7 +20,16 @@ func NewManager(systemDomain, uuacToken string) (mgr Manager) {
 //CreateExternalUser -
 func (m *DefaultUAACManager) CreateExternalUser(userName, userEmail, externalID, origin string) error {
 	if userName == "" || userEmail == "" || externalID == "" {
-		fmt.Println(fmt.Sprintf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID))
+		msg := fmt.Sprintf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID)
+		lo.G.Info(msg)
+		return errors.New(msg)
+	} else {
+		url := fmt.Sprintf("%s/Users", m.Host)
+		payload := fmt.Sprintf(`{"userName":"%s","emails":[{"value":"%s"}],"origin":"%s","externalId":"%s"}`, userName, userEmail, origin, strings.Replace(externalID, "\\,", ",", 1))
+		if _, err := http.NewManager().Post(url, m.UUACToken, payload); err != nil {
+			return err
+		}
+		lo.G.Info("successfully added user", userName)
 		return nil
 	}
 	url := fmt.Sprintf("%s/Users", m.Host)

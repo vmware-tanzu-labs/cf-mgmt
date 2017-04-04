@@ -3,6 +3,7 @@ package cloudcontroller
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/http"
 	"github.com/xchapter7x/lo"
@@ -23,7 +24,7 @@ func (m *DefaultManager) CreateSpace(spaceName, orgGUID string) error {
 	return err
 }
 
-func (m *DefaultManager) ListSpaces(orgGUID string) ([]Space, error) {
+func (m *DefaultManager) ListSpaces(orgGUID string) ([]*Space, error) {
 	spaceResources := &SpaceResources{}
 	url := fmt.Sprintf("%s/v2/organizations/%s/spaces?inline-relations-depth=1", m.Host, orgGUID)
 	if err := m.HTTP.Get(url, m.Token, spaceResources); err == nil {
@@ -147,6 +148,21 @@ func (m *DefaultManager) CreateOrg(orgName string) error {
 	return err
 }
 
+func (m *DefaultManager) DeleteOrg(orgName string) error {
+	orgs, err := m.ListOrgs()
+	if err != nil {
+		return err
+	}
+	for _, org := range orgs {
+		if org.Entity.Name == orgName {
+			url := fmt.Sprintf("%s/v2/organizations/%s?recursive=true", m.Host, org.MetaData.GUID)
+			err = m.HTTP.Delete(url, m.Token)
+		}
+	}
+
+	return err
+}
+
 //ListOrgs : Returns all orgs in the given foundation
 func (m *DefaultManager) ListOrgs() ([]*Org, error) {
 	url := fmt.Sprintf("%s/v2/organizations?results-per-page=100", m.Host)
@@ -245,9 +261,8 @@ func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[st
 		users.Users = append(users.Users, usersTemp.Users...)
 		nextURL = usersTemp.NextURL
 	}
-	lo.G.Debugf("Total %d users with %s role returned for %s %s", len(users.Users), role, entityType, entityGUID)
 	for _, user := range users.Users {
-		userMap[user.Entity.UserName] = user.MetaData.GUID
+		userMap[strings.ToLower(user.Entity.UserName)] = user.MetaData.GUID
 	}
 	return userMap, nil
 }

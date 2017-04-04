@@ -142,6 +142,16 @@ func (_mr *_MockManagerRecorder) CreateSpaceQuota(arg0, arg1, arg2, arg3, arg4, 
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateSpaceQuota", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
+func (_m *MockManager) DeleteOrg(_param0 string) error {
+	ret := _m.ctrl.Call(_m, "DeleteOrg", _param0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockManagerRecorder) DeleteOrg(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteOrg", arg0)
+}
+
 func (_m *MockManager) GetCFUsers(_param0 string, _param1 string, _param2 string) (map[string]string, error) {
 	ret := _m.ctrl.Call(_m, "GetCFUsers", _param0, _param1, _param2)
 	ret0, _ := ret[0].(map[string]string)
@@ -197,9 +207,9 @@ func (_mr *_MockManagerRecorder) ListSecurityGroups() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListSecurityGroups")
 }
 
-func (_m *MockManager) ListSpaces(_param0 string) ([]cloudcontroller.Space, error) {
+func (_m *MockManager) ListSpaces(_param0 string) ([]*cloudcontroller.Space, error) {
 	ret := _m.ctrl.Call(_m, "ListSpaces", _param0)
-	ret0, _ := ret[0].([]cloudcontroller.Space)
+	ret0, _ := ret[0].([]*cloudcontroller.Space)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

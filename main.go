@@ -238,13 +238,12 @@ func CreateAddOrgCommand(eh *ErrorHandler) (command cli.Command) {
 
 func runAddOrg(c *cli.Context) error {
 	inputOrg := c.String(getFlag(orgName))
-	var cfMgmt *CFMgmt
 	orgConfig := &config.OrgConfig{OrgName: inputOrg,
 		OrgBillingMgrLDAPGrp: c.String(getFlag(orgBillingMgrGrp)),
 		OrgMgrLDAPGrp:        c.String(getFlag(orgMgrGrp)),
 		OrgAuditorLDAPGrp:    c.String(getFlag(orgAuditorGrp)),
 	}
-	return cfMgmt.ConfigManager.AddOrgToConfig(orgConfig)
+	return config.NewManager(getConfigDir(c)).AddOrgToConfig(orgConfig)
 }
 
 //CreateAddSpaceCommand -

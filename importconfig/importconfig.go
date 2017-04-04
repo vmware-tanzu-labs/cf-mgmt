@@ -28,7 +28,7 @@ func (im *DefaultImportManager) ImportConfig(excludedOrgs map[string]string, exc
 	var orgs []*cc.Org
 	var configMgr config.Manager
 	var userIDToUserMap map[string]uaac.User
-	var spaces []cc.Space
+	var spaces []*cc.Space
 
 	//Get all the users from the foundation
 	userIDToUserMap, err = im.UAACMgr.UsersByID()

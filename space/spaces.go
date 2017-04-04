@@ -178,7 +178,6 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 	}
 
 	for _, input := range spaceConfigs {
-
 		if err = m.updateSpaceUsers(config, input, uaacUsers); err != nil {
 			return err
 		}
@@ -189,7 +188,6 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 
 func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *InputUpdateSpaces, uaacUsers map[string]string) error {
 	if space, err := m.FindSpace(input.Org, input.Space); err == nil {
-		lo.G.Info("User sync for space", space.Entity.Name)
 		if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers, UpdateUsersInput{
 			SpaceName:     space.Entity.Name,
 			SpaceGUID:     space.MetaData.GUID,
@@ -246,7 +244,7 @@ func (m *DefaultSpaceManager) FindSpace(orgName, spaceName string) (*cloudcontro
 		if spaces, err := m.CloudController.ListSpaces(orgGUID); err == nil {
 			for _, theSpace := range spaces {
 				if theSpace.Entity.Name == spaceName {
-					return &theSpace, nil
+					return theSpace, nil
 				}
 			}
 			return nil, fmt.Errorf("Space [%s] not found in org [%s]", spaceName, orgName)
@@ -285,7 +283,7 @@ func (m *DefaultSpaceManager) CreateSpaces(configDir, ldapBindPassword string) e
 				if orgGUID, err = m.OrgMgr.GetOrgGUID(input.Org); err != nil {
 					return err
 				}
-				var spaces []cloudcontroller.Space
+				var spaces []*cloudcontroller.Space
 				if spaces, err = m.CloudController.ListSpaces(orgGUID); err == nil {
 					for _, spaceName := range input.Spaces {
 						if m.doesSpaceExist(spaces, spaceName) {
@@ -352,7 +350,7 @@ func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgN
 	}
 }
 
-func (m *DefaultSpaceManager) doesSpaceExist(spaces []cloudcontroller.Space, spaceName string) (result bool) {
+func (m *DefaultSpaceManager) doesSpaceExist(spaces []*cloudcontroller.Space, spaceName string) (result bool) {
 	result = false
 	for _, space := range spaces {
 		if space.Entity.Name == spaceName {
