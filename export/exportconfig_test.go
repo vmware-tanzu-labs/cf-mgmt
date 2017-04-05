@@ -157,6 +157,39 @@ var _ = Describe("Export manager", func() {
 			Ω(spaceDetails.MemoryLimit).Should(Equal(1))
 			Ω(spaceDetails.InstanceMemoryLimit).Should(Equal(6))
 			Ω(spaceDetails.AllowSSH).Should(BeTrue())
+		})
+
+		It("Skips excluded orgs from export", func() {
+
+			orgId1 := "org1"
+			orgId2 := "org2"
+			userIDToUserMap := make(map[string]uaac.User, 0)
+			orgs := make([]*cc.Org, 0)
+			user1 := uaac.User{ID: "1", Origin: "ldap", UserName: "user1"}
+			userIDToUserMap["user1"] = user1
+
+			org1 := &cc.Org{Entity: cc.OrgEntity{Name: "org1"}, MetaData: cc.OrgMetaData{GUID: orgId1}}
+			org2 := &cc.Org{Entity: cc.OrgEntity{Name: "org2"}, MetaData: cc.OrgMetaData{GUID: orgId2}}
+
+			orgs = append(orgs, org1)
+			orgs = append(orgs, org2)
+
+			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
+			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListSpaces(orgId1).Return([]*cc.Space{}, nil)
+			cloudControllerOrgUserMock(mockController, orgId1, map[string]string{}, map[string]string{}, map[string]string{})
+			excludedOrgs = map[string]string{orgId2: orgId2}
+
+			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
+
+			Ω(err).Should(BeNil())
+			orgDetails := &organization.InputUpdateOrgs{}
+			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
+			Ω(err).Should(BeNil())
+			Ω(orgDetails.Org).Should(Equal("org1"))
+
+			err = utils.NewDefaultManager().LoadFile("test/config/org2/orgConfig.yml", orgDetails)
+			Ω(err).Should(Not(BeNil()))
 
 		})
 	})
