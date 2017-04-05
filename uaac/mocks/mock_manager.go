@@ -5,6 +5,7 @@ package mock_uaac
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	uaac "github.com/pivotalservices/cf-mgmt/uaac"
 )
 
 // Mock of Manager interface
@@ -47,4 +48,15 @@ func (_m *MockManager) ListUsers() (map[string]string, error) {
 
 func (_mr *_MockManagerRecorder) ListUsers() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListUsers")
+}
+
+func (_m *MockManager) UsersByID() (map[string]uaac.User, error) {
+	ret := _m.ctrl.Call(_m, "UsersByID")
+	ret0, _ := ret[0].(map[string]uaac.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockManagerRecorder) UsersByID() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UsersByID")
 }

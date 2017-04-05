@@ -1,5 +1,5 @@
 hash: 557dd19ffd768964acf9f91f02ef8327616b074b3f191a107f2941e633d7ae63
-updated: 2017-02-25T00:26:36.944466001-06:00
+updated: 2017-03-29T10:03:42.12043-05:00
 imports:
 - name: github.com/codegangsta/cli
   version: 2526b57c56f30b50466c96c4133b1a4ad0f0191f
@@ -10,7 +10,9 @@ imports:
   subpackages:
   - gomock
 - name: github.com/golang/protobuf
-  version: 87c000235d3d852c1628dc9490cd21ab36a7d69f
+  version: 3b06fc7a4cad73efce5fe6217ab6c33e7231ab4a
+  subpackages:
+  - proto
 - name: github.com/moul/http2curl
   version: 4e24498b31dba4683efb9d35c1c8a91e2eda28c8
 - name: github.com/onsi/ginkgo
@@ -37,6 +39,7 @@ imports:
   - ghttp
   - internal/assertion
   - internal/asyncassertion
+  - internal/oraclematcher
   - internal/testingtsupport
   - matchers
   - matchers/support/goraph/bipartitegraph
@@ -53,7 +56,7 @@ imports:
 - name: github.com/xchapter7x/lo
   version: e33b245fc7a8186582208abc2458c2691bff681c
 - name: golang.org/x/net
-  version: 69d4b8aa71caaaa75c3dfc11211d1be495abec7c
+  version: db8e4de5b2d6653f66aea53094624468caad15d2
   subpackages:
   - publicsuffix
 - name: gopkg.in/asn1-ber.v1

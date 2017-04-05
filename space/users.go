@@ -10,7 +10,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-// UpdateSpaceUsers - interface type encapsulating Update space users behavior
+// UserMgr - interface type encapsulating Update space users behavior
 type UserMgr interface {
 	UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error
 }
@@ -35,13 +35,13 @@ type UserManager struct {
 
 // UpdateSpaceUserInput
 type UpdateUsersInput struct {
-	SpaceName        string
 	SpaceGUID        string
-	OrgName          string
 	OrgGUID          string
 	Role             string
 	LdapGroupName    string
 	LdapUsers, Users []string
+	SpaceName        string
+	OrgName          string
 	RemoveUsers      bool
 }
 
@@ -68,7 +68,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 			}
 		}
 	} else {
-		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
+		lo.G.Debug("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	for _, userID := range updateUsersInput.Users {
 		if _, userExists := uaacUsers[strings.ToLower(userID)]; !userExists {
@@ -83,7 +83,8 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 			delete(spaceUsers, strings.ToLower(userID))
 		}
 	}
-	if updateUsersInput.RemoveUsers == true {
+	if updateUsersInput.RemoveUsers {
+		lo.G.Debugf("Deleting users for org/space: %s/%s", updateUsersInput.OrgName, updateUsersInput.SpaceName)
 		for spaceUser, spaceUserGUID := range spaceUsers {
 			lo.G.Info(fmt.Sprintf("removing user: %s from space: %s and role: %s", spaceUser, updateUsersInput.SpaceName, updateUsersInput.Role))
 			err = m.cloudController.RemoveCFUser(updateUsersInput.SpaceGUID, SPACES, spaceUserGUID, updateUsersInput.Role)
@@ -94,7 +95,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 			}
 		}
 	} else {
-		lo.G.Info(fmt.Sprintf("not removing users add enable-remove-users: true to spaceConfig for org/space: %s/%s", updateUsersInput.OrgName, updateUsersInput.SpaceName))
+		lo.G.Info(fmt.Sprintf("Not removing users. Set enable-remove-users: true to spaceConfig for org/space: %s/%s", updateUsersInput.OrgName, updateUsersInput.SpaceName))
 	}
 
 	lo.G.Debug(fmt.Sprintf("SpaceUsers after: %v", spaceUsers))

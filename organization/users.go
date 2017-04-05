@@ -65,7 +65,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			}
 		}
 	} else {
-		lo.G.Info("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
+		lo.G.Debug("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	for _, userID := range updateUsersInput.Users {
 		if _, ok := orgUsers[strings.ToLower(userID)]; !ok {
@@ -80,7 +80,8 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			delete(orgUsers, strings.ToLower(userID))
 		}
 	}
-	if updateUsersInput.RemoveUsers == true {
+	if updateUsersInput.RemoveUsers {
+		lo.G.Debugf("Deleting users for org: %s", updateUsersInput.OrgName)
 		for orgUser, orgUserGUID := range orgUsers {
 			lo.G.Info(fmt.Sprintf("removing user: %s from org: %s and role: %s", orgUser, updateUsersInput.OrgName, updateUsersInput.Role))
 			err = m.cloudController.RemoveCFUser(updateUsersInput.OrgGUID, ORGS, orgUserGUID, updateUsersInput.Role)
@@ -91,7 +92,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			}
 		}
 	} else {
-		lo.G.Info(fmt.Sprintf("not removing users add enable-remove-users: true to orgConfig for org: %s", updateUsersInput.OrgName))
+		lo.G.Info(fmt.Sprintf("Not removing users. Set enable-remove-users: true to orgConfig for org: %s", updateUsersInput.OrgName))
 	}
 	return nil
 }

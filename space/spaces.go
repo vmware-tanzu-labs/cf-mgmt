@@ -106,20 +106,20 @@ func (m *DefaultSpaceManager) CreateQuotas(configDir string) error {
 			if input.EnableSpaceQuota {
 				if space, err = m.FindSpace(input.Org, input.Space); err == nil {
 					quotaName := space.Entity.Name
-					if quotas, err = m.CloudController.ListSpaceQuotas(space.Entity.OrgGUID); err == nil {
+					if quotas, err = m.CloudController.ListAllSpaceQuotasForOrg(space.Entity.OrgGUID); err == nil {
 						if quotaGUID, ok := quotas[quotaName]; ok {
 							lo.G.Info("Updating quota", quotaName)
 							if err = m.CloudController.UpdateSpaceQuota(space.Entity.OrgGUID, quotaGUID,
 								quotaName, input.MemoryLimit, input.InstanceMemoryLimit, input.TotalRoutes, input.TotalServices, input.PaidServicePlansAllowed); err == nil {
 								lo.G.Info("Assigning", quotaName, "to", space.Entity.Name)
-								err = m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, quotaGUID)
+								m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, quotaGUID)
 							}
 						} else {
 							lo.G.Info("Creating quota", quotaName)
 							if targetQuotaGUID, err = m.CloudController.CreateSpaceQuota(space.Entity.OrgGUID,
 								quotaName, input.MemoryLimit, input.InstanceMemoryLimit, input.TotalRoutes, input.TotalServices, input.PaidServicePlansAllowed); err == nil {
 								lo.G.Info("Assigning", quotaName, "to", space.Entity.Name)
-								err = m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, targetQuotaGUID)
+								m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, targetQuotaGUID)
 							}
 						}
 					}
@@ -178,7 +178,6 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 	}
 
 	for _, input := range spaceConfigs {
-
 		if err = m.updateSpaceUsers(config, input, uaacUsers); err != nil {
 			return err
 		}
@@ -196,7 +195,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 			OrgGUID:       space.Entity.OrgGUID,
 			Role:          "developers",
 			LdapGroupName: input.GetDeveloperGroup(),
-			LdapUsers:     input.Developer.LdapUser,
+			LdapUsers:     input.Developer.LdapUsers,
 			Users:         input.Developer.Users,
 			RemoveUsers:   input.RemoveUsers,
 		}); err != nil {
@@ -211,7 +210,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 				OrgName:       input.Org,
 				Role:          "managers",
 				LdapGroupName: input.GetManagerGroup(),
-				LdapUsers:     input.Manager.LdapUser,
+				LdapUsers:     input.Manager.LdapUsers,
 				Users:         input.Manager.Users,
 				RemoveUsers:   input.RemoveUsers,
 			}); err != nil {
@@ -225,7 +224,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 				OrgName:       input.Org,
 				Role:          "auditors",
 				LdapGroupName: input.GetAuditorGroup(),
-				LdapUsers:     input.Auditor.LdapUser,
+				LdapUsers:     input.Auditor.LdapUsers,
 				Users:         input.Auditor.Users,
 				RemoveUsers:   input.RemoveUsers,
 			}); err != nil {
@@ -311,7 +310,7 @@ func (m *DefaultSpaceManager) CreateSpaces(configDir, ldapBindPassword string) e
 
 func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgName, ldapBindPassword string) error {
 	defaultSpaceConfigFile := configDir + "/spaceDefaults.yml"
-	if m.UtilsMgr.DoesFileExist(defaultSpaceConfigFile) {
+	if m.UtilsMgr.FileOrDirectoryExists(defaultSpaceConfigFile) {
 		var config *ldap.Config
 		var uaacUsers map[string]string
 		var err error

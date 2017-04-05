@@ -228,7 +228,7 @@ var _ = Describe("given OrgManager", func() {
 		})
 		It("should create 2 quotas", func() {
 			quotas := make(map[string]string)
-			mockCloudController.EXPECT().ListQuotas().Return(quotas, nil)
+			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().CreateQuota("test", 10240, -1, 10, -1, true).Return("testQuotaGUID", nil)
 			mockCloudController.EXPECT().AssignQuotaToOrg("testOrgGUID", "testQuotaGUID").Return(nil)
@@ -240,14 +240,14 @@ var _ = Describe("given OrgManager", func() {
 		})
 
 		It("list quotas returns error", func() {
-			mockCloudController.EXPECT().ListQuotas().Return(nil, fmt.Errorf("test"))
+			mockCloudController.EXPECT().ListAllOrgQuotas().Return(nil, fmt.Errorf("test"))
 			err := orgManager.CreateQuotas("./fixtures/config")
 			Ω(err).Should(HaveOccurred())
 		})
 
 		It("list orgs returns error", func() {
 			quotas := make(map[string]string)
-			mockCloudController.EXPECT().ListQuotas().Return(quotas, nil)
+			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(nil, fmt.Errorf("test"))
 			err := orgManager.CreateQuotas("./fixtures/config")
 			Ω(err).Should(HaveOccurred())
@@ -255,7 +255,7 @@ var _ = Describe("given OrgManager", func() {
 
 		It("create quota returns error", func() {
 			quotas := make(map[string]string)
-			mockCloudController.EXPECT().ListQuotas().Return(quotas, nil)
+			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().CreateQuota("test", 10240, -1, 10, -1, true).Return("", fmt.Errorf("test"))
 			err := orgManager.CreateQuotas("./fixtures/config")
@@ -264,7 +264,7 @@ var _ = Describe("given OrgManager", func() {
 
 		It("assign quota to org returns error", func() {
 			quotas := make(map[string]string)
-			mockCloudController.EXPECT().ListQuotas().Return(quotas, nil)
+			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().CreateQuota("test", 10240, -1, 10, -1, true).Return("testQuotaGUID", nil)
 			mockCloudController.EXPECT().AssignQuotaToOrg("testOrgGUID", "testQuotaGUID").Return(fmt.Errorf("test"))
@@ -276,7 +276,7 @@ var _ = Describe("given OrgManager", func() {
 			quotas := make(map[string]string)
 			quotas["test"] = "testQuotaGUID"
 			quotas["test2"] = "test2QuotaGUID"
-			mockCloudController.EXPECT().ListQuotas().Return(quotas, nil)
+			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().UpdateQuota("testQuotaGUID", "test", 10240, -1, 10, -1, true).Return(nil)
 			mockCloudController.EXPECT().AssignQuotaToOrg("testOrgGUID", "testQuotaGUID").Return(nil)
@@ -290,7 +290,7 @@ var _ = Describe("given OrgManager", func() {
 		It("update quota errors", func() {
 			quotas := make(map[string]string)
 			quotas["test"] = "testQuotaGUID"
-			mockCloudController.EXPECT().ListQuotas().Return(quotas, nil)
+			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().UpdateQuota("testQuotaGUID", "test", 10240, -1, 10, -1, true).Return(fmt.Errorf("test"))
 			err := orgManager.CreateQuotas("./fixtures/config")
@@ -299,7 +299,7 @@ var _ = Describe("given OrgManager", func() {
 		It("assign org to quota errors", func() {
 			quotas := make(map[string]string)
 			quotas["test"] = "testQuotaGUID"
-			mockCloudController.EXPECT().ListQuotas().Return(quotas, nil)
+			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().UpdateQuota("testQuotaGUID", "test", 10240, -1, 10, -1, true).Return(nil)
 			mockCloudController.EXPECT().AssignQuotaToOrg("testOrgGUID", "testQuotaGUID").Return(fmt.Errorf("test"))

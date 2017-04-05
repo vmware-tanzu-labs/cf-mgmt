@@ -94,7 +94,7 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []U
 							if user != nil {
 								users = append(users, *user)
 							} else {
-								lo.G.Info("User entry not found:", userDN)
+								lo.G.Infof("User entry: %s not found", userDN)
 							}
 						}
 					}

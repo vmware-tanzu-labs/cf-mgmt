@@ -18,6 +18,9 @@ type Manager interface {
 
 // ORGS represents orgs constant
 const ORGS = "organizations"
+const ROLE_ORG_BILLING_MANAGERS = "billing_managers"
+const ROLE_ORG_MANAGERS = "managers"
+const ROLE_ORG_AUDITORS = "auditors"
 
 //Resources -
 type Resources struct {
@@ -93,7 +96,7 @@ func (i *InputUpdateOrgs) GetAuditorGroup() string {
 }
 
 type UserMgmt struct {
-	LdapUser  []string `yaml:"ldap_users"`
+	LdapUsers []string `yaml:"ldap_users"`
 	Users     []string `yaml:"users"`
 	LdapGroup string   `yaml:"ldap_group"`
 }

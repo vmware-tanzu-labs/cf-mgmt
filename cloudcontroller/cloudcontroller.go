@@ -127,7 +127,7 @@ func (m *DefaultManager) UpdateSpaceQuota(orgGUID, quotaGUID, quotaName string,
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
-func (m *DefaultManager) ListSpaceQuotas(orgGUID string) (map[string]string, error) {
+func (m *DefaultManager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]string, error) {
 	quotas := make(map[string]string)
 	url := fmt.Sprintf("%s/v2/organizations/%s/space_quota_definitions", m.Host, orgGUID)
 	quotaResources := &Quotas{}
@@ -196,7 +196,7 @@ func (m *DefaultManager) AddUserToOrgRole(userName, role, orgGUID string) error 
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
-func (m *DefaultManager) ListQuotas() (map[string]string, error) {
+func (m *DefaultManager) ListAllOrgQuotas() (map[string]string, error) {
 	quotas := make(map[string]string)
 	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
 	quotaResources := &Quotas{}
@@ -241,7 +241,7 @@ func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
-//GetCFUsers Returns list of space users who has developer roles
+//GetCFUsers Returns a list of space users who has a given role
 func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[string]string, error) {
 	userMap := make(map[string]string)
 	url := fmt.Sprintf("%s/v2/%s/%s/%s?results-per-page=100", m.Host, entityType, entityGUID, role)
@@ -261,15 +261,33 @@ func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[st
 		users.Users = append(users.Users, usersTemp.Users...)
 		nextURL = usersTemp.NextURL
 	}
-	lo.G.Debug(fmt.Sprintf("Total %d users with %s role returned for %s %s", len(users.Users), role, entityType, entityGUID))
 	for _, user := range users.Users {
 		userMap[strings.ToLower(user.Entity.UserName)] = user.MetaData.GUID
 	}
 	return userMap, nil
 }
 
-//RemoveCFUser -
+//RemoveCFUser - Un assigns a given from the given user for a given org and space
 func (m *DefaultManager) RemoveCFUser(entityGUID, entityType, userGUID, role string) error {
 	url := fmt.Sprintf("%s/v2/%s/%s/%s/%s", m.Host, entityType, entityGUID, role, userGUID)
 	return m.HTTP.Delete(url, m.Token)
+}
+
+//QuotaDef Returns quota definition for a given Quota
+func (m *DefaultManager) QuotaDef(quotaDefGUID string, entityType string) (*Quota, error) {
+	var apiPath string
+	if "organizations" == entityType {
+		apiPath = "quota_definitions"
+	} else {
+		apiPath = "space_quota_definitions"
+	}
+	url := fmt.Sprintf("%s/v2/%s/%s", m.Host, apiPath, quotaDefGUID)
+	var err error
+	quotaResource := &Quota{}
+	if err = m.HTTP.Get(url, m.Token, quotaResource); err == nil {
+		lo.G.Debugf("Quota returned : %v", quotaResource.Entity)
+		return quotaResource, nil
+	}
+	lo.G.Errorf("Error from quota API call : %v", err)
+	return nil, err
 }
