@@ -1,4 +1,4 @@
-# cloud foundry mgmt
+# Cloud Foundry Management (cf-mgmt)
 Go automation for managing orgs, spaces that can be driven from concourse pipeline and GIT managed metadata
 
 
@@ -10,6 +10,17 @@ Either download a compiled release for your platform (make sure on linux/mac you
 ```
 go get github.com/pivotalservices/cf-mgmt
 ```
+
+## Building from the source
+`cf-mgmt` is written in [Go](https://golang.org/) . If you would like to make changes to the source code and wants to build the binary by yourself please follow these steps:
+
+* Install `Go`. Follow the instructions on the Go website for setting up your `GOPATH`. Add `go` to the `/usr/bin` path.
+* Install [Glide](https://github.com/Masterminds/glide), a dependency management library for Go. Instructions for downloading Glide can be found there. Add `glide` to your `/usr/bin` path.
+* Run `go get github.com/pivotalservices/cf-mgmt` OR
+* `cd $GOPATH/src/github.com/pivotalservices` and then run `git clone git@github.com:pivotalservices/cf-mgm.git`
+* `cd cf-mgmt`
+* Run `glide install`. This will download all the required dependencies for building `cf-mgmt`
+* Run `GOOS=linux GOARCH=amd64 go build -o cf-mgmt-linux` to build the binary.
 
 ## Testing
 
@@ -87,8 +98,47 @@ OPTIONS:
 
 ```
 
+#### export-config
+
+This command will export org/space/user details from an existing Cloud Foundry instance. This is useful when you have an existing foundation and would like to use the `cf-mgmt` git workflow to create org and space details to a different foundation.
+
+Once your run `./cf-mgmt export-config`, a config directory with org and space details will be created. This will also export user details such as org and space users and their roles within specific org and space. Other details exported include org and space quota details and ssh access at space level.
+
+You can exclude orgs and spaces from export by using the flag `--excluded-org` and for space `--excluded-space`.
+
+```Warning : Running this command will delete existing config folder and will create it again with the new configuration```
+
+Command usage:
+
+```
+USAGE:
+   cf-mgmt export-config [command options] [arguments...]
+
+DESCRIPTION:
+   Exports org and space configurations from an existing Cloud Foundry instance. [Warning: This operation will delete existing config folder]
+
+OPTIONS:
+   --system-domain value   system domain [$SYSTEM_DOMAIN]
+   --user-id value         user id that has admin privileges [$USER_ID]
+   --password value        password for user account that has admin privileges [$PASSWORD]
+   --client-secret value   secret for user account that has admin privileges [$CLIENT_SECRET]
+   --config-dir value      config dir.  Default is config [$CONFIG_DIR]
+   --excluded-org value    Org to be excluded from export. Repeat the flag to specify multiple orgs
+   --excluded-space value  Space to be excluded from export. Repeat the flag to specify multiple spaces
+```
+
+Of the above ,
+```
+--system-domain value   system domain [$SYSTEM_DOMAIN]
+--user-id value         user id that has admin privileges [$USER_ID]
+--password value        password for user account that has admin privileges [$PASSWORD]
+--client-secret value   secret for user account that has admin privileges [$CLIENT_SECRET]
+```
+are required options.
+
+
 ### Configuration
-After running the above commands there will be a config directory in the working directory.  This will have a folder per org and within each org there will be a folder for each space.
+After running the above commands, there will be a config directory in the working directory.  This will have a folder per org and within each org there will be a folder for each space.
 
 ```
 ├── ldap.yml

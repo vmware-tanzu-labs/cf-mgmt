@@ -473,15 +473,15 @@ func buildDefaultFlags() (flagList map[string]flagBucket) {
 			EnvVar: systemDomain,
 		},
 		userID: {
-			Desc:   "user id that has admin priv",
+			Desc:   "user id that has admin privileges",
 			EnvVar: userID,
 		},
 		password: {
-			Desc:   "password for user account that has admin priv",
+			Desc:   "password for user account that has admin privileges",
 			EnvVar: password,
 		},
 		clientSecret: {
-			Desc:   "secret for user account that has admin priv",
+			Desc:   "secret for user account that has admin privileges",
 			EnvVar: clientSecret,
 		},
 		configDirectory: {
