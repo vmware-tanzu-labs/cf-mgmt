@@ -157,7 +157,7 @@ func addSpaceDevelopers(spaceConfig *config.SpaceConfig, controller cc.Manager, 
 }
 
 func addSpaceAuditors(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, spaceGUID string) {
-	spaceAuditors, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_MANAGERS)
+	spaceAuditors, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_AUDITORS)
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors), spaceConfig.OrgName, spaceConfig.SpaceName)
 	doAddUsers(spaceAuditors, &spaceConfig.SpaceAuditorUAAUsers, &spaceConfig.SpaceAuditorLDAPUsers, userIDToUserMap)
 }
