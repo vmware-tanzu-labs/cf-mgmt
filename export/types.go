@@ -1,4 +1,4 @@
-package importconfig
+package export
 
 import (
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
@@ -13,7 +13,7 @@ const SAML string = "saml"
 
 //Manager -
 type Manager interface {
-	ImportConfig(excludedOrgs map[string]string, excludedSpaces map[string]string) error
+	ExportConfig(excludedOrgs map[string]string, excludedSpaces map[string]string) error
 }
 
 //DefaultImportManager  -

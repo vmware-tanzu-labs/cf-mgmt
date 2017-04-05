@@ -8,8 +8,8 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/export"
 	"github.com/pivotalservices/cf-mgmt/generated"
-	"github.com/pivotalservices/cf-mgmt/importconfig"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
@@ -137,7 +137,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateInitCommand(eh),
 		CreateAddOrgCommand(eh),
 		CreateAddSpaceCommand(eh),
-		CreateImportConfigCommand(eh),
+		CreateExportConfigCommand(eh),
 		CreateGeneratePipelineCommand(runGeneratePipeline, eh),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags(), eh),
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags(), eh),
@@ -152,24 +152,24 @@ func NewApp(eh *ErrorHandler) *cli.App {
 	return app
 }
 
-// CreateImportConfigCommand -
-func CreateImportConfigCommand(eh *ErrorHandler) (command cli.Command) {
+// CreateExportConfigCommand - Creates CLI command for export config
+func CreateExportConfigCommand(eh *ErrorHandler) (command cli.Command) {
 	flags := defaultFlags()
 	flag := cli.StringSliceFlag{
 		Name:  "excluded-org",
-		Usage: "Org to be excluded from import. Repeat the flag to specify multiple orgs",
+		Usage: "Org to be excluded from export. Repeat the flag to specify multiple orgs",
 	}
 	flags = append(flags, flag)
 	flag = cli.StringSliceFlag{
 		Name:  "excluded-space",
-		Usage: "Space to be excluded from import. Repeat the flag to specify multiple spaces",
+		Usage: "Space to be excluded from export. Repeat the flag to specify multiple spaces",
 	}
 	flags = append(flags, flag)
 	command = cli.Command{
-		Name:        "import-config",
-		Usage:       "Imports org, space and user configuration from an existing CF instance. Try import-config --help for more options",
-		Description: "Imports org and space configurations from an existing Cloud Foundry instance. [Warning: This operation will delete existing config folder]",
-		Action:      runImportConfig,
+		Name:        "export-config",
+		Usage:       "Exports org, space and user configuration from an existing CF instance. Try export-config --help for more options",
+		Description: "Exports org and space configurations from an existing Cloud Foundry instance. [Warning: This operation will delete existing config folder]",
+		Action:      runExportConfig,
 		Flags:       flags,
 	}
 	return
@@ -523,12 +523,12 @@ func getConfigDir(c *cli.Context) (cDir string) {
 	return cDir
 }
 
-func runImportConfig(c *cli.Context) error {
+func runExportConfig(c *cli.Context) error {
 	var cfMgmt *CFMgmt
 	var err error
 	cfMgmt, err = InitializeManager(c)
 	if cfMgmt != nil {
-		importManager := importconfig.NewManager(cfMgmt.ConfigDirectory, cfMgmt.UAACManager, cfMgmt.CloudController)
+		exportManager := export.NewExportManager(cfMgmt.ConfigDirectory, cfMgmt.UAACManager, cfMgmt.CloudController)
 		excludedOrgs := make(map[string]string)
 		excludedOrgs["system"] = "system"
 		orgsExcludedByUser := c.StringSlice(getFlag("excluded-org"))
@@ -540,12 +540,12 @@ func runImportConfig(c *cli.Context) error {
 		for _, space := range spacesExcludedByUser {
 			excludedSpaces[space] = space
 		}
-		lo.G.Info("Orgs excluded from import by default: [system]")
-		lo.G.Infof("Orgs excluded from import by user:  %v ", orgsExcludedByUser)
-		lo.G.Infof("Spaces excluded from import by user:  %v ", spacesExcludedByUser)
-		err = importManager.ImportConfig(excludedOrgs, excludedSpaces)
+		lo.G.Info("Orgs excluded from export by default: [system]")
+		lo.G.Infof("Orgs excluded from export by user:  %v ", orgsExcludedByUser)
+		lo.G.Infof("Spaces excluded from export by user:  %v ", spacesExcludedByUser)
+		err = exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 		if err != nil {
-			lo.G.Errorf("Import failed with error:  %s", err)
+			lo.G.Errorf("Export failed with error:  %s", err)
 		}
 	} else {
 		lo.G.Errorf("Unable to initialize cf-mgmt. Error : %s", err)

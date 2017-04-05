@@ -1,4 +1,4 @@
-package importconfig
+package export
 
 import (
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller"
@@ -9,8 +9,8 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-//NewManager Creates a new instance of the ImportConfig manager
-func NewManager(
+//NewExportManager Creates a new instance of the ImportConfig manager
+func NewExportManager(
 	configDir string,
 	uaacMgr uaac.Manager,
 	cloudController cc.Manager) Manager {
@@ -21,9 +21,9 @@ func NewManager(
 	}
 }
 
-//ImportConfig Imports org and space configuration from an existing CF instance
+//ExportConfig Imports org and space configuration from an existing CF instance
 //Entries part of excludedOrgs and excludedSpaces are not included in the import
-func (im *DefaultImportManager) ImportConfig(excludedOrgs map[string]string, excludedSpaces map[string]string) error {
+func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, excludedSpaces map[string]string) error {
 	var err error
 	var orgs []*cc.Org
 	var configMgr config.Manager
@@ -60,12 +60,11 @@ func (im *DefaultImportManager) ImportConfig(excludedOrgs map[string]string, exc
 		}
 	}
 	lo.G.Infof("Using UAA user origin: %s", uaaUserOrigin)
-
 	err = configMgr.CreateConfigIfNotExists(uaaUserOrigin)
-
 	if err != nil {
 		return err
 	}
+	lo.G.Debugf("Orgs to process: %s", orgs)
 
 	for _, org := range orgs {
 		if _, ok := excludedOrgs[org.Entity.Name]; !ok {
@@ -84,12 +83,16 @@ func (im *DefaultImportManager) ImportConfig(excludedOrgs map[string]string, exc
 			for _, orgSpace := range spaces {
 				if _, ok := excludedSpaces[orgSpace.Entity.Name]; !ok {
 					lo.G.Infof("Processing space: %s", orgSpace.Entity.Name)
+
 					spaceConfig := &config.SpaceConfig{OrgName: org.Entity.Name, SpaceName: orgSpace.Entity.Name}
 					//Add users
 					addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, orgSpace.MetaData.GUID)
 					//Add Quota definition if applicable
 					if orgSpace.Entity.QuotaDefinitionGUID != "" {
 						spaceConfig.SpaceQuota = quotaDefinition(im.CloudController, orgSpace.Entity.QuotaDefinitionGUID, space.SPACES)
+					}
+					if orgSpace.Entity.AllowSSH {
+						spaceConfig.AllowSSH = true
 					}
 					configMgr.AddSpaceToConfig(spaceConfig)
 				} else {
@@ -162,10 +165,10 @@ func addSpaceAuditors(spaceConfig *config.SpaceConfig, controller cc.Manager, us
 func doAddUsers(cfUsers map[string]string, uaaUsers *[]string, ldapUsers *[]string, userIDToUserMap map[string]uaac.User) {
 	for cfUser := range cfUsers {
 		if usr, ok := userIDToUserMap[cfUser]; ok {
-			if usr.Origin == LDAP || usr.Origin == SAML {
-				*ldapUsers = append(*ldapUsers, usr.UserName)
-			} else {
+			if usr.Origin == "uaa" {
 				*uaaUsers = append(*uaaUsers, usr.UserName)
+			} else {
+				*ldapUsers = append(*ldapUsers, usr.UserName)
 			}
 		}
 	}

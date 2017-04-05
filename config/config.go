@@ -54,6 +54,7 @@ type SpaceConfig struct {
 	SpaceMgrLDAPUsers     []string
 	SpaceAuditorLDAPUsers []string
 	SpaceQuota            cloudcontroller.QuotaEntity
+	AllowSSH              bool
 }
 
 //NewManager -
@@ -130,6 +131,7 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) (err error) 
 						TotalServices:           spaceQuota.GetTotalServices(),
 						PaidServicePlansAllowed: spaceQuota.IsPaidServicesAllowed(),
 						RemoveUsers:             true,
+						AllowSSH:                spaceConfig.AllowSSH,
 					}
 					utils.NewDefaultManager().WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.ConfigDir, orgName, spaceName), spaceConfigYml)
 					utils.NewDefaultManager().WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName), []byte("[]"))
@@ -144,7 +146,7 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) (err error) 
 func (m *DefaultManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	var err error
 	utilsManager := utils.NewDefaultManager()
-	if !utilsManager.DoesFileOrDirectoryExists(m.ConfigDir) {
+	if !utilsManager.FileOrDirectoryExists(m.ConfigDir) {
 		if err = os.MkdirAll(m.ConfigDir, 0755); err == nil {
 			lo.G.Infof("Config directory %s created", m.ConfigDir)
 			utilsManager.WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin})
@@ -163,7 +165,7 @@ func (m *DefaultManager) CreateConfigIfNotExists(uaaOrigin string) error {
 func (m *DefaultManager) DeleteConfigIfExists() error {
 	var err error
 	utilsManager := utils.NewDefaultManager()
-	if utilsManager.DoesFileOrDirectoryExists(m.ConfigDir) {
+	if utilsManager.FileOrDirectoryExists(m.ConfigDir) {
 		err = os.RemoveAll(m.ConfigDir)
 		if err != nil {
 			lo.G.Errorf("Error deleting config folder. Error : %s", err)
