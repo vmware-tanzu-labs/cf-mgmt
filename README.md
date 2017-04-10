@@ -11,7 +11,7 @@ Either download a compiled release for your platform (make sure on linux/mac you
 go get github.com/pivotalservices/cf-mgmt
 ```
 
-## Building from the source
+## Build from the source
 `cf-mgmt` is written in [Go](https://golang.org/) . If you would like to make changes to the source code and wants to build the binary by yourself please follow these steps:
 
 * Install `Go`. Follow the instructions on the Go website for setting up your `GOPATH`. Add `go` to the `/usr/bin` path.
@@ -106,7 +106,9 @@ Once your run `./cf-mgmt export-config`, a config directory with org and space d
 
 You can exclude orgs and spaces from export by using the flag `--excluded-org` and for space `--excluded-space`.
 
-```Warning : Running this command will delete existing config folder and will create it again with the new configuration```
+```WARNING : Running this command will delete existing config folder and will create it again with the new configuration```
+
+`NOTE: Please make sure to enable and configure LDAP after export. Otherwise when the pipeline runs, it will un map the user roles assuming that they don't exists in LDAP`
 
 Command usage:
 
