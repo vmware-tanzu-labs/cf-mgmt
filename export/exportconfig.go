@@ -78,8 +78,10 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			}
 			configMgr.AddOrgToConfig(orgConfig)
 
+			lo.G.Infof("Done creating org %s", orgConfig.OrgName)
+			lo.G.Infof("Listing spaces for org %s", orgConfig.OrgName)
 			spaces, _ = im.CloudController.ListSpaces(org.MetaData.GUID)
-
+			lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.OrgName)
 			for _, orgSpace := range spaces {
 				if _, ok := excludedSpaces[orgSpace.Entity.Name]; !ok {
 					lo.G.Infof("Processing space: %s", orgSpace.Entity.Name)

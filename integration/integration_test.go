@@ -64,29 +64,6 @@ var _ = Describe("cf-mgmt cli", func() {
 			Expect(getOrg(orgs, "test1")).ShouldNot(BeNil())
 			Expect(getOrg(orgs, "test2")).ShouldNot(BeNil())
 
-			/*quotas, err := ccManager.ListQuotas()
-			Expect(err).ShouldNot(HaveOccurred())
-			_, ok := quotas["test1"]
-			Ω(ok).Should(BeFalse())
-
-			_, ok = quotas["test2"]
-			Ω(ok).Should(BeFalse())
-
-			updateOrgQuotasCommand := exec.Command(outPath, "update-org-quotas", "--config-dir", configDir,
-				"--system-domain", systemDomain, "--user-id", userId, "--password",
-				password, "--client-secret", clientSecret)
-			session, err = Start(updateOrgQuotasCommand, GinkgoWriter, GinkgoWriter)
-			Expect(err).ShouldNot(HaveOccurred())
-			Eventually(session).Should(Exit(0))
-
-			quotas, err = ccManager.ListQuotas()
-			Expect(err).ShouldNot(HaveOccurred())
-			_, ok = quotas["test1"]
-			Ω(ok).Should(BeTrue())
-
-			_, ok = quotas["test2"]
-			Ω(ok).Should(BeFalse())*/
-
 			createSpacesCommand := exec.Command(outPath, "create-spaces", "--config-dir", configDir,
 				"--system-domain", systemDomain, "--user-id", userId, "--password",
 				password, "--client-secret", clientSecret)
@@ -103,6 +80,33 @@ var _ = Describe("cf-mgmt cli", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(len(spaces)).Should(BeEquivalentTo(0))
 		})
+
+		It("should export config with > 50 spaces", func() {
+
+			ccManager := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken)
+
+			ccManager.CreateOrg("test1")
+			orgs, _ := ccManager.ListOrgs()
+			for _, org := range orgs {
+				if org.Entity.Name == "test1" {
+					i := 1
+					for i < 101 {
+						ccManager.CreateSpace(fmt.Sprintf("space-%d", i), org.MetaData.GUID)
+						i++
+					}
+				}
+			}
+
+			exportConfigCommand := exec.Command(outPath, "export-config", "--config-dir", "./config",
+				"--system-domain", systemDomain, "--user-id", userId, "--password",
+				password, "--client-secret", clientSecret)
+			session, err := Start(exportConfigCommand, GinkgoWriter, GinkgoWriter)
+			session.Wait(20)
+			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+
+		})
+
 	})
 })
 
