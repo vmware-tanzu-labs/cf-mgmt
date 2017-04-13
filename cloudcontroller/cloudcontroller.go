@@ -26,13 +26,27 @@ func (m *DefaultManager) CreateSpace(spaceName, orgGUID string) error {
 
 func (m *DefaultManager) ListSpaces(orgGUID string) ([]*Space, error) {
 	spaceResources := &SpaceResources{}
-	url := fmt.Sprintf("%s/v2/organizations/%s/spaces?inline-relations-depth=1", m.Host, orgGUID)
-	if err := m.HTTP.Get(url, m.Token, spaceResources); err == nil {
-		spaces := spaceResources.Spaces
-		return spaces, nil
-	} else {
+	url := fmt.Sprintf("%s/v2/organizations/%s/spaces", m.Host, orgGUID)
+	var err = m.HTTP.Get(url, m.Token, spaceResources)
+	if err != nil {
 		return nil, err
 	}
+	if spaceResources.NextURL == "" {
+		return spaceResources.Spaces, nil
+	}
+	nextURL := spaceResources.NextURL
+	spaceResourcesTemp := &SpaceResources{}
+	for nextURL != "" {
+		url = fmt.Sprintf("%s%s", m.Host, nextURL)
+		err = m.HTTP.Get(url, m.Token, spaceResourcesTemp)
+		if err != nil {
+			return nil, err
+		}
+		spaceResources.Spaces = append(spaceResources.Spaces, spaceResourcesTemp.Spaces...)
+		nextURL = spaceResourcesTemp.NextURL
+	}
+	lo.G.Info("Total spaces returned :", len(spaceResources.Spaces))
+	return spaceResources.Spaces, nil
 }
 
 func (m *DefaultManager) AddUserToSpaceRole(userName, role, spaceGUID string) error {

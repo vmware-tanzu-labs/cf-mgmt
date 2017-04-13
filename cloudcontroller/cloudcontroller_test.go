@@ -167,7 +167,7 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			server.AppendHandlers(
 				CombineHandlers(
-					VerifyRequest("GET", "/v2/organizations/5678-1234/spaces", "inline-relations-depth=1"),
+					VerifyRequest("GET", "/v2/organizations/5678-1234/spaces"),
 					RespondWith(http.StatusOK, string(bytes)),
 				),
 			)
@@ -185,10 +185,35 @@ var _ = Describe("given CloudControllerManager", func() {
 			}
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+
+		It("should paginate through all results", func() {
+			bytes, err := ioutil.ReadFile("fixtures/spaces-with-paging.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/5678-1234/spaces"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			bytes, err = ioutil.ReadFile("fixtures/spaces.json")
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/5678-1234/spaces"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			spaces, err := manager.ListSpaces(orgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(spaces).ShouldNot(BeNil())
+			Ω(spaces).Should(HaveLen(4))
+		})
+
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
-					VerifyRequest("GET", "/v2/organizations/5678-1234/spaces", "inline-relations-depth=1"),
+					VerifyRequest("GET", "/v2/organizations/5678-1234/spaces"),
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)

@@ -53,7 +53,8 @@ type DefaultManager struct {
 
 //SpaceResources -
 type SpaceResources struct {
-	Spaces []*Space `json:"resources"`
+	Spaces  []*Space `json:"resources"`
+	NextURL string   `json:"next_url"`
 }
 
 type Space struct {
