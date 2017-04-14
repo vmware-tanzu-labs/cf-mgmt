@@ -33,7 +33,7 @@ func (m *DefaultUAACManager) CreateExternalUser(userName, userEmail, externalID,
 	return nil
 }
 
-//ListUsers - Returns a map containing username as key and username as value
+//ListUsers - Returns a map containing username as key and user guid as value
 func (m *DefaultUAACManager) ListUsers() (map[string]string, error) {
 	userIDMap := make(map[string]string)
 	usersList, err := getUsers(m.Host, m.UUACToken)
