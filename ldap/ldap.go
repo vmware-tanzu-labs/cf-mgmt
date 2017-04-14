@@ -13,7 +13,6 @@ import (
 	"errors"
 
 	l "github.com/go-ldap/ldap"
-	"github.com/op/go-logging"
 	"github.com/xchapter7x/lo"
 )
 
@@ -62,9 +61,6 @@ func (m *DefaultManager) LdapConnection(config *Config) (*l.Conn, error) {
 		connection, err = l.Dial("tcp", ldapURL)
 	}
 	if connection != nil {
-		if logging.GetLevel(lo.LOG_MODULE) == logging.DEBUG {
-			connection.Debug = true
-		}
 		if err = connection.Bind(config.BindDN, config.BindPassword); err != nil {
 			connection.Close()
 			lo.G.Error(fmt.Sprintf("Error binding with %s", config.BindDN), err)
