@@ -369,6 +369,51 @@ var _ = Describe("given SpaceManager", func() {
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
 		})
+
+		It("remove orphaned LDAP users while leaving existing group members - GH issue 33", func() {
+			config := &l.Config{
+				Enabled: true,
+				Origin:  "https://saml.example.com",
+			}
+
+			uaacUsers := make(map[string]string)
+			uaacUsers["chris.a.washburn@example.com"] = "cwashburn-uaac-guid"
+			uaacUsers["joe.h.fitzy@example.com"] = "jfitzy-uaac-guid"
+			uaacUsers["alex.j.smith@example.com"] = "asmith-uaac-guid" // <-- user in uaac, but not ldap group
+
+			spaceUsers := make(map[string]string)
+			spaceUsers["chris.a.washburn@example.com"] = "cwashburn-space-user-guid"
+			spaceUsers["joe.h.fitzy@example.com"] = "jfitzy-space-user-guid"
+			spaceUsers["alex.j.smith@example.com"] = "asmith-space-user-guid" // <-- user in space, but not ldap group
+
+			updateUsersInput := UpdateUsersInput{
+				SpaceName:     "space-name",
+				SpaceGUID:     "space-guid",
+				OrgName:       "org-name",
+				OrgGUID:       "org-guid",
+				Role:          "space-role-name",
+				LdapGroupName: "ldap-group-name",
+				RemoveUsers:   true,
+			}
+
+			ldapGroupUsers := []l.User{l.User{
+				UserDN: "CN=Washburn, Chris,OU=End Users,OU=Accounts,DC=add,DC=example,DC=com",
+				UserID: "u-cwashburn",
+				Email:  "Chris.A.Washburn@example.com",
+			}, l.User{
+				UserDN: "CN=Fitzy, Joe,OU=End Users,OU=Accounts,DC=ad,DC=example,DC=com",
+				UserID: "u-jfitzy",
+				Email:  "Joe.H.Fitzy@example.com",
+			}}
+
+			mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
+
+			mockCloudController.EXPECT().GetCFUsers("space-guid", "spaces", "space-role-name").Return(spaceUsers, nil)
+			mockCloudController.EXPECT().RemoveCFUser("space-guid", "spaces", "asmith-space-user-guid", "space-role-name").Return(nil)
+			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
+			Ω(err).Should(BeNil())
+		})
+
 		It("don't remove users that in space but not in config", func() {
 			config := &l.Config{
 				Enabled: true,

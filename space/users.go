@@ -132,7 +132,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, spaceGUID, orgGUID str
 			}
 		}
 	} else {
-		delete(spaceUsers, strings.ToLower(user.UserID))
+		delete(spaceUsers, userID)
 	}
 	return nil
 }
