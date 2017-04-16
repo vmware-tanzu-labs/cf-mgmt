@@ -30,7 +30,7 @@ build:
     - script:
         name: go test
         code: |
-          LOG_LEVEL=debug go test -short $(glide novendor) -v -cover -race 
+          LOG_LEVEL=debug go test -short $(glide novendor) -v -cover -race
 
 crosscompile:
   steps:
@@ -58,7 +58,7 @@ crosscompile:
     - script:
         name: cross platform release
         code: |
-          (GOOS=linux GOARCH=amd64 go build -o cf-mgmt-linux -ldflags "-X main.VERSION=${NEXT_VERSION}")
+          (CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cf-mgmt-linux -ldflags "-X main.VERSION=${NEXT_VERSION}")
           (GOOS=darwin GOARCH=amd64 go build -o cf-mgmt-osx -ldflags "-X main.VERSION=${NEXT_VERSION}")
           (GOOS=windows GOARCH=amd64 go build -o cf-mgmt.exe -ldflags "-X main.VERSION=${NEXT_VERSION}")
 
