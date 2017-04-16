@@ -68,8 +68,9 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 		lo.G.Debug("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	for _, userID := range updateUsersInput.Users {
-		if _, ok := orgUsers[strings.ToLower(userID)]; !ok {
-			if _, userExists := uaacUsers[strings.ToLower(userID)]; !userExists {
+		lowerUserID := strings.ToLower(userID)
+		if _, ok := orgUsers[lowerUserID]; !ok {
+			if _, userExists := uaacUsers[lowerUserID]; !userExists {
 				return fmt.Errorf("User %s doesn't exist in cloud foundry, so must add internal user first", userID)
 			}
 			if err = m.addUserToOrgAndRole(userID, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName); err != nil {
@@ -77,7 +78,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 				return err
 			}
 		} else {
-			delete(orgUsers, strings.ToLower(userID))
+			delete(orgUsers, lowerUserID)
 		}
 	}
 	if updateUsersInput.RemoveUsers {
@@ -128,7 +129,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 			}
 		}
 	} else {
-		delete(orgUsers, strings.ToLower(user.UserID))
+		delete(orgUsers, userID)
 	}
 	return nil
 }
