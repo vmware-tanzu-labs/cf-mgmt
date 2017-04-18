@@ -35,8 +35,9 @@ func (m *DefaultManager) ListSpaces(orgGUID string) ([]*Space, error) {
 		return spaceResources.Spaces, nil
 	}
 	nextURL := spaceResources.NextURL
-	spaceResourcesTemp := &SpaceResources{}
 	for nextURL != "" {
+		lo.G.Debugf("NextURL: %s", nextURL)
+		spaceResourcesTemp := &SpaceResources{}
 		url = fmt.Sprintf("%s%s", m.Host, nextURL)
 		err = m.HTTP.Get(url, m.Token, spaceResourcesTemp)
 		if err != nil {
@@ -189,8 +190,9 @@ func (m *DefaultManager) ListOrgs() ([]*Org, error) {
 		return orgs.Orgs, nil
 	}
 	nextURL := orgs.NextURL
-	orgsTemp := &Orgs{}
 	for nextURL != "" {
+		lo.G.Debugf("NextURL: %s", nextURL)
+		orgsTemp := &Orgs{}
 		url = fmt.Sprintf("%s%s", m.Host, nextURL)
 		lo.G.Info("getOrgs() URL :", url)
 		err = m.HTTP.Get(url, m.Token, orgsTemp)
@@ -265,8 +267,9 @@ func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[st
 		return nil, err
 	}
 	nextURL := users.NextURL
-	usersTemp := &OrgSpaceUsers{}
 	for nextURL != "" {
+		lo.G.Debugf("NextURL %s", nextURL)
+		usersTemp := &OrgSpaceUsers{}
 		url = fmt.Sprintf("%s%s", m.Host, nextURL)
 		err = m.HTTP.Get(url, m.Token, usersTemp)
 		if err != nil {
