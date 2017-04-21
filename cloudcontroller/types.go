@@ -51,6 +51,11 @@ type DefaultManager struct {
 	HTTP  http.Manager
 }
 
+type Pagination interface {
+	GetNextURL() string
+	AddInstances(Pagination)
+}
+
 //SpaceResources -
 type SpaceResources struct {
 	Spaces  []*Space `json:"resources"`
@@ -100,6 +105,7 @@ type OrgMetaData struct {
 
 //SecurityGroupResources -
 type SecurityGroupResources struct {
+	NextURL        string          `json:"next_url"`
 	SecurityGroups []SecurityGroup `json:"resources"`
 }
 
@@ -120,7 +126,8 @@ type SecurityGroupEntity struct {
 
 //Quotas -
 type Quotas struct {
-	Quotas []Quota `json:"resources"`
+	NextURL string  `json:"next_url"`
+	Quotas  []Quota `json:"resources"`
 }
 
 type Quota struct {

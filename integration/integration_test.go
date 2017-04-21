@@ -107,6 +107,25 @@ var _ = Describe("cf-mgmt cli", func() {
 
 		})
 
+		It("should export config with > 50 quotas", func() {
+
+			ccManager := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken)
+			i := 1
+			for i < 101 {
+				ccManager.CreateQuota(fmt.Sprintf("quota-%d", i), 1, 1, 1, 1, true)
+				i++
+			}
+
+			exportConfigCommand := exec.Command(outPath, "export-config", "--config-dir", "./config",
+				"--system-domain", systemDomain, "--user-id", userId, "--password",
+				password, "--client-secret", clientSecret)
+			session, err := Start(exportConfigCommand, GinkgoWriter, GinkgoWriter)
+			session.Wait(20)
+			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+
+		})
+
 	})
 })
 

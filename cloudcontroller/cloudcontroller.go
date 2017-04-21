@@ -27,27 +27,36 @@ func (m *DefaultManager) CreateSpace(spaceName, orgGUID string) error {
 func (m *DefaultManager) ListSpaces(orgGUID string) ([]*Space, error) {
 	spaceResources := &SpaceResources{}
 	url := fmt.Sprintf("%s/v2/organizations/%s/spaces", m.Host, orgGUID)
-	var err = m.HTTP.Get(url, m.Token, spaceResources)
+	err := m.listResources(url, spaceResources, NewSpaceResources)
 	if err != nil {
 		return nil, err
 	}
-	if spaceResources.NextURL == "" {
-		return spaceResources.Spaces, nil
-	}
-	nextURL := spaceResources.NextURL
-	for nextURL != "" {
-		lo.G.Debugf("NextURL: %s", nextURL)
-		spaceResourcesTemp := &SpaceResources{}
-		url = fmt.Sprintf("%s%s", m.Host, nextURL)
-		err = m.HTTP.Get(url, m.Token, spaceResourcesTemp)
-		if err != nil {
-			return nil, err
-		}
-		spaceResources.Spaces = append(spaceResources.Spaces, spaceResourcesTemp.Spaces...)
-		nextURL = spaceResourcesTemp.NextURL
-	}
 	lo.G.Info("Total spaces returned :", len(spaceResources.Spaces))
 	return spaceResources.Spaces, nil
+
+}
+
+func (m *DefaultManager) listResources(url string, target Pagination, createInstance func() Pagination) error {
+	var err = m.HTTP.Get(url, m.Token, target)
+	if err != nil {
+		return err
+	}
+	if target.GetNextURL() == "" {
+		return nil
+	}
+	nextURL := target.GetNextURL()
+	for nextURL != "" {
+		lo.G.Debugf("NextURL: %s", nextURL)
+		tempTarget := createInstance()
+		url = fmt.Sprintf("%s%s", m.Host, nextURL)
+		err = m.HTTP.Get(url, m.Token, tempTarget)
+		if err != nil {
+			return err
+		}
+		target.AddInstances(tempTarget)
+		nextURL = tempTarget.GetNextURL()
+	}
+	return nil
 }
 
 func (m *DefaultManager) AddUserToSpaceRole(userName, role, spaceGUID string) error {
@@ -71,17 +80,18 @@ func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 }
 
 func (m *DefaultManager) ListSecurityGroups() (map[string]string, error) {
-	var err error
 	securityGroups := make(map[string]string)
 	url := fmt.Sprintf("%s/v2/security_groups", m.Host)
 	sgResources := &SecurityGroupResources{}
-	if err = m.HTTP.Get(url, m.Token, sgResources); err == nil {
-		for _, sg := range sgResources.SecurityGroups {
-			securityGroups[sg.Entity.Name] = sg.MetaData.GUID
-		}
-		return securityGroups, nil
+	err := m.listResources(url, sgResources, NewSecurityGroupResources)
+	if err != nil {
+		return nil, err
 	}
-	return nil, err
+	lo.G.Info("Total security groups returned :", len(sgResources.SecurityGroups))
+	for _, sg := range sgResources.SecurityGroups {
+		securityGroups[sg.Entity.Name] = sg.MetaData.GUID
+	}
+	return securityGroups, nil
 }
 
 func (m *DefaultManager) UpdateSecurityGroup(sgGUID, sgName, contents string) error {
@@ -146,14 +156,15 @@ func (m *DefaultManager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]st
 	quotas := make(map[string]string)
 	url := fmt.Sprintf("%s/v2/organizations/%s/space_quota_definitions", m.Host, orgGUID)
 	quotaResources := &Quotas{}
-	if err := m.HTTP.Get(url, m.Token, quotaResources); err == nil {
-		for _, quota := range quotaResources.Quotas {
-			quotas[quota.Entity.Name] = quota.MetaData.GUID
-		}
-		return quotas, nil
-	} else {
+	err := m.listResources(url, quotaResources, NewQuotasResources)
+	if err != nil {
 		return nil, err
 	}
+	lo.G.Info("Total space quotas returned :", len(quotaResources.Quotas))
+	for _, quota := range quotaResources.Quotas {
+		quotas[quota.Entity.Name] = quota.MetaData.GUID
+	}
+	return quotas, nil
 }
 
 func (m *DefaultManager) CreateOrg(orgName string) error {
@@ -182,25 +193,9 @@ func (m *DefaultManager) DeleteOrg(orgName string) error {
 func (m *DefaultManager) ListOrgs() ([]*Org, error) {
 	url := fmt.Sprintf("%s/v2/organizations?results-per-page=100", m.Host)
 	orgs := &Orgs{}
-	var err = m.HTTP.Get(url, m.Token, orgs)
+	err := m.listResources(url, orgs, NewOrgResources)
 	if err != nil {
 		return nil, err
-	}
-	if orgs.NextURL == "" {
-		return orgs.Orgs, nil
-	}
-	nextURL := orgs.NextURL
-	for nextURL != "" {
-		lo.G.Debugf("NextURL: %s", nextURL)
-		orgsTemp := &Orgs{}
-		url = fmt.Sprintf("%s%s", m.Host, nextURL)
-		lo.G.Info("getOrgs() URL :", url)
-		err = m.HTTP.Get(url, m.Token, orgsTemp)
-		if err != nil {
-			return nil, err
-		}
-		orgs.Orgs = append(orgs.Orgs, orgsTemp.Orgs...)
-		nextURL = orgsTemp.NextURL
 	}
 	lo.G.Info("Total orgs returned :", len(orgs.Orgs))
 	return orgs.Orgs, nil
@@ -216,14 +211,15 @@ func (m *DefaultManager) ListAllOrgQuotas() (map[string]string, error) {
 	quotas := make(map[string]string)
 	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
 	quotaResources := &Quotas{}
-	if err := m.HTTP.Get(url, m.Token, quotaResources); err == nil {
-		for _, quota := range quotaResources.Quotas {
-			quotas[quota.Entity.Name] = quota.MetaData.GUID
-		}
-		return quotas, nil
-	} else {
+	err := m.listResources(url, quotaResources, NewQuotasResources)
+	if err != nil {
 		return nil, err
 	}
+	lo.G.Info("Total org quotas returned :", len(quotaResources.Quotas))
+	for _, quota := range quotaResources.Quotas {
+		quotas[quota.Entity.Name] = quota.MetaData.GUID
+	}
+	return quotas, nil
 }
 
 func (m *DefaultManager) CreateQuota(quotaName string,
@@ -262,22 +258,12 @@ func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[st
 	userMap := make(map[string]string)
 	url := fmt.Sprintf("%s/v2/%s/%s/%s?results-per-page=100", m.Host, entityType, entityGUID, role)
 	users := &OrgSpaceUsers{}
-	var err = m.HTTP.Get(url, m.Token, users)
+	err := m.listResources(url, users, NewOrgSpaceUsers)
 	if err != nil {
 		return nil, err
 	}
-	nextURL := users.NextURL
-	for nextURL != "" {
-		lo.G.Debugf("NextURL %s", nextURL)
-		usersTemp := &OrgSpaceUsers{}
-		url = fmt.Sprintf("%s%s", m.Host, nextURL)
-		err = m.HTTP.Get(url, m.Token, usersTemp)
-		if err != nil {
-			return nil, err
-		}
-		users.Users = append(users.Users, usersTemp.Users...)
-		nextURL = usersTemp.NextURL
-	}
+	lo.G.Info("Total users returned :", len(users.Users))
+
 	for _, user := range users.Users {
 		userMap[strings.ToLower(user.Entity.UserName)] = user.MetaData.GUID
 	}
