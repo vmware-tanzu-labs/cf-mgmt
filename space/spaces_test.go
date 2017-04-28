@@ -59,6 +59,48 @@ var _ = Describe("given SpaceManager", func() {
 	})
 
 	Context("GetSpaceConfigs()", func() {
+		Context("for default_config", func() {
+			var config *InputUpdateSpaces
+			BeforeEach(func() {
+				configs, err := spaceManager.GetSpaceConfigs("./fixtures/space-defaults")
+				Ω(err).Should(BeNil())
+				Ω(configs).ShouldNot(BeNil())
+				Ω(configs).Should(HaveLen(1))
+				config = configs[0]
+			})
+			It("should return test space", func() {
+				Ω(config.Space).Should(BeEquivalentTo("space1"))
+			})
+			It("should return ldap users from space and space defaults", func() {
+				Ω(config.Developer.LdapUsers).Should(ConsistOf("default-ldap-user", "space1-ldap-user"))
+			})
+			It("should return users from space and space defaults", func() {
+				Ω(config.Developer.Users).Should(ConsistOf("default-user@test.com", "space-1-user@test.com"))
+			})
+			It("should return ldap group from space config only", func() {
+				Ω(config.Developer.LdapGroup).Should(BeEquivalentTo("space-1-ldap-group"))
+			})
+
+			It("should return ldap users from space and space defaults", func() {
+				Ω(config.Auditor.LdapUsers).Should(ConsistOf("default-ldap-user", "space1-ldap-user"))
+			})
+			It("should return users from space and space defaults", func() {
+				Ω(config.Auditor.Users).Should(ConsistOf("default-user@test.com", "space-1-user@test.com"))
+			})
+			It("should return ldap group from space config only", func() {
+				Ω(config.Auditor.LdapGroup).Should(BeEquivalentTo("space-1-ldap-group"))
+			})
+
+			It("should return ldap users from space and space defaults", func() {
+				Ω(config.Manager.LdapUsers).Should(ConsistOf("default-ldap-user", "space1-ldap-user"))
+			})
+			It("should return users from space and space defaults", func() {
+				Ω(config.Manager.Users).Should(ConsistOf("default-user@test.com", "space-1-user@test.com"))
+			})
+			It("should return ldap group from space config only", func() {
+				Ω(config.Manager.LdapGroup).Should(BeEquivalentTo("space-1-ldap-group"))
+			})
+		})
 		It("should return list of 2", func() {
 			configs, err := spaceManager.GetSpaceConfigs("./fixtures/config")
 			Ω(err).Should(BeNil())

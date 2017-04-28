@@ -3,6 +3,7 @@ package space
 import (
 	"fmt"
 	"io/ioutil"
+	"path"
 	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
@@ -29,12 +30,22 @@ func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 }
 
 func (m *DefaultSpaceManager) GetSpaceConfigs(configDir string) ([]*InputUpdateSpaces, error) {
+
+	spaceDefaults := &InputUpdateSpaces{}
+	m.UtilsMgr.LoadFile(path.Join(configDir, "spaceDefaults.yml"), spaceDefaults)
 	if files, err := utils.NewDefaultManager().FindFiles(configDir, "spaceConfig.yml"); err == nil {
 		spaceConfigs := []*InputUpdateSpaces{}
 		for _, f := range files {
 			lo.G.Info("Processing space file", f)
 			input := &InputUpdateSpaces{}
 			if err = m.UtilsMgr.LoadFile(f, input); err == nil {
+				input.Developer.LdapUsers = append(input.Developer.LdapUsers, spaceDefaults.Developer.LdapUsers...)
+				input.Developer.Users = append(input.Developer.Users, spaceDefaults.Developer.Users...)
+				input.Auditor.LdapUsers = append(input.Auditor.LdapUsers, spaceDefaults.Auditor.LdapUsers...)
+				input.Auditor.Users = append(input.Auditor.Users, spaceDefaults.Auditor.Users...)
+				input.Manager.LdapUsers = append(input.Manager.LdapUsers, spaceDefaults.Manager.LdapUsers...)
+				input.Manager.Users = append(input.Manager.Users, spaceDefaults.Manager.Users...)
+
 				spaceConfigs = append(spaceConfigs, input)
 				if input.EnableSecurityGroup {
 					securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
