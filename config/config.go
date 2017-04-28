@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -69,6 +70,11 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) (err error) {
 	orgList := &organization.InputOrgs{}
 	orgFileName := fmt.Sprintf("%s/orgs.yml", m.ConfigDir)
 	orgName := orgConfig.OrgName
+	if orgName == "" {
+		err = errors.New("Cannot have an empty org name")
+		return
+	}
+
 	orgQuota := orgConfig.OrgQuota
 	if err = utils.NewDefaultManager().LoadFile(orgFileName, orgList); err == nil {
 		if orgList.Contains(orgName) {
