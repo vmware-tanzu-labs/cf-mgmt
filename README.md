@@ -1,6 +1,11 @@
 # Cloud Foundry Management (cf-mgmt)
 Go automation for managing orgs, spaces that can be driven from concourse pipeline and GIT managed metadata
 
+## Maintainers
+
+* [Caleb Washburn](https://github.com/calebwashburn)
+
+* [Anwar Chirakkattil](https://github.com/anwarchk)
 
 ## Install
 Either download a compiled release for your platform (make sure on linux/mac you chmod +x the binary)
@@ -307,7 +312,7 @@ LDAP configuration file ```ldap.yml``` is located under the ```config``` folder.
 
 Operations team can setup a a git repo seeded with cf-mgmt configuration.  This will be linked to a concourse pipeline (example pipeline generated below) that will create orgs, spaces, map users, create quotas, deploy ASGs based on changes to git repo.  Consumers of this can submit a pull request via GIT to the ops team with comments like any other commit.  This will create a complete audit log of who requested this and who approved within GIT history.  Once PR accepted then concourse will provision the new items.
 
-#### generate-concourse-pipeline
+#### Generate Concourse Pipeline
 
 This will generate a pipeline.yml, vars.yml and necessary task yml files for running all the tasks listed below.  Just need to update your vars.yml and check in all your code to GIT and execute the fly command to register your pipeline. ```vars.yml``` contains place holders for LDAP and CF user credentials. If you do not prefer storing the credentials in ```vars.yml```, you can pass them via the ```fly``` command line arguments.
 
@@ -326,7 +331,7 @@ fly -t <targetname> set-pipeline -p <pipeline_name> -c pipeline.yml -l vars.yml 
 If both ```vars.yml``` and ```--var``` are specified, ```--vars``` values takes precedence.
 
 ### Known Issues
-Currently does not remove orgs, spaces, asgs, quotas that are not in configuration does remove users from roles as of 0.48+.  All functions are additive.  So removing orgs, spaces is not currently a function if they are not configured in cf-mgmt but future plans are to have a flag to opt-in for this feature.
+Currently does not remove orgs, spaces, asgs, quotas that are not in configuration. It does remove users from roles as of release 0.48+.  All functions are additive.  So removing orgs, spaces is not currently a function if they are not configured in cf-mgmt but future plans are to have a flag to opt-in for this feature.
 
 ### The following operation are enabled with cf-mgmt that will leverage configuration to modify your Cloud Foundry installation
 
