@@ -115,6 +115,49 @@ var _ = Describe("Ldap", func() {
 			})
 		})
 
+		Describe("given a ldap manager with userObjectClass", func() {
+			BeforeEach(func() {
+				var host string
+				var port int
+				if os.Getenv("LDAP_PORT_389_TCP_ADDR") == "" {
+					host = "127.0.0.1"
+					port = 389
+				} else {
+					host = os.Getenv("LDAP_PORT_389_TCP_ADDR")
+					port, _ = strconv.Atoi(os.Getenv("LDAP_PORT_389_TCP_PORT"))
+				}
+				ldapManager = &DefaultManager{}
+				config = &Config{
+					BindDN:            "cn=admin,dc=pivotal,dc=org",
+					BindPassword:      "password",
+					UserSearchBase:    "ou=users,dc=pivotal,dc=org",
+					UserNameAttribute: "uid",
+					UserMailAttribute: "mail",
+					GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
+					GroupAttribute:    "member",
+					LdapHost:          host,
+					LdapPort:          port,
+					UserObjectClass:   "inetOrgPerson",
+				}
+			})
+			Context("when cn with special characters", func() {
+				It("then it should return 1 Entry", func() {
+					entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org", "ou=users,dc=pivotal,dc=org")
+					Ω(err).Should(BeNil())
+					Ω(entry).ShouldNot(BeNil())
+				})
+			})
+			Context("GetUser()", func() {
+				It("then it should return 1 user", func() {
+					user, err := ldapManager.GetUser(config, "cwashburn")
+					Ω(err).Should(BeNil())
+					Ω(user).ShouldNot(BeNil())
+					Ω(user.UserID).Should(Equal("cwashburn"))
+					Ω(user.UserDN).Should(Equal("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
+					Ω(user.Email).Should(Equal("cwashburn+cfmt@testdomain.com"))
+				})
+			})
+		})
 		Context("GetLdapUser()", func() {
 			It("then it should return 1 user", func() {
 				data, _ := ioutil.ReadFile("./fixtures/user1.txt")

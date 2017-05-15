@@ -17,9 +17,12 @@ import (
 )
 
 var (
-	attributes  = []string{"*"}
-	groupFilter = "(cn=%s)"
-	userFilter  = "(%s)"
+	attributes                  = []string{"*"}
+	groupFilter                 = "(cn=%s)"
+	userFilter                  = "(%s=%s)"
+	userFilterWithObjectClass   = "(&(objectclass=%s)(%s=%s))"
+	userDNFilter                = "(%s)"
+	userDNFilterWithObjectClass = "(&(objectclass=%s)(%s))"
 )
 
 func NewManager() Manager {
@@ -133,7 +136,7 @@ func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN string, conf
 	userCN := l.EscapeFilter(strings.Replace(userCNTemp, "\\", "", -1))
 	//userCN := l.EscapeFilter(unEscapeLDAPValue(userDN[:index]))
 	lo.G.Debug("CN escaped:", userCN)
-	filter := fmt.Sprintf(userFilter, userCN)
+	filter := m.getUserFilterWithDN(config, userCN)
 	lo.G.Debug("Searching for user:", filter)
 	search := l.NewSearchRequest(
 		config.UserSearchBase,
@@ -192,13 +195,7 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 		return nil, err
 	} else {
 		defer ldapConnection.Close()
-
-		theUserFilter := "(" + config.UserNameAttribute + "=%s)"
-
-		lo.G.Debug("User filter before escape:", theUserFilter)
-
-		filter := fmt.Sprintf(theUserFilter, l.EscapeFilter(userID))
-
+		filter := m.getUserFilter(config, userID)
 		lo.G.Debug("Searching for user:", filter)
 		lo.G.Debug("Using user search base:", config.UserSearchBase)
 
@@ -260,4 +257,18 @@ func (m *DefaultManager) UnescapeFilterValue(filter string) string {
 		},
 	)
 	return string(repl)
+}
+
+func (m *DefaultManager) getUserFilter(config *Config, userID string) string {
+	if config.UserObjectClass == "" {
+		return fmt.Sprintf(userFilter, config.UserNameAttribute, userID)
+	}
+	return fmt.Sprintf(userFilterWithObjectClass, config.UserObjectClass, config.UserNameAttribute, userID)
+}
+
+func (m *DefaultManager) getUserFilterWithDN(config *Config, userDN string) string {
+	if config.UserObjectClass == "" {
+		return fmt.Sprintf(userDNFilter, userDN)
+	}
+	return fmt.Sprintf(userDNFilterWithObjectClass, config.UserObjectClass, userDN)
 }
