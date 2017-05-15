@@ -187,7 +187,7 @@ func (qe *QuotaEntity) GetTotalServices() int {
 //GetTotalRoutes --
 func (qe *QuotaEntity) GetTotalRoutes() int {
 	if qe.TotalRoutes == 0 {
-		return 10
+		return 1000
 	}
 	return qe.TotalRoutes
 }
