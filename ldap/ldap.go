@@ -10,14 +10,21 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"errors"
-
 	l "github.com/go-ldap/ldap"
 	"github.com/xchapter7x/lo"
 )
 
 var (
-	attributes                  = []string{"*"}
+	attributes = []string{"*"}
+)
+
+var (
+	userRegexp          = regexp.MustCompile(",[A-Z]+=")
+	escapeFilterRegex   = regexp.MustCompile(`([\\\(\)\*\0-\37\177-\377])`)
+	unescapeFilterRegex = regexp.MustCompile(`\\([\da-fA-F]{2}|[()\\*])`) // only match \[)*\] or \xx x=a-fA-F
+)
+
+const (
 	groupFilter                 = "(cn=%s)"
 	userFilter                  = "(%s=%s)"
 	userFilterWithObjectClass   = "(&(objectclass=%s)(%s=%s))"
@@ -30,27 +37,25 @@ func NewManager() Manager {
 }
 
 func (m *DefaultManager) GetConfig(configDir, ldapBindPassword string) (*Config, error) {
-
-	if data, err := ioutil.ReadFile(configDir + "/ldap.yml"); err == nil {
-		config := &Config{}
-		if err = yaml.Unmarshal(data, &config); err == nil {
-			if ldapBindPassword != "" {
-				config.BindPassword = ldapBindPassword
-			} else {
-				lo.G.Warning("Ldap bind password should be removed from ldap.yml as this will be deprecated in a future release.  Use --ldap-password flag instead.")
-			}
-			if config.Origin == "" {
-				config.Origin = "ldap"
-			}
-			return config, nil
-		} else {
-			lo.G.Error(err)
-			return nil, err
-		}
-	} else {
+	data, err := ioutil.ReadFile(configDir + "/ldap.yml")
+	if err != nil {
 		lo.G.Error(err)
 		return nil, err
 	}
+	config := &Config{}
+	if err = yaml.Unmarshal(data, &config); err != nil {
+		lo.G.Error(err)
+		return nil, err
+	}
+	if ldapBindPassword != "" {
+		config.BindPassword = ldapBindPassword
+	} else {
+		lo.G.Warning("Ldap bind password should be removed from ldap.yml as this will be deprecated in a future release.  Use --ldap-password flag instead.")
+	}
+	if config.Origin == "" {
+		config.Origin = "ldap"
+	}
+	return config, nil
 }
 
 func (m *DefaultManager) LdapConnection(config *Config) (*l.Conn, error) {
@@ -63,11 +68,13 @@ func (m *DefaultManager) LdapConnection(config *Config) (*l.Conn, error) {
 	} else {
 		connection, err = l.Dial("tcp", ldapURL)
 	}
+	if err != nil {
+		return nil, err
+	}
 	if connection != nil {
 		if err = connection.Bind(config.BindDN, config.BindPassword); err != nil {
 			connection.Close()
-			lo.G.Error(fmt.Sprintf("Error binding with %s", config.BindDN), err)
-			return nil, err
+			return nil, fmt.Errorf("cannot bind with %s: %v", config.BindDN, err)
 		}
 	}
 	return connection, err
@@ -75,60 +82,60 @@ func (m *DefaultManager) LdapConnection(config *Config) (*l.Conn, error) {
 }
 
 //GetUserIDs -
-func (m *DefaultManager) GetUserIDs(config *Config, groupName string) (users []User, err error) {
-	var ldapConnection *l.Conn
-	if ldapConnection, err = m.LdapConnection(config); err == nil {
-		defer ldapConnection.Close()
-		var groupEntry *l.Entry
-		var user *User
-		if groupEntry, err = m.getGroup(ldapConnection, groupName, config.GroupSearchBase); err == nil {
-			if groupEntry != nil {
-				userDNList := groupEntry.GetAttributeValues(config.GroupAttribute)
-				if len(userDNList) == 0 {
-					lo.G.Info("No users found under group:", config.GroupAttribute)
-				} else {
-					for _, userDN := range userDNList {
-						lo.G.Debug("Getting details about user: ", userDN)
-						if user, err = m.getLdapUser(ldapConnection, userDN, config); err == nil {
-							if user != nil {
-								users = append(users, *user)
-							} else {
-								lo.G.Infof("User entry: %s not found", userDN)
-							}
-						}
-					}
-				}
-			} else {
-				lo.G.Info("Group not found : ", groupName)
-			}
-		}
-	} else {
+func (m *DefaultManager) GetUserIDs(config *Config, groupName string) ([]User, error) {
+	ldapConnection, err := m.LdapConnection(config)
+	if err != nil {
 		return nil, err
 	}
-	return
+	defer ldapConnection.Close()
+
+	groupEntry, err := m.getGroup(ldapConnection, groupName, config.GroupSearchBase)
+	if err != nil || groupEntry == nil {
+		lo.G.Info("group not found:", groupName)
+		return nil, err
+	}
+
+	userDNList := groupEntry.GetAttributeValues(config.GroupAttribute)
+	if len(userDNList) == 0 {
+		lo.G.Info("No users found under group:", config.GroupAttribute)
+		return nil, nil
+	}
+
+	var users []User
+	for _, userDN := range userDNList {
+		lo.G.Debug("Getting details about user: ", userDN)
+		user, err := m.getLdapUser(ldapConnection, userDN, config)
+		if err != nil {
+			return nil, err
+		}
+		if user != nil {
+			users = append(users, *user)
+		} else {
+			lo.G.Infof("User entry: %s not found", userDN)
+		}
+	}
+	return users, nil
 }
 
 func (m *DefaultManager) GetLdapUser(config *Config, userDN, userSearchBase string) (*User, error) {
-	if ldapConnection, err := m.LdapConnection(config); err == nil {
-		defer ldapConnection.Close()
-		if user, err := m.getLdapUser(ldapConnection, userDN, config); err == nil {
-			return user, nil
-		} else {
-			lo.G.Info("User not found :", user)
-			return nil, err
-		}
-	} else {
+	ldapConnection, err := m.LdapConnection(config)
+	if err != nil {
 		return nil, err
 	}
+	defer ldapConnection.Close()
+	user, err := m.getLdapUser(ldapConnection, userDN, config)
+	if err != nil {
+		lo.G.Info("User not found :", user)
+		return nil, err
+	}
+	return user, nil
 }
 
-func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN string, config *Config) (user *User, err error) {
-	var sr *l.SearchResult
+func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN string, config *Config) (*User, error) {
 	lo.G.Debug("User DN:", userDN)
-	regex, _ := regexp.Compile(",[A-Z]+=")
-	indexes := regex.FindStringIndex(strings.ToUpper(userDN))
+	indexes := userRegexp.FindStringIndex(strings.ToUpper(userDN))
 	if len(indexes) == 0 {
-		return nil, errors.New(fmt.Sprintf("%s %s ", "Can't find CN for user DN:", userDN))
+		return nil, fmt.Errorf("cannot find CN for user DN: %s", userDN)
 	}
 	index := indexes[0]
 	userCNTemp := m.UnescapeFilterValue(userDN[:index])
@@ -149,23 +156,22 @@ func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN string, conf
 		attributes,
 		nil)
 
-	if sr, err = ldapConnection.Search(search); err == nil {
-		if (len(sr.Entries)) == 1 {
-			userEntry := sr.Entries[0]
-			user = &User{
-				UserDN: userEntry.DN,
-				UserID: userEntry.GetAttributeValue(config.UserNameAttribute),
-				Email:  userEntry.GetAttributeValue(config.UserMailAttribute),
-			}
-		}
-	} else {
+	sr, err := ldapConnection.Search(search)
+	if err != nil {
 		lo.G.Error(err)
 	}
-	return
+	if (len(sr.Entries)) == 1 {
+		userEntry := sr.Entries[0]
+		return &User{
+			UserDN: userEntry.DN,
+			UserID: userEntry.GetAttributeValue(config.UserNameAttribute),
+			Email:  userEntry.GetAttributeValue(config.UserMailAttribute),
+		}, nil
+	}
+	return nil, nil
 }
-func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearchBase string) (entry *l.Entry, err error) {
 
-	var sr *l.SearchResult
+func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearchBase string) (*l.Entry, error) {
 	filter := fmt.Sprintf(groupFilter, l.EscapeFilter(groupName))
 
 	lo.G.Debug("Searching for group:", filter)
@@ -177,58 +183,54 @@ func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearch
 		filter,
 		attributes,
 		nil)
-	if sr, err = ldapConnection.Search(search); err == nil {
-		if (len(sr.Entries)) == 1 {
-			entry = sr.Entries[0]
-		} else {
-			lo.G.Info("Group not found:", groupName)
-		}
-	} else {
+	sr, err := ldapConnection.Search(search)
+	if err != nil {
 		lo.G.Error(err)
+		return nil, err
 	}
-
-	return
+	if len(sr.Entries) != 1 {
+		return nil, fmt.Errorf("group not found: %s", groupName)
+	}
+	return sr.Entries[0], nil
 }
 
 func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
-	if ldapConnection, err := m.LdapConnection(config); err != nil {
+	ldapConnection, err := m.LdapConnection(config)
+	if err != nil {
 		return nil, err
-	} else {
-		defer ldapConnection.Close()
-		filter := m.getUserFilter(config, userID)
-		lo.G.Debug("Searching for user:", filter)
-		lo.G.Debug("Using user search base:", config.UserSearchBase)
+	}
+	defer ldapConnection.Close()
+	filter := m.getUserFilter(config, userID)
+	lo.G.Debug("Searching for user:", filter)
+	lo.G.Debug("Using user search base:", config.UserSearchBase)
 
-		search := l.NewSearchRequest(
-			config.UserSearchBase,
-			l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
-			filter,
-			attributes,
-			nil)
-		if sr, err := ldapConnection.Search(search); err == nil {
+	search := l.NewSearchRequest(
+		config.UserSearchBase,
+		l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
+		filter,
+		attributes,
+		nil)
 
-			lo.G.Info(fmt.Sprintf("Found %d number of entries for filter %s", len(sr.Entries), filter))
+	sr, err := ldapConnection.Search(search)
+	if err != nil {
+		lo.G.Error(err)
+		return nil, err
+	}
 
-			if (len(sr.Entries)) == 1 {
-				entry := sr.Entries[0]
-				user := &User{
-					UserDN: entry.DN,
-					UserID: userID,
-					Email:  entry.GetAttributeValue(config.UserMailAttribute),
-				}
-				return user, nil
-			}
-		} else {
-			lo.G.Error(err)
-			return nil, err
+	lo.G.Info(fmt.Sprintf("Found %d number of entries for filter %s", len(sr.Entries), filter))
+	if (len(sr.Entries)) == 1 {
+		entry := sr.Entries[0]
+		user := &User{
+			UserDN: entry.DN,
+			UserID: userID,
+			Email:  entry.GetAttributeValue(config.UserMailAttribute),
 		}
+		return user, nil
 	}
 	return nil, nil
 }
 
 func (m *DefaultManager) EscapeFilterValue(filter string) string {
-	var escapeFilterRegex *regexp.Regexp
-	escapeFilterRegex = regexp.MustCompile(`([\\\(\)\*\0-\37\177-\377])`)
 	repl := escapeFilterRegex.ReplaceAllFunc(
 		[]byte(filter),
 		func(match []byte) []byte {
@@ -241,9 +243,7 @@ func (m *DefaultManager) EscapeFilterValue(filter string) string {
 	return string(repl)
 }
 func (m *DefaultManager) UnescapeFilterValue(filter string) string {
-	var unescapeFilterRegex *regexp.Regexp
-	unescapeFilterRegex = regexp.MustCompile(`\\([\da-fA-F]{2}|[()\\*])`)
-	// regex wil only match \[)*\] or \xx x=a-fA-F
+
 	repl := unescapeFilterRegex.ReplaceAllFunc(
 		[]byte(filter),
 		func(match []byte) []byte {
