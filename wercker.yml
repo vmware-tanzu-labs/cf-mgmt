@@ -17,11 +17,11 @@ build:
     - script:
         name: go get
         code: |
-          export GO15VENDOREXPERIMENT=1
+          export GLIDE_VERSION=v0.12.3
           cd $WERCKER_SOURCE_DIR
           go version
-          wget https://github.com/Masterminds/glide/releases/download/v0.11.1/glide-v0.11.1-linux-amd64.tar.gz
-          tar xvzf glide-v0.11.1-linux-amd64.tar.gz
+          wget https://github.com/Masterminds/glide/releases/download/$GLIDE_VERSION/glide-$GLIDE_VERSION-linux-amd64.tar.gz
+          tar xvzf glide-$GLIDE_VERSION-linux-amd64.tar.gz
           export PATH=./linux-amd64:$PATH
           export PATH=$WERCKER_SOURCE_DIR/bin:$PATH
           glide install
@@ -40,11 +40,11 @@ crosscompile:
     - script:
         name: go get
         code: |
-          export GO15VENDOREXPERIMENT=1
+          export GLIDE_VERSION=v0.12.3
           cd $WERCKER_SOURCE_DIR
           go version
-          wget https://github.com/Masterminds/glide/releases/download/v0.11.1/glide-v0.11.1-linux-amd64.tar.gz
-          tar xvzf glide-v0.11.1-linux-amd64.tar.gz
+          wget https://github.com/Masterminds/glide/releases/download/$GLIDE_VERSION/glide-$GLIDE_VERSION-linux-amd64.tar.gz
+          tar xvzf glide-$GLIDE_VERSION-linux-amd64.tar.gz
           export PATH=./linux-amd64:$PATH
           export PATH=$WERCKER_SOURCE_DIR/bin:$PATH
           glide install
