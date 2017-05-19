@@ -63,12 +63,12 @@ func (m *DefaultManager) Get(url, token string, target interface{}) error {
 		return errs[0]
 	}
 	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("Status %d, body %s", res.StatusCode, body)
+		return fmt.Errorf("get: status %d, body %s", res.StatusCode, body)
 	}
 	return json.Unmarshal([]byte(body), &target)
 }
 
-//Delete- Deletes a given resource on the server
+// Delete deletes a given resource on the server.
 func (m *DefaultManager) Delete(url, token string) error {
 	request := gorequest.New()
 	get := request.Delete(url)
@@ -81,7 +81,7 @@ func (m *DefaultManager) Delete(url, token string) error {
 		return errs[0]
 	}
 	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("Delete call failed with Status : %d", res.StatusCode)
+		return fmt.Errorf("delete: call failed with status %d", res.StatusCode)
 	}
 	return nil
 }
