@@ -8,24 +8,31 @@ Go automation for managing orgs, spaces that can be driven from concourse pipeli
 * [Anwar Chirakkattil](https://github.com/anwarchk)
 
 ## Install
-Either download a compiled release for your platform (make sure on linux/mac you chmod +x the binary)
 
-**or**
+Compiled releases are available on Github.
+Download the binary for your platform and place it somewhere on your path.
+Don't forget to `chmod +x` the file on Linux and macOS.
 
-```
-go get github.com/pivotalservices/cf-mgmt
-```
+Alternatively, you may wish to build from source.
 
 ## Build from the source
-`cf-mgmt` is written in [Go](https://golang.org/) . If you would like to make changes to the source code and wants to build the binary by yourself please follow these steps:
 
-* Install `Go`. Follow the instructions on the Go website for setting up your `GOPATH`. Add `go` to the `/usr/bin` path.
-* Install [Glide](https://github.com/Masterminds/glide), a dependency management library for Go. Instructions for downloading Glide can be found there. Add `glide` to your `/usr/bin` path.
-* Run `go get github.com/pivotalservices/cf-mgmt` OR
-* `cd $GOPATH/src/github.com/pivotalservices` and then run `git clone git@github.com:pivotalservices/cf-mgm.git`
-* `cd cf-mgmt`
-* Run `glide install`. This will download all the required dependencies for building `cf-mgmt`
-* Run `GOOS=linux GOARCH=amd64 go build -o cf-mgmt-linux` to build the binary.
+`cf-mgmt` is written in [Go](https://golang.org/).
+To build the binary yourself, follow these steps:
+
+* Install `Go`.
+* Install [Glide](https://github.com/Masterminds/glide), a dependency management tool for Go.
+* Clone the repo:
+  - `mkdir -p $(go env GOPATH)/src/github.com/pivotalservices`
+  - `cd $(go env GOPATH)/src/github.com/pivotalservices`
+  - `git clone git@github.com:pivotalservices/cf-mgmt.git`
+* Install dependencies:
+  - `cd cf-mgmt`
+  - `glide install`
+  - `go build`
+
+To cross compile, set the `$GOOS` and `$GOARCH` environment variables.
+For example: `GOOS=linux GOARCH=amd64 go build`.
 
 ## Testing
 
@@ -35,12 +42,13 @@ docker run -d -p 389:389 --name ldap -t cwashburn/ldap
 go test $(glide nv) -v
 ```
 
-## Wercker cli tests
+## Wercker CLI tests
 ```
 ./testrunner
 ```
 
 ## Contributing
+
 PRs are always welcome or open issues if you are experiencing an issue and will do my best to address issues in timely fashion.
 
 ### The following operation are enabled with cf-mgmt for helping to manage your configuration
