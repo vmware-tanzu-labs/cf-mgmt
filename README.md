@@ -36,16 +36,31 @@ For example: `GOOS=linux GOARCH=amd64 go build`.
 
 ## Testing
 
+To run the unit tests, use `go test $(glide nv)`.
+
+### Integration tests
+
+There are integration tests that require some additional configuration.
+
+The LDAP tests require an LDAP server, which can be started with Docker:
+
 ```
 docker pull cwashburn/ldap
 docker run -d -p 389:389 --name ldap -t cwashburn/ldap
-go test $(glide nv) -v
+RUN_INTEGRATION_TESTS=true go test ./ldap/...
 ```
 
-## Wercker CLI tests
+The remaining integration tests require [PCF Dev](https://pivotal.io/pcf-dev) to be running.
+
 ```
-./testrunner
+cf dev start
+RUN_INTEGRATION_TESTS=true go test ./integration/...
 ```
+
+### Wercker CLI
+
+Additionally, you can install the [Wercker CLI](https://www.wercker.com/wercker-cli) and
+run tests with the `./testrunner` script.
 
 ## Contributing
 

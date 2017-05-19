@@ -30,7 +30,7 @@ build:
     - script:
         name: go test
         code: |
-          LOG_LEVEL=debug go test -short $(glide novendor) -v -cover -race
+          LOG_LEVEL=debug RUN_LDAP_TESTS=true go test $(glide novendor) -v -cover -race
 
 crosscompile:
   steps:
