@@ -103,16 +103,16 @@ func (m *DefaultManager) UpdateSecurityGroup(sgGUID, sgName, contents string) er
 func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (string, error) {
 	url := fmt.Sprintf("%s/v2/security_groups", m.Host)
 	sendString := fmt.Sprintf(`{"name":"%s","rules":%s}`, sgName, contents)
-	if body, err := m.HTTP.Post(url, m.Token, sendString); err != nil {
+	body, err := m.HTTP.Post(url, m.Token, sendString)
+	if err != nil {
 		return "", err
-	} else {
-		sgResource := &SecurityGroup{}
-		if err := json.Unmarshal([]byte(body), &sgResource); err == nil {
-			return sgResource.MetaData.GUID, nil
-		} else {
-			return "", err
-		}
 	}
+	sgResource := &SecurityGroup{}
+	err = json.Unmarshal([]byte(body), &sgResource)
+	if err != nil {
+		return "", err
+	}
+	return sgResource.MetaData.GUID, nil
 }
 
 func (m *DefaultManager) AssignSecurityGroupToSpace(spaceGUID, sgGUID string) error {
@@ -132,16 +132,15 @@ func (m *DefaultManager) CreateSpaceQuota(orgGUID, quotaName string,
 	paidServicePlansAllowed bool) (string, error) {
 	url := fmt.Sprintf("%s/v2/space_quota_definitions", m.Host)
 	sendString := fmt.Sprintf(`{"name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t,"organization_guid":"%s"}`, quotaName, memoryLimit, instanceMemoryLimit, totalRoutes, totalServices, paidServicePlansAllowed, orgGUID)
-	if body, err := m.HTTP.Post(url, m.Token, sendString); err == nil {
-		quotaResource := &Quota{}
-		if err = json.Unmarshal([]byte(body), &quotaResource); err == nil {
-			return quotaResource.MetaData.GUID, nil
-		} else {
-			return "", err
-		}
-	} else {
+	body, err := m.HTTP.Post(url, m.Token, sendString)
+	if err != nil {
 		return "", err
 	}
+	quotaResource := &Quota{}
+	if err = json.Unmarshal([]byte(body), &quotaResource); err != nil {
+		return "", err
+	}
+	return quotaResource.MetaData.GUID, nil
 }
 
 func (m *DefaultManager) UpdateSpaceQuota(orgGUID, quotaGUID, quotaName string,
@@ -227,17 +226,18 @@ func (m *DefaultManager) CreateQuota(quotaName string,
 	paidServicePlansAllowed bool) (string, error) {
 	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
 	sendString := fmt.Sprintf(`{"name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t}`, quotaName, memoryLimit, instanceMemoryLimit, totalRoutes, totalServices, paidServicePlansAllowed)
-	if body, err := m.HTTP.Post(url, m.Token, sendString); err == nil {
-		quotaResource := &Quota{}
-		if err = json.Unmarshal([]byte(body), &quotaResource); err == nil {
-			return quotaResource.MetaData.GUID, nil
-		} else {
-			return "", err
-		}
-	} else {
+	body, err := m.HTTP.Post(url, m.Token, sendString)
+	if err != nil {
 		return "", err
 	}
+	quotaResource := &Quota{}
+	err = json.Unmarshal([]byte(body), &quotaResource)
+	if err != nil {
+		return "", err
+	}
+	return quotaResource.MetaData.GUID, nil
 }
+
 func (m *DefaultManager) UpdateQuota(quotaGUID, quotaName string,
 	memoryLimit, instanceMemoryLimit, totalRoutes, totalServices int,
 	paidServicePlansAllowed bool) error {
