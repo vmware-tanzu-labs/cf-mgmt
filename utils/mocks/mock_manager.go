@@ -28,14 +28,14 @@ func (_m *MockManager) EXPECT() *_MockManagerRecorder {
 	return _m.recorder
 }
 
-func (_m *MockManager) DoesFileExist(_param0 string) bool {
-	ret := _m.ctrl.Call(_m, "DoesFileExist", _param0)
+func (_m *MockManager) FileOrDirectoryExists(_param0 string) bool {
+	ret := _m.ctrl.Call(_m, "FileOrDirectoryExists", _param0)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-func (_mr *_MockManagerRecorder) DoesFileExist(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DoesFileExist", arg0)
+func (_mr *_MockManagerRecorder) FileOrDirectoryExists(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "FileOrDirectoryExists", arg0)
 }
 
 func (_m *MockManager) FindFiles(_param0 string, _param1 string) ([]string, error) {
