@@ -5,9 +5,13 @@ import:
 - package: gopkg.in/yaml.v2
 - package: github.com/xchapter7x/lo
 - package: github.com/codegangsta/cli
-- package: github.com/onsi/ginkgo
-- package: github.com/onsi/gomega
-- package: github.com/golang/protobuf
+- package: github.com/golang/mock
+  subpackages:
+  - gomock
 - package: github.com/go-ldap/ldap
-- package: gopkg.in/asn1-ber.v1
-- package: github.com/golang/mock/gomock
+  version: ^2.5.0
+testImport:
+- package: github.com/onsi/gomega
+  version: ^1.1.0
+- package: github.com/onsi/ginkgo
+  version: ^1.3.1
