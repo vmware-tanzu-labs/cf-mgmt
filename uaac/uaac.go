@@ -46,15 +46,14 @@ func (m *DefaultUAACManager) ListUsers() (map[string]string, error) {
 	return userIDMap, nil
 }
 
-//UsersByID  Returns a map keyed by userid and value as User struct
+// UsersByID returns a map of Users keyed by ID.
 func (m *DefaultUAACManager) UsersByID() (userIDMap map[string]User, err error) {
 	userIDMap = make(map[string]User)
 	userList, err := getUsers(m.Host, m.UUACToken)
 	if err != nil {
 		return nil, err
 	}
-	sortedUserList := NewUserListSorter(userList, DirAsc).Sort()
-	for _, user := range sortedUserList.Users {
+	for _, user := range userList.Users {
 		userIDMap[user.UserName] = user
 	}
 	return userIDMap, nil
@@ -66,8 +65,7 @@ func getUsers(host string, uaacToken string) (userList *UserList, err error) {
 	url := fmt.Sprintf("%s/Users?count=5000", host)
 	userList = new(UserList)
 	if err := http.NewManager().Get(url, uaacToken, userList); err != nil {
-		fmt.Println("Error retreiving users %s", err)
-		return nil, err
+		return nil, fmt.Errorf("couldn't retrieve users: %v", err)
 	}
 	lo.G.Infof("Found %d users in the CF instance", len(userList.Users))
 	return userList, nil
