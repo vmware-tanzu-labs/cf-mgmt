@@ -15,14 +15,13 @@ func NewDefaultManager() (mgr Manager) {
 }
 
 //FindFiles -
-func (m *DefaultManager) FindFiles(configDir, pattern string) (files []string, err error) {
+func (m *DefaultManager) FindFiles(configDir, pattern string) ([]string, error) {
 	m.filePattern = pattern
-	err = filepath.Walk(configDir, m.walkDirectories)
-	files = m.filePaths
-	return
+	err := filepath.Walk(configDir, m.walkDirectories)
+	return m.filePaths, err
 }
 
-func (m *DefaultManager) walkDirectories(path string, info os.FileInfo, e error) (err error) {
+func (m *DefaultManager) walkDirectories(path string, info os.FileInfo, e error) error {
 	if strings.Contains(path, m.filePattern) {
 		m.filePaths = append(m.filePaths, path)
 	}
@@ -32,45 +31,39 @@ func (m *DefaultManager) walkDirectories(path string, info os.FileInfo, e error)
 //FileOrDirectoryExists - checks if file exists
 func (m *DefaultManager) FileOrDirectoryExists(path string) bool {
 	_, err := os.Stat(path)
-	if err == nil {
-		return true
-	}
-	if os.IsNotExist(err) {
-		return false
-	}
-	return true
+	return !os.IsNotExist(err)
 }
 
 //LoadFile -
-func (m *DefaultManager) LoadFile(configFile string, dataType interface{}) (err error) {
+func (m *DefaultManager) LoadFile(configFile string, dataType interface{}) error {
 	var data []byte
-	if data, err = ioutil.ReadFile(configFile); err == nil {
-		err = yaml.Unmarshal(data, dataType)
+	data, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		return err
 	}
-	return
+	return yaml.Unmarshal(data, dataType)
 }
 
 //WriteFileBytes -
-func (m *DefaultManager) WriteFileBytes(configFile string, data []byte) (err error) {
-	err = ioutil.WriteFile(configFile, data, 0755)
-	return
+func (m *DefaultManager) WriteFileBytes(configFile string, data []byte) error {
+	return ioutil.WriteFile(configFile, data, 0755)
 }
 
 //WriteFile -
-func (m *DefaultManager) WriteFile(configFile string, dataType interface{}) (err error) {
-	var data []byte
-	if data, err = yaml.Marshal(dataType); err == nil {
-		err = m.WriteFileBytes(configFile, data)
+func (m *DefaultManager) WriteFile(configFile string, dataType interface{}) error {
+	data, err := yaml.Marshal(dataType)
+	if err != nil {
+		return err
 	}
-	return
+	return m.WriteFileBytes(configFile, data)
 }
 
 //Manager -
 type Manager interface {
-	FindFiles(directoryName, pattern string) (files []string, err error)
-	LoadFile(configFile string, dataType interface{}) (err error)
-	WriteFile(configFile string, dataType interface{}) (err error)
-	WriteFileBytes(configFile string, data []byte) (err error)
+	FindFiles(directoryName, pattern string) ([]string, error)
+	LoadFile(configFile string, dataType interface{}) error
+	WriteFile(configFile string, dataType interface{}) error
+	WriteFileBytes(configFile string, data []byte) error
 	FileOrDirectoryExists(path string) bool
 }
 
