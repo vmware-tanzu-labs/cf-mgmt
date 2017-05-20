@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
@@ -320,10 +321,9 @@ func (m *DefaultSpaceManager) CreateSpaces(configDir, ldapBindPassword string) e
 }
 
 func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgName, ldapBindPassword string) error {
-	defaultSpaceConfigFile := configDir + "/spaceDefaults.yml"
+	defaultSpaceConfigFile := filepath.Join(configDir, "spaceDefaults.yml")
 	if m.UtilsMgr.FileOrDirectoryExists(defaultSpaceConfigFile) {
 		var config *ldap.Config
-		var uaacUsers map[string]string
 		var err error
 		if ldapBindPassword == "" {
 			config = &ldap.Config{
@@ -336,39 +336,31 @@ func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgN
 			}
 		}
 
+		var uaacUsers map[string]string
 		if uaacUsers, err = m.UAACMgr.ListUsers(); err != nil {
 			lo.G.Error(err)
 			return err
 		}
 
 		var defaultSpaceConfig *InputUpdateSpaces
-
-		if err = m.UtilsMgr.LoadFile(defaultSpaceConfigFile, &defaultSpaceConfig); err == nil {
-			defaultSpaceConfig.Org = orgName
-			defaultSpaceConfig.Space = spaceName
-			if err = m.updateSpaceUsers(config, defaultSpaceConfig, uaacUsers); err != nil {
-				return err
-			} else {
-				return nil
-			}
-		} else {
-			lo.G.Error(err)
+		if err = m.UtilsMgr.LoadFile(defaultSpaceConfigFile, &defaultSpaceConfig); err != nil {
+			lo.G.Info(defaultSpaceConfigFile, "doesn't exist")
+			return nil
+		}
+		defaultSpaceConfig.Org = orgName
+		defaultSpaceConfig.Space = spaceName
+		if err = m.updateSpaceUsers(config, defaultSpaceConfig, uaacUsers); err != nil {
 			return err
 		}
-	} else {
-		lo.G.Info(defaultSpaceConfigFile, "doesn't exist")
-		return nil
 	}
+	return nil
 }
 
-func (m *DefaultSpaceManager) doesSpaceExist(spaces []*cloudcontroller.Space, spaceName string) (result bool) {
-	result = false
+func (m *DefaultSpaceManager) doesSpaceExist(spaces []*cloudcontroller.Space, spaceName string) bool {
 	for _, space := range spaces {
 		if space.Entity.Name == spaceName {
-			result = true
-			return
+			return true
 		}
 	}
-	return
-
+	return false
 }
