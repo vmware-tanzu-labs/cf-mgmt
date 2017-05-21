@@ -366,11 +366,10 @@ func createFile(assetName, fileName string) (err error) {
 
 //CreateCommand -
 func CreateCommand(commandName string, action func(c *cli.Context) (err error), flags []cli.Flag, eh *ErrorHandler) (command cli.Command) {
-	desc := fmt.Sprintf(commandName)
 	command = cli.Command{
 		Name:        commandName,
 		Usage:       fmt.Sprintf("%s with what is defined in config", commandName),
-		Description: desc,
+		Description: commandName,
 		Action:      action,
 		Flags:       flags,
 	}
