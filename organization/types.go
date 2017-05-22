@@ -45,12 +45,12 @@ type InputOrgs struct {
 
 //Contains -
 func (s *InputOrgs) Contains(orgName string) bool {
-	set := make(map[string]bool)
-	for _, v := range s.Orgs {
-		set[v] = true
+	for _, org := range s.Orgs {
+		if org == orgName {
+			return true
+		}
 	}
-	_, ok := set[orgName]
-	return ok
+	return false
 }
 
 //InputUpdateOrgs -
@@ -74,25 +74,22 @@ type InputUpdateOrgs struct {
 func (i *InputUpdateOrgs) GetBillingManagerGroup() string {
 	if i.BillingManager.LdapGroup != "" {
 		return i.BillingManager.LdapGroup
-	} else {
-		return i.BillingManagerGroup
 	}
+	return i.BillingManagerGroup
 }
 
 func (i *InputUpdateOrgs) GetManagerGroup() string {
 	if i.Manager.LdapGroup != "" {
 		return i.Manager.LdapGroup
-	} else {
-		return i.ManagerGroup
 	}
+	return i.ManagerGroup
 }
 
 func (i *InputUpdateOrgs) GetAuditorGroup() string {
 	if i.Auditor.LdapGroup != "" {
 		return i.Auditor.LdapGroup
-	} else {
-		return i.AuditorGroup
 	}
+	return i.AuditorGroup
 }
 
 type UserMgmt struct {
