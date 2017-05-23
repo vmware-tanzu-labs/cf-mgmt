@@ -84,16 +84,16 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 	if updateUsersInput.RemoveUsers {
 		lo.G.Debugf("Deleting users for org: %s", updateUsersInput.OrgName)
 		for orgUser, orgUserGUID := range orgUsers {
-			lo.G.Info(fmt.Sprintf("removing user: %s from org: %s and role: %s", orgUser, updateUsersInput.OrgName, updateUsersInput.Role))
+			lo.G.Infof("removing user: %s from org: %s and role: %s", orgUser, updateUsersInput.OrgName, updateUsersInput.Role)
 			err = m.cloudController.RemoveCFUser(updateUsersInput.OrgGUID, ORGS, orgUserGUID, updateUsersInput.Role)
 			if err != nil {
-				lo.G.Error(fmt.Sprintf("Unable to remove user : %s from org %s with role %s", orgUser, updateUsersInput.OrgGUID, updateUsersInput.Role))
-				lo.G.Error(fmt.Errorf("Cloud controller API error : %s", err))
+				lo.G.Errorf("Unable to remove user : %s from org %s with role %s", orgUser, updateUsersInput.OrgGUID, updateUsersInput.Role)
+				lo.G.Errorf("Cloud controller API error : %s", err)
 				return err
 			}
 		}
 	} else {
-		lo.G.Info(fmt.Sprintf("Not removing users. Set enable-remove-users: true to orgConfig for org: %s", updateUsersInput.OrgName))
+		lo.G.Infof("Not removing users. Set enable-remove-users: true to orgConfig for org: %s", updateUsersInput.OrgName)
 	}
 	return nil
 }
@@ -163,7 +163,7 @@ func (m *UserManager) addUserToOrgAndRole(userID, orgGUID, role, orgName string)
 		lo.G.Error(err)
 		return err
 	}
-	lo.G.Info(fmt.Sprintf("Adding user: %s to org: %s with role: %s", userID, orgName, role))
+	lo.G.Infof("Adding user: %s to org: %s with role: %s", userID, orgName, role)
 	if err := m.cloudController.AddUserToOrgRole(userID, role, orgGUID); err != nil {
 		lo.G.Error(err)
 		return err

@@ -301,10 +301,10 @@ func (m *DefaultSpaceManager) CreateSpaces(configDir, ldapBindPassword string) e
 		}
 		for _, spaceName := range input.Spaces {
 			if m.doesSpaceExist(spaces, spaceName) {
-				lo.G.Info(fmt.Sprintf("[%s] space already exists", spaceName))
+				lo.G.Infof("[%s] space already exists", spaceName)
 				continue
 			}
-			lo.G.Info(fmt.Sprintf("Creating [%s] space in [%s] org", spaceName, input.Org))
+			lo.G.Infof("Creating [%s] space in [%s] org", spaceName, input.Org)
 			if err = m.CloudController.CreateSpace(spaceName, orgGUID); err != nil {
 				lo.G.Error(err)
 				return err

@@ -217,7 +217,7 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 		return nil, err
 	}
 
-	lo.G.Info(fmt.Sprintf("Found %d number of entries for filter %s", len(sr.Entries), filter))
+	lo.G.Infof("Found %d number of entries for filter %s", len(sr.Entries), filter)
 	if (len(sr.Entries)) == 1 {
 		entry := sr.Entries[0]
 		user := &User{

@@ -86,7 +86,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 	if updateUsersInput.RemoveUsers {
 		lo.G.Debugf("Deleting users for org/space: %s/%s", updateUsersInput.OrgName, updateUsersInput.SpaceName)
 		for spaceUser, spaceUserGUID := range spaceUsers {
-			lo.G.Info(fmt.Sprintf("removing user: %s from space: %s and role: %s", spaceUser, updateUsersInput.SpaceName, updateUsersInput.Role))
+			lo.G.Infof("removing user: %s from space: %s and role: %s", spaceUser, updateUsersInput.SpaceName, updateUsersInput.Role)
 			err = m.cloudController.RemoveCFUser(updateUsersInput.SpaceGUID, SPACES, spaceUserGUID, updateUsersInput.Role)
 			if err != nil {
 				lo.G.Errorf("Unable to remove user : %s from space %s role in space : %s", spaceUser, updateUsersInput.Role, updateUsersInput.SpaceName)
@@ -115,7 +115,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, spaceGUID, orgGUID str
 	userID = strings.ToLower(userID)
 
 	if _, ok := spaceUsers[userID]; !ok {
-		lo.G.Debug(fmt.Sprintf("User[%s] not found in: %v", userID, spaceUsers))
+		lo.G.Debugf("User[%s] not found in: %v", userID, spaceUsers)
 		if _, userExists := uaacUsers[userID]; !userExists {
 			lo.G.Info("User", userID, "doesn't exist in cloud foundry, so creating user")
 			if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
