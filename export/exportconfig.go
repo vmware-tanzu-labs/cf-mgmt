@@ -24,28 +24,22 @@ func NewExportManager(
 //ExportConfig Imports org and space configuration from an existing CF instance
 //Entries part of excludedOrgs and excludedSpaces are not included in the import
 func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, excludedSpaces map[string]string) error {
-	var err error
-	var orgs []*cc.Org
-	var configMgr config.Manager
-	var userIDToUserMap map[string]uaac.User
-	var spaces []*cc.Space
-
 	//Get all the users from the foundation
-	userIDToUserMap, err = im.UAACMgr.UsersByID()
+	userIDToUserMap, err := im.UAACMgr.UsersByID()
 	if err != nil {
 		lo.G.Error("Unable to retrieve users")
 		return err
 	}
 	//Get all the orgs
-	orgs, err = im.CloudController.ListOrgs()
+	orgs, err := im.CloudController.ListOrgs()
 	if err != nil {
 		lo.G.Errorf("Unable to retrieve orgs. Error : %s", err)
 		return err
 	}
-	configMgr = config.NewManager(im.ConfigDir)
+	configMgr := config.NewManager(im.ConfigDir)
 	lo.G.Info("Trying to delete existing config directory")
 	//Delete existing config directory
-	configMgr.DeleteConfigIfExists()
+	err = configMgr.DeleteConfigIfExists()
 	if err != nil {
 		return err
 	}
@@ -67,42 +61,42 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	lo.G.Debugf("Orgs to process: %s", orgs)
 
 	for _, org := range orgs {
-		if _, ok := excludedOrgs[org.Entity.Name]; !ok {
-			lo.G.Infof("Processing org: %s ", org.Entity.Name)
-			orgConfig := &config.OrgConfig{OrgName: org.Entity.Name}
-			//Add users
-			addOrgUsers(orgConfig, im.CloudController, userIDToUserMap, org.MetaData.GUID)
-			//Add Quota definition if applicable
-			if org.Entity.QuotaDefinitionGUID != "" {
-				orgConfig.OrgQuota = quotaDefinition(im.CloudController, org.Entity.QuotaDefinitionGUID, organization.ORGS)
-			}
-			configMgr.AddOrgToConfig(orgConfig)
-
-			lo.G.Infof("Done creating org %s", orgConfig.OrgName)
-			lo.G.Infof("Listing spaces for org %s", orgConfig.OrgName)
-			spaces, _ = im.CloudController.ListSpaces(org.MetaData.GUID)
-			lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.OrgName)
-			for _, orgSpace := range spaces {
-				if _, ok := excludedSpaces[orgSpace.Entity.Name]; !ok {
-					lo.G.Infof("Processing space: %s", orgSpace.Entity.Name)
-
-					spaceConfig := &config.SpaceConfig{OrgName: org.Entity.Name, SpaceName: orgSpace.Entity.Name}
-					//Add users
-					addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, orgSpace.MetaData.GUID)
-					//Add Quota definition if applicable
-					if orgSpace.Entity.QuotaDefinitionGUID != "" {
-						spaceConfig.SpaceQuota = quotaDefinition(im.CloudController, orgSpace.Entity.QuotaDefinitionGUID, space.SPACES)
-					}
-					if orgSpace.Entity.AllowSSH {
-						spaceConfig.AllowSSH = true
-					}
-					configMgr.AddSpaceToConfig(spaceConfig)
-				} else {
-					lo.G.Infof("Skipping space: %s as it is ignored from import", orgSpace.Entity.Name)
-				}
-			}
-		} else {
+		if _, ok := excludedOrgs[org.Entity.Name]; ok {
 			lo.G.Infof("Skipping org: %s as it is ignored from import", org.Entity.Name)
+			continue
+		}
+		lo.G.Infof("Processing org: %s ", org.Entity.Name)
+		orgConfig := &config.OrgConfig{OrgName: org.Entity.Name}
+		//Add users
+		addOrgUsers(orgConfig, im.CloudController, userIDToUserMap, org.MetaData.GUID)
+		//Add Quota definition if applicable
+		if org.Entity.QuotaDefinitionGUID != "" {
+			orgConfig.OrgQuota = quotaDefinition(im.CloudController, org.Entity.QuotaDefinitionGUID, organization.ORGS)
+		}
+		configMgr.AddOrgToConfig(orgConfig)
+
+		lo.G.Infof("Done creating org %s", orgConfig.OrgName)
+		lo.G.Infof("Listing spaces for org %s", orgConfig.OrgName)
+		spaces, _ := im.CloudController.ListSpaces(org.MetaData.GUID)
+		lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.OrgName)
+		for _, orgSpace := range spaces {
+			if _, ok := excludedSpaces[orgSpace.Entity.Name]; ok {
+				lo.G.Infof("Skipping space: %s as it is ignored from import", orgSpace.Entity.Name)
+				continue
+			}
+			lo.G.Infof("Processing space: %s", orgSpace.Entity.Name)
+
+			spaceConfig := &config.SpaceConfig{OrgName: org.Entity.Name, SpaceName: orgSpace.Entity.Name}
+			//Add users
+			addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, orgSpace.MetaData.GUID)
+			//Add Quota definition if applicable
+			if orgSpace.Entity.QuotaDefinitionGUID != "" {
+				spaceConfig.SpaceQuota = quotaDefinition(im.CloudController, orgSpace.Entity.QuotaDefinitionGUID, space.SPACES)
+			}
+			if orgSpace.Entity.AllowSSH {
+				spaceConfig.AllowSSH = true
+			}
+			configMgr.AddSpaceToConfig(spaceConfig)
 		}
 	}
 	return nil
