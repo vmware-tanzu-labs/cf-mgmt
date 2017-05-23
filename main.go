@@ -140,6 +140,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateExportConfigCommand(eh),
 		CreateGeneratePipelineCommand(runGeneratePipeline, eh),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags(), eh),
+		CreateCommand("delete-orgs", runDeleteOrgs, defaultFlags(), eh),
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags(), eh),
 		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlagsWithLdap(), eh),
 		CreateCommand("create-spaces", runCreateSpaces, defaultFlagsWithLdap(), eh),
@@ -384,6 +385,16 @@ func runCreateOrgs(c *cli.Context) error {
 	}
 	return err
 }
+
+func runDeleteOrgs(c *cli.Context) error {
+	var cfMgmt *CFMgmt
+	var err error
+	if cfMgmt, err = InitializeManager(c); err == nil {
+		err = cfMgmt.OrgManager.DeleteOrgs(cfMgmt.ConfigDirectory)
+	}
+	return err
+}
+
 
 func runCreateOrgQuotas(c *cli.Context) error {
 	var cfMgmt *CFMgmt

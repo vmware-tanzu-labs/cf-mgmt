@@ -125,6 +125,19 @@ func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 	return nil
 }
 
+//DeleteOrgs -
+func (m *DefaultOrgManager) DeleteOrgs(configDir string) error {
+	configFile := filepath.Join(configDir, "orgs.yml")
+	lo.G.Info("Processing org file", configFile)
+	input := &InputOrgs{}
+	if err := m.UtilsMgr.LoadFile(configFile, input); err != nil {
+		return err
+	}
+
+	fmt.Println("Hi again")
+	return nil
+}
+
 func (m *DefaultOrgManager) DoesOrgExist(orgName string, orgs []*cloudcontroller.Org) bool {
 	for _, org := range orgs {
 		if org.Entity.Name == orgName {
