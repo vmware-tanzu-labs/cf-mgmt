@@ -338,10 +338,7 @@ var _ = Describe("given SpaceManager", func() {
 
 			mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
 
-			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-			Ω(err).Should(Not(BeNil()))
-			Ω(err.Error()).Should(BeEquivalentTo("User user-1 doesn't exist in cloud foundry, so must add internal user first"))
-
+			Ω(userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)).ShouldNot(Succeed())
 			Ω(len(uaacUsers)).Should(BeEquivalentTo(0))
 		})
 

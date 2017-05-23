@@ -15,12 +15,12 @@ const ROLE_SPACE_AUDITORS = "auditors"
 
 //Manager -
 type Manager interface {
-	FindSpace(orgName, spaceName string) (space *cloudcontroller.Space, err error)
-	CreateSpaces(configDir, ldapBindPassword string) (err error)
+	FindSpace(orgName, spaceName string) (*cloudcontroller.Space, error)
+	CreateSpaces(configDir, ldapBindPassword string) error
 	UpdateSpaces(configDir string) (err error)
-	UpdateSpaceUsers(configDir, ldapBindPassword string) (err error)
-	CreateQuotas(configDir string) (err error)
-	CreateApplicationSecurityGroups(configDir string) (err error)
+	UpdateSpaceUsers(configDir, ldapBindPassword string) error
+	CreateQuotas(configDir string) error
+	CreateApplicationSecurityGroups(configDir string) error
 }
 
 //InputCreateSpaces -
@@ -31,12 +31,12 @@ type InputCreateSpaces struct {
 
 //Contains -
 func (s *InputCreateSpaces) Contains(spaceName string) bool {
-	set := make(map[string]bool)
 	for _, v := range s.Spaces {
-		set[v] = true
+		if v == spaceName {
+			return true
+		}
 	}
-	_, ok := set[spaceName]
-	return ok
+	return false
 }
 
 //InputUpdateSpaces -
@@ -71,25 +71,22 @@ type ConfigSpaceDefaults struct {
 func (i *InputUpdateSpaces) GetDeveloperGroup() string {
 	if i.Developer.LdapGroup != "" {
 		return i.Developer.LdapGroup
-	} else {
-		return i.DeveloperGroup
 	}
+	return i.DeveloperGroup
 }
 
 func (i *InputUpdateSpaces) GetManagerGroup() string {
 	if i.Manager.LdapGroup != "" {
 		return i.Manager.LdapGroup
-	} else {
-		return i.ManagerGroup
 	}
+	return i.ManagerGroup
 }
 
 func (i *InputUpdateSpaces) GetAuditorGroup() string {
 	if i.Auditor.LdapGroup != "" {
 		return i.Auditor.LdapGroup
-	} else {
-		return i.AuditorGroup
 	}
+	return i.AuditorGroup
 }
 
 type UserMgmt struct {
