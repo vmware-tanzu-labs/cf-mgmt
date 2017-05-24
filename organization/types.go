@@ -42,6 +42,7 @@ type MetaData struct {
 //InputOrgs -
 type InputOrgs struct {
 	Orgs []string `yaml:"orgs"`
+	ProtectedOrgs []string `yaml:"protected_orgs"`
 }
 
 //Contains -

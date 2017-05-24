@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"reflect"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/ldap"
@@ -134,7 +135,37 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string) error {
 		return err
 	}
 
-	fmt.Println("Hi again")
+	configuredOrgs := make(map[string]bool)
+	for _, orgName := range input.Orgs {
+		configuredOrgs[orgName] = true
+	}
+	protectedOrgs := make(map[string]bool)
+	for _, orgName := range input.ProtectedOrgs {
+		lo.G.Info(fmt.Sprintf("Protected org [%s] - will not be deleted", org.Entity.Name))
+		protectedOrgs[orgName] = true
+	}
+
+	orgs, err := m.CloudController.ListOrgs()
+	if err != nil {
+		return err
+	}
+
+	orgsToDelete := make([]*cloudcontroller.Org, 0)
+	for _, org := range orgs {
+		if _, exists := configuredOrgs[org.Entity.Name]; !exists {
+			if _, protected := protectedOrgs[org.Entity.Name]; !protected {
+				orgsToDelete = append(orgsToDelete, org)
+			}
+		}
+	}
+
+	for _, org := range orgsToDelete {
+		lo.G.Info(fmt.Sprintf("Deleting [%s] org", org.Entity.Name))
+		if err := m.CloudController.DeleteOrg(org.Entity.Name); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
