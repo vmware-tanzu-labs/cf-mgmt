@@ -99,7 +99,6 @@ const (
 	configDirectory  string = "CONFIG_DIR"
 	orgName          string = "ORG"
 	spaceName        string = "SPACE"
-	peek						 bool   = false
 	ldapPassword     string = "LDAP_PASSWORD"
 	orgBillingMgrGrp string = "ORG_BILLING_MGR_GRP"
 	orgMgrGrp        string = "ORG_MGR_GRP"
