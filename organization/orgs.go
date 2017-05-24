@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"reflect"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/ldap"
@@ -127,7 +126,7 @@ func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 }
 
 //DeleteOrgs -
-func (m *DefaultOrgManager) DeleteOrgs(configDir string) error {
+func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) error {
 	configFile := filepath.Join(configDir, "orgs.yml")
 	lo.G.Info("Processing org file", configFile)
 	input := &InputOrgs{}
@@ -141,7 +140,7 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string) error {
 	}
 	protectedOrgs := make(map[string]bool)
 	for _, orgName := range input.ProtectedOrgs {
-		lo.G.Info(fmt.Sprintf("Protected org [%s] - will not be deleted", org.Entity.Name))
+		lo.G.Info(fmt.Sprintf("Protected org [%s] - will not be deleted", orgName))
 		protectedOrgs[orgName] = true
 	}
 
@@ -159,12 +158,19 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string) error {
 		}
 	}
 
-	for _, org := range orgsToDelete {
-		lo.G.Info(fmt.Sprintf("Deleting [%s] org", org.Entity.Name))
-		if err := m.CloudController.DeleteOrg(org.Entity.Name); err != nil {
-			return err
+	if peekDeletion {
+		for _, org := range orgsToDelete {
+			lo.G.Info(fmt.Sprintf("Peek - Would Delete [%s] org", org.Entity.Name))
+		}
+	} else {
+		for _, org := range orgsToDelete {
+			lo.G.Info(fmt.Sprintf("Deleting [%s] org", org.Entity.Name))
+			if err := m.CloudController.DeleteOrg(org.Entity.Name); err != nil {
+				return err
+			}
 		}
 	}
+
 
 	return nil
 }

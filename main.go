@@ -41,6 +41,7 @@ type CFMgmt struct {
 	SpaceManager    space.Manager
 	ConfigManager   config.Manager
 	ConfigDirectory string
+	PeekDeletion		bool
 	LdapBindPwd     string
 	UaacToken       string
 	SystemDomain    string
@@ -57,6 +58,7 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	pwd := c.String(getFlag(password))
 	secret := c.String(getFlag(clientSecret))
 	ldapPwd := c.String(getFlag(ldapPassword))
+	peek := c.Bool("peek")
 
 	if sysDomain == "" ||
 		user == "" ||
@@ -76,7 +78,7 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	if uaacToken, err = cfMgmt.UAAManager.GetUAACToken(secret); err != nil {
 		return nil, err
 	}
-
+	cfMgmt.PeekDeletion = peek
 	cfMgmt.ConfigDirectory = configDir
 	cfMgmt.UaacToken = uaacToken
 	cfMgmt.SystemDomain = sysDomain
@@ -97,6 +99,7 @@ const (
 	configDirectory  string = "CONFIG_DIR"
 	orgName          string = "ORG"
 	spaceName        string = "SPACE"
+	peek						 bool   = false
 	ldapPassword     string = "LDAP_PASSWORD"
 	orgBillingMgrGrp string = "ORG_BILLING_MGR_GRP"
 	orgMgrGrp        string = "ORG_MGR_GRP"
@@ -140,7 +143,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateExportConfigCommand(eh),
 		CreateGeneratePipelineCommand(runGeneratePipeline, eh),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags(), eh),
-		CreateCommand("delete-orgs", runDeleteOrgs, defaultFlags(), eh),
+		CreateCommand("delete-orgs", runDeleteOrgs, defaultFlagsWithDelete(), eh),
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags(), eh),
 		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlagsWithLdap(), eh),
 		CreateCommand("create-spaces", runCreateSpaces, defaultFlagsWithLdap(), eh),
@@ -390,7 +393,7 @@ func runDeleteOrgs(c *cli.Context) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
-		err = cfMgmt.OrgManager.DeleteOrgs(cfMgmt.ConfigDirectory)
+		err = cfMgmt.OrgManager.DeleteOrgs(cfMgmt.ConfigDirectory, cfMgmt.PeekDeletion)
 	}
 	return err
 }
@@ -465,6 +468,16 @@ func defaultFlagsWithLdap() (flags []cli.Flag) {
 		Name:   getFlag(ldapPassword),
 		EnvVar: ldapPassword,
 		Usage:  "Ldap password for binding",
+	}
+	flags = append(flags, flag)
+	return
+}
+
+func defaultFlagsWithDelete() (flags []cli.Flag) {
+	flags = defaultFlags()
+	flag := cli.BoolFlag{
+		Name:   "peek",
+		Usage:  "Preview entities to delete without deleting them.",
 	}
 	flags = append(flags, flag)
 	return
