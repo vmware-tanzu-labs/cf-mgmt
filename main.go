@@ -41,7 +41,7 @@ type CFMgmt struct {
 	SpaceManager    space.Manager
 	ConfigManager   config.Manager
 	ConfigDirectory string
-	PeekDeletion		bool
+	PeekDeletion    bool
 	LdapBindPwd     string
 	UaacToken       string
 	SystemDomain    string
