@@ -50,6 +50,10 @@ func (m *DefaultSpaceManager) GetSpaceConfigs(configDir string) ([]*InputUpdateS
 		input.Manager.LdapUsers = append(input.Manager.LdapUsers, spaceDefaults.Manager.LdapUsers...)
 		input.Manager.Users = append(input.Manager.Users, spaceDefaults.Manager.Users...)
 
+		input.Developer.LdapGroups = append(input.GetDeveloperGroups(), spaceDefaults.GetDeveloperGroups()...)
+		input.Auditor.LdapGroups = append(input.GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
+		input.Manager.LdapGroups = append(input.GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
+
 		spaceConfigs = append(spaceConfigs, input)
 		if input.EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
@@ -203,44 +207,44 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 		return err
 	}
 	if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers, UpdateUsersInput{
-		SpaceName:     space.Entity.Name,
-		SpaceGUID:     space.MetaData.GUID,
-		OrgName:       input.Org,
-		OrgGUID:       space.Entity.OrgGUID,
-		Role:          "developers",
-		LdapGroupName: input.GetDeveloperGroup(),
-		LdapUsers:     input.Developer.LdapUsers,
-		Users:         input.Developer.Users,
-		RemoveUsers:   input.RemoveUsers,
+		SpaceName:      space.Entity.Name,
+		SpaceGUID:      space.MetaData.GUID,
+		OrgName:        input.Org,
+		OrgGUID:        space.Entity.OrgGUID,
+		Role:           "developers",
+		LdapGroupNames: input.GetDeveloperGroups(),
+		LdapUsers:      input.Developer.LdapUsers,
+		Users:          input.Developer.Users,
+		RemoveUsers:    input.RemoveUsers,
 	}); err != nil {
 		return err
 	}
 
 	if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers,
 		UpdateUsersInput{
-			SpaceName:     space.Entity.Name,
-			SpaceGUID:     space.MetaData.GUID,
-			OrgGUID:       space.Entity.OrgGUID,
-			OrgName:       input.Org,
-			Role:          "managers",
-			LdapGroupName: input.GetManagerGroup(),
-			LdapUsers:     input.Manager.LdapUsers,
-			Users:         input.Manager.Users,
-			RemoveUsers:   input.RemoveUsers,
+			SpaceName:      space.Entity.Name,
+			SpaceGUID:      space.MetaData.GUID,
+			OrgGUID:        space.Entity.OrgGUID,
+			OrgName:        input.Org,
+			Role:           "managers",
+			LdapGroupNames: input.GetManagerGroups(),
+			LdapUsers:      input.Manager.LdapUsers,
+			Users:          input.Manager.Users,
+			RemoveUsers:    input.RemoveUsers,
 		}); err != nil {
 		return err
 	}
 	if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers,
 		UpdateUsersInput{
-			SpaceName:     space.Entity.Name,
-			SpaceGUID:     space.MetaData.GUID,
-			OrgGUID:       space.Entity.OrgGUID,
-			OrgName:       input.Org,
-			Role:          "auditors",
-			LdapGroupName: input.GetAuditorGroup(),
-			LdapUsers:     input.Auditor.LdapUsers,
-			Users:         input.Auditor.Users,
-			RemoveUsers:   input.RemoveUsers,
+			SpaceName:      space.Entity.Name,
+			SpaceGUID:      space.MetaData.GUID,
+			OrgGUID:        space.Entity.OrgGUID,
+			OrgName:        input.Org,
+			Role:           "auditors",
+			LdapGroupNames: input.GetAuditorGroups(),
+			LdapUsers:      input.Auditor.LdapUsers,
+			Users:          input.Auditor.Users,
+			RemoveUsers:    input.RemoveUsers,
 		}); err != nil {
 		return err
 	}

@@ -71,31 +71,61 @@ type InputUpdateOrgs struct {
 	RemoveUsers             bool     `yaml:"enable-remove-users"`
 }
 
-func (i *InputUpdateOrgs) GetBillingManagerGroup() string {
+func (i *InputUpdateOrgs) GetBillingManagerGroups() []string {
+	groupMap := make(map[string]string)
+	for _, group := range i.BillingManager.LdapGroups {
+		groupMap[group] = group
+	}
 	if i.BillingManager.LdapGroup != "" {
-		return i.BillingManager.LdapGroup
+		groupMap[i.BillingManager.LdapGroup] = i.BillingManager.LdapGroup
 	}
-	return i.BillingManagerGroup
+	if i.BillingManagerGroup != "" {
+		groupMap[i.BillingManagerGroup] = i.BillingManagerGroup
+	}
+	return mapToKeys(groupMap)
 }
 
-func (i *InputUpdateOrgs) GetManagerGroup() string {
+func (i *InputUpdateOrgs) GetManagerGroups() []string {
+	groupMap := make(map[string]string)
+	for _, group := range i.Manager.LdapGroups {
+		groupMap[group] = group
+	}
 	if i.Manager.LdapGroup != "" {
-		return i.Manager.LdapGroup
+		groupMap[i.Manager.LdapGroup] = i.Manager.LdapGroup
 	}
-	return i.ManagerGroup
+	if i.ManagerGroup != "" {
+		groupMap[i.ManagerGroup] = i.ManagerGroup
+	}
+	return mapToKeys(groupMap)
 }
 
-func (i *InputUpdateOrgs) GetAuditorGroup() string {
-	if i.Auditor.LdapGroup != "" {
-		return i.Auditor.LdapGroup
+func (i *InputUpdateOrgs) GetAuditorGroups() []string {
+	groupMap := make(map[string]string)
+	for _, group := range i.Auditor.LdapGroups {
+		groupMap[group] = group
 	}
-	return i.AuditorGroup
+	if i.Auditor.LdapGroup != "" {
+		groupMap[i.Auditor.LdapGroup] = i.Auditor.LdapGroup
+	}
+	if i.AuditorGroup != "" {
+		groupMap[i.AuditorGroup] = i.AuditorGroup
+	}
+	return mapToKeys(groupMap)
+}
+
+func mapToKeys(aMap map[string]string) []string {
+	var keys []string
+	for k := range aMap {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 type UserMgmt struct {
-	LdapUsers []string `yaml:"ldap_users"`
-	Users     []string `yaml:"users"`
-	LdapGroup string   `yaml:"ldap_group"`
+	LdapUsers  []string `yaml:"ldap_users"`
+	Users      []string `yaml:"users"`
+	LdapGroup  string   `yaml:"ldap_group"`
+	LdapGroups []string `yaml:"ldap_groups"`
 }
 
 //Entity -

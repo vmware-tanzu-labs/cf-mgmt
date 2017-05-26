@@ -113,6 +113,16 @@ var _ = Describe("given SpaceManager", func() {
 			Ω(configs).ShouldNot(BeNil())
 			Ω(configs).Should(HaveLen(1))
 		})
+		It("should return configs for user info", func() {
+			configs, err := spaceManager.GetSpaceConfigs("./fixtures/user_config_multiple_groups")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(configs).ShouldNot(BeNil())
+			Ω(configs).Should(HaveLen(1))
+			config := configs[0]
+			Ω(config.GetDeveloperGroups()).Should(ConsistOf([]string{"test_space1_developers"}))
+			Ω(config.GetAuditorGroups()).Should(ConsistOf([]string{"test_space1_auditors"}))
+			Ω(config.GetManagerGroups()).Should(ConsistOf([]string{"test_space1_managers", "test_space1_managers_2"}))
+		})
 		It("should return an error when no security.json file is provided", func() {
 			configs, err := spaceManager.GetSpaceConfigs("./fixtures/no-security-json")
 			Ω(err).Should(HaveOccurred())
@@ -234,36 +244,36 @@ var _ = Describe("given SpaceManager", func() {
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockUserMgr.EXPECT().UpdateSpaceUsers(config, uaacUsers,
 				UpdateUsersInput{
-					SpaceName:     "space1",
-					SpaceGUID:     "space1GUID",
-					OrgName:       "test",
-					OrgGUID:       "testOrgGUID",
-					Role:          "developers",
-					LdapGroupName: "default_test_space1_developers",
-					LdapUsers:     []string{"cwashburndefault1"},
-					Users:         []string{"cwashburndefault1@testdomain.com"},
+					SpaceName:      "space1",
+					SpaceGUID:      "space1GUID",
+					OrgName:        "test",
+					OrgGUID:        "testOrgGUID",
+					Role:           "developers",
+					LdapGroupNames: []string{"default_test_space1_developers"},
+					LdapUsers:      []string{"cwashburndefault1"},
+					Users:          []string{"cwashburndefault1@testdomain.com"},
 				}).Return(nil)
 			mockUserMgr.EXPECT().UpdateSpaceUsers(config, uaacUsers,
 				UpdateUsersInput{
-					SpaceName:     "space1",
-					SpaceGUID:     "space1GUID",
-					OrgName:       "test",
-					OrgGUID:       "testOrgGUID",
-					Role:          "managers",
-					LdapGroupName: "default_test_space1_managers",
-					LdapUsers:     []string{"cwashburndefault1"},
-					Users:         []string{"cwashburndefault1@testdomain.com"},
+					SpaceName:      "space1",
+					SpaceGUID:      "space1GUID",
+					OrgName:        "test",
+					OrgGUID:        "testOrgGUID",
+					Role:           "managers",
+					LdapGroupNames: []string{"default_test_space1_managers"},
+					LdapUsers:      []string{"cwashburndefault1"},
+					Users:          []string{"cwashburndefault1@testdomain.com"},
 				}).Return(nil)
 			mockUserMgr.EXPECT().UpdateSpaceUsers(config, uaacUsers,
 				UpdateUsersInput{
-					SpaceName:     "space1",
-					SpaceGUID:     "space1GUID",
-					OrgName:       "test",
-					OrgGUID:       "testOrgGUID",
-					Role:          "auditors",
-					LdapGroupName: "default_test_space1_auditors",
-					LdapUsers:     []string{"cwashburndefault1"},
-					Users:         []string{"cwashburndefault1@testdomain.com"},
+					SpaceName:      "space1",
+					SpaceGUID:      "space1GUID",
+					OrgName:        "test",
+					OrgGUID:        "testOrgGUID",
+					Role:           "auditors",
+					LdapGroupNames: []string{"default_test_space1_auditors"},
+					LdapUsers:      []string{"cwashburndefault1"},
+					Users:          []string{"cwashburndefault1@testdomain.com"},
 				}).Return(nil)
 
 			err := spaceManager.CreateSpaces("./fixtures/default_config", "test_pwd")

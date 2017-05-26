@@ -144,6 +144,16 @@ var _ = Describe("given OrgManager", func() {
 			Ω(configs).ShouldNot(BeNil())
 			Ω(configs).Should(HaveLen(2))
 		})
+		It("should return list of 1", func() {
+			configs, err := orgManager.GetOrgConfigs("./fixtures/user_config")
+			Ω(err).Should(BeNil())
+			Ω(configs).ShouldNot(BeNil())
+			Ω(configs).Should(HaveLen(1))
+			config := configs[0]
+			Ω(config.GetAuditorGroups()).Should(ConsistOf([]string{"test_org_auditors"}))
+			Ω(config.GetManagerGroups()).Should(ConsistOf([]string{"test_org_managers"}))
+			Ω(config.GetBillingManagerGroups()).Should(ConsistOf([]string{"test_billing_managers", "test_billing_managers_2"}))
+		})
 		It("should return an error when path does not exist", func() {
 			configs, err := orgManager.GetOrgConfigs("./fixtures/blah")
 			Ω(err).Should(HaveOccurred())

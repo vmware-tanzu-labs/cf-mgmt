@@ -49,9 +49,9 @@ var _ = Describe("given UserManager", func() {
 			uaacUsers := make(map[string]string)
 			orgUsers := make(map[string]string)
 			updateUsersInput := UpdateUsersInput{
-				OrgGUID:       "my-org-guid",
-				Role:          "my-role",
-				LdapGroupName: "ldap-group-name",
+				OrgGUID:        "my-org-guid",
+				Role:           "my-role",
+				LdapGroupNames: []string{"ldap-group-name"},
 			}
 
 			ldapGroupUsers := []l.User{l.User{
@@ -82,9 +82,9 @@ var _ = Describe("given UserManager", func() {
 			uaacUsers["user-id"] = "user-id"
 			orgUsers := make(map[string]string)
 			updateUsersInput := UpdateUsersInput{
-				OrgGUID:       "my-org-guid",
-				Role:          "my-role",
-				LdapGroupName: "ldap-group-name",
+				OrgGUID:        "my-org-guid",
+				Role:           "my-role",
+				LdapGroupNames: []string{"ldap-group-name"},
 			}
 
 			ldapGroupUsers := []l.User{l.User{
@@ -117,9 +117,9 @@ var _ = Describe("given UserManager", func() {
 			orgUsers := make(map[string]string)
 			orgUsers["user-id"] = "user-id"
 			updateUsersInput := UpdateUsersInput{
-				OrgGUID:       "my-org-guid",
-				Role:          "my-role",
-				LdapGroupName: "ldap-group-name",
+				OrgGUID:        "my-org-guid",
+				Role:           "my-role",
+				LdapGroupNames: []string{"ldap-group-name"},
 			}
 
 			ldapGroupUsers := []l.User{l.User{

@@ -49,10 +49,10 @@ var _ = Describe("given SpaceManager", func() {
 			uaacUsers := make(map[string]string)
 			spaceUsers := make(map[string]string)
 			updateUsersInput := UpdateUsersInput{
-				SpaceGUID:     "my-space-guid",
-				OrgGUID:       "my-org-guid",
-				Role:          "my-role",
-				LdapGroupName: "ldap-group-name",
+				SpaceGUID:      "my-space-guid",
+				OrgGUID:        "my-org-guid",
+				Role:           "my-role",
+				LdapGroupNames: []string{"ldap-group-name", "ldap-group-name-2"},
 			}
 
 			ldapGroupUsers := []l.User{l.User{
@@ -61,17 +61,30 @@ var _ = Describe("given SpaceManager", func() {
 				Email:  "user@test.com",
 			}}
 
+			ldapGroupUsers2 := []l.User{l.User{
+				UserDN: "user-dn2",
+				UserID: "user-id2",
+				Email:  "user2@test.com",
+			}}
+
 			mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
 			mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
+			mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name-2").Return(ldapGroupUsers2, nil)
 
 			mockUaac.EXPECT().CreateExternalUser("user-id", "user@test.com", "user-dn", "ldap").Return(nil)
+			mockUaac.EXPECT().CreateExternalUser("user-id2", "user2@test.com", "user-dn2", "ldap").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("user-id", "my-org-guid").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrg("user-id2", "my-org-guid").Return(nil)
 			mockCloudController.EXPECT().AddUserToSpaceRole("user-id", "my-role", "my-space-guid").Return(nil)
+			mockCloudController.EXPECT().AddUserToSpaceRole("user-id2", "my-role", "my-space-guid").Return(nil)
 
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
-			Ω(len(uaacUsers)).Should(BeEquivalentTo(1))
+			Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
 			_, ok := uaacUsers["user-id"]
+			Ω(ok).Should(BeTrue())
+
+			_, ok = uaacUsers["user-id2"]
 			Ω(ok).Should(BeTrue())
 		})
 		It("update ldap group users where users are in uaac", func() {
@@ -83,10 +96,10 @@ var _ = Describe("given SpaceManager", func() {
 			uaacUsers["user-id"] = "user-id"
 			spaceUsers := make(map[string]string)
 			updateUsersInput := UpdateUsersInput{
-				SpaceGUID:     "my-space-guid",
-				OrgGUID:       "my-org-guid",
-				Role:          "my-role",
-				LdapGroupName: "ldap-group-name",
+				SpaceGUID:      "my-space-guid",
+				OrgGUID:        "my-org-guid",
+				Role:           "my-role",
+				LdapGroupNames: []string{"ldap-group-name"},
 			}
 
 			ldapGroupUsers := []l.User{l.User{
@@ -118,10 +131,10 @@ var _ = Describe("given SpaceManager", func() {
 			spaceUsers := make(map[string]string)
 			spaceUsers["user-id"] = "user-id"
 			updateUsersInput := UpdateUsersInput{
-				SpaceGUID:     "my-space-guid",
-				OrgGUID:       "my-org-guid",
-				Role:          "my-role",
-				LdapGroupName: "ldap-group-name",
+				SpaceGUID:      "my-space-guid",
+				OrgGUID:        "my-org-guid",
+				Role:           "my-role",
+				LdapGroupNames: []string{"ldap-group-name"},
 			}
 
 			ldapGroupUsers := []l.User{l.User{
@@ -150,10 +163,10 @@ var _ = Describe("given SpaceManager", func() {
 			spaceUsers := make(map[string]string)
 			spaceUsers["user@test.com"] = "user@test.com"
 			updateUsersInput := UpdateUsersInput{
-				SpaceGUID:     "my-space-guid",
-				OrgGUID:       "my-org-guid",
-				Role:          "my-role",
-				LdapGroupName: "ldap-group-name",
+				SpaceGUID:      "my-space-guid",
+				OrgGUID:        "my-org-guid",
+				Role:           "my-role",
+				LdapGroupNames: []string{"ldap-group-name"},
 			}
 
 			ldapGroupUsers := []l.User{l.User{
@@ -384,13 +397,13 @@ var _ = Describe("given SpaceManager", func() {
 			spaceUsers["alex.j.smith@example.com"] = "asmith-space-user-guid" // <-- user in space, but not ldap group
 
 			updateUsersInput := UpdateUsersInput{
-				SpaceName:     "space-name",
-				SpaceGUID:     "space-guid",
-				OrgName:       "org-name",
-				OrgGUID:       "org-guid",
-				Role:          "space-role-name",
-				LdapGroupName: "ldap-group-name",
-				RemoveUsers:   true,
+				SpaceName:      "space-name",
+				SpaceGUID:      "space-guid",
+				OrgName:        "org-name",
+				OrgGUID:        "org-guid",
+				Role:           "space-role-name",
+				LdapGroupNames: []string{"ldap-group-name"},
+				RemoveUsers:    true,
 			}
 
 			ldapGroupUsers := []l.User{l.User{

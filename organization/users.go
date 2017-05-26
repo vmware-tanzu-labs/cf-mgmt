@@ -36,12 +36,11 @@ type UserManager struct {
 
 // UpdateUsersInput -
 type UpdateUsersInput struct {
-	OrgName          string
-	OrgGUID          string
-	Role             string
-	LdapGroupName    string
-	LdapUsers, Users []string
-	RemoveUsers      bool
+	OrgName                          string
+	OrgGUID                          string
+	Role                             string
+	LdapUsers, Users, LdapGroupNames []string
+	RemoveUsers                      bool
 }
 
 //UpdateOrgUsers -
@@ -54,7 +53,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 	}
 	if config.Enabled {
 		var ldapUsers []ldap.User
-		ldapUsers, err = m.getLdapUsers(config, updateUsersInput.LdapGroupName, updateUsersInput.LdapUsers)
+		ldapUsers, err = m.getLdapUsers(config, updateUsersInput.LdapGroupNames, updateUsersInput.LdapUsers)
 		if err != nil {
 			return err
 		}
@@ -134,15 +133,17 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 	return nil
 }
 
-func (m *UserManager) getLdapUsers(config *ldap.Config, groupName string, userList []string) ([]ldap.User, error) {
+func (m *UserManager) getLdapUsers(config *ldap.Config, groupNames []string, userList []string) ([]ldap.User, error) {
 	users := []ldap.User{}
-	if groupName != "" {
-		lo.G.Info("Finding LDAP user for group:", groupName)
-		if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
-			users = append(users, groupUsers...)
-		} else {
-			lo.G.Error(err)
-			return nil, err
+	for _, groupName := range groupNames {
+		if groupName != "" {
+			lo.G.Info("Finding LDAP user for group:", groupName)
+			if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
+				users = append(users, groupUsers...)
+			} else {
+				lo.G.Error(err)
+				return nil, err
+			}
 		}
 	}
 	for _, user := range userList {

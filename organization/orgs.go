@@ -3,7 +3,6 @@ package organization
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/ldap"
@@ -184,13 +183,13 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 
 	err = m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
-			OrgName:       org.Entity.Name,
-			OrgGUID:       org.MetaData.GUID,
-			Role:          "billing_managers",
-			LdapGroupName: input.GetBillingManagerGroup(),
-			LdapUsers:     input.BillingManager.LdapUsers,
-			Users:         input.BillingManager.Users,
-			RemoveUsers:   input.RemoveUsers,
+			OrgName:        org.Entity.Name,
+			OrgGUID:        org.MetaData.GUID,
+			Role:           "billing_managers",
+			LdapGroupNames: input.GetBillingManagerGroups(),
+			LdapUsers:      input.BillingManager.LdapUsers,
+			Users:          input.BillingManager.Users,
+			RemoveUsers:    input.RemoveUsers,
 		})
 	if err != nil {
 		return err
@@ -198,13 +197,13 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 
 	err = m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
-			OrgName:       org.Entity.Name,
-			OrgGUID:       org.MetaData.GUID,
-			Role:          "auditors",
-			LdapGroupName: input.GetAuditorGroup(),
-			LdapUsers:     input.Auditor.LdapUsers,
-			Users:         input.Auditor.Users,
-			RemoveUsers:   input.RemoveUsers,
+			OrgName:        org.Entity.Name,
+			OrgGUID:        org.MetaData.GUID,
+			Role:           "auditors",
+			LdapGroupNames: input.GetAuditorGroups(),
+			LdapUsers:      input.Auditor.LdapUsers,
+			Users:          input.Auditor.Users,
+			RemoveUsers:    input.RemoveUsers,
 		})
 	if err != nil {
 		return err
@@ -212,91 +211,15 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 
 	err = m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
-			OrgName:       org.Entity.Name,
-			OrgGUID:       org.MetaData.GUID,
-			Role:          "managers",
-			LdapGroupName: input.GetManagerGroup(),
-			LdapUsers:     input.Manager.LdapUsers,
-			Users:         input.Manager.Users,
-			RemoveUsers:   input.RemoveUsers,
+			OrgName:        org.Entity.Name,
+			OrgGUID:        org.MetaData.GUID,
+			Role:           "managers",
+			LdapGroupNames: input.GetManagerGroups(),
+			LdapUsers:      input.Manager.LdapUsers,
+			Users:          input.Manager.Users,
+			RemoveUsers:    input.RemoveUsers,
 		})
 	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *DefaultOrgManager) UpdateBillingManagers(config *ldap.Config, org *cloudcontroller.Org, input *InputUpdateOrgs, uaacUsers map[string]string) error {
-	users, err := m.getLdapUsers(config, input.GetBillingManagerGroup(), input.BillingManager.LdapUsers)
-	if err != nil {
-		return err
-	}
-	if err = m.updateLdapUsers(config, org, "billing_managers", uaacUsers, users); err != nil {
-		return err
-	}
-	for _, userID := range input.BillingManager.Users {
-		if err := m.addUserToOrgAndRole(userID, org.MetaData.GUID, "billing_managers"); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (m *DefaultOrgManager) getLdapUsers(config *ldap.Config, groupName string, userList []string) ([]ldap.User, error) {
-	users := []ldap.User{}
-	if groupName != "" {
-		groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName)
-		if err != nil {
-			return nil, err
-		}
-		users = append(users, groupUsers...)
-	}
-	for _, user := range userList {
-		ldapUser, err := m.LdapMgr.GetUser(config, user)
-		if err != nil {
-			return nil, err
-		}
-		if ldapUser != nil {
-			users = append(users, *ldapUser)
-		}
-	}
-	return users, nil
-}
-
-func (m *DefaultOrgManager) updateLdapUsers(config *ldap.Config, org *cloudcontroller.Org, role string, uaacUsers map[string]string, users []ldap.User) error {
-	for _, user := range users {
-		userID := user.UserID
-		externalID := user.UserDN
-		if config.Origin != "ldap" {
-			userID = user.Email
-			externalID = user.Email
-		}
-		if _, userExists := uaacUsers[strings.ToLower(userID)]; userExists {
-			lo.G.Info("User", userID, "already exists")
-		} else {
-			if userID != "" {
-				lo.G.Info("User", userID, "doesn't exist so creating in UAA")
-				if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
-					return err
-				}
-				uaacUsers[userID] = userID
-			}
-		}
-		if userID != "" {
-			if err := m.addUserToOrgAndRole(userID, org.MetaData.GUID, role); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func (m *DefaultOrgManager) addUserToOrgAndRole(userID, orgGUID, role string) error {
-	lo.G.Info("Adding user to groups")
-	if err := m.CloudController.AddUserToOrg(userID, orgGUID); err != nil {
-		return err
-	}
-	if err := m.CloudController.AddUserToOrgRole(userID, role, orgGUID); err != nil {
 		return err
 	}
 	return nil
