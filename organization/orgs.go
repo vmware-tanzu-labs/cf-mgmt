@@ -133,13 +133,17 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 		return err
 	}
 
+	if !input.EnableDeleteOrgs {
+		lo.G.Info("Org deletion is not enabled.  Set enable-delete-org: true")
+		return nil
+	}
+
 	configuredOrgs := make(map[string]bool)
 	for _, orgName := range input.Orgs {
 		configuredOrgs[orgName] = true
 	}
 	protectedOrgs := make(map[string]bool)
 	for _, orgName := range input.ProtectedOrgs {
-		lo.G.Info(fmt.Sprintf("Protected org [%s] - will not be deleted", orgName))
 		protectedOrgs[orgName] = true
 	}
 
@@ -153,6 +157,8 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 		if _, exists := configuredOrgs[org.Entity.Name]; !exists {
 			if _, protected := protectedOrgs[org.Entity.Name]; !protected {
 				orgsToDelete = append(orgsToDelete, org)
+			} else {
+				lo.G.Info(fmt.Sprintf("Protected org [%s] - will not be deleted", org.Entity.Name))
 			}
 		}
 	}
@@ -169,7 +175,6 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 			}
 		}
 	}
-
 
 	return nil
 }

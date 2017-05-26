@@ -41,8 +41,9 @@ type MetaData struct {
 
 //InputOrgs -
 type InputOrgs struct {
-	Orgs []string `yaml:"orgs"`
-	ProtectedOrgs []string `yaml:"protected_orgs"`
+	Orgs             []string `yaml:"orgs"`
+	EnableDeleteOrgs bool     `yaml:"enable-delete-org"`
+	ProtectedOrgs    []string `yaml:"protected_orgs"`
 }
 
 //Contains -

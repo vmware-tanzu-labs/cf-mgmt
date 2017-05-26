@@ -49,6 +49,16 @@ func (_mr *_MockManagerRecorder) CreateQuotas(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateQuotas", arg0)
 }
 
+func (_m *MockManager) DeleteOrgs(_param0 string, _param1 bool) error {
+	ret := _m.ctrl.Call(_m, "DeleteOrgs", _param0, _param1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockManagerRecorder) DeleteOrgs(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteOrgs", arg0, arg1)
+}
+
 func (_m *MockManager) FindOrg(_param0 string) (*cloudcontroller.Org, error) {
 	ret := _m.ctrl.Call(_m, "FindOrg", _param0)
 	ret0, _ := ret[0].(*cloudcontroller.Org)

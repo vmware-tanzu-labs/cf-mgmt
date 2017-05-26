@@ -1,0 +1,5 @@
+orgs:
+- test
+enable-delete-org: true
+protected_orgs:
+- system
