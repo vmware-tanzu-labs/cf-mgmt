@@ -36,12 +36,18 @@ var _ = Describe("cf-mgmt cli", func() {
 
 			ccManager = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken)
 			outPath, err = Build("github.com/pivotalservices/cf-mgmt")
+			
+			ccManager.CreateOrg("rogue-org1")
+			ccManager.CreateOrg("rogue-org2")
+
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 		AfterEach(func() {
 			os.RemoveAll("./config")
 			ccManager.DeleteOrg("test1")
 			ccManager.DeleteOrg("test2")
+			ccManager.DeleteOrg("rogue-org1")
+			ccManager.DeleteOrg("rogue-org2")
 			CleanupBuildArtifacts()
 		})
 		It("should complete successfully", func() {
@@ -63,6 +69,36 @@ var _ = Describe("cf-mgmt cli", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(getOrg(orgs, "test1")).ShouldNot(BeNil())
 			Expect(getOrg(orgs, "test2")).ShouldNot(BeNil())
+
+			deleteOrgsCommand := exec.Command(outPath, "delete-orgs", "--config-dir", configDir,
+				"--system-domain", systemDomain, "--user-id", userId, "--password",
+				password, "--client-secret", clientSecret)
+			session, err = Start(deleteOrgsCommand, GinkgoWriter, GinkgoWriter)
+			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+
+			orgs, err = ccManager.ListOrgs()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(getOrg(orgs, "system")).ShouldNot(BeNil())
+			Expect(getOrg(orgs, "pcfdev-org")).ShouldNot(BeNil())
+			Expect(getOrg(orgs, "rogue-org1")).Should(BeNil())
+			Expect(getOrg(orgs, "rogue-org2")).Should(BeNil())
+
+			ccManager.CreateOrg("rogue-org1")
+			ccManager.CreateOrg("rogue-org2")
+			peekDeleteOrgsCommand := exec.Command(outPath, "delete-orgs", "--peek", "--config-dir", configDir,
+				"--system-domain", systemDomain, "--user-id", userId, "--password",
+				password, "--client-secret", clientSecret)
+			session, err = Start(peekDeleteOrgsCommand, GinkgoWriter, GinkgoWriter)
+			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+
+			orgs, err = ccManager.ListOrgs()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(getOrg(orgs, "system")).ShouldNot(BeNil())
+			Expect(getOrg(orgs, "pcfdev-org")).ShouldNot(BeNil())
+			Expect(getOrg(orgs, "rogue-org1")).ShouldNot(BeNil())
+			Expect(getOrg(orgs, "rogue-org2")).ShouldNot(BeNil())
 
 			createSpacesCommand := exec.Command(outPath, "create-spaces", "--config-dir", configDir,
 				"--system-domain", systemDomain, "--user-id", userId, "--password",

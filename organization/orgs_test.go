@@ -214,6 +214,76 @@ var _ = Describe("given OrgManager", func() {
 		})
 	})
 
+	Context("DeleteOrgs()", func() {
+		It("should delete 1", func() {
+			orgs := []*cloudcontroller.Org{
+				&cloudcontroller.Org{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "system",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "system-guid",
+					},
+				},
+				&cloudcontroller.Org{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "test-guid",
+					},
+				},
+				&cloudcontroller.Org{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test2",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "test2-guid",
+					},
+				},
+			}
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().DeleteOrg("test2").Return(nil)
+			err := orgManager.DeleteOrgs("./fixtures/config-delete", false)
+			Ω(err).Should(BeNil())
+		})
+		It("should just peek", func() {
+			orgs := []*cloudcontroller.Org{
+				&cloudcontroller.Org{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "system",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "system-guid",
+					},
+				},
+				&cloudcontroller.Org{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "test-guid",
+					},
+				},
+				&cloudcontroller.Org{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test2",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "test2-guid",
+					},
+				},
+			}
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			err := orgManager.DeleteOrgs("./fixtures/config-delete", true)
+			Ω(err).Should(BeNil())
+		})
+		It("should just peek", func() {
+			err := orgManager.DeleteOrgs("./fixtures/config", true)
+			Ω(err).Should(BeNil())
+		})
+	})
+
 	Context("CreateQuotas()", func() {
 		var orgs []*cloudcontroller.Org
 		BeforeEach(func() {

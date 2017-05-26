@@ -1,6 +1,5 @@
 orgs:
-- test1
-- test2
+- test
+enable-delete-org: true
 protected_orgs:
 - system
-- pcfdev-org

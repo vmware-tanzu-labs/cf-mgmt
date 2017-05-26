@@ -124,6 +124,61 @@ func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 	return nil
 }
 
+//DeleteOrgs -
+func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) error {
+	configFile := filepath.Join(configDir, "orgs.yml")
+	lo.G.Info("Processing org file", configFile)
+	input := &InputOrgs{}
+	if err := m.UtilsMgr.LoadFile(configFile, input); err != nil {
+		return err
+	}
+
+	if !input.EnableDeleteOrgs {
+		lo.G.Info("Org deletion is not enabled.  Set enable-delete-org: true")
+		return nil
+	}
+
+	configuredOrgs := make(map[string]bool)
+	for _, orgName := range input.Orgs {
+		configuredOrgs[orgName] = true
+	}
+	protectedOrgs := make(map[string]bool)
+	for _, orgName := range input.ProtectedOrgs {
+		protectedOrgs[orgName] = true
+	}
+
+	orgs, err := m.CloudController.ListOrgs()
+	if err != nil {
+		return err
+	}
+
+	orgsToDelete := make([]*cloudcontroller.Org, 0)
+	for _, org := range orgs {
+		if _, exists := configuredOrgs[org.Entity.Name]; !exists {
+			if _, protected := protectedOrgs[org.Entity.Name]; !protected {
+				orgsToDelete = append(orgsToDelete, org)
+			} else {
+				lo.G.Info(fmt.Sprintf("Protected org [%s] - will not be deleted", org.Entity.Name))
+			}
+		}
+	}
+
+	if peekDeletion {
+		for _, org := range orgsToDelete {
+			lo.G.Info(fmt.Sprintf("Peek - Would Delete [%s] org", org.Entity.Name))
+		}
+	} else {
+		for _, org := range orgsToDelete {
+			lo.G.Info(fmt.Sprintf("Deleting [%s] org", org.Entity.Name))
+			if err := m.CloudController.DeleteOrg(org.Entity.Name); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func (m *DefaultOrgManager) DoesOrgExist(orgName string, orgs []*cloudcontroller.Org) bool {
 	for _, org := range orgs {
 		if org.Entity.Name == orgName {

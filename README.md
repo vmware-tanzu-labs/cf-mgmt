@@ -198,8 +198,19 @@ After running the above commands, there will be a config directory in the workin
 ```
 
 #### Org Configuration
-There is a orgs.yml that contains list of orgs that will be created.  This should have a corresponding folder with name of the orgs cf-mgmt is managing.  This will contain a orgConfig.yml and folder for each space.  Each orgConfig.yml consists of the following.
+There is a orgs.yml that contains list of orgs that will be created.  This should have a corresponding folder with name of the orgs cf-mgmt is managing. orgs.yml also can be configured with a list of protected orgs which would never be deleted when using the the `delete-orgs` command. An example of how orgs.yml could be configured is seen below.
 
+```
+orgs:
+- foo-org
+- bar-org
+protected_orgs:
+- system
+- p-spring-cloud-services
+
+```
+
+This will contain a orgConfig.yml and folder for each space.  Each orgConfig.yml consists of the following.
 ```
 # org name
 org: test
@@ -400,6 +411,11 @@ To execute any of the following you will need to provide:
 
 #### create-orgs
 - creates orgs specified in orgs.yml
+
+#### delete-orgs
+- deletes orgs NOT specified in orgs.yml.  This is recursive for underlaying spaces and apps.
+- Will NOT delete orgs which are `protected_orgs` in orgs.yml
+- specifying `--peek` will show you which orgs would be deleted, without actually deleting them.
 
 #### update-org-quotas
 - updates org quotas specified in orgConfig.yml
