@@ -219,6 +219,10 @@ org-billingmanager:
   # ldap group that contains users that will be added to cf and given billing manager role
   ldap_group: test_billing_managers
 
+  # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
+  ldap_groups:
+    - test_billing_managers_2
+
 org-manager:
   # list of ldap users that will be created in cf and given org manager role
   ldap_users:
@@ -233,6 +237,10 @@ org-manager:
   # ldap group that contains users that will be added to cf and given org manager role
   ldap_group: test_org_managers
 
+  # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
+  ldap_groups:
+    - test_org_managers_2
+
 org-auditor:
   # list of ldap users that will be created in cf and given org manager role
   ldap_users:
@@ -246,6 +254,10 @@ org-auditor:
 
   # ldap group that contains users that will be added to cf and given org auditor role
   ldap_group: test_org_auditors
+
+  # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
+  ldap_groups:
+    - test_org_auditors_2
 
 # if you wish to enable custom org quotas
 enable-org-quota: true
@@ -289,6 +301,10 @@ space-manager:
   # ldap group that contains users that will be added to cf and given space manager role
   ldap_group: test_space1_managers
 
+  # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
+  ldap_groups:
+    - test_space1_managers_2
+
 space-auditor:
   # list of ldap users that will be created in cf and given space auditor role
   ldap_users:
@@ -303,6 +319,10 @@ space-auditor:
   # ldap group that contains users that will be added to cf and given space auditor role
   ldap_group: test_space1_auditors
 
+  # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
+  ldap_groups:
+    - test_space1_auditors_2
+
 space-developer:
   # list of ldap users that will be created in cf and given space developer role
   ldap_users:
@@ -316,6 +336,10 @@ space-developer:
 
   # ldap group that contains users that will be added to cf and given space developer role
   ldap_group: test_space1_developers
+
+  # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
+  ldap_groups:
+    - test_space1_developers_2
 
 # to enable custom quota at space level  
 enable-space-quota: true
