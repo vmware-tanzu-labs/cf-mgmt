@@ -204,6 +204,7 @@ There is a orgs.yml that contains list of orgs that will be created.  This shoul
 orgs:
 - foo-org
 - bar-org
+enable-delete-org: true
 protected_orgs:
 - system
 - p-spring-cloud-services
