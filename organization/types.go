@@ -11,6 +11,7 @@ import (
 type Manager interface {
 	FindOrg(orgName string) (org *cloudcontroller.Org, err error)
 	CreateOrgs(configFile string) (err error)
+	DeleteOrgs(configFile string, peekDeletion bool) (err error)
 	UpdateOrgUsers(configDir, ldapBindPassword string) (err error)
 	CreateQuotas(configDir string) (err error)
 	GetOrgGUID(orgName string) (orgGUID string, err error)
@@ -41,6 +42,7 @@ type MetaData struct {
 //InputOrgs -
 type InputOrgs struct {
 	Orgs []string `yaml:"orgs"`
+	ProtectedOrgs []string `yaml:"protected_orgs"`
 }
 
 //Contains -
