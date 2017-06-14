@@ -28,7 +28,7 @@ type Manager interface {
 type InputSpaces struct {
 	Org                string   `yaml:"org"`
 	Spaces             []string `yaml:"spaces"`
-	EnableDeleteSpaces bool     `yaml:"enable-delete-space"`
+	EnableDeleteSpaces bool     `yaml:"enable-delete-spaces"`
 }
 
 //Contains -

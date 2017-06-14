@@ -134,7 +134,7 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 	}
 
 	if !input.EnableDeleteOrgs {
-		lo.G.Info("Org deletion is not enabled.  Set enable-delete-org: true")
+		lo.G.Info("Org deletion is not enabled.  Set enable-delete-orgs: true")
 		return nil
 	}
 
@@ -172,7 +172,7 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 	} else {
 		for _, org := range orgsToDelete {
 			lo.G.Info(fmt.Sprintf("Deleting [%s] org", org.Entity.Name))
-			if err := m.CloudController.DeleteOrg(org.Entity.Name); err != nil {
+			if err := m.CloudController.DeleteOrg(org.MetaData.GUID); err != nil {
 				return err
 			}
 		}

@@ -173,19 +173,9 @@ func (m *DefaultManager) CreateOrg(orgName string) error {
 	return err
 }
 
-func (m *DefaultManager) DeleteOrg(orgName string) error {
-	orgs, err := m.ListOrgs()
-	if err != nil {
-		return err
-	}
-	for _, org := range orgs {
-		if org.Entity.Name == orgName {
-			url := fmt.Sprintf("%s/v2/organizations/%s?recursive=true", m.Host, org.MetaData.GUID)
-			err = m.HTTP.Delete(url, m.Token)
-		}
-	}
-
-	return err
+func (m *DefaultManager) DeleteOrg(orgGUID string) error {
+	url := fmt.Sprintf("%s/v2/organizations/%s?recursive=true", m.Host, orgGUID)
+	return m.HTTP.Delete(url, m.Token)
 }
 
 //DeleteSpace - deletes a space based on GUID

@@ -243,7 +243,7 @@ var _ = Describe("given OrgManager", func() {
 				},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().DeleteOrg("test2").Return(nil)
+			mockCloudController.EXPECT().DeleteOrg("test2-guid").Return(nil)
 			err := orgManager.DeleteOrgs("./fixtures/config-delete", false)
 			Ω(err).Should(BeNil())
 		})

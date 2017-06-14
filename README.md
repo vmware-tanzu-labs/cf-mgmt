@@ -97,6 +97,14 @@ OPTIONS:
 
 This will add the specified org to orgs.yml and create folder based on the org name you specified.  Within this folder will be an orgConfig.yml and spaces.yml which will be empty but will eventually contain a list of spaces.  Any org listed in orgs.yml will be created when the create-orgs operation is ran.
 
+```
+org: test
+enable-delete-spaces: true
+spaces:
+  - space1
+  - space2
+```
+
 orgConfig.yml allows specifying for the following:
 - what groups to map to org roles (OrgManager, OrgBillingManager, OrgAuditor)
 - setting up quotas for the org
@@ -204,7 +212,7 @@ There is a orgs.yml that contains list of orgs that will be created.  This shoul
 orgs:
 - foo-org
 - bar-org
-enable-delete-org: true
+enable-delete-orgs: true
 protected_orgs:
 - system
 - p-spring-cloud-services
@@ -426,6 +434,10 @@ To execute any of the following you will need to provide:
 
 #### create-spaces                 
 - creates spaces for all spaces listed in each spaces.yml
+
+#### delete-spaces
+- deletes spaces NOT specified in spaces.yml.  This is recursive delete apps, brokers, etc for a space.
+- specifying `--peek` will show you which spaces would be deleted, without actually deleting them.
 
 #### update-spaces                 
 - updates allow ssh into space property

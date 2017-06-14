@@ -499,38 +499,26 @@ var _ = Describe("given CloudControllerManager", func() {
 
 	Context("DeleteOrg()", func() {
 		It("should be successful", func() {
-			bytes, err := ioutil.ReadFile("fixtures/orgs.json")
-			Ω(err).ShouldNot(HaveOccurred())
 			server.AppendHandlers(
-				CombineHandlers(
-					VerifyRequest("GET", "/v2/organizations"),
-					RespondWith(http.StatusOK, string(bytes)),
-				),
 				CombineHandlers(
 					VerifyRequest("DELETE", "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248", "recursive=true"),
 					RespondWithJSONEncoded(http.StatusOK, ""),
 				),
 			)
-			err = manager.DeleteOrg("caleb.washburn")
+			err := manager.DeleteOrg("22d428d0-014a-473b-87b2-131367a31248")
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(2))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 		It("should return an error", func() {
-			bytes, err := ioutil.ReadFile("fixtures/orgs.json")
-			Ω(err).ShouldNot(HaveOccurred())
 			server.AppendHandlers(
-				CombineHandlers(
-					VerifyRequest("GET", "/v2/organizations"),
-					RespondWith(http.StatusOK, string(bytes)),
-				),
 				CombineHandlers(
 					VerifyRequest("DELETE", "/v2/organizations/22d428d0-014a-473b-87b2-131367a31248"),
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			err = manager.DeleteOrg("caleb.washburn")
+			err := manager.DeleteOrg("22d428d0-014a-473b-87b2-131367a31248")
 			Ω(err).Should(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(2))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 	})
 

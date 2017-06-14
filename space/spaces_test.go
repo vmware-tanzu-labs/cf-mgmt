@@ -487,7 +487,15 @@ var _ = Describe("given SpaceManager", func() {
 					},
 				},
 			}
-			mockCloudController.EXPECT().ListSpaces("test").Return(spaces, nil)
+			mockOrgMgr.EXPECT().FindOrg("test").Return(&cloudcontroller.Org{
+				Entity: cloudcontroller.OrgEntity{
+					Name: "test",
+				},
+				MetaData: cloudcontroller.OrgMetaData{
+					GUID: "test-org-guid",
+				},
+			}, nil)
+			mockCloudController.EXPECT().ListSpaces("test-org-guid").Return(spaces, nil)
 			mockCloudController.EXPECT().DeleteSpace("space3-guid").Return(nil)
 			err := spaceManager.DeleteSpaces("./fixtures/config-delete", false)
 			Ω(err).Should(BeNil())
@@ -519,7 +527,15 @@ var _ = Describe("given SpaceManager", func() {
 					},
 				},
 			}
-			mockCloudController.EXPECT().ListSpaces("test").Return(spaces, nil)
+			mockOrgMgr.EXPECT().FindOrg("test").Return(&cloudcontroller.Org{
+				Entity: cloudcontroller.OrgEntity{
+					Name: "test",
+				},
+				MetaData: cloudcontroller.OrgMetaData{
+					GUID: "test-org-guid",
+				},
+			}, nil)
+			mockCloudController.EXPECT().ListSpaces("test-org-guid").Return(spaces, nil)
 			err := spaceManager.DeleteSpaces("./fixtures/config-delete", true)
 			Ω(err).Should(BeNil())
 		})

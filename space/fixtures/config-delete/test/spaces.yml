@@ -1,5 +1,5 @@
 org: test
-enable-delete-space: true
+enable-delete-spaces: true
 spaces:
   - space1
   - space2

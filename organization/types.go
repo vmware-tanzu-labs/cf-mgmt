@@ -42,7 +42,7 @@ type MetaData struct {
 //InputOrgs -
 type InputOrgs struct {
 	Orgs             []string `yaml:"orgs"`
-	EnableDeleteOrgs bool     `yaml:"enable-delete-org"`
+	EnableDeleteOrgs bool     `yaml:"enable-delete-orgs"`
 	ProtectedOrgs    []string `yaml:"protected_orgs"`
 }
 

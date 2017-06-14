@@ -377,7 +377,7 @@ func (m *DefaultSpaceManager) DeleteSpaces(configDir string, peekDeletion bool) 
 	for _, input := range configSpaceList {
 
 		if !input.EnableDeleteSpaces {
-			lo.G.Info("Space deletion is not enabled.  Set enable-delete-space: true")
+			lo.G.Info("Space deletion is not enabled.  Set enable-delete-spaces: true in spaces.yml")
 			return nil
 		}
 
@@ -386,7 +386,11 @@ func (m *DefaultSpaceManager) DeleteSpaces(configDir string, peekDeletion bool) 
 			configuredSpaces[spaceName] = true
 		}
 
-		spaces, err := m.CloudController.ListSpaces(input.Org)
+		org, err := m.OrgMgr.FindOrg(input.Org)
+		if err != nil {
+			return err
+		}
+		spaces, err := m.CloudController.ListSpaces(org.MetaData.GUID)
 		if err != nil {
 			return err
 		}
