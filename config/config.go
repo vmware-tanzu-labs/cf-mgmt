@@ -107,8 +107,9 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 		RemoveUsers:             true,
 	}
 	mgr.WriteFile(fmt.Sprintf("%s/%s/orgConfig.yml", m.ConfigDir, orgName), orgConfigYml) // TODO: filepath.Join
-	spaces := &space.InputCreateSpaces{
-		Org: orgName,
+	spaces := &space.InputSpaces{
+		Org:                orgName,
+		EnableDeleteSpaces: true,
 	}
 	mgr.WriteFile(fmt.Sprintf("%s/%s/spaces.yml", m.ConfigDir, orgName), spaces) // TODO: filepath.Join
 	return nil
@@ -126,7 +127,7 @@ func newUserMgmt(ldapGroup string, users, ldapUsers []string) organization.UserM
 func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	orgName := spaceConfig.OrgName
 	spaceFileName := fmt.Sprintf("%s/%s/spaces.yml", m.ConfigDir, orgName) // TODO: filepath.Join
-	spaceList := &space.InputCreateSpaces{}
+	spaceList := &space.InputSpaces{}
 	spaceName := spaceConfig.SpaceName
 	mgr := utils.NewDefaultManager()
 
@@ -145,7 +146,7 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	if err := os.MkdirAll(fmt.Sprintf("%s/%s/%s", m.ConfigDir, orgName, spaceName), 0755); err != nil {
 		return err
 	}
-	spaceConfigYml := &space.InputUpdateSpaces{
+	spaceConfigYml := &space.InputSpaceConfig{
 		Org:                     orgName,
 		Space:                   spaceName,
 		Developer:               space.UserMgmt{LdapGroup: spaceConfig.SpaceDevLDAPGrp, Users: spaceConfig.SpaceDevUAAUsers, LdapUsers: spaceConfig.SpaceDevLDAPUsers},
@@ -178,7 +179,10 @@ func (m *DefaultManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	}
 	lo.G.Infof("Config directory %s created", m.ConfigDir)
 	mgr.WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin})
-	mgr.WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &organization.InputOrgs{})
+	mgr.WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &organization.InputOrgs{
+		EnableDeleteOrgs: true,
+		ProtectedOrgs:    []string{"system"},
+	})
 	mgr.WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", m.ConfigDir), &space.ConfigSpaceDefaults{})
 	return nil
 }

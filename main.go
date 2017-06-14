@@ -146,6 +146,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags(), eh),
 		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlagsWithLdap(), eh),
 		CreateCommand("create-spaces", runCreateSpaces, defaultFlagsWithLdap(), eh),
+		CreateCommand("delete-spaces", runDeleteSpaces, defaultFlagsWithDelete(), eh),
 		CreateCommand("update-spaces", runUpdateSpaces, defaultFlags(), eh),
 		CreateCommand("update-space-quotas", runCreateSpaceQuotas, defaultFlags(), eh),
 		CreateCommand("update-space-users", runUpdateSpaceUsers, defaultFlagsWithLdap(), eh),
@@ -397,6 +398,14 @@ func runDeleteOrgs(c *cli.Context) error {
 	return err
 }
 
+func runDeleteSpaces(c *cli.Context) error {
+	var cfMgmt *CFMgmt
+	var err error
+	if cfMgmt, err = InitializeManager(c); err == nil {
+		err = cfMgmt.SpaceManager.DeleteSpaces(cfMgmt.ConfigDirectory, cfMgmt.PeekDeletion)
+	}
+	return err
+}
 
 func runCreateOrgQuotas(c *cli.Context) error {
 	var cfMgmt *CFMgmt
@@ -475,8 +484,8 @@ func defaultFlagsWithLdap() (flags []cli.Flag) {
 func defaultFlagsWithDelete() (flags []cli.Flag) {
 	flags = defaultFlags()
 	flag := cli.BoolFlag{
-		Name:   "peek",
-		Usage:  "Preview entities to delete without deleting them.",
+		Name:  "peek",
+		Usage: "Preview entities to delete without deleting them.",
 	}
 	flags = append(flags, flag)
 	return

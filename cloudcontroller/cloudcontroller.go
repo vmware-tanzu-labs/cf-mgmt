@@ -188,6 +188,12 @@ func (m *DefaultManager) DeleteOrg(orgName string) error {
 	return err
 }
 
+//DeleteSpace - deletes a space based on GUID
+func (m *DefaultManager) DeleteSpace(spaceGUID string) error {
+	url := fmt.Sprintf("%s/v2/spaces/%s?recursive=true", m.Host, spaceGUID)
+	return m.HTTP.Delete(url, m.Token)
+}
+
 //ListOrgs : Returns all orgs in the given foundation
 func (m *DefaultManager) ListOrgs() ([]*Org, error) {
 	url := fmt.Sprintf("%s/v2/organizations?results-per-page=100", m.Host)

@@ -29,17 +29,17 @@ func NewManager(sysDomain, token, uaacToken string) Manager {
 	}
 }
 
-func (m *DefaultSpaceManager) GetSpaceConfigs(configDir string) ([]*InputUpdateSpaces, error) {
-	spaceDefaults := &InputUpdateSpaces{}
+func (m *DefaultSpaceManager) GetSpaceConfigs(configDir string) ([]*InputSpaceConfig, error) {
+	spaceDefaults := &InputSpaceConfig{}
 	m.UtilsMgr.LoadFile(filepath.Join(configDir, "spaceDefaults.yml"), spaceDefaults)
 	files, err := utils.NewDefaultManager().FindFiles(configDir, "spaceConfig.yml")
 	if err != nil {
 		return nil, err
 	}
-	var spaceConfigs []*InputUpdateSpaces
+	var spaceConfigs []*InputSpaceConfig
 	for _, f := range files {
 		lo.G.Info("Processing space file", f)
-		input := &InputUpdateSpaces{}
+		input := &InputSpaceConfig{}
 		if err = m.UtilsMgr.LoadFile(f, input); err != nil {
 			return nil, err
 		}
@@ -201,7 +201,7 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 	return nil
 }
 
-func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *InputUpdateSpaces, uaacUsers map[string]string) error {
+func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *InputSpaceConfig, uaacUsers map[string]string) error {
 	space, err := m.FindSpace(input.Org, input.Space)
 	if err != nil {
 		return err
@@ -269,15 +269,15 @@ func (m *DefaultSpaceManager) FindSpace(orgName, spaceName string) (*cloudcontro
 	return nil, fmt.Errorf("space [%s] not found in org [%s]", spaceName, orgName)
 }
 
-func (m *DefaultSpaceManager) GetSpaceConfigList(configDir string) ([]InputCreateSpaces, error) {
+func (m *DefaultSpaceManager) GetSpaceConfigList(configDir string) ([]InputSpaces, error) {
 	files, err := m.UtilsMgr.FindFiles(configDir, "spaces.yml")
 	if err != nil {
 		return nil, err
 	}
-	spaceList := []InputCreateSpaces{}
+	spaceList := []InputSpaces{}
 	for _, f := range files {
 		lo.G.Info("Processing space file", f)
-		input := InputCreateSpaces{}
+		input := InputSpaces{}
 		if err := m.UtilsMgr.LoadFile(f, &input); err == nil {
 			spaceList = append(spaceList, input)
 		}
@@ -346,7 +346,7 @@ func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgN
 		return err
 	}
 
-	var defaultSpaceConfig *InputUpdateSpaces
+	var defaultSpaceConfig *InputSpaceConfig
 	if err = m.UtilsMgr.LoadFile(defaultSpaceConfigFile, &defaultSpaceConfig); err != nil {
 		lo.G.Info(defaultSpaceConfigFile, "doesn't exist")
 		return nil
@@ -367,4 +367,50 @@ func (m *DefaultSpaceManager) doesSpaceExist(spaces []*cloudcontroller.Space, sp
 		}
 	}
 	return false
+}
+
+func (m *DefaultSpaceManager) DeleteSpaces(configDir string, peekDeletion bool) error {
+	configSpaceList, err := m.GetSpaceConfigList(configDir)
+	if err != nil {
+		return err
+	}
+	for _, input := range configSpaceList {
+
+		if !input.EnableDeleteSpaces {
+			lo.G.Info("Space deletion is not enabled.  Set enable-delete-space: true")
+			return nil
+		}
+
+		configuredSpaces := make(map[string]bool)
+		for _, spaceName := range input.Spaces {
+			configuredSpaces[spaceName] = true
+		}
+
+		spaces, err := m.CloudController.ListSpaces(input.Org)
+		if err != nil {
+			return err
+		}
+
+		spacesToDelete := make([]*cloudcontroller.Space, 0)
+		for _, space := range spaces {
+			if _, exists := configuredSpaces[space.Entity.Name]; !exists {
+				spacesToDelete = append(spacesToDelete, space)
+			}
+		}
+
+		if peekDeletion {
+			for _, space := range spacesToDelete {
+				lo.G.Info(fmt.Sprintf("Peek - Would Delete [%s] space", space.Entity.Name))
+			}
+		} else {
+			for _, space := range spacesToDelete {
+				lo.G.Info(fmt.Sprintf("Deleting [%s] space", space.Entity.Name))
+				if err := m.CloudController.DeleteSpace(space.MetaData.GUID); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
 }

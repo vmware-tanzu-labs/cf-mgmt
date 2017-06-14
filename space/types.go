@@ -21,16 +21,18 @@ type Manager interface {
 	UpdateSpaceUsers(configDir, ldapBindPassword string) error
 	CreateQuotas(configDir string) error
 	CreateApplicationSecurityGroups(configDir string) error
+	DeleteSpaces(configFile string, peekDeletion bool) (err error)
 }
 
-//InputCreateSpaces -
-type InputCreateSpaces struct {
-	Org    string   `yaml:"org"`
-	Spaces []string `yaml:"spaces"`
+//InputSpaces -
+type InputSpaces struct {
+	Org                string   `yaml:"org"`
+	Spaces             []string `yaml:"spaces"`
+	EnableDeleteSpaces bool     `yaml:"enable-delete-space"`
 }
 
 //Contains -
-func (s *InputCreateSpaces) Contains(spaceName string) bool {
+func (s *InputSpaces) Contains(spaceName string) bool {
 	for _, v := range s.Spaces {
 		if v == spaceName {
 			return true
@@ -39,8 +41,8 @@ func (s *InputCreateSpaces) Contains(spaceName string) bool {
 	return false
 }
 
-//InputUpdateSpaces -
-type InputUpdateSpaces struct {
+//InputSpaceConfig -
+type InputSpaceConfig struct {
 	Org                     string   `yaml:"org"`
 	Space                   string   `yaml:"space"`
 	Developer               UserMgmt `yaml:"space-developer"`
@@ -68,7 +70,7 @@ type ConfigSpaceDefaults struct {
 	Auditor   UserMgmt `yaml:"space-auditor"`
 }
 
-func (i *InputUpdateSpaces) GetDeveloperGroups() []string {
+func (i *InputSpaceConfig) GetDeveloperGroups() []string {
 	groupMap := make(map[string]string)
 	for _, group := range i.Developer.LdapGroups {
 		groupMap[group] = group
@@ -82,7 +84,7 @@ func (i *InputUpdateSpaces) GetDeveloperGroups() []string {
 	return mapToKeys(groupMap)
 }
 
-func (i *InputUpdateSpaces) GetManagerGroups() []string {
+func (i *InputSpaceConfig) GetManagerGroups() []string {
 	groupMap := make(map[string]string)
 	for _, group := range i.Manager.LdapGroups {
 		groupMap[group] = group
@@ -96,7 +98,7 @@ func (i *InputUpdateSpaces) GetManagerGroups() []string {
 	return mapToKeys(groupMap)
 }
 
-func (i *InputUpdateSpaces) GetAuditorGroups() []string {
+func (i *InputSpaceConfig) GetAuditorGroups() []string {
 	groupMap := make(map[string]string)
 	for _, group := range i.Auditor.LdapGroups {
 		groupMap[group] = group

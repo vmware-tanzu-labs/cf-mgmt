@@ -97,7 +97,7 @@ var _ = Describe("Export manager", func() {
 			Ω(len(orgDetails.BillingManager.Users)).Should(BeEquivalentTo(0))
 			Ω(len(orgDetails.Auditor.Users)).Should(BeEquivalentTo(0))
 
-			spaceDetails := &sp.InputUpdateSpaces{}
+			spaceDetails := &sp.InputSpaceConfig{}
 			err = utils.NewDefaultManager().LoadFile("test/config/org1/dev/spaceConfig.yml", spaceDetails)
 			Ω(err).Should(BeNil())
 			Ω(spaceDetails.Org).Should(Equal("org1"))
@@ -149,7 +149,7 @@ var _ = Describe("Export manager", func() {
 			Ω(orgDetails.MemoryLimit).Should(Equal(2))
 			Ω(orgDetails.InstanceMemoryLimit).Should(Equal(5))
 
-			spaceDetails := &sp.InputUpdateSpaces{}
+			spaceDetails := &sp.InputSpaceConfig{}
 			err = utils.NewDefaultManager().LoadFile("test/config/org1/dev/spaceConfig.yml", spaceDetails)
 			Ω(err).Should(BeNil())
 			Ω(spaceDetails.Org).Should(Equal("org1"))

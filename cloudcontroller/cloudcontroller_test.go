@@ -534,6 +534,31 @@ var _ = Describe("given CloudControllerManager", func() {
 		})
 	})
 
+	Context("DeleteSpace()", func() {
+		It("should be successful", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("DELETE", "/v2/spaces/some-guid-for-a-space", "recursive=true"),
+					RespondWithJSONEncoded(http.StatusOK, ""),
+				),
+			)
+			err := manager.DeleteSpace("some-guid-for-a-space")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("DELETE", "/v2/spaces/some-guid-for-a-space"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			err := manager.DeleteSpace("some-guid-for-a-space")
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
 	Context("ListOrgs()", func() {
 
 		It("should be successful", func() {

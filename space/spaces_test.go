@@ -60,7 +60,7 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("GetSpaceConfigs()", func() {
 		Context("for default_config", func() {
-			var config *InputUpdateSpaces
+			var config *InputSpaceConfig
 			BeforeEach(func() {
 				configs, err := spaceManager.GetSpaceConfigs("./fixtures/space-defaults")
 				Ω(err).Should(BeNil())
@@ -456,6 +456,76 @@ var _ = Describe("given SpaceManager", func() {
 
 			err := spaceManager.UpdateSpaces("./fixtures/config")
 			Ω(err).Should(HaveOccurred())
+		})
+	})
+
+	Context("DeleteSpaces()", func() {
+		It("should delete 1", func() {
+			spaces := []*cloudcontroller.Space{
+				&cloudcontroller.Space{
+					Entity: cloudcontroller.SpaceEntity{
+						Name: "space1",
+					},
+					MetaData: cloudcontroller.SpaceMetaData{
+						GUID: "space1-guid",
+					},
+				},
+				&cloudcontroller.Space{
+					Entity: cloudcontroller.SpaceEntity{
+						Name: "space2",
+					},
+					MetaData: cloudcontroller.SpaceMetaData{
+						GUID: "space2-guid",
+					},
+				},
+				&cloudcontroller.Space{
+					Entity: cloudcontroller.SpaceEntity{
+						Name: "space3",
+					},
+					MetaData: cloudcontroller.SpaceMetaData{
+						GUID: "space3-guid",
+					},
+				},
+			}
+			mockCloudController.EXPECT().ListSpaces("test").Return(spaces, nil)
+			mockCloudController.EXPECT().DeleteSpace("space3-guid").Return(nil)
+			err := spaceManager.DeleteSpaces("./fixtures/config-delete", false)
+			Ω(err).Should(BeNil())
+		})
+		It("should just peek", func() {
+			spaces := []*cloudcontroller.Space{
+				&cloudcontroller.Space{
+					Entity: cloudcontroller.SpaceEntity{
+						Name: "space1",
+					},
+					MetaData: cloudcontroller.SpaceMetaData{
+						GUID: "space1-guid",
+					},
+				},
+				&cloudcontroller.Space{
+					Entity: cloudcontroller.SpaceEntity{
+						Name: "space2",
+					},
+					MetaData: cloudcontroller.SpaceMetaData{
+						GUID: "space2-guid",
+					},
+				},
+				&cloudcontroller.Space{
+					Entity: cloudcontroller.SpaceEntity{
+						Name: "space3",
+					},
+					MetaData: cloudcontroller.SpaceMetaData{
+						GUID: "space3-guid",
+					},
+				},
+			}
+			mockCloudController.EXPECT().ListSpaces("test").Return(spaces, nil)
+			err := spaceManager.DeleteSpaces("./fixtures/config-delete", true)
+			Ω(err).Should(BeNil())
+		})
+		It("should just peek", func() {
+			err := spaceManager.DeleteSpaces("./fixtures/config", true)
+			Ω(err).Should(BeNil())
 		})
 	})
 })

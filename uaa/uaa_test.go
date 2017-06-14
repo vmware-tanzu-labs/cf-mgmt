@@ -1,8 +1,8 @@
 package uaa_test
 
 import (
-	"fmt"
 	"net/http"
+	"net/url"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -51,12 +51,16 @@ var _ = Describe("given uaa manager", func() {
 	Context("GetCFToken()", func() {
 
 		It("should successfully get a token", func() {
-			bodyBytes := []byte(fmt.Sprintf("grant_type=password&password=%s&response_type=token&username=%s", password, userID))
+			expectedValues := url.Values{}
+			expectedValues.Add("grant_type", "password")
+			expectedValues.Add("password", password)
+			expectedValues.Add("response_type", "token")
+			expectedValues.Add("username", userID)
 			server.AppendHandlers(
 				CombineHandlers(
 					VerifyRequest("POST", "/oauth/token"),
 					VerifyBasicAuth("cf", ""),
-					VerifyBody(bodyBytes),
+					VerifyForm(expectedValues),
 					RespondWithJSONEncoded(http.StatusOK, token),
 				),
 			)
@@ -79,13 +83,15 @@ var _ = Describe("given uaa manager", func() {
 		})
 	})
 	Context("GetUAACToken()", func() {
-		bodyBytes := []byte("grant_type=client_credentials&response_type=token")
+		expectedValues := url.Values{}
+		expectedValues.Add("response_type", "token")
+		expectedValues.Add("grant_type", "client_credentials")
 		It("should successfully get a token", func() {
 			server.AppendHandlers(
 				CombineHandlers(
 					VerifyRequest("POST", "/oauth/token"),
 					VerifyBasicAuth(userID, password),
-					VerifyBody(bodyBytes),
+					VerifyForm(expectedValues),
 					RespondWithJSONEncoded(http.StatusOK, token),
 				),
 			)

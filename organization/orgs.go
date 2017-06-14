@@ -143,6 +143,8 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 		configuredOrgs[orgName] = true
 	}
 	protectedOrgs := make(map[string]bool)
+	//never allow accidental deletion of system org
+	protectedOrgs["system"] = true
 	for _, orgName := range input.ProtectedOrgs {
 		protectedOrgs[orgName] = true
 	}

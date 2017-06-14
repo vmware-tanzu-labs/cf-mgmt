@@ -152,6 +152,16 @@ func (_mr *_MockManagerRecorder) DeleteOrg(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteOrg", arg0)
 }
 
+func (_m *MockManager) DeleteSpace(_param0 string) error {
+	ret := _m.ctrl.Call(_m, "DeleteSpace", _param0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockManagerRecorder) DeleteSpace(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteSpace", arg0)
+}
+
 func (_m *MockManager) GetCFUsers(_param0 string, _param1 string, _param2 string) (map[string]string, error) {
 	ret := _m.ctrl.Call(_m, "GetCFUsers", _param0, _param1, _param2)
 	ret0, _ := ret[0].(map[string]string)
