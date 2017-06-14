@@ -1,7 +1,0 @@
-org: test2
-space: space1a
-allow-ssh: yes
-space-developer-group:
-space-manager-group:
-space-auditor-group:
-enable-security-group: true

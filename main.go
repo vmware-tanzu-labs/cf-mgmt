@@ -363,6 +363,9 @@ func createFile(assetName, fileName string) (err error) {
 		if f, err = os.Create(fileName); err == nil {
 			defer f.Close()
 			_, err = f.Write(fileBytes)
+			if strings.HasSuffix(fileName, ".sh") {
+				f.Chmod(0755)
+			}
 		}
 	}
 	return
