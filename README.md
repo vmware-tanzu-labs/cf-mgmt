@@ -99,6 +99,8 @@ This will add the specified org to orgs.yml and create folder based on the org n
 
 ```
 org: test
+
+# added in 0.0.63+ which will remove spaces not configured in cf-mgmt
 enable-delete-spaces: true
 spaces:
   - space1
@@ -212,7 +214,9 @@ There is a orgs.yml that contains list of orgs that will be created.  This shoul
 orgs:
 - foo-org
 - bar-org
+# added in 0.0.63+ which will remove orgs not configured in cf-mgmt
 enable-delete-orgs: true
+# added in 0.0.63+ which allows configuration of orgs to 'ignore'
 protected_orgs:
 - system
 - p-spring-cloud-services
@@ -385,6 +389,8 @@ LDAP configuration file ```ldap.yml``` is located under the ```config``` folder.
 ### Features
 - Removing users from cf that are not in cf-mgmt metadata was added in 0.48+ release.  This is an opt-in feature for existing cf-mgmt users at an org and space config level.  For any new orgs/config created with cf-mgmt cli 0.48+ it will default this parameter to true.  To opt-in ensure you are using latest cf-mgmt version when running pipeline and add `enable-remove-users: true` to your configuration.
 
+- Removing orgs and spaces from cf that are not in cf-mgmt metadata was added in 0.0.63+ release.  This is an opt-in feature for existing cf-mgmt users at an org and space config level.  For any new orgs/config created with cf-mgmt cli 0.0.63+ it will default this parameter to true.  To opt-in ensure you are using latest cf-mgmt version when running pipeline and add `enable-delete-orgs: true` or `enable-delete-spaces: true` to your configuration.
+
 ### Recommended workflow
 
 Operations team can setup a a git repo seeded with cf-mgmt configuration.  This will be linked to a concourse pipeline (example pipeline generated below) that will create orgs, spaces, map users, create quotas, deploy ASGs based on changes to git repo.  Consumers of this can submit a pull request via GIT to the ops team with comments like any other commit.  This will create a complete audit log of who requested this and who approved within GIT history.  Once PR accepted then concourse will provision the new items.
@@ -406,9 +412,6 @@ fly -t  login -c <concourse_instance>
 fly -t <targetname> set-pipeline -p <pipeline_name> -c pipeline.yml -l vars.yml —-var "ldap_password=<ldap_password>" --var "client_secret=<client_sercret>" —-var "password=<org/space_admin_password>"
 ```
 If both ```vars.yml``` and ```--var``` are specified, ```--vars``` values takes precedence.
-
-### Known Issues
-Currently does not remove orgs, spaces, asgs, quotas that are not in configuration. It does remove users from roles as of release 0.48+.  All functions are additive.  So removing orgs, spaces is not currently a function if they are not configured in cf-mgmt but future plans are to have a flag to opt-in for this feature.
 
 ### The following operation are enabled with cf-mgmt that will leverage configuration to modify your Cloud Foundry installation
 
