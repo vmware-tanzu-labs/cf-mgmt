@@ -61,6 +61,10 @@ type InputSpaceConfig struct {
 	EnableSecurityGroup     bool     `yaml:"enable-security-group"`
 	SecurityGroupContents   string   `yaml:"security-group-contents,omitempty"`
 	RemoveUsers             bool     `yaml:"enable-remove-users"`
+	TotalPrivateDomains     int      `yaml:"total_private_domains"`
+	TotalReservedRoutePorts int      `yaml:"total_reserved_route_ports"`
+	TotalServiceKeys        int      `yaml:"total_service_keys"`
+	AppInstanceLimit        int      `yaml:"app_instance_limit"`
 }
 
 //ConfigSpaceDefaults -

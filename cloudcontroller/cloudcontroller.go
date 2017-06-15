@@ -127,12 +127,14 @@ func (m *DefaultManager) AssignQuotaToSpace(spaceGUID, quotaGUID string) error {
 	return err
 }
 
-func (m *DefaultManager) CreateSpaceQuota(orgGUID, quotaName string,
-	memoryLimit, instanceMemoryLimit, totalRoutes, totalServices int,
-	paidServicePlansAllowed bool) (string, error) {
+func (m *DefaultManager) CreateSpaceQuota(quota SpaceQuotaEntity) (string, error) {
 	url := fmt.Sprintf("%s/v2/space_quota_definitions", m.Host)
-	sendString := fmt.Sprintf(`{"name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t,"organization_guid":"%s"}`, quotaName, memoryLimit, instanceMemoryLimit, totalRoutes, totalServices, paidServicePlansAllowed, orgGUID)
-	body, err := m.HTTP.Post(url, m.Token, sendString)
+	sendString, err := json.Marshal(quota)
+	if err != nil {
+		return "", err
+	}
+
+	body, err := m.HTTP.Post(url, m.Token, string(sendString))
 	if err != nil {
 		return "", err
 	}
@@ -143,12 +145,13 @@ func (m *DefaultManager) CreateSpaceQuota(orgGUID, quotaName string,
 	return quotaResource.MetaData.GUID, nil
 }
 
-func (m *DefaultManager) UpdateSpaceQuota(orgGUID, quotaGUID, quotaName string,
-	memoryLimit, instanceMemoryLimit, totalRoutes, totalServices int,
-	paidServicePlansAllowed bool) error {
+func (m *DefaultManager) UpdateSpaceQuota(quotaGUID string, quota SpaceQuotaEntity) error {
 	url := fmt.Sprintf("%s/v2/space_quota_definitions/%s", m.Host, quotaGUID)
-	sendString := fmt.Sprintf(`{"guid":"%s","name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t,"organization_guid":"%s"}`, quotaGUID, quotaName, memoryLimit, instanceMemoryLimit, totalRoutes, totalServices, paidServicePlansAllowed, orgGUID)
-	return m.HTTP.Put(url, m.Token, sendString)
+	sendString, err := json.Marshal(quota)
+	if err != nil {
+		return err
+	}
+	return m.HTTP.Put(url, m.Token, string(sendString))
 }
 
 func (m *DefaultManager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]string, error) {
@@ -217,12 +220,13 @@ func (m *DefaultManager) ListAllOrgQuotas() (map[string]string, error) {
 	return quotas, nil
 }
 
-func (m *DefaultManager) CreateQuota(quotaName string,
-	memoryLimit, instanceMemoryLimit, totalRoutes, totalServices int,
-	paidServicePlansAllowed bool) (string, error) {
+func (m *DefaultManager) CreateQuota(quota QuotaEntity) (string, error) {
 	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
-	sendString := fmt.Sprintf(`{"name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t}`, quotaName, memoryLimit, instanceMemoryLimit, totalRoutes, totalServices, paidServicePlansAllowed)
-	body, err := m.HTTP.Post(url, m.Token, sendString)
+	sendString, err := json.Marshal(quota)
+	if err != nil {
+		return "", err
+	}
+	body, err := m.HTTP.Post(url, m.Token, string(sendString))
 	if err != nil {
 		return "", err
 	}
@@ -234,13 +238,14 @@ func (m *DefaultManager) CreateQuota(quotaName string,
 	return quotaResource.MetaData.GUID, nil
 }
 
-func (m *DefaultManager) UpdateQuota(quotaGUID, quotaName string,
-	memoryLimit, instanceMemoryLimit, totalRoutes, totalServices int,
-	paidServicePlansAllowed bool) error {
+func (m *DefaultManager) UpdateQuota(quotaGUID string, quota QuotaEntity) error {
 
 	url := fmt.Sprintf("%s/v2/quota_definitions/%s", m.Host, quotaGUID)
-	sendString := fmt.Sprintf(`{"guid":"%s","name":"%s","memory_limit":%d,"instance_memory_limit":%d,"total_routes":%d,"total_services":%d,"non_basic_services_allowed":%t}`, quotaGUID, quotaName, memoryLimit, instanceMemoryLimit, totalRoutes, totalServices, paidServicePlansAllowed)
-	return m.HTTP.Put(url, m.Token, sendString)
+	sendString, err := json.Marshal(quota)
+	if err != nil {
+		return err
+	}
+	return m.HTTP.Put(url, m.Token, string(sendString))
 }
 
 func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {

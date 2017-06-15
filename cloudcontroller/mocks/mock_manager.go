@@ -99,15 +99,15 @@ func (_mr *_MockManagerRecorder) CreateOrg(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateOrg", arg0)
 }
 
-func (_m *MockManager) CreateQuota(_param0 string, _param1 int, _param2 int, _param3 int, _param4 int, _param5 bool) (string, error) {
-	ret := _m.ctrl.Call(_m, "CreateQuota", _param0, _param1, _param2, _param3, _param4, _param5)
+func (_m *MockManager) CreateQuota(_param0 cloudcontroller.QuotaEntity) (string, error) {
+	ret := _m.ctrl.Call(_m, "CreateQuota", _param0)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockManagerRecorder) CreateQuota(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateQuota", arg0, arg1, arg2, arg3, arg4, arg5)
+func (_mr *_MockManagerRecorder) CreateQuota(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateQuota", arg0)
 }
 
 func (_m *MockManager) CreateSecurityGroup(_param0 string, _param1 string) (string, error) {
@@ -131,15 +131,15 @@ func (_mr *_MockManagerRecorder) CreateSpace(arg0, arg1 interface{}) *gomock.Cal
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateSpace", arg0, arg1)
 }
 
-func (_m *MockManager) CreateSpaceQuota(_param0 string, _param1 string, _param2 int, _param3 int, _param4 int, _param5 int, _param6 bool) (string, error) {
-	ret := _m.ctrl.Call(_m, "CreateSpaceQuota", _param0, _param1, _param2, _param3, _param4, _param5, _param6)
+func (_m *MockManager) CreateSpaceQuota(_param0 cloudcontroller.SpaceQuotaEntity) (string, error) {
+	ret := _m.ctrl.Call(_m, "CreateSpaceQuota", _param0)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockManagerRecorder) CreateSpaceQuota(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateSpaceQuota", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+func (_mr *_MockManagerRecorder) CreateSpaceQuota(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateSpaceQuota", arg0)
 }
 
 func (_m *MockManager) DeleteOrg(_param0 string) error {
@@ -249,14 +249,14 @@ func (_mr *_MockManagerRecorder) RemoveCFUser(arg0, arg1, arg2, arg3 interface{}
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "RemoveCFUser", arg0, arg1, arg2, arg3)
 }
 
-func (_m *MockManager) UpdateQuota(_param0 string, _param1 string, _param2 int, _param3 int, _param4 int, _param5 int, _param6 bool) error {
-	ret := _m.ctrl.Call(_m, "UpdateQuota", _param0, _param1, _param2, _param3, _param4, _param5, _param6)
+func (_m *MockManager) UpdateQuota(_param0 string, _param1 cloudcontroller.QuotaEntity) error {
+	ret := _m.ctrl.Call(_m, "UpdateQuota", _param0, _param1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockManagerRecorder) UpdateQuota(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateQuota", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+func (_mr *_MockManagerRecorder) UpdateQuota(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateQuota", arg0, arg1)
 }
 
 func (_m *MockManager) UpdateSecurityGroup(_param0 string, _param1 string, _param2 string) error {
@@ -269,14 +269,14 @@ func (_mr *_MockManagerRecorder) UpdateSecurityGroup(arg0, arg1, arg2 interface{
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateSecurityGroup", arg0, arg1, arg2)
 }
 
-func (_m *MockManager) UpdateSpaceQuota(_param0 string, _param1 string, _param2 string, _param3 int, _param4 int, _param5 int, _param6 int, _param7 bool) error {
-	ret := _m.ctrl.Call(_m, "UpdateSpaceQuota", _param0, _param1, _param2, _param3, _param4, _param5, _param6, _param7)
+func (_m *MockManager) UpdateSpaceQuota(_param0 string, _param1 cloudcontroller.SpaceQuotaEntity) error {
+	ret := _m.ctrl.Call(_m, "UpdateSpaceQuota", _param0, _param1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockManagerRecorder) UpdateSpaceQuota(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateSpaceQuota", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+func (_mr *_MockManagerRecorder) UpdateSpaceQuota(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateSpaceQuota", arg0, arg1)
 }
 
 func (_m *MockManager) UpdateSpaceSSH(_param0 bool, _param1 string) error {

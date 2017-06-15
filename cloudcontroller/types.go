@@ -14,12 +14,8 @@ type Manager interface {
 	CreateSecurityGroup(sgName, contents string) (string, error)
 	UpdateSecurityGroup(sgGUID, sgName, contents string) error
 
-	CreateSpaceQuota(orgGUID, quotaName string,
-		memoryLimit, instanceMemoryLimit, totalRoutes, totalServices int,
-		paidServicePlansAllowed bool) (string, error)
-	UpdateSpaceQuota(orgGUID, quotaGUID, quotaName string,
-		memoryLimit, instanceMemoryLimit, totalRoutes, totalServices int,
-		paidServicePlansAllowed bool) error
+	CreateSpaceQuota(quota SpaceQuotaEntity) (string, error)
+	UpdateSpaceQuota(quotaGUID string, quota SpaceQuotaEntity) error
 	ListAllSpaceQuotasForOrg(orgGUID string) (map[string]string, error)
 	AssignQuotaToSpace(spaceGUID, quotaGUID string) error
 
@@ -30,12 +26,8 @@ type Manager interface {
 	AddUserToOrg(userName, orgGUID string) error
 
 	ListAllOrgQuotas() (quotas map[string]string, err error)
-	CreateQuota(quotaName string,
-		memoryLimit, instanceMemoryLimit, totalRoutes, totalServices int,
-		paidServicePlansAllowed bool) (string, error)
-	UpdateQuota(quotaGUID, quotaName string,
-		memoryLimit, instanceMemoryLimit, totalRoutes, totalServices int,
-		paidServicePlansAllowed bool) error
+	CreateQuota(quota QuotaEntity) (string, error)
+	UpdateQuota(quotaGUID string, quota QuotaEntity) error
 
 	AssignQuotaToOrg(orgGUID, quotaGUID string) error
 
@@ -148,7 +140,17 @@ type QuotaEntity struct {
 	InstanceMemoryLimit     int    `json:"instance_memory_limit"`
 	TotalRoutes             int    `json:"total_routes"`
 	TotalServices           int    `json:"total_services"`
-	PaidServicePlansAllowed bool   `json:"paid_service_plans_allowed"`
+	PaidServicePlansAllowed bool   `json:"non_basic_services_allowed"`
+	TotalPrivateDomains     int    `json:"total_private_domains"`
+	TotalReservedRoutePorts int    `json:"total_reserved_route_ports"`
+	TotalServiceKeys        int    `json:"total_service_keys"`
+	AppInstanceLimit        int    `json:"app_instance_limit"`
+}
+
+//SpaceQuotaEntity -
+type SpaceQuotaEntity struct {
+	QuotaEntity
+	OrgGUID string `json:"organization_guid"`
 }
 
 //GetName --

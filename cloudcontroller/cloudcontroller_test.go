@@ -379,18 +379,45 @@ var _ = Describe("given CloudControllerManager", func() {
 
 		It("should be successful", func() {
 
-			bodyBytes := []byte(`{"instance_memory_limit":2,"memory_limit":1,"name":"name","non_basic_services_allowed":false,"organization_guid":"5678-1234","total_routes":3,"total_services":4}`)
+			bodyBytes := `{
+					"organization_guid": "5678-1234",
+					"name": "name",
+					"memory_limit": 1,
+					"instance_memory_limit": 2,
+					"total_routes": 3,
+					"total_services": 4,
+					"total_private_domains": 5,
+					"total_reserved_route_ports": 6,
+					"total_service_keys": 7,
+					"app_instance_limit": 8,
+					"non_basic_services_allowed": false
+				}`
 			responsebytes, err := ioutil.ReadFile("fixtures/create-quota.json")
 			Ω(err).ShouldNot(HaveOccurred())
 			server.AppendHandlers(
 				CombineHandlers(
 					VerifyRequest("POST", "/v2/space_quota_definitions"),
 					VerifyContentType("application/json"),
-					VerifyBody(bodyBytes),
+					VerifyJSON(bodyBytes),
 					RespondWith(http.StatusCreated, string(responsebytes)),
 				),
 			)
-			guid, err := manager.CreateSpaceQuota(orgGUID, "name", 1, 2, 3, 4, false)
+			spaceQuota := SpaceQuotaEntity{
+				OrgGUID: orgGUID,
+				QuotaEntity: QuotaEntity{
+					Name:                    "name",
+					MemoryLimit:             1,
+					InstanceMemoryLimit:     2,
+					TotalRoutes:             3,
+					TotalServices:           4,
+					TotalPrivateDomains:     5,
+					TotalReservedRoutePorts: 6,
+					TotalServiceKeys:        7,
+					AppInstanceLimit:        8,
+					PaidServicePlansAllowed: false,
+				},
+			}
+			guid, err := manager.CreateSpaceQuota(spaceQuota)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(guid).Should(Equal("601d30e6-f16f-4c3d-88ab-723f7c51184a"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
@@ -402,7 +429,10 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			_, err := manager.CreateSpaceQuota(orgGUID, "name", 1, 2, 3, 4, false)
+			spaceQuota := SpaceQuotaEntity{
+				OrgGUID: orgGUID,
+			}
+			_, err := manager.CreateSpaceQuota(spaceQuota)
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -412,16 +442,43 @@ var _ = Describe("given CloudControllerManager", func() {
 
 		It("should be successful", func() {
 
-			bodyBytes := []byte(`{"guid":"Quota-1234","instance_memory_limit":2,"memory_limit":1,"name":"name","non_basic_services_allowed":false,"organization_guid":"5678-1234","total_routes":3,"total_services":4}`)
+			bodyBytes := `{
+					"organization_guid": "5678-1234",
+					"name": "name",
+					"memory_limit": 1,
+					"instance_memory_limit": 2,
+					"total_routes": 3,
+					"total_services": 4,
+					"total_private_domains": 5,
+					"total_reserved_route_ports": 6,
+					"total_service_keys": 7,
+					"app_instance_limit": 8,
+					"non_basic_services_allowed": false
+				}`
 			server.AppendHandlers(
 				CombineHandlers(
 					VerifyRequest("PUT", "/v2/space_quota_definitions/Quota-1234"),
 					VerifyContentType("application/json"),
-					VerifyBody(bodyBytes),
+					VerifyJSON(bodyBytes),
 					RespondWith(http.StatusCreated, ""),
 				),
 			)
-			err := manager.UpdateSpaceQuota(orgGUID, quotaGUID, "name", 1, 2, 3, 4, false)
+			spaceQuota := SpaceQuotaEntity{
+				OrgGUID: orgGUID,
+				QuotaEntity: QuotaEntity{
+					Name:                    "name",
+					MemoryLimit:             1,
+					InstanceMemoryLimit:     2,
+					TotalRoutes:             3,
+					TotalServices:           4,
+					TotalPrivateDomains:     5,
+					TotalReservedRoutePorts: 6,
+					TotalServiceKeys:        7,
+					AppInstanceLimit:        8,
+					PaidServicePlansAllowed: false,
+				},
+			}
+			err := manager.UpdateSpaceQuota(quotaGUID, spaceQuota)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -432,7 +489,10 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			err := manager.UpdateSpaceQuota(orgGUID, quotaGUID, "name", 1, 2, 3, 4, false)
+			spaceQuota := SpaceQuotaEntity{
+				OrgGUID: orgGUID,
+			}
+			err := manager.UpdateSpaceQuota(quotaGUID, spaceQuota)
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -667,18 +727,41 @@ var _ = Describe("given CloudControllerManager", func() {
 
 		It("should be successful", func() {
 
-			bodyBytes := []byte(`{"instance_memory_limit":2,"memory_limit":1,"name":"name","non_basic_services_allowed":false,"total_routes":3,"total_services":4}`)
+			bodyBytes := `{
+					"name": "name",
+					"memory_limit": 1,
+					"instance_memory_limit": 2,
+					"total_routes": 3,
+					"total_services": 4,
+					"total_private_domains": 5,
+					"total_reserved_route_ports": 6,
+					"total_service_keys": 7,
+					"app_instance_limit": 8,
+					"non_basic_services_allowed": false
+				}`
 			responsebytes, err := ioutil.ReadFile("fixtures/create-quota.json")
 			Ω(err).ShouldNot(HaveOccurred())
 			server.AppendHandlers(
 				CombineHandlers(
 					VerifyRequest("POST", "/v2/quota_definitions"),
 					VerifyContentType("application/json"),
-					VerifyBody(bodyBytes),
+					VerifyJSON(bodyBytes),
 					RespondWith(http.StatusCreated, string(responsebytes)),
 				),
 			)
-			guid, err := manager.CreateQuota("name", 1, 2, 3, 4, false)
+			quota := QuotaEntity{
+				Name:                    "name",
+				MemoryLimit:             1,
+				InstanceMemoryLimit:     2,
+				TotalRoutes:             3,
+				TotalServices:           4,
+				TotalPrivateDomains:     5,
+				TotalReservedRoutePorts: 6,
+				TotalServiceKeys:        7,
+				AppInstanceLimit:        8,
+				PaidServicePlansAllowed: false,
+			}
+			guid, err := manager.CreateQuota(quota)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(guid).Should(Equal("601d30e6-f16f-4c3d-88ab-723f7c51184a"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
@@ -690,7 +773,8 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			_, err := manager.CreateQuota("name", 1, 2, 3, 4, false)
+			quota := QuotaEntity{}
+			_, err := manager.CreateQuota(quota)
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -700,16 +784,39 @@ var _ = Describe("given CloudControllerManager", func() {
 
 		It("should be successful", func() {
 
-			bodyBytes := []byte(`{"guid":"Quota-1234","instance_memory_limit":2,"memory_limit":1,"name":"name","non_basic_services_allowed":false,"total_routes":3,"total_services":4}`)
+			bodyBytes := `{
+					"name": "name",
+					"memory_limit": 1,
+					"instance_memory_limit": 2,
+					"total_routes": 3,
+					"total_services": 4,
+					"total_private_domains": 5,
+					"total_reserved_route_ports": 6,
+					"total_service_keys": 7,
+					"app_instance_limit": 8,
+					"non_basic_services_allowed": false
+				}`
 			server.AppendHandlers(
 				CombineHandlers(
 					VerifyRequest("PUT", "/v2/quota_definitions/Quota-1234"),
 					VerifyContentType("application/json"),
-					VerifyBody(bodyBytes),
+					VerifyJSON(bodyBytes),
 					RespondWith(http.StatusCreated, ""),
 				),
 			)
-			err := manager.UpdateQuota(quotaGUID, "name", 1, 2, 3, 4, false)
+			quota := QuotaEntity{
+				Name:                    "name",
+				MemoryLimit:             1,
+				InstanceMemoryLimit:     2,
+				TotalRoutes:             3,
+				TotalServices:           4,
+				TotalPrivateDomains:     5,
+				TotalReservedRoutePorts: 6,
+				TotalServiceKeys:        7,
+				AppInstanceLimit:        8,
+				PaidServicePlansAllowed: false,
+			}
+			err := manager.UpdateQuota(quotaGUID, quota)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -720,7 +827,8 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			err := manager.UpdateQuota(quotaGUID, "name", 1, 2, 3, 4, false)
+			quota := QuotaEntity{}
+			err := manager.UpdateQuota(quotaGUID, quota)
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})

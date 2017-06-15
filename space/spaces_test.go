@@ -356,13 +356,39 @@ var _ = Describe("given SpaceManager", func() {
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockCloudController.EXPECT().ListAllSpaceQuotasForOrg("testOrgGUID").Return(quotas, nil)
-			mockCloudController.EXPECT().CreateSpaceQuota("testOrgGUID", "space1", 10240, -1, 10, -1, true).Return("space1QuotaGUID", nil)
+			mockCloudController.EXPECT().CreateSpaceQuota(cloudcontroller.SpaceQuotaEntity{
+				OrgGUID: "testOrgGUID",
+				QuotaEntity: cloudcontroller.QuotaEntity{
+					Name:                    "space1",
+					MemoryLimit:             10240,
+					InstanceMemoryLimit:     -1,
+					TotalRoutes:             10,
+					TotalServices:           -1,
+					PaidServicePlansAllowed: true,
+					AppInstanceLimit:        -1,
+					TotalReservedRoutePorts: 0,
+					TotalPrivateDomains:     -1,
+					TotalServiceKeys:        -1,
+				}}).Return("space1QuotaGUID", nil)
 			mockCloudController.EXPECT().AssignQuotaToSpace("space1GUID", "space1QuotaGUID")
 
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockCloudController.EXPECT().ListAllSpaceQuotasForOrg("testOrgGUID").Return(quotas, nil)
-			mockCloudController.EXPECT().CreateSpaceQuota("testOrgGUID", "space2", 10240, -1, 10, -1, true).Return("space2QuotaGUID", nil)
+			mockCloudController.EXPECT().CreateSpaceQuota(cloudcontroller.SpaceQuotaEntity{
+				OrgGUID: "testOrgGUID",
+				QuotaEntity: cloudcontroller.QuotaEntity{
+					Name:                    "space2",
+					MemoryLimit:             10240,
+					InstanceMemoryLimit:     -1,
+					TotalRoutes:             10,
+					TotalServices:           -1,
+					PaidServicePlansAllowed: true,
+					AppInstanceLimit:        -1,
+					TotalReservedRoutePorts: 0,
+					TotalPrivateDomains:     -1,
+					TotalServiceKeys:        -1,
+				}}).Return("space2QuotaGUID", nil)
 			mockCloudController.EXPECT().AssignQuotaToSpace("space2GUID", "space2QuotaGUID")
 			err := spaceManager.CreateQuotas("./fixtures/config")
 			Ω(err).Should(BeNil())
@@ -395,13 +421,39 @@ var _ = Describe("given SpaceManager", func() {
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockCloudController.EXPECT().ListAllSpaceQuotasForOrg("testOrgGUID").Return(quotas, nil)
-			mockCloudController.EXPECT().UpdateSpaceQuota("testOrgGUID", "space1QuotaGUID", "space1", 10240, -1, 10, -1, true).Return(nil)
+			mockCloudController.EXPECT().UpdateSpaceQuota("space1QuotaGUID", cloudcontroller.SpaceQuotaEntity{
+				OrgGUID: "testOrgGUID",
+				QuotaEntity: cloudcontroller.QuotaEntity{
+					Name:                    "space1",
+					MemoryLimit:             10240,
+					InstanceMemoryLimit:     -1,
+					TotalRoutes:             10,
+					TotalServices:           -1,
+					PaidServicePlansAllowed: true,
+					AppInstanceLimit:        -1,
+					TotalReservedRoutePorts: 0,
+					TotalPrivateDomains:     -1,
+					TotalServiceKeys:        -1,
+				}}).Return(nil)
 			mockCloudController.EXPECT().AssignQuotaToSpace("space1GUID", "space1QuotaGUID")
 
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockCloudController.EXPECT().ListAllSpaceQuotasForOrg("testOrgGUID").Return(quotas, nil)
-			mockCloudController.EXPECT().UpdateSpaceQuota("testOrgGUID", "space2QuotaGUID", "space2", 10240, -1, 10, -1, true).Return(nil)
+			mockCloudController.EXPECT().UpdateSpaceQuota("space2QuotaGUID", cloudcontroller.SpaceQuotaEntity{
+				OrgGUID: "testOrgGUID",
+				QuotaEntity: cloudcontroller.QuotaEntity{
+					Name:                    "space2",
+					MemoryLimit:             10240,
+					InstanceMemoryLimit:     -1,
+					TotalRoutes:             10,
+					TotalServices:           -1,
+					PaidServicePlansAllowed: true,
+					AppInstanceLimit:        -1,
+					TotalReservedRoutePorts: 0,
+					TotalPrivateDomains:     -1,
+					TotalServiceKeys:        -1,
+				}}).Return(nil)
 			mockCloudController.EXPECT().AssignQuotaToSpace("space2GUID", "space2QuotaGUID")
 			err := spaceManager.CreateQuotas("./fixtures/config")
 			Ω(err).Should(BeNil())

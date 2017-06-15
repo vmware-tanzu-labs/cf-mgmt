@@ -72,6 +72,10 @@ type InputUpdateOrgs struct {
 	TotalServices           int      `yaml:"total-services"`
 	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed"`
 	RemoveUsers             bool     `yaml:"enable-remove-users"`
+	TotalPrivateDomains     int      `yaml:"total_private_domains"`
+	TotalReservedRoutePorts int      `yaml:"total_reserved_route_ports"`
+	TotalServiceKeys        int      `yaml:"total_service_keys"`
+	AppInstanceLimit        int      `yaml:"app_instance_limit"`
 }
 
 func (i *InputUpdateOrgs) GetBillingManagerGroups() []string {

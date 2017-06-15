@@ -35,7 +35,12 @@ func (m *DefaultOrgManager) GetOrgConfigs(configDir string) ([]*InputUpdateOrgs,
 		return nil, err
 	}
 	for _, f := range files {
-		input := &InputUpdateOrgs{}
+		input := &InputUpdateOrgs{
+			AppInstanceLimit:        -1,
+			TotalReservedRoutePorts: 0,
+			TotalPrivateDomains:     -1,
+			TotalServiceKeys:        -1,
+		}
 		if err = m.UtilsMgr.LoadFile(f, input); err != nil {
 			lo.G.Error(err)
 			return nil, err
@@ -67,9 +72,22 @@ func (m *DefaultOrgManager) CreateQuotas(configDir string) error {
 			return err
 		}
 		quotaName := org.Entity.Name
+		quota := cloudcontroller.QuotaEntity{
+			Name:                    quotaName,
+			MemoryLimit:             input.MemoryLimit,
+			InstanceMemoryLimit:     input.InstanceMemoryLimit,
+			TotalRoutes:             input.TotalRoutes,
+			TotalServices:           input.TotalServices,
+			PaidServicePlansAllowed: input.PaidServicePlansAllowed,
+			TotalPrivateDomains:     input.TotalPrivateDomains,
+			TotalReservedRoutePorts: input.TotalReservedRoutePorts,
+			TotalServiceKeys:        input.TotalServiceKeys,
+			AppInstanceLimit:        input.AppInstanceLimit,
+		}
 		if quotaGUID, ok := quotas[quotaName]; ok {
 			lo.G.Info("Updating quota", quotaName)
-			if err = m.CloudController.UpdateQuota(quotaGUID, quotaName, input.MemoryLimit, input.InstanceMemoryLimit, input.TotalRoutes, input.TotalServices, input.PaidServicePlansAllowed); err != nil {
+
+			if err = m.CloudController.UpdateQuota(quotaGUID, quota); err != nil {
 				return err
 			}
 			lo.G.Info("Assigning", quotaName, "to", org.Entity.Name)
@@ -78,7 +96,7 @@ func (m *DefaultOrgManager) CreateQuotas(configDir string) error {
 			}
 		} else {
 			lo.G.Info("Creating quota", quotaName)
-			targetQuotaGUID, err := m.CloudController.CreateQuota(quotaName, input.MemoryLimit, input.InstanceMemoryLimit, input.TotalRoutes, input.TotalServices, input.PaidServicePlansAllowed)
+			targetQuotaGUID, err := m.CloudController.CreateQuota(quota)
 			if err != nil {
 				return err
 			}

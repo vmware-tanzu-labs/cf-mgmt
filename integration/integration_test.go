@@ -36,7 +36,7 @@ var _ = Describe("cf-mgmt cli", func() {
 
 			ccManager = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken)
 			outPath, err = Build("github.com/pivotalservices/cf-mgmt")
-			
+
 			ccManager.CreateOrg("rogue-org1")
 			ccManager.CreateOrg("rogue-org2")
 
@@ -131,25 +131,6 @@ var _ = Describe("cf-mgmt cli", func() {
 						i++
 					}
 				}
-			}
-
-			exportConfigCommand := exec.Command(outPath, "export-config", "--config-dir", "./config",
-				"--system-domain", systemDomain, "--user-id", userId, "--password",
-				password, "--client-secret", clientSecret)
-			session, err := Start(exportConfigCommand, GinkgoWriter, GinkgoWriter)
-			session.Wait(20)
-			Expect(err).ShouldNot(HaveOccurred())
-			Eventually(session).Should(Exit(0))
-
-		})
-
-		It("should export config with > 50 quotas", func() {
-
-			ccManager := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken)
-			i := 1
-			for i < 101 {
-				ccManager.CreateQuota(fmt.Sprintf("quota-%d", i), 1, 1, 1, 1, true)
-				i++
 			}
 
 			exportConfigCommand := exec.Command(outPath, "export-config", "--config-dir", "./config",

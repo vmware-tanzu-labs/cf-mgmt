@@ -39,7 +39,12 @@ func (m *DefaultSpaceManager) GetSpaceConfigs(configDir string) ([]*InputSpaceCo
 	var spaceConfigs []*InputSpaceConfig
 	for _, f := range files {
 		lo.G.Info("Processing space file", f)
-		input := &InputSpaceConfig{}
+		input := &InputSpaceConfig{
+			AppInstanceLimit:        -1,
+			TotalReservedRoutePorts: 0,
+			TotalPrivateDomains:     -1,
+			TotalServiceKeys:        -1,
+		}
 		if err = m.UtilsMgr.LoadFile(f, input); err != nil {
 			return nil, err
 		}
@@ -129,18 +134,32 @@ func (m *DefaultSpaceManager) CreateQuotas(configDir string) error {
 		if err != nil {
 			continue
 		}
+
+		quota := cloudcontroller.SpaceQuotaEntity{
+			OrgGUID: space.Entity.OrgGUID,
+			QuotaEntity: cloudcontroller.QuotaEntity{
+				Name:                    quotaName,
+				MemoryLimit:             input.MemoryLimit,
+				InstanceMemoryLimit:     input.InstanceMemoryLimit,
+				TotalRoutes:             input.TotalRoutes,
+				TotalServices:           input.TotalServices,
+				PaidServicePlansAllowed: input.PaidServicePlansAllowed,
+				TotalPrivateDomains:     input.TotalPrivateDomains,
+				TotalReservedRoutePorts: input.TotalReservedRoutePorts,
+				TotalServiceKeys:        input.TotalServiceKeys,
+				AppInstanceLimit:        input.AppInstanceLimit,
+			},
+		}
 		if quotaGUID, ok := quotas[quotaName]; ok {
 			lo.G.Info("Updating quota", quotaName)
-			if err := m.CloudController.UpdateSpaceQuota(space.Entity.OrgGUID, quotaGUID,
-				quotaName, input.MemoryLimit, input.InstanceMemoryLimit, input.TotalRoutes, input.TotalServices, input.PaidServicePlansAllowed); err != nil {
+			if err := m.CloudController.UpdateSpaceQuota(quotaGUID, quota); err != nil {
 				continue
 			}
 			lo.G.Info("Assigning", quotaName, "to", space.Entity.Name)
 			m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, quotaGUID)
 		} else {
 			lo.G.Info("Creating quota", quotaName)
-			targetQuotaGUID, err := m.CloudController.CreateSpaceQuota(space.Entity.OrgGUID,
-				quotaName, input.MemoryLimit, input.InstanceMemoryLimit, input.TotalRoutes, input.TotalServices, input.PaidServicePlansAllowed)
+			targetQuotaGUID, err := m.CloudController.CreateSpaceQuota(quota)
 			if err != nil {
 				continue
 			}
