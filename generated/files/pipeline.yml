@@ -37,6 +37,21 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: delete-orgs
+- name: create-org-private-domains
+  plan:
+  - get: config-repo
+    passed: [create-orgs]
+    trigger: true
+  - task: create-org-private-domains
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      LDAP_PASSWORD: {{ldap_password}}
+      CF_MGMT_COMMAND: create-org-private-domains
 - name: create-spaces
   plan:
   - get: config-repo

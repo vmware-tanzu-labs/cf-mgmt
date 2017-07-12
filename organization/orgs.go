@@ -129,6 +129,7 @@ func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 	if err != nil {
 		return err
 	}
+
 	for _, orgName := range input.Orgs {
 		if m.DoesOrgExist(orgName, orgs) {
 			lo.G.Infof("[%s] org already exists", orgName)
@@ -140,6 +141,89 @@ func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 		}
 	}
 	return nil
+}
+
+func (m *DefaultOrgManager) CreatePrivateDomains(configDir string) error {
+
+	orgConfigs, err := m.GetOrgConfigs(configDir)
+	if err != nil {
+		lo.G.Error(err)
+		return err
+	}
+
+	orgs, err := m.CloudController.ListOrgs()
+	if err != nil {
+		return err
+	}
+	allPrivateDomains, err := m.CloudController.ListAllPrivateDomains()
+	if err != nil {
+		return err
+	}
+	for _, orgConfig := range orgConfigs {
+		orgGUID, err := m.getOrgGUID(orgs, orgConfig.Org)
+		if err != nil {
+			return err
+		}
+		privateDomainMap := make(map[string]string)
+		for _, privateDomain := range orgConfig.PrivateDomains {
+			if existingOrgGUID, ok := allPrivateDomains[privateDomain]; ok {
+				if orgGUID != existingOrgGUID {
+					existingOrgName, _ := m.getOrgName(orgs, existingOrgGUID)
+					msg := fmt.Sprintf("Private Domain %s already exists in org [%s]", privateDomain, existingOrgName)
+					lo.G.Error(msg)
+					return fmt.Errorf(msg)
+				}
+				lo.G.Infof("Private Domain %s already exists for Org %s", privateDomain, orgConfig.Org)
+			} else {
+				lo.G.Infof("Creating Private Domain %s for Org %s", privateDomain, orgConfig.Org)
+				err = m.CloudController.CreatePrivateDomain(orgGUID, privateDomain)
+				if err != nil {
+					return err
+				}
+				allPrivateDomains[privateDomain] = orgGUID
+			}
+			privateDomainMap[privateDomain] = privateDomain
+		}
+
+		if orgConfig.RemovePrivateDomains {
+			lo.G.Infof("Looking for private domains to remove for org [%s]", orgConfig.Org)
+			orgPrivateDomains, err := m.CloudController.ListOrgPrivateDomains(orgGUID)
+			if err != nil {
+				return err
+			}
+			for existingPrivateDomain, privateDomainGUID := range orgPrivateDomains {
+				if _, ok := privateDomainMap[existingPrivateDomain]; !ok {
+					lo.G.Infof("Removing Private Domain %s for Org %s", existingPrivateDomain, orgConfig.Org)
+					err = m.CloudController.DeletePrivateDomain(privateDomainGUID)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		} else {
+			lo.G.Infof("Private domains will not be removed for org [%s], must set enable-remove-private-domains: true in orgConfig.yml", orgConfig.Org)
+		}
+	}
+
+	return nil
+}
+
+func (m *DefaultOrgManager) getOrgName(orgs []*cloudcontroller.Org, orgGUID string) (string, error) {
+	for _, org := range orgs {
+		if org.MetaData.GUID == orgGUID {
+			return org.Entity.Name, nil
+		}
+	}
+	return "", fmt.Errorf("Org for GUID %s does not exist", orgGUID)
+}
+
+func (m *DefaultOrgManager) getOrgGUID(orgs []*cloudcontroller.Org, orgName string) (string, error) {
+	for _, org := range orgs {
+		if org.Entity.Name == orgName {
+			return org.MetaData.GUID, nil
+		}
+	}
+	return "", fmt.Errorf("Org %s does not exist", orgName)
 }
 
 //DeleteOrgs -

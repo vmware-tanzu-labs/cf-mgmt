@@ -1,0 +1,12 @@
+org: test
+org-billingmanager-group: test_billing_managers
+private-domains: ["test.com", "test2.com"]
+enable-remove-private-domains: true
+org-manager-group:
+org-auditor-group:
+enable-org-quota: true
+memory-limit: 10240
+instance-memory-limit: -1
+total-routes: 10
+total-services: -1
+paid-service-plans-allowed: true

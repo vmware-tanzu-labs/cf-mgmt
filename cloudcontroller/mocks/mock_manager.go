@@ -99,6 +99,16 @@ func (_mr *_MockManagerRecorder) CreateOrg(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateOrg", arg0)
 }
 
+func (_m *MockManager) CreatePrivateDomain(_param0 string, _param1 string) error {
+	ret := _m.ctrl.Call(_m, "CreatePrivateDomain", _param0, _param1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockManagerRecorder) CreatePrivateDomain(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreatePrivateDomain", arg0, arg1)
+}
+
 func (_m *MockManager) CreateQuota(_param0 cloudcontroller.QuotaEntity) (string, error) {
 	ret := _m.ctrl.Call(_m, "CreateQuota", _param0)
 	ret0, _ := ret[0].(string)
@@ -152,6 +162,16 @@ func (_mr *_MockManagerRecorder) DeleteOrg(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteOrg", arg0)
 }
 
+func (_m *MockManager) DeletePrivateDomain(_param0 string) error {
+	ret := _m.ctrl.Call(_m, "DeletePrivateDomain", _param0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockManagerRecorder) DeletePrivateDomain(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeletePrivateDomain", arg0)
+}
+
 func (_m *MockManager) DeleteSpace(_param0 string) error {
 	ret := _m.ctrl.Call(_m, "DeleteSpace", _param0)
 	ret0, _ := ret[0].(error)
@@ -184,6 +204,17 @@ func (_mr *_MockManagerRecorder) ListAllOrgQuotas() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListAllOrgQuotas")
 }
 
+func (_m *MockManager) ListAllPrivateDomains() (map[string]string, error) {
+	ret := _m.ctrl.Call(_m, "ListAllPrivateDomains")
+	ret0, _ := ret[0].(map[string]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockManagerRecorder) ListAllPrivateDomains() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListAllPrivateDomains")
+}
+
 func (_m *MockManager) ListAllSpaceQuotasForOrg(_param0 string) (map[string]string, error) {
 	ret := _m.ctrl.Call(_m, "ListAllSpaceQuotasForOrg", _param0)
 	ret0, _ := ret[0].(map[string]string)
@@ -193,6 +224,17 @@ func (_m *MockManager) ListAllSpaceQuotasForOrg(_param0 string) (map[string]stri
 
 func (_mr *_MockManagerRecorder) ListAllSpaceQuotasForOrg(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListAllSpaceQuotasForOrg", arg0)
+}
+
+func (_m *MockManager) ListOrgPrivateDomains(_param0 string) (map[string]string, error) {
+	ret := _m.ctrl.Call(_m, "ListOrgPrivateDomains", _param0)
+	ret0, _ := ret[0].(map[string]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockManagerRecorder) ListOrgPrivateDomains(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListOrgPrivateDomains", arg0)
 }
 
 func (_m *MockManager) ListOrgs() ([]*cloudcontroller.Org, error) {

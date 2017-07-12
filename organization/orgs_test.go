@@ -475,4 +475,81 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).Should(HaveOccurred())
 		})
 	})
+
+	Context("CreatePrivateDomains()", func() {
+		var orgs []*cloudcontroller.Org
+		BeforeEach(func() {
+			orgs = []*cloudcontroller.Org{
+				{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "testOrgGUID",
+					},
+				},
+				{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test-2",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "testOtherOrgGUID",
+					},
+				},
+			}
+		})
+		It("should create 2 private domains", func() {
+			allPrivateDomains := make(map[string]string)
+			orgPrivateDomains := make(map[string]string)
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
+			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test.com").Return(nil)
+			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test2.com").Return(nil)
+			mockCloudController.EXPECT().ListOrgPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
+			err := orgManager.CreatePrivateDomains("./fixtures/config-private-domains")
+			Ω(err).Should(BeNil())
+		})
+		It("should create no private domains", func() {
+			allPrivateDomains := make(map[string]string)
+			allPrivateDomains["test.com"] = "testOrgGUID"
+			allPrivateDomains["test2.com"] = "testOrgGUID"
+			orgPrivateDomains := make(map[string]string)
+			orgPrivateDomains["test.com"] = "test.com.guid"
+			orgPrivateDomains["test2.com"] = "test2.com.guid"
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
+			mockCloudController.EXPECT().ListOrgPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
+			err := orgManager.CreatePrivateDomains("./fixtures/config-private-domains")
+			Ω(err).Should(BeNil())
+		})
+
+		It("should create 2 private domains and delete 2 domains", func() {
+			allPrivateDomains := make(map[string]string)
+			allPrivateDomains["test3.com"] = "testOrgGUID"
+			allPrivateDomains["test4.com"] = "testOrgGUID"
+			orgPrivateDomains := make(map[string]string)
+			orgPrivateDomains["test.com"] = "test.com.guid"
+			orgPrivateDomains["test2.com"] = "test2.com.guid"
+			orgPrivateDomains["test3.com"] = "test3.com.guid"
+			orgPrivateDomains["test4.com"] = "test4.com.guid"
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
+			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test.com").Return(nil)
+			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test2.com").Return(nil)
+			mockCloudController.EXPECT().ListOrgPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
+			mockCloudController.EXPECT().DeletePrivateDomain("test3.com.guid").Return(nil)
+			mockCloudController.EXPECT().DeletePrivateDomain("test4.com.guid").Return(nil)
+			err := orgManager.CreatePrivateDomains("./fixtures/config-private-domains")
+			Ω(err).Should(BeNil())
+		})
+		It("should error as private domain exists in other org", func() {
+			allPrivateDomains := make(map[string]string)
+			allPrivateDomains["test.com"] = "testOtherOrgGUID"
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
+			err := orgManager.CreatePrivateDomains("./fixtures/config-private-domains")
+			Ω(err).Should(Not(BeNil()))
+		})
+	})
+
 })

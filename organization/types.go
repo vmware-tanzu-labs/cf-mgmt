@@ -11,6 +11,7 @@ import (
 type Manager interface {
 	FindOrg(orgName string) (org *cloudcontroller.Org, err error)
 	CreateOrgs(configFile string) (err error)
+	CreatePrivateDomains(configFile string) error
 	DeleteOrgs(configFile string, peekDeletion bool) (err error)
 	UpdateOrgUsers(configDir, ldapBindPassword string) (err error)
 	CreateQuotas(configDir string) (err error)
@@ -65,6 +66,8 @@ type InputUpdateOrgs struct {
 	BillingManager          UserMgmt `yaml:"org-billingmanager"`
 	Manager                 UserMgmt `yaml:"org-manager"`
 	Auditor                 UserMgmt `yaml:"org-auditor"`
+	PrivateDomains          []string `yaml:"private-domains"`
+	RemovePrivateDomains    bool     `yaml:"enable-remove-private-domains"`
 	EnableOrgQuota          bool     `yaml:"enable-org-quota"`
 	MemoryLimit             int      `yaml:"memory-limit"`
 	InstanceMemoryLimit     int      `yaml:"instance-memory-limit"`

@@ -1,0 +1,22 @@
+{
+  "total_results": 1,
+  "total_pages": 1,
+  "prev_url": null,
+  "next_url": null,
+  "resources": [
+    {
+      "metadata": {
+        "guid": "ffcf939a-22ed-4ae5-9371-2e737bd1eb48",
+        "url": "/v2/private_domains/ffcf939a-22ed-4ae5-9371-2e737bd1eb48",
+        "created_at": "2016-06-08T16:41:35Z",
+        "updated_at": "2016-06-08T16:41:26Z"
+      },
+      "entity": {
+        "name": "domain-28.example.com",
+        "owning_organization_guid": "5afc3416-50ba-46db-ae2c-5e0c88cdac3f",
+        "owning_organization_url": "/v2/organizations/5afc3416-50ba-46db-ae2c-5e0c88cdac3f",
+        "shared_organizations_url": "/v2/private_domains/ffcf939a-22ed-4ae5-9371-2e737bd1eb48/shared_organizations"
+      }
+    }
+  ]
+}

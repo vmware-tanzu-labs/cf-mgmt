@@ -142,6 +142,7 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateExportConfigCommand(eh),
 		CreateGeneratePipelineCommand(runGeneratePipeline, eh),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags(), eh),
+		CreateCommand("create-org-private-domains", runCreateOrgPrivateDomains, defaultFlags(), eh),
 		CreateCommand("delete-orgs", runDeleteOrgs, defaultFlagsWithDelete(), eh),
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags(), eh),
 		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlagsWithLdap(), eh),
@@ -388,6 +389,15 @@ func runCreateOrgs(c *cli.Context) error {
 	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.OrgManager.CreateOrgs(cfMgmt.ConfigDirectory)
+	}
+	return err
+}
+
+func runCreateOrgPrivateDomains(c *cli.Context) error {
+	var cfMgmt *CFMgmt
+	var err error
+	if cfMgmt, err = InitializeManager(c); err == nil {
+		err = cfMgmt.OrgManager.CreatePrivateDomains(cfMgmt.ConfigDirectory)
 	}
 	return err
 }

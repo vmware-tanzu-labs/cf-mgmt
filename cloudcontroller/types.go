@@ -36,12 +36,40 @@ type Manager interface {
 	RemoveCFUser(entityGUID, entityType, userGUID, role string) error
 	//Returns a specific quota definition for either an org or space
 	QuotaDef(quotaDefGUID string, entityType string) (*Quota, error)
+
+	ListAllPrivateDomains() (map[string]string, error)
+	ListOrgPrivateDomains(orgGUID string) (map[string]string, error)
+	DeletePrivateDomain(guid string) error
+	CreatePrivateDomain(orgGUID, privateDomain string) error
 }
 
 type DefaultManager struct {
 	Host  string
 	Token string
 	HTTP  http.Manager
+}
+
+//PrivateDomainResources -
+type PrivateDomainResources struct {
+	PrivateDomains []*PrivateDomain `json:"resources"`
+	NextURL        string           `json:"next_url"`
+}
+
+//PrivateDomain -
+type PrivateDomain struct {
+	MetaData PrivateDomainMetaData `json:"metadata"`
+	Entity   PrivateDomainEntity   `json:"entity"`
+}
+
+//PrivateDomainMetaData -
+type PrivateDomainMetaData struct {
+	GUID string `json:"guid"`
+}
+
+//PrivateDomainEntity -
+type PrivateDomainEntity struct {
+	Name    string `json:"name"`
+	OrgGUID string `json:"owning_organization_guid"`
 }
 
 type Pagination interface {

@@ -888,4 +888,126 @@ var _ = Describe("given CloudControllerManager", func() {
 		})
 	})
 
+	Context("ListAllPrivateDomains()", func() {
+
+		It("should be successful", func() {
+			bytes, err := ioutil.ReadFile("fixtures/all-private-domains.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/private_domains"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			privateDomains, err := manager.ListAllPrivateDomains()
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(privateDomains).ShouldNot(BeNil())
+			Ω(privateDomains).Should(HaveLen(4))
+			Ω(privateDomains).Should(HaveKeyWithValue("vcap.me", "4cf3bc47-eccd-4662-9322-7833c3bdcded"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain-61.example.com", "c262280e-0ccc-4e13-918a-6852f2d1e3a0"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain-62.example.com", "68f69961-f751-4b52-907c-4469009fdf74"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain-63.example.com", "8d8ed1ba-f7f3-48f1-8d9a-2dfaad91335b"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/private_domains"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			_, err := manager.ListAllPrivateDomains()
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Context("ListAllOrgPrivateDomains()", func() {
+
+		It("should be successful", func() {
+			bytes, err := ioutil.ReadFile("fixtures/org-private-domains.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/org_guid/private_domains"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			privateDomains, err := manager.ListOrgPrivateDomains("org_guid")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(privateDomains).ShouldNot(BeNil())
+			Ω(privateDomains).Should(HaveLen(1))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain-28.example.com", "ffcf939a-22ed-4ae5-9371-2e737bd1eb48"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/org_guid/private_domains"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			_, err := manager.ListOrgPrivateDomains("org_guid")
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Context("DeletePrivateDomain()", func() {
+		It("should be successful", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("DELETE", "/v2/private_domains/22d428d0-014a-473b-87b2-131367a31248", "async=false"),
+					RespondWithJSONEncoded(http.StatusOK, ""),
+				),
+			)
+			err := manager.DeletePrivateDomain("22d428d0-014a-473b-87b2-131367a31248")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("DELETE", "/v2/private_domains/22d428d0-014a-473b-87b2-131367a31248", "async=false"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			err := manager.DeletePrivateDomain("22d428d0-014a-473b-87b2-131367a31248")
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Context("CreatePrivateDomain()", func() {
+
+		It("should be successful", func() {
+			bodyBytes := []byte(`{"name":"test.com","owning_organization_guid":"5678-1234"}`)
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("POST", "/v2/private_domains"),
+					VerifyBody(bodyBytes),
+					RespondWithJSONEncoded(http.StatusOK, ""),
+				),
+			)
+			err := manager.CreatePrivateDomain(orgGUID, "test.com")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("POST", "/v2/private_domains"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			err := manager.CreatePrivateDomain(orgGUID, "test.com")
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
 })
