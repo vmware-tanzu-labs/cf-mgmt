@@ -1,11 +1,13 @@
 # Cloud Foundry Management (cf-mgmt)
-Go automation for managing orgs, spaces that can be driven from concourse pipeline and GIT managed metadata
+Go automation for managing orgs, spaces, users (from ldap groups or interal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
 
 ## Maintainers
 
 * [Caleb Washburn](https://github.com/calebwashburn)
-
 * [Anwar Chirakkattil](https://github.com/anwarchk)
+
+## Support
+cf-mgmt is a community supported cloud foundry add-on.  Opening issues for questions, feature requests and/or bugs is the best path to getting "support".  We strive to be active in keeping this tool working and meeting your needs in a timely fashion.
 
 ## Install
 
@@ -282,7 +284,7 @@ org-auditor:
   # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
   ldap_groups:
     - test_org_auditors_2
-
+    -
 # if you wish to enable custom org quotas
 enable-org-quota: true
 # 10 GB limit
@@ -294,8 +296,12 @@ total-routes: 10
 total-services: -1
 paid-service-plans-allowed: true
 
-# added in 0.48+ which will remove users from roles if not configured in cf-mgmt
+# added in 0.0.48+ which will remove users from roles if not configured in cf-mgmt
 enable-remove-users: true/false
+
+# added in 0.0.64+ which will remove users from roles if not configured in cf-mgmt
+private-domains: ["test.com", "test2.com"]
+enable-remove-private-domains: true/false
 ```
 
 #### Space Configuration
@@ -379,7 +385,7 @@ paid-service-plans-allowed: true
 # to enable custom asg for the space.  If true will deploy asg defined in security-group.json within space folder
 enable-security-group: false
 
-# added in 0.48+ which will remove users from roles if not configured in cf-mgmt
+# added in 0.0.48+ which will remove users from roles if not configured in cf-mgmt
 enable-remove-users: true/false
 ```
 
@@ -390,6 +396,8 @@ LDAP configuration file ```ldap.yml``` is located under the ```config``` folder.
 - Removing users from cf that are not in cf-mgmt metadata was added in 0.48+ release.  This is an opt-in feature for existing cf-mgmt users at an org and space config level.  For any new orgs/config created with cf-mgmt cli 0.48+ it will default this parameter to true.  To opt-in ensure you are using latest cf-mgmt version when running pipeline and add `enable-remove-users: true` to your configuration.
 
 - Removing orgs and spaces from cf that are not in cf-mgmt metadata was added in 0.0.63+ release.  This is an opt-in feature for existing cf-mgmt users at an org and space config level.  For any new orgs/config created with cf-mgmt cli 0.0.63+ it will default this parameter to true.  To opt-in ensure you are using latest cf-mgmt version when running pipeline and add `enable-delete-orgs: true` or `enable-delete-spaces: true` to your configuration.
+
+- Managing private domains at org level was added with 0.0.64+.  This requires you to update concourse pipeline to to invoke `create-org-private-domains` command.  By default `enable-remove-private-domains: true` is set for any new orgs creted with 0.0.64+ cli.  This will remove any private domains for that org that are not in array of private domain names.
 
 ### Recommended workflow
 
@@ -428,6 +436,10 @@ To execute any of the following you will need to provide:
 - deletes orgs NOT specified in orgs.yml.  This is recursive for underlaying spaces and apps.
 - Will NOT delete orgs which are `protected_orgs` in orgs.yml
 - specifying `--peek` will show you which orgs would be deleted, without actually deleting them.
+
+#### create-org-private-domains
+- creates an private domains for a given org based on `private-domains` configured in orgConfig.yml
+- Will delete any private domains not in `private-domains` for a given org if `enable-remove-private-domains` is set to true
 
 #### update-org-quotas
 - updates org quotas specified in orgConfig.yml

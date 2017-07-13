@@ -105,6 +105,7 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 		TotalServices:           orgConfig.OrgQuota.GetTotalServices(),
 		PaidServicePlansAllowed: orgConfig.OrgQuota.IsPaidServicesAllowed(),
 		RemoveUsers:             true,
+		RemovePrivateDomains:    true,
 	}
 	mgr.WriteFile(fmt.Sprintf("%s/%s/orgConfig.yml", m.ConfigDir, orgName), orgConfigYml) // TODO: filepath.Join
 	spaces := &space.InputSpaces{
