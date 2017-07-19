@@ -396,8 +396,8 @@ func (m *DefaultSpaceManager) DeleteSpaces(configDir string, peekDeletion bool) 
 	for _, input := range configSpaceList {
 
 		if !input.EnableDeleteSpaces {
-			lo.G.Info("Space deletion is not enabled.  Set enable-delete-spaces: true in spaces.yml")
-			return nil
+			lo.G.Info(fmt.Sprintf("Space deletion is not enabled for %s.  Set enable-delete-spaces: true in spaces.yml", input.Org))
+			continue //Skip all orgs that have not opted-in
 		}
 
 		configuredSpaces := make(map[string]bool)
@@ -423,11 +423,11 @@ func (m *DefaultSpaceManager) DeleteSpaces(configDir string, peekDeletion bool) 
 
 		if peekDeletion {
 			for _, space := range spacesToDelete {
-				lo.G.Info(fmt.Sprintf("Peek - Would Delete [%s] space", space.Entity.Name))
+				lo.G.Info(fmt.Sprintf("Peek - Would Delete [%s] space in org %s", space.Entity.Name, input.Org))
 			}
 		} else {
 			for _, space := range spacesToDelete {
-				lo.G.Info(fmt.Sprintf("Deleting [%s] space", space.Entity.Name))
+				lo.G.Info(fmt.Sprintf("Deleting [%s] space in org %s", space.Entity.Name, input.Org))
 				if err := m.CloudController.DeleteSpace(space.MetaData.GUID); err != nil {
 					return err
 				}
