@@ -392,6 +392,23 @@ enable-remove-users: true/false
 ### LDAP Configuration
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
 
+### SAML Configuration
+LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users.  In orgConfig.yml and spaceConfig.yml leaverage either/or `ldap_users` or `ldap_group(s)`  
+
+```
+enabled: true
+ldapHost: 127.0.0.1
+ldapPort: 10389
+bindDN: uid=admin,ou=system
+userSearchBase: ou=users,dc=example,dc=com
+userNameAttribute: uid
+userMailAttribute: mail
+groupSearchBase: ou=groups,dc=example,dc=com
+groupAttribute: member
+origin: <needs to match origin configured for elastic runtime>
+```
+
+
 ### Features
 - Removing users from cf that are not in cf-mgmt metadata was added in 0.48+ release.  This is an opt-in feature for existing cf-mgmt users at an org and space config level.  For any new orgs/config created with cf-mgmt cli 0.48+ it will default this parameter to true.  To opt-in ensure you are using latest cf-mgmt version when running pipeline and add `enable-remove-users: true` to your configuration.
 
