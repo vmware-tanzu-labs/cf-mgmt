@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -357,19 +358,16 @@ func runGeneratePipeline(c *cli.Context) (err error) {
 	return
 }
 
-func createFile(assetName, fileName string) (err error) {
-	var f *os.File
-	var fileBytes []byte
-	if fileBytes, err = generated.Asset(fmt.Sprintf("files/%s", assetName)); err == nil {
-		if f, err = os.Create(fileName); err == nil {
-			defer f.Close()
-			_, err = f.Write(fileBytes)
-			if strings.HasSuffix(fileName, ".sh") {
-				f.Chmod(0755)
-			}
-		}
+func createFile(assetName, fileName string) error {
+	bytes, err := generated.Asset(fmt.Sprintf("files/%s", assetName))
+	if err != nil {
+		return err
 	}
-	return
+	perm := os.FileMode(0666)
+	if strings.HasSuffix(fileName, ".sh") {
+		perm = 0755
+	}
+	return ioutil.WriteFile(fileName, bytes, perm)
 }
 
 //CreateCommand -
