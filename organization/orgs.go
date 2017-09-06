@@ -11,9 +11,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-//NewManager -
 func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
-
 	cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token)
 	ldapMgr := ldap.NewManager()
 	uaacMgr := uaac.NewManager(sysDomain, uaacToken)
@@ -144,7 +142,6 @@ func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 }
 
 func (m *DefaultOrgManager) CreatePrivateDomains(configDir string) error {
-
 	orgConfigs, err := m.GetOrgConfigs(configDir)
 	if err != nil {
 		lo.G.Error(err)
@@ -214,7 +211,7 @@ func (m *DefaultOrgManager) getOrgName(orgs []*cloudcontroller.Org, orgGUID stri
 			return org.Entity.Name, nil
 		}
 	}
-	return "", fmt.Errorf("Org for GUID %s does not exist", orgGUID)
+	return "", fmt.Errorf("org for GUID %s does not exist", orgGUID)
 }
 
 func (m *DefaultOrgManager) getOrgGUID(orgs []*cloudcontroller.Org, orgName string) (string, error) {
@@ -223,7 +220,7 @@ func (m *DefaultOrgManager) getOrgGUID(orgs []*cloudcontroller.Org, orgName stri
 			return org.MetaData.GUID, nil
 		}
 	}
-	return "", fmt.Errorf("Org %s does not exist", orgName)
+	return "", fmt.Errorf("org %s does not exist", orgName)
 }
 
 //DeleteOrgs -
@@ -244,6 +241,7 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 	for _, orgName := range input.Orgs {
 		configuredOrgs[orgName] = true
 	}
+
 	protectedOrgs := make(map[string]bool)
 	//never allow accidental deletion of system org
 	protectedOrgs["system"] = true
@@ -368,7 +366,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 		return err
 	}
 
-	err = m.UserMgr.UpdateOrgUsers(
+	return m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
 			OrgName:        org.Entity.Name,
 			OrgGUID:        org.MetaData.GUID,
@@ -378,8 +376,4 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			Users:          input.Manager.Users,
 			RemoveUsers:    input.RemoveUsers,
 		})
-	if err != nil {
-		return err
-	}
-	return nil
 }
