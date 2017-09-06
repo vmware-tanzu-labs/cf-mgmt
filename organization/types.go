@@ -9,13 +9,13 @@ import (
 
 //Manager -
 type Manager interface {
-	FindOrg(orgName string) (org *cloudcontroller.Org, err error)
-	CreateOrgs(configFile string) (err error)
+	FindOrg(orgName string) (*cloudcontroller.Org, error)
+	CreateOrgs(configFile string) error
 	CreatePrivateDomains(configFile string) error
-	DeleteOrgs(configFile string, peekDeletion bool) (err error)
-	UpdateOrgUsers(configDir, ldapBindPassword string) (err error)
-	CreateQuotas(configDir string) (err error)
-	GetOrgGUID(orgName string) (orgGUID string, err error)
+	DeleteOrgs(configFile string, peekDeletion bool) error
+	UpdateOrgUsers(configDir, ldapBindPassword string) error
+	CreateQuotas(configDir string) error
+	GetOrgGUID(orgName string) (string, error)
 }
 
 // ORGS represents orgs constant
