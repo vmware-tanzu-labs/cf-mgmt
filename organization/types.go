@@ -124,7 +124,7 @@ func (i *InputUpdateOrgs) GetAuditorGroups() []string {
 }
 
 func mapToKeys(aMap map[string]string) []string {
-	var keys []string
+	keys := make([]string, 0, len(aMap))
 	for k := range aMap {
 		keys = append(keys, k)
 	}
