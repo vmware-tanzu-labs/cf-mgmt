@@ -208,7 +208,7 @@ func runInit(c *cli.Context) (err error) {
 }
 
 //CreateAddOrgCommand -
-func CreateAddOrgCommand(eh *ErrorHandler) (command cli.Command) {
+func CreateAddOrgCommand(eh *ErrorHandler) cli.Command {
 	flagList := map[string]flagBucket{
 		configDirectory: {
 			Desc:   "Config directory name.  Default is config",
@@ -232,19 +232,19 @@ func CreateAddOrgCommand(eh *ErrorHandler) (command cli.Command) {
 		},
 	}
 
-	command = cli.Command{
+	return cli.Command{
 		Name:        "add-org-to-config",
 		Usage:       "Adds specified org to configuration",
 		Description: "Adds specified org to configuration",
 		Action:      runAddOrg,
 		Flags:       buildFlags(flagList),
 	}
-	return
 }
 
 func runAddOrg(c *cli.Context) error {
 	inputOrg := c.String(getFlag(orgName))
-	orgConfig := &config.OrgConfig{OrgName: inputOrg,
+	orgConfig := &config.OrgConfig{
+		OrgName:              inputOrg,
 		OrgBillingMgrLDAPGrp: c.String(getFlag(orgBillingMgrGrp)),
 		OrgMgrLDAPGrp:        c.String(getFlag(orgMgrGrp)),
 		OrgAuditorLDAPGrp:    c.String(getFlag(orgAuditorGrp)),
