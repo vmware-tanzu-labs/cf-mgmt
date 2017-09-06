@@ -23,9 +23,9 @@ type Manager interface {
 	DeleteConfigIfExists() error
 }
 
-// DefaultManager is the default implementation of Manager.
+// yamlManager is the default implementation of Manager.
 // It is backed by a directory of YAML files.
-type DefaultManager struct {
+type yamlManager struct {
 	ConfigDir string
 }
 
@@ -63,14 +63,16 @@ type SpaceConfig struct {
 	AllowSSH              bool
 }
 
+// NewManager creates a Manager that is backed by a set of YAML
+// files in the specified configuration directory.
 func NewManager(configDir string) Manager {
-	return &DefaultManager{
+	return &yamlManager{
 		ConfigDir: configDir,
 	}
 }
 
 // AddOrgToConfig adds an organization to the cf-mgmt configuration.
-func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) error {
+func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	orgFileName := filepath.Join(m.ConfigDir, "orgs.yml")
 	orgName := orgConfig.OrgName
 	if orgName == "" {
@@ -129,7 +131,7 @@ func newUserMgmt(ldapGroup string, users, ldapUsers []string) organization.UserM
 
 // AddSpaceToConfig adds a space to the cf-mgmt configuration, so long as a
 // space with the specified name doesn't already exist.
-func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
+func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	orgName := spaceConfig.OrgName
 	spaceFileName := filepath.Join(m.ConfigDir, orgName, "spaces.yml")
 	spaceList := &space.InputSpaces{}
@@ -173,7 +175,7 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 
 // CreateConfigIfNotExists initializes a new configuration directory.
 // If the specified configuration directory already exists, it is left unmodified.
-func (m *DefaultManager) CreateConfigIfNotExists(uaaOrigin string) error {
+func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	mgr := utils.NewDefaultManager()
 	if mgr.FileOrDirectoryExists(m.ConfigDir) {
 		lo.G.Infof("Config directory %s already exists, skipping creation", m.ConfigDir)
@@ -194,7 +196,7 @@ func (m *DefaultManager) CreateConfigIfNotExists(uaaOrigin string) error {
 }
 
 // DeleteConfigIfExists deletes config directory if it exists.
-func (m *DefaultManager) DeleteConfigIfExists() error {
+func (m *yamlManager) DeleteConfigIfExists() error {
 	utilsManager := utils.NewDefaultManager()
 	if !utilsManager.FileOrDirectoryExists(m.ConfigDir) {
 		lo.G.Infof("%s doesn't exists, nothing to delete", m.ConfigDir)
