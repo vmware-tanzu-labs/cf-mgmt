@@ -41,10 +41,12 @@ type OrgConfig struct {
 	OrgBillingMgrLDAPUsers []string
 	OrgMgrLDAPUsers        []string
 	OrgAuditorLDAPUsers    []string
+	IsoSegments            []string
+	DefaultIsoSegment      string
 	OrgQuota               cloudcontroller.QuotaEntity
 }
 
-// SpaceConfig describes attributes for a space
+// SpaceConfig describes attributes for a space.
 type SpaceConfig struct {
 	OrgName               string
 	SpaceName             string
@@ -108,6 +110,7 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 		PaidServicePlansAllowed: orgConfig.OrgQuota.IsPaidServicesAllowed(),
 		RemoveUsers:             true,
 		RemovePrivateDomains:    true,
+		IsoSegments:             orgConfig.IsoSegments,
 	}
 	mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "orgConfig.yml"), orgConfigYml)
 	return mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "spaces.yml"), &space.InputSpaces{

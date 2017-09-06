@@ -79,6 +79,8 @@ type InputUpdateOrgs struct {
 	TotalReservedRoutePorts int      `yaml:"total_reserved_route_ports"`
 	TotalServiceKeys        int      `yaml:"total_service_keys"`
 	AppInstanceLimit        int      `yaml:"app_instance_limit"`
+	IsoSegments             []string `yaml:"isolation_segments"`
+	DefaultIsoSegment       string   `yaml:"default_isolation_segment"`
 }
 
 func (i *InputUpdateOrgs) GetBillingManagerGroups() []string {
