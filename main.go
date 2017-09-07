@@ -246,10 +246,10 @@ func CreateAddOrgCommand() cli.Command {
 func runAddOrg(c *cli.Context) error {
 	inputOrg := c.String(getFlag(orgName))
 	orgConfig := &config.OrgConfig{
-		OrgName:              inputOrg,
-		OrgBillingMgrLDAPGrp: c.String(getFlag(orgBillingMgrGrp)),
-		OrgMgrLDAPGrp:        c.String(getFlag(orgMgrGrp)),
-		OrgAuditorLDAPGrp:    c.String(getFlag(orgAuditorGrp)),
+		Org:                 inputOrg,
+		BillingManagerGroup: c.String(getFlag(orgBillingMgrGrp)),
+		ManagerGroup:        c.String(getFlag(orgMgrGrp)),
+		AuditorGroup:        c.String(getFlag(orgAuditorGrp)),
 	}
 	return config.NewManager(getConfigDir(c)).AddOrgToConfig(orgConfig)
 }

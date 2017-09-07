@@ -30,20 +30,7 @@ type yamlManager struct {
 }
 
 // OrgConfig describes attributes for an org.
-type OrgConfig struct {
-	OrgName                string
-	OrgBillingMgrLDAPGrp   string
-	OrgMgrLDAPGrp          string
-	OrgAuditorLDAPGrp      string
-	OrgBillingMgrUAAUsers  []string
-	OrgMgrUAAUsers         []string
-	OrgAuditorUAAUsers     []string
-	OrgBillingMgrLDAPUsers []string
-	OrgMgrLDAPUsers        []string
-	OrgAuditorLDAPUsers    []string
-	DefaultIsoSegment      string
-	OrgQuota               cloudcontroller.QuotaEntity
-}
+type OrgConfig = organization.InputUpdateOrgs
 
 // SpaceConfig describes attributes for a space.
 type SpaceConfig struct {
@@ -73,7 +60,7 @@ func NewManager(configDir string) Manager {
 // AddOrgToConfig adds an organization to the cf-mgmt configuration.
 func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	orgFileName := filepath.Join(m.ConfigDir, "orgs.yml")
-	orgName := orgConfig.OrgName
+	orgName := orgConfig.Org
 	if orgName == "" {
 		return errors.New("cannot have an empty org name")
 	}
@@ -98,21 +85,9 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	if err = os.MkdirAll(fmt.Sprintf("%s/%s", m.ConfigDir, orgName), 0755); err != nil {
 		return err
 	}
-	orgConfigYml := &organization.InputUpdateOrgs{
-		Org:                     orgName,
-		BillingManager:          newUserMgmt(orgConfig.OrgBillingMgrLDAPGrp, orgConfig.OrgBillingMgrUAAUsers, orgConfig.OrgBillingMgrLDAPUsers),
-		Manager:                 newUserMgmt(orgConfig.OrgMgrLDAPGrp, orgConfig.OrgMgrUAAUsers, orgConfig.OrgMgrLDAPUsers),
-		Auditor:                 newUserMgmt(orgConfig.OrgAuditorLDAPGrp, orgConfig.OrgAuditorUAAUsers, orgConfig.OrgAuditorLDAPUsers),
-		EnableOrgQuota:          orgConfig.OrgQuota.IsQuotaEnabled(),
-		MemoryLimit:             orgConfig.OrgQuota.GetMemoryLimit(),
-		InstanceMemoryLimit:     orgConfig.OrgQuota.GetInstanceMemoryLimit(),
-		TotalRoutes:             orgConfig.OrgQuota.GetTotalRoutes(),
-		TotalServices:           orgConfig.OrgQuota.GetTotalServices(),
-		PaidServicePlansAllowed: orgConfig.OrgQuota.IsPaidServicesAllowed(),
-		RemoveUsers:             true,
-		RemovePrivateDomains:    true,
-	}
-	mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "orgConfig.yml"), orgConfigYml)
+	orgConfig.RemoveUsers = true
+	orgConfig.RemovePrivateDomains = true
+	mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "orgConfig.yml"), orgConfig)
 	return mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "spaces.yml"), &space.InputSpaces{
 		Org:                orgName,
 		EnableDeleteSpaces: true,

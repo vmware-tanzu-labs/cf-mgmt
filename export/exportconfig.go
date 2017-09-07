@@ -66,19 +66,29 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			continue
 		}
 		lo.G.Infof("Processing org: %s ", org.Entity.Name)
-		orgConfig := &config.OrgConfig{OrgName: org.Entity.Name}
+		orgConfig := &config.OrgConfig{Org: org.Entity.Name}
 		//Add users
 		addOrgUsers(orgConfig, im.CloudController, userIDToUserMap, org.MetaData.GUID)
 		//Add Quota definition if applicable
 		if org.Entity.QuotaDefinitionGUID != "" {
-			orgConfig.OrgQuota = quotaDefinition(im.CloudController, org.Entity.QuotaDefinitionGUID, organization.ORGS)
+			quota := quotaDefinition(im.CloudController, org.Entity.QuotaDefinitionGUID, organization.ORGS)
+			orgConfig.EnableOrgQuota = quota.IsQuotaEnabled()
+			orgConfig.MemoryLimit = quota.GetMemoryLimit()
+			orgConfig.InstanceMemoryLimit = quota.GetInstanceMemoryLimit()
+			orgConfig.TotalRoutes = quota.GetTotalRoutes()
+			orgConfig.TotalServices = quota.GetTotalServices()
+			orgConfig.PaidServicePlansAllowed = quota.IsPaidServicesAllowed()
+			orgConfig.TotalPrivateDomains = quota.TotalPrivateDomains
+			orgConfig.TotalReservedRoutePorts = quota.TotalReservedRoutePorts
+			orgConfig.TotalServiceKeys = quota.TotalServiceKeys
+			orgConfig.AppInstanceLimit = quota.AppInstanceLimit
 		}
 		configMgr.AddOrgToConfig(orgConfig)
 
-		lo.G.Infof("Done creating org %s", orgConfig.OrgName)
-		lo.G.Infof("Listing spaces for org %s", orgConfig.OrgName)
+		lo.G.Infof("Done creating org %s", orgConfig.Org)
+		lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
 		spaces, _ := im.CloudController.ListSpaces(org.MetaData.GUID)
-		lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.OrgName)
+		lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
 		for _, orgSpace := range spaces {
 			if _, ok := excludedSpaces[orgSpace.Entity.Name]; ok {
 				lo.G.Infof("Skipping space: %s as it is ignored from import", orgSpace.Entity.Name)
@@ -124,20 +134,20 @@ func addSpaceUsers(spaceConfig *config.SpaceConfig, controller cc.Manager, userI
 
 func addOrgManagers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, orgGUID string) {
 	orgMgrs, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_MANAGERS)
-	lo.G.Debugf("Found %d Org Managers for Org: %s", len(orgMgrs), orgConfig.OrgName)
-	doAddUsers(orgMgrs, &orgConfig.OrgMgrUAAUsers, &orgConfig.OrgMgrLDAPUsers, userIDToUserMap)
+	lo.G.Debugf("Found %d Org Managers for Org: %s", len(orgMgrs), orgConfig.Org)
+	doAddUsers(orgMgrs, &orgConfig.Manager.Users, &orgConfig.Manager.LdapUsers, userIDToUserMap)
 }
 
 func addBillingManagers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, orgGUID string) {
 	orgBillingMgrs, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_BILLING_MANAGERS)
-	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs), orgConfig.OrgName)
-	doAddUsers(orgBillingMgrs, &orgConfig.OrgBillingMgrUAAUsers, &orgConfig.OrgBillingMgrLDAPUsers, userIDToUserMap)
+	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs), orgConfig.Org)
+	doAddUsers(orgBillingMgrs, &orgConfig.BillingManager.Users, &orgConfig.BillingManager.LdapUsers, userIDToUserMap)
 }
 
 func addOrgAuditors(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, orgGUID string) {
 	orgAuditors, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_AUDITORS)
-	lo.G.Debugf("Found %d Org Auditors for Org: %s", len(orgAuditors), orgConfig.OrgName)
-	doAddUsers(orgAuditors, &orgConfig.OrgAuditorUAAUsers, &orgConfig.OrgAuditorLDAPUsers, userIDToUserMap)
+	lo.G.Debugf("Found %d Org Auditors for Org: %s", len(orgAuditors), orgConfig.Org)
+	doAddUsers(orgAuditors, &orgConfig.Auditor.Users, &orgConfig.Auditor.LdapUsers, userIDToUserMap)
 }
 
 func addSpaceManagers(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, spaceGUID string) {
