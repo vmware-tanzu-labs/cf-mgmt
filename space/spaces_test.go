@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller/mocks"
+	"github.com/pivotalservices/cf-mgmt/config"
 	l "github.com/pivotalservices/cf-mgmt/ldap"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap/mocks"
 	o "github.com/pivotalservices/cf-mgmt/organization/mocks"
@@ -60,7 +61,8 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("GetSpaceConfigs()", func() {
 		Context("for default_config", func() {
-			var config *InputSpaceConfig
+			var config *config.SpaceConfig
+
 			BeforeEach(func() {
 				configs, err := spaceManager.GetSpaceConfigs("./fixtures/space-defaults")
 				Ω(err).Should(BeNil())
@@ -72,33 +74,33 @@ var _ = Describe("given SpaceManager", func() {
 				Ω(config.Space).Should(BeEquivalentTo("space1"))
 			})
 			It("should return ldap users from space and space defaults", func() {
-				Ω(config.Developer.LdapUsers).Should(ConsistOf("default-ldap-user", "space1-ldap-user"))
+				Ω(config.Developer.LDAPUsers).Should(ConsistOf("default-ldap-user", "space1-ldap-user"))
 			})
 			It("should return users from space and space defaults", func() {
 				Ω(config.Developer.Users).Should(ConsistOf("default-user@test.com", "space-1-user@test.com"))
 			})
 			It("should return ldap group from space config only", func() {
-				Ω(config.Developer.LdapGroup).Should(BeEquivalentTo("space-1-ldap-group"))
+				Ω(config.Developer.LDAPGroup).Should(BeEquivalentTo("space-1-ldap-group"))
 			})
 
 			It("should return ldap users from space and space defaults", func() {
-				Ω(config.Auditor.LdapUsers).Should(ConsistOf("default-ldap-user", "space1-ldap-user"))
+				Ω(config.Auditor.LDAPUsers).Should(ConsistOf("default-ldap-user", "space1-ldap-user"))
 			})
 			It("should return users from space and space defaults", func() {
 				Ω(config.Auditor.Users).Should(ConsistOf("default-user@test.com", "space-1-user@test.com"))
 			})
 			It("should return ldap group from space config only", func() {
-				Ω(config.Auditor.LdapGroup).Should(BeEquivalentTo("space-1-ldap-group"))
+				Ω(config.Auditor.LDAPGroup).Should(BeEquivalentTo("space-1-ldap-group"))
 			})
 
 			It("should return ldap users from space and space defaults", func() {
-				Ω(config.Manager.LdapUsers).Should(ConsistOf("default-ldap-user", "space1-ldap-user"))
+				Ω(config.Manager.LDAPUsers).Should(ConsistOf("default-ldap-user", "space1-ldap-user"))
 			})
 			It("should return users from space and space defaults", func() {
 				Ω(config.Manager.Users).Should(ConsistOf("default-user@test.com", "space-1-user@test.com"))
 			})
 			It("should return ldap group from space config only", func() {
-				Ω(config.Manager.LdapGroup).Should(BeEquivalentTo("space-1-ldap-group"))
+				Ω(config.Manager.LDAPGroup).Should(BeEquivalentTo("space-1-ldap-group"))
 			})
 		})
 		It("should return list of 2", func() {

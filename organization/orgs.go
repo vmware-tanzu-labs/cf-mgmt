@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
+	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	"github.com/pivotalservices/cf-mgmt/utils"
@@ -26,14 +27,14 @@ func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 	}
 }
 
-func (m *DefaultOrgManager) GetOrgConfigs(configDir string) ([]*InputUpdateOrgs, error) {
-	orgConfigs := []*InputUpdateOrgs{}
+func (m *DefaultOrgManager) GetOrgConfigs(configDir string) ([]*config.OrgConfig, error) {
+	orgConfigs := []*config.OrgConfig{}
 	files, err := m.UtilsMgr.FindFiles(configDir, "orgConfig.yml")
 	if err != nil {
 		return nil, err
 	}
 	for _, f := range files {
-		input := &InputUpdateOrgs{
+		input := &config.OrgConfig{
 			AppInstanceLimit:        -1,
 			TotalReservedRoutePorts: 0,
 			TotalPrivateDomains:     -1,
@@ -119,7 +120,7 @@ func (m *DefaultOrgManager) GetOrgGUID(orgName string) (string, error) {
 func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 	configFile := filepath.Join(configDir, "orgs.yml")
 	lo.G.Info("Processing org file", configFile)
-	input := &InputOrgs{}
+	input := &config.Orgs{}
 	if err := m.UtilsMgr.LoadFile(configFile, input); err != nil {
 		return err
 	}
@@ -227,7 +228,7 @@ func (m *DefaultOrgManager) getOrgGUID(orgs []*cloudcontroller.Org, orgName stri
 func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) error {
 	configFile := filepath.Join(configDir, "orgs.yml")
 	lo.G.Info("Processing org file", configFile)
-	input := &InputOrgs{}
+	input := &config.Orgs{}
 	if err := m.UtilsMgr.LoadFile(configFile, input); err != nil {
 		return err
 	}
@@ -332,7 +333,7 @@ func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) e
 	return nil
 }
 
-func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpdateOrgs, uaacUsers map[string]string) error {
+func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *config.OrgConfig, uaacUsers map[string]string) error {
 	org, err := m.FindOrg(input.Org)
 	if err != nil {
 		return err
@@ -344,7 +345,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			OrgGUID:        org.MetaData.GUID,
 			Role:           "billing_managers",
 			LdapGroupNames: input.GetBillingManagerGroups(),
-			LdapUsers:      input.BillingManager.LdapUsers,
+			LdapUsers:      input.BillingManager.LDAPUsers,
 			Users:          input.BillingManager.Users,
 			RemoveUsers:    input.RemoveUsers,
 		})
@@ -358,7 +359,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			OrgGUID:        org.MetaData.GUID,
 			Role:           "auditors",
 			LdapGroupNames: input.GetAuditorGroups(),
-			LdapUsers:      input.Auditor.LdapUsers,
+			LdapUsers:      input.Auditor.LDAPUsers,
 			Users:          input.Auditor.Users,
 			RemoveUsers:    input.RemoveUsers,
 		})
@@ -372,7 +373,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			OrgGUID:        org.MetaData.GUID,
 			Role:           "managers",
 			LdapGroupNames: input.GetManagerGroups(),
-			LdapUsers:      input.Manager.LdapUsers,
+			LdapUsers:      input.Manager.LDAPUsers,
 			Users:          input.Manager.Users,
 			RemoveUsers:    input.RemoveUsers,
 		})

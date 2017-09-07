@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 
 	"github.com/pivotalservices/cf-mgmt/ldap"
-	"github.com/pivotalservices/cf-mgmt/organization"
-	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/utils"
 	"github.com/xchapter7x/lo"
 )
@@ -22,21 +20,18 @@ type Manager interface {
 	DeleteConfigIfExists() error
 }
 
+type UserMgmt struct {
+	LDAPUsers  []string `yaml:"ldap_users"`
+	Users      []string `yaml:"users"`
+	LDAPGroup  string   `yaml:"ldap_group"`
+	LDAPGroups []string `yaml:"ldap_groups"`
+}
+
 // yamlManager is the default implementation of Manager.
 // It is backed by a directory of YAML files.
 type yamlManager struct {
 	ConfigDir string
 }
-
-type Orgs = organization.InputOrgs
-
-type Spaces = space.InputSpaces
-
-// OrgConfig describes attributes for an org.
-type OrgConfig = organization.InputUpdateOrgs
-
-// SpaceConfig describes attributes for a space.
-type SpaceConfig = space.InputSpaceConfig
 
 // NewManager creates a Manager that is backed by a set of YAML
 // files in the specified configuration directory.
@@ -81,14 +76,6 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 		Org:                orgName,
 		EnableDeleteSpaces: true,
 	})
-}
-
-func newUserMgmt(ldapGroup string, users, ldapUsers []string) organization.UserMgmt {
-	return organization.UserMgmt{
-		LdapGroup: ldapGroup,
-		Users:     users,
-		LdapUsers: ldapUsers,
-	}
 }
 
 // AddSpaceToConfig adds a space to the cf-mgmt configuration, so long as a
@@ -140,7 +127,11 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 		EnableDeleteOrgs: true,
 		ProtectedOrgs:    []string{"system"},
 	})
-	mgr.WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", m.ConfigDir), &space.ConfigSpaceDefaults{})
+	mgr.WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", m.ConfigDir), struct {
+		Developer UserMgmt `yaml:"space-developer"`
+		Manager   UserMgmt `yaml:"space-manager"`
+		Auditor   UserMgmt `yaml:"space-auditor"`
+	}{})
 	return nil
 }
 

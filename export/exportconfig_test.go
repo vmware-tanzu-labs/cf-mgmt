@@ -8,9 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	ccmock "github.com/pivotalservices/cf-mgmt/cloudcontroller/mocks"
+	"github.com/pivotalservices/cf-mgmt/config"
 	. "github.com/pivotalservices/cf-mgmt/export"
-	"github.com/pivotalservices/cf-mgmt/organization"
-	sp "github.com/pivotalservices/cf-mgmt/space"
 
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	uaacmock "github.com/pivotalservices/cf-mgmt/uaac/mocks"
@@ -86,18 +85,18 @@ var _ = Describe("Export manager", func() {
 
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 			Ω(err).Should(BeNil())
-			orgDetails := &organization.InputUpdateOrgs{}
+			orgDetails := &config.OrgConfig{}
 			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
 			Ω(len(orgDetails.Manager.Users)).Should(BeEquivalentTo(1))
 			Ω(orgDetails.Manager.Users[0]).Should(Equal("user2"))
-			Ω(len(orgDetails.Manager.LdapUsers)).Should(BeEquivalentTo(1))
-			Ω(orgDetails.Manager.LdapUsers[0]).Should(Equal("user1"))
+			Ω(len(orgDetails.Manager.LDAPUsers)).Should(BeEquivalentTo(1))
+			Ω(orgDetails.Manager.LDAPUsers[0]).Should(Equal("user1"))
 			Ω(len(orgDetails.BillingManager.Users)).Should(BeEquivalentTo(0))
 			Ω(len(orgDetails.Auditor.Users)).Should(BeEquivalentTo(0))
 
-			spaceDetails := &sp.InputSpaceConfig{}
+			spaceDetails := &config.SpaceConfig{}
 			err = utils.NewDefaultManager().LoadFile("test/config/org1/dev/spaceConfig.yml", spaceDetails)
 			Ω(err).Should(BeNil())
 			Ω(spaceDetails.Org).Should(Equal("org1"))
@@ -105,8 +104,8 @@ var _ = Describe("Export manager", func() {
 
 			Ω(len(spaceDetails.Developer.Users)).Should(BeEquivalentTo(1))
 			Ω(spaceDetails.Developer.Users[0]).Should(Equal("user2"))
-			Ω(len(spaceDetails.Developer.LdapUsers)).Should(BeEquivalentTo(1))
-			Ω(spaceDetails.Developer.LdapUsers[0]).Should(Equal("user1"))
+			Ω(len(spaceDetails.Developer.LDAPUsers)).Should(BeEquivalentTo(1))
+			Ω(spaceDetails.Developer.LDAPUsers[0]).Should(Equal("user1"))
 			Ω(len(spaceDetails.Manager.Users)).Should(BeEquivalentTo(0))
 			Ω(len(spaceDetails.Auditor.Users)).Should(BeEquivalentTo(0))
 		})
@@ -142,14 +141,14 @@ var _ = Describe("Export manager", func() {
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 
 			Ω(err).Should(BeNil())
-			orgDetails := &organization.InputUpdateOrgs{}
+			orgDetails := &config.OrgConfig{}
 			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
 			Ω(orgDetails.MemoryLimit).Should(Equal(2))
 			Ω(orgDetails.InstanceMemoryLimit).Should(Equal(5))
 
-			spaceDetails := &sp.InputSpaceConfig{}
+			spaceDetails := &config.SpaceConfig{}
 			err = utils.NewDefaultManager().LoadFile("test/config/org1/dev/spaceConfig.yml", spaceDetails)
 			Ω(err).Should(BeNil())
 			Ω(spaceDetails.Org).Should(Equal("org1"))
@@ -183,7 +182,7 @@ var _ = Describe("Export manager", func() {
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 
 			Ω(err).Should(BeNil())
-			orgDetails := &organization.InputUpdateOrgs{}
+			orgDetails := &config.OrgConfig{}
 			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
