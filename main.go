@@ -18,10 +18,8 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-var (
-	//VERSION -
-	VERSION string
-)
+// Version is the version of the program.  It is set at build time.
+var Version = "dev"
 
 type flagBucket struct {
 	Desc        string
@@ -59,8 +57,7 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 		user == "" ||
 		pwd == "" ||
 		secret == "" {
-		err = fmt.Errorf("Must set system-domain, user-id, password, client-secret properties")
-		return nil, err
+		return nil, fmt.Errorf("must set system-domain, user-id, password, client-secret properties")
 	}
 
 	var cfToken, uaacToken string
@@ -115,7 +112,7 @@ func main() {
 func NewApp() *cli.App {
 	//cli.AppHelpTemplate = CfopsHelpTemplate
 	app := cli.NewApp()
-	app.Version = VERSION
+	app.Version = Version
 	app.Name = "cf-mgmt"
 	app.Usage = "cf-mgmt"
 	app.Commands = []cli.Command{
