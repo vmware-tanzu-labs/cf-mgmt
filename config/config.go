@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
@@ -33,21 +32,7 @@ type yamlManager struct {
 type OrgConfig = organization.InputUpdateOrgs
 
 // SpaceConfig describes attributes for a space.
-type SpaceConfig struct {
-	OrgName               string
-	SpaceName             string
-	SpaceDevLDAPGrp       string
-	SpaceMgrLDAPGrp       string
-	SpaceAuditorLDAPGrp   string
-	SpaceDevUAAUsers      []string
-	SpaceMgrUAAUsers      []string
-	SpaceAuditorUAAUsers  []string
-	SpaceDevLDAPUsers     []string
-	SpaceMgrLDAPUsers     []string
-	SpaceAuditorLDAPUsers []string
-	SpaceQuota            cloudcontroller.QuotaEntity
-	AllowSSH              bool
-}
+type SpaceConfig = space.InputSpaceConfig
 
 // NewManager creates a Manager that is backed by a set of YAML
 // files in the specified configuration directory.
@@ -105,10 +90,10 @@ func newUserMgmt(ldapGroup string, users, ldapUsers []string) organization.UserM
 // AddSpaceToConfig adds a space to the cf-mgmt configuration, so long as a
 // space with the specified name doesn't already exist.
 func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
-	orgName := spaceConfig.OrgName
+	orgName := spaceConfig.Org
 	spaceFileName := filepath.Join(m.ConfigDir, orgName, "spaces.yml")
 	spaceList := &space.InputSpaces{}
-	spaceName := spaceConfig.SpaceName
+	spaceName := spaceConfig.Space
 	mgr := utils.NewDefaultManager()
 
 	if err := mgr.LoadFile(spaceFileName, spaceList); err != nil {
@@ -126,22 +111,9 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	if err := os.MkdirAll(fmt.Sprintf("%s/%s/%s", m.ConfigDir, orgName, spaceName), 0755); err != nil {
 		return err
 	}
-	spaceConfigYml := &space.InputSpaceConfig{
-		Org:                     orgName,
-		Space:                   spaceName,
-		Developer:               space.UserMgmt{LdapGroup: spaceConfig.SpaceDevLDAPGrp, Users: spaceConfig.SpaceDevUAAUsers, LdapUsers: spaceConfig.SpaceDevLDAPUsers},
-		Manager:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceMgrLDAPGrp, Users: spaceConfig.SpaceMgrUAAUsers, LdapUsers: spaceConfig.SpaceMgrLDAPUsers},
-		Auditor:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceAuditorLDAPGrp, Users: spaceConfig.SpaceAuditorUAAUsers, LdapUsers: spaceConfig.SpaceAuditorLDAPUsers},
-		EnableSpaceQuota:        spaceConfig.SpaceQuota.IsQuotaEnabled(),
-		MemoryLimit:             spaceConfig.SpaceQuota.GetMemoryLimit(),
-		InstanceMemoryLimit:     spaceConfig.SpaceQuota.GetInstanceMemoryLimit(),
-		TotalRoutes:             spaceConfig.SpaceQuota.GetTotalRoutes(),
-		TotalServices:           spaceConfig.SpaceQuota.GetTotalServices(),
-		PaidServicePlansAllowed: spaceConfig.SpaceQuota.IsPaidServicesAllowed(),
-		RemoveUsers:             true,
-		AllowSSH:                spaceConfig.AllowSSH,
-	}
-	mgr.WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.ConfigDir, orgName, spaceName), spaceConfigYml)
+	spaceConfig.RemoveUsers = true
+
+	mgr.WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.ConfigDir, orgName, spaceName), spaceConfig)
 	mgr.WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName), []byte("[]"))
 	return nil
 }

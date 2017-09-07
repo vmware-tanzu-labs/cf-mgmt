@@ -296,11 +296,12 @@ func runAddSpace(c *cli.Context) error {
 	inputOrg := c.String(getFlag(orgName))
 	inputSpace := c.String(getFlag(spaceName))
 
-	spaceConfig := &config.SpaceConfig{OrgName: inputOrg,
-		SpaceName:           inputSpace,
-		SpaceDevLDAPGrp:     c.String(getFlag(spaceDevGrp)),
-		SpaceMgrLDAPGrp:     c.String(getFlag(spaceMgrGrp)),
-		SpaceAuditorLDAPGrp: c.String(getFlag(spaceAuditorGrp)),
+	spaceConfig := &config.SpaceConfig{
+		Org:            inputOrg,
+		Space:          inputSpace,
+		DeveloperGroup: c.String(getFlag(spaceDevGrp)),
+		ManagerGroup:   c.String(getFlag(spaceMgrGrp)),
+		AuditorGroup:   c.String(getFlag(spaceAuditorGrp)),
 	}
 
 	configDr := getConfigDir(c)
