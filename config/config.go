@@ -28,6 +28,10 @@ type yamlManager struct {
 	ConfigDir string
 }
 
+type Orgs = organization.InputOrgs
+
+type Spaces = space.InputSpaces
+
 // OrgConfig describes attributes for an org.
 type OrgConfig = organization.InputUpdateOrgs
 
@@ -51,7 +55,7 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	}
 
 	mgr := utils.NewDefaultManager()
-	orgList := &organization.InputOrgs{}
+	orgList := &Orgs{}
 	err := mgr.LoadFile(orgFileName, orgList)
 	if err != nil {
 		return err
@@ -73,7 +77,7 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	orgConfig.RemoveUsers = true
 	orgConfig.RemovePrivateDomains = true
 	mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "orgConfig.yml"), orgConfig)
-	return mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "spaces.yml"), &space.InputSpaces{
+	return mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "spaces.yml"), &Spaces{
 		Org:                orgName,
 		EnableDeleteSpaces: true,
 	})
@@ -92,7 +96,7 @@ func newUserMgmt(ldapGroup string, users, ldapUsers []string) organization.UserM
 func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	orgName := spaceConfig.Org
 	spaceFileName := filepath.Join(m.ConfigDir, orgName, "spaces.yml")
-	spaceList := &space.InputSpaces{}
+	spaceList := &Spaces{}
 	spaceName := spaceConfig.Space
 	mgr := utils.NewDefaultManager()
 
@@ -132,7 +136,7 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	}
 	lo.G.Infof("Config directory %s created", m.ConfigDir)
 	mgr.WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin})
-	mgr.WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &organization.InputOrgs{
+	mgr.WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &Orgs{
 		EnableDeleteOrgs: true,
 		ProtectedOrgs:    []string{"system"},
 	})
