@@ -27,6 +27,25 @@ type UserMgmt struct {
 	LDAPGroups []string `yaml:"ldap_groups"`
 }
 
+func (u *UserMgmt) groups(groupName string) []string {
+	groupMap := make(map[string]string)
+	for _, group := range u.LDAPGroups {
+		groupMap[group] = group
+	}
+	if u.LDAPGroup != "" {
+		groupMap[u.LDAPGroup] = u.LDAPGroup
+	}
+	if groupName != "" {
+		groupMap[groupName] = groupName
+	}
+
+	result := make([]string, 0, len(groupMap))
+	for k := range groupMap {
+		result = append(result, k)
+	}
+	return result
+}
+
 // yamlManager is the default implementation of Manager.
 // It is backed by a directory of YAML files.
 type yamlManager struct {

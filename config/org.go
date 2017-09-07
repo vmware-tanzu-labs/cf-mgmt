@@ -43,51 +43,13 @@ func (o *Orgs) Contains(orgName string) bool {
 }
 
 func (o *OrgConfig) GetBillingManagerGroups() []string {
-	groupMap := make(map[string]string)
-	for _, group := range o.BillingManager.LDAPGroups {
-		groupMap[group] = group
-	}
-	if o.BillingManager.LDAPGroup != "" {
-		groupMap[o.BillingManager.LDAPGroup] = o.BillingManager.LDAPGroup
-	}
-	if o.BillingManagerGroup != "" {
-		groupMap[o.BillingManagerGroup] = o.BillingManagerGroup
-	}
-	return mapToKeys(groupMap)
+	return o.BillingManager.groups(o.BillingManagerGroup)
 }
 
 func (o *OrgConfig) GetManagerGroups() []string {
-	groupMap := make(map[string]string)
-	for _, group := range o.Manager.LDAPGroups {
-		groupMap[group] = group
-	}
-	if o.Manager.LDAPGroup != "" {
-		groupMap[o.Manager.LDAPGroup] = o.Manager.LDAPGroup
-	}
-	if o.ManagerGroup != "" {
-		groupMap[o.ManagerGroup] = o.ManagerGroup
-	}
-	return mapToKeys(groupMap)
+	return o.Manager.groups(o.ManagerGroup)
 }
 
 func (o *OrgConfig) GetAuditorGroups() []string {
-	groupMap := make(map[string]string)
-	for _, group := range o.Auditor.LDAPGroups {
-		groupMap[group] = group
-	}
-	if o.Auditor.LDAPGroup != "" {
-		groupMap[o.Auditor.LDAPGroup] = o.Auditor.LDAPGroup
-	}
-	if o.AuditorGroup != "" {
-		groupMap[o.AuditorGroup] = o.AuditorGroup
-	}
-	return mapToKeys(groupMap)
-}
-
-func mapToKeys(aMap map[string]string) []string {
-	var keys []string
-	for k := range aMap {
-		keys = append(keys, k)
-	}
-	return keys
+	return o.Auditor.groups(o.AuditorGroup)
 }

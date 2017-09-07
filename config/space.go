@@ -33,6 +33,7 @@ type SpaceConfig struct {
 	AppInstanceLimit        int      `yaml:"app_instance_limit"`
 }
 
+// Contains determines whether a space is present in a list of spaces.
 func (s *Spaces) Contains(spaceName string) bool {
 	for _, v := range s.Spaces {
 		if v == spaceName {
@@ -43,43 +44,13 @@ func (s *Spaces) Contains(spaceName string) bool {
 }
 
 func (i *SpaceConfig) GetDeveloperGroups() []string {
-	groupMap := make(map[string]string)
-	for _, group := range i.Developer.LDAPGroups {
-		groupMap[group] = group
-	}
-	if i.Developer.LDAPGroup != "" {
-		groupMap[i.Developer.LDAPGroup] = i.Developer.LDAPGroup
-	}
-	if i.DeveloperGroup != "" {
-		groupMap[i.DeveloperGroup] = i.DeveloperGroup
-	}
-	return mapToKeys(groupMap)
+	return i.Developer.groups(i.DeveloperGroup)
 }
 
 func (i *SpaceConfig) GetManagerGroups() []string {
-	groupMap := make(map[string]string)
-	for _, group := range i.Manager.LDAPGroups {
-		groupMap[group] = group
-	}
-	if i.Manager.LDAPGroup != "" {
-		groupMap[i.Manager.LDAPGroup] = i.Manager.LDAPGroup
-	}
-	if i.ManagerGroup != "" {
-		groupMap[i.ManagerGroup] = i.ManagerGroup
-	}
-	return mapToKeys(groupMap)
+	return i.Manager.groups(i.ManagerGroup)
 }
 
 func (i *SpaceConfig) GetAuditorGroups() []string {
-	groupMap := make(map[string]string)
-	for _, group := range i.Auditor.LDAPGroups {
-		groupMap[group] = group
-	}
-	if i.Auditor.LDAPGroup != "" {
-		groupMap[i.Auditor.LDAPGroup] = i.Auditor.LDAPGroup
-	}
-	if i.AuditorGroup != "" {
-		groupMap[i.AuditorGroup] = i.AuditorGroup
-	}
-	return mapToKeys(groupMap)
+	return i.Auditor.groups(i.AuditorGroup)
 }
