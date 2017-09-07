@@ -12,13 +12,14 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
+func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
 	cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token)
 	ldapMgr := ldap.NewManager()
 	uaacMgr := uaac.NewManager(sysDomain, uaacToken)
 	UserMgr := NewUserManager(cloudController, ldapMgr, uaacMgr)
 
 	return &DefaultOrgManager{
+		Cfg:             cfg,
 		CloudController: cloudController,
 		UAACMgr:         uaacMgr,
 		UtilsMgr:        utils.NewDefaultManager(),
@@ -27,31 +28,9 @@ func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 	}
 }
 
-func (m *DefaultOrgManager) GetOrgConfigs(configDir string) ([]*config.OrgConfig, error) {
-	orgConfigs := []*config.OrgConfig{}
-	files, err := m.UtilsMgr.FindFiles(configDir, "orgConfig.yml")
-	if err != nil {
-		return nil, err
-	}
-	for _, f := range files {
-		input := &config.OrgConfig{
-			AppInstanceLimit:        -1,
-			TotalReservedRoutePorts: 0,
-			TotalPrivateDomains:     -1,
-			TotalServiceKeys:        -1,
-		}
-		if err = m.UtilsMgr.LoadFile(f, input); err != nil {
-			lo.G.Error(err)
-			return nil, err
-		}
-		orgConfigs = append(orgConfigs, input)
-	}
-	return orgConfigs, nil
-}
-
 //CreateQuotas -
-func (m *DefaultOrgManager) CreateQuotas(configDir string) error {
-	orgs, err := m.GetOrgConfigs(configDir)
+func (m *DefaultOrgManager) CreateQuotas(configDir string) error { // TODO: remove configDir?
+	orgs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return err
 	}
@@ -142,8 +121,8 @@ func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
 	return nil
 }
 
-func (m *DefaultOrgManager) CreatePrivateDomains(configDir string) error {
-	orgConfigs, err := m.GetOrgConfigs(configDir)
+func (m *DefaultOrgManager) CreatePrivateDomains(configDir string) error { // TODO: remove configDir
+	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		lo.G.Error(err)
 		return err
@@ -319,14 +298,14 @@ func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) e
 		return err
 	}
 
-	orgConfigs, err := m.GetOrgConfigs(configDir)
+	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		lo.G.Error(err)
 		return err
 	}
 
 	for _, input := range orgConfigs {
-		if err := m.updateOrgUsers(config, input, uaacUsers); err != nil {
+		if err := m.updateOrgUsers(config, &input, uaacUsers); err != nil {
 			return err
 		}
 	}

@@ -12,38 +12,23 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-// Manager is used to update the cf-mgmt configuration.
+// Manager can read and write the cf-mgmt configuration.
 type Manager interface {
+	Updater
+	Reader
+}
+
+// Updater is used to update the cf-mgmt configuration.
+type Updater interface {
 	AddOrgToConfig(orgConfig *OrgConfig) error
 	AddSpaceToConfig(spaceConfig *SpaceConfig) error
 	CreateConfigIfNotExists(uaaOrigin string) error
 	DeleteConfigIfExists() error
 }
 
-type UserMgmt struct {
-	LDAPUsers  []string `yaml:"ldap_users"`
-	Users      []string `yaml:"users"`
-	LDAPGroup  string   `yaml:"ldap_group"`
-	LDAPGroups []string `yaml:"ldap_groups"`
-}
-
-func (u *UserMgmt) groups(groupName string) []string {
-	groupMap := make(map[string]string)
-	for _, group := range u.LDAPGroups {
-		groupMap[group] = group
-	}
-	if u.LDAPGroup != "" {
-		groupMap[u.LDAPGroup] = u.LDAPGroup
-	}
-	if groupName != "" {
-		groupMap[groupName] = groupName
-	}
-
-	result := make([]string, 0, len(groupMap))
-	for k := range groupMap {
-		result = append(result, k)
-	}
-	return result
+// Reader is used to read the cf-mgmt configuration.
+type Reader interface {
+	GetOrgConfigs() ([]OrgConfig, error)
 }
 
 // yamlManager is the default implementation of Manager.
@@ -58,6 +43,28 @@ func NewManager(configDir string) Manager {
 	return &yamlManager{
 		ConfigDir: configDir,
 	}
+}
+
+// GetOrgConfigs reads all orgs from the cf-mgmt configuration.
+func (m *yamlManager) GetOrgConfigs() ([]OrgConfig, error) {
+	fs := utils.NewDefaultManager()
+	files, err := fs.FindFiles(m.ConfigDir, "orgConfig.yml")
+	if err != nil {
+		return nil, err
+	}
+	result := make([]OrgConfig, len(files))
+	for i, f := range files {
+		result[i].AppInstanceLimit = -1
+		result[i].TotalReservedRoutePorts = 0
+		result[i].TotalPrivateDomains = -1
+		result[i].TotalServiceKeys = -1
+
+		if err = fs.LoadFile(f, &result[i]); err != nil {
+			lo.G.Error(err)
+			return nil, err
+		}
+	}
+	return result, nil
 }
 
 // AddOrgToConfig adds an organization to the cf-mgmt configuration.
@@ -167,4 +174,31 @@ func (m *yamlManager) DeleteConfigIfExists() error {
 	}
 	lo.G.Info("Config directory deleted")
 	return nil
+}
+
+// UserMgmt specifies users and groups that can be associated to a particular org or space.
+type UserMgmt struct {
+	LDAPUsers  []string `yaml:"ldap_users"`
+	Users      []string `yaml:"users"`
+	LDAPGroup  string   `yaml:"ldap_group"`
+	LDAPGroups []string `yaml:"ldap_groups"`
+}
+
+func (u *UserMgmt) groups(groupName string) []string {
+	groupMap := make(map[string]string)
+	for _, group := range u.LDAPGroups {
+		groupMap[group] = group
+	}
+	if u.LDAPGroup != "" {
+		groupMap[u.LDAPGroup] = u.LDAPGroup
+	}
+	if groupName != "" {
+		groupMap[groupName] = groupName
+	}
+
+	result := make([]string, 0, len(groupMap))
+	for k := range groupMap {
+		result = append(result, k)
+	}
+	return result
 }

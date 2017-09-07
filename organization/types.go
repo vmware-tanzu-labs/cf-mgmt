@@ -2,6 +2,7 @@ package organization
 
 import (
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
+	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	"github.com/pivotalservices/cf-mgmt/utils"
@@ -52,6 +53,7 @@ type Org struct {
 
 //DefaultOrgManager -
 type DefaultOrgManager struct {
+	Cfg             config.Reader
 	CloudController cloudcontroller.Manager
 	UAACMgr         uaac.Manager
 	UtilsMgr        utils.Manager

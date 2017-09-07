@@ -32,7 +32,7 @@ type CFMgmt struct {
 	UAAManager      uaa.Manager
 	OrgManager      organization.Manager
 	SpaceManager    space.Manager
-	ConfigManager   config.Manager
+	ConfigManager   config.Updater
 	ConfigDirectory string
 	PeekDeletion    bool
 	LdapBindPwd     string
@@ -60,6 +60,7 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 		return nil, fmt.Errorf("must set system-domain, user-id, password, client-secret properties")
 	}
 
+	cfg := config.NewManager(configDir)
 	var cfToken, uaacToken string
 	cfMgmt := &CFMgmt{}
 	cfMgmt.LdapBindPwd = ldapPwd
@@ -74,8 +75,8 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	cfMgmt.ConfigDirectory = configDir
 	cfMgmt.UaacToken = uaacToken
 	cfMgmt.SystemDomain = sysDomain
-	cfMgmt.OrgManager = organization.NewManager(sysDomain, cfToken, uaacToken)
-	cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken)
+	cfMgmt.OrgManager = organization.NewManager(sysDomain, cfToken, uaacToken, cfg)
+	cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken, cfg)
 	cfMgmt.ConfigManager = config.NewManager(configDir)
 	cfMgmt.UAACManager = uaac.NewManager(sysDomain, uaacToken)
 	cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken)

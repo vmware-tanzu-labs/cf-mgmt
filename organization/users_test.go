@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller/mocks"
+	"github.com/pivotalservices/cf-mgmt/config"
 	l "github.com/pivotalservices/cf-mgmt/ldap"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap/mocks"
 
@@ -15,7 +16,7 @@ import (
 var _ = Describe("given UserManager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken")
+			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/config"))
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})

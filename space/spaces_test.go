@@ -22,7 +22,7 @@ import (
 var _ = Describe("given SpaceManager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken")
+			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/space-defaults"))
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})

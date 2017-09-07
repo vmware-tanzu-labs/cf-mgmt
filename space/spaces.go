@@ -16,14 +16,15 @@ import (
 )
 
 //NewManager -
-func NewManager(sysDomain, token, uaacToken string) Manager {
+func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
 	cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token)
 	ldapMgr := ldap.NewManager()
 	uaacMgr := uaac.NewManager(sysDomain, uaacToken)
 	return &DefaultSpaceManager{
+		//Cfg:             cfg,
 		UAACMgr:         uaacMgr,
 		CloudController: cloudController,
-		OrgMgr:          organization.NewManager(sysDomain, token, uaacToken),
+		OrgMgr:          organization.NewManager(sysDomain, token, uaacToken, cfg),
 		LdapMgr:         ldapMgr,
 		UtilsMgr:        utils.NewDefaultManager(),
 		UserMgr:         NewUserManager(cloudController, ldapMgr, uaacMgr),

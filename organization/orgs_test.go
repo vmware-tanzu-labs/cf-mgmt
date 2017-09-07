@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller/mocks"
+	"github.com/pivotalservices/cf-mgmt/config"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap/mocks"
 	. "github.com/pivotalservices/cf-mgmt/organization"
 	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
@@ -17,7 +18,7 @@ import (
 var _ = Describe("given OrgManager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken")
+			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/config"))
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})
@@ -46,6 +47,7 @@ var _ = Describe("given OrgManager", func() {
 	AfterEach(func() {
 		ctrl.Finish()
 	})
+
 	Context("FindOrg()", func() {
 		It("should return an org", func() {
 			orgs := []*cloudcontroller.Org{
@@ -66,6 +68,7 @@ var _ = Describe("given OrgManager", func() {
 			Ω(org.Entity.Name).Should(Equal("test"))
 		})
 	})
+
 	It("should return an error for unfound org", func() {
 		orgs := []*cloudcontroller.Org{}
 		mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
@@ -73,6 +76,7 @@ var _ = Describe("given OrgManager", func() {
 		Ω(err).ShouldNot(BeNil())
 		Ω(org).Should(BeNil())
 	})
+
 	It("should return an error", func() {
 		mockCloudController.EXPECT().ListOrgs().Return(nil, fmt.Errorf("test"))
 		org, err := orgManager.FindOrg("test")
@@ -99,6 +103,7 @@ var _ = Describe("given OrgManager", func() {
 			Ω(guid).Should(Equal("theGUID"))
 		})
 	})
+
 	It("should return an error", func() {
 		mockCloudController.EXPECT().ListOrgs().Return(nil, fmt.Errorf("test"))
 		guid, err := orgManager.GetOrgGUID("test")
@@ -122,6 +127,7 @@ var _ = Describe("given OrgManager", func() {
 			Ω(exists).Should(BeTrue())
 		})
 	})
+
 	It("should return false", func() {
 		orgs := []*cloudcontroller.Org{
 			{
@@ -135,30 +141,6 @@ var _ = Describe("given OrgManager", func() {
 		}
 		exists := orgManager.DoesOrgExist("blah", orgs)
 		Ω(exists).Should(BeFalse())
-	})
-
-	Context("GetOrgConfigs()", func() {
-		It("should return list of 2", func() {
-			configs, err := orgManager.GetOrgConfigs("./fixtures/config")
-			Ω(err).Should(BeNil())
-			Ω(configs).ShouldNot(BeNil())
-			Ω(configs).Should(HaveLen(2))
-		})
-		It("should return list of 1", func() {
-			configs, err := orgManager.GetOrgConfigs("./fixtures/user_config")
-			Ω(err).Should(BeNil())
-			Ω(configs).ShouldNot(BeNil())
-			Ω(configs).Should(HaveLen(1))
-			config := configs[0]
-			Ω(config.GetAuditorGroups()).Should(ConsistOf([]string{"test_org_auditors"}))
-			Ω(config.GetManagerGroups()).Should(ConsistOf([]string{"test_org_managers"}))
-			Ω(config.GetBillingManagerGroups()).Should(ConsistOf([]string{"test_billing_managers", "test_billing_managers_2"}))
-		})
-		It("should return an error when path does not exist", func() {
-			configs, err := orgManager.GetOrgConfigs("./fixtures/blah")
-			Ω(err).Should(HaveOccurred())
-			Ω(configs).Should(BeNil())
-		})
 	})
 
 	Context("CreateOrgs()", func() {
@@ -287,6 +269,8 @@ var _ = Describe("given OrgManager", func() {
 	Context("CreateQuotas()", func() {
 		var orgs []*cloudcontroller.Org
 		BeforeEach(func() {
+			orgManager.Cfg = config.NewManager("./fixtures/config")
+
 			orgs = []*cloudcontroller.Org{
 				{
 					Entity: cloudcontroller.OrgEntity{
@@ -306,6 +290,7 @@ var _ = Describe("given OrgManager", func() {
 				},
 			}
 		})
+
 		It("should create 2 quotas", func() {
 			quotas := make(map[string]string)
 			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
@@ -479,6 +464,8 @@ var _ = Describe("given OrgManager", func() {
 	Context("CreatePrivateDomains()", func() {
 		var orgs []*cloudcontroller.Org
 		BeforeEach(func() {
+			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains")
+
 			orgs = []*cloudcontroller.Org{
 				{
 					Entity: cloudcontroller.OrgEntity{
