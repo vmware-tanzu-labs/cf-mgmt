@@ -2,7 +2,6 @@ package organization
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -29,7 +28,7 @@ func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
 }
 
 //CreateQuotas -
-func (m *DefaultOrgManager) CreateQuotas(configDir string) error { // TODO: remove configDir?
+func (m *DefaultOrgManager) CreateQuotas() error {
 	orgs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return err
@@ -96,32 +95,31 @@ func (m *DefaultOrgManager) GetOrgGUID(orgName string) (string, error) {
 }
 
 //CreateOrgs -
-func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
-	configFile := filepath.Join(configDir, "orgs.yml")
-	lo.G.Info("Processing org file", configFile)
-	input := &config.Orgs{}
-	if err := m.UtilsMgr.LoadFile(configFile, input); err != nil {
-		return err
-	}
-	orgs, err := m.CloudController.ListOrgs()
+func (m *DefaultOrgManager) CreateOrgs() error {
+	desiredOrgs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return err
 	}
 
-	for _, orgName := range input.Orgs {
-		if m.DoesOrgExist(orgName, orgs) {
-			lo.G.Infof("[%s] org already exists", orgName)
+	currentOrgs, err := m.CloudController.ListOrgs()
+	if err != nil {
+		return err
+	}
+
+	for _, org := range desiredOrgs {
+		if doesOrgExist(org.Org, currentOrgs) {
+			lo.G.Infof("[%s] org already exists", org)
 			continue
 		}
-		lo.G.Infof("Creating [%s] org", orgName)
-		if err := m.CloudController.CreateOrg(orgName); err != nil {
+		lo.G.Infof("Creating [%s] org", org)
+		if err := m.CloudController.CreateOrg(org.Org); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (m *DefaultOrgManager) CreatePrivateDomains(configDir string) error { // TODO: remove configDir
+func (m *DefaultOrgManager) CreatePrivateDomains() error {
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		lo.G.Error(err)
@@ -204,28 +202,26 @@ func (m *DefaultOrgManager) getOrgGUID(orgs []*cloudcontroller.Org, orgName stri
 }
 
 //DeleteOrgs -
-func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) error {
-	configFile := filepath.Join(configDir, "orgs.yml")
-	lo.G.Info("Processing org file", configFile)
-	input := &config.Orgs{}
-	if err := m.UtilsMgr.LoadFile(configFile, input); err != nil {
+func (m *DefaultOrgManager) DeleteOrgs(peekDeletion bool) error {
+	orgsConfig, err := m.Cfg.Orgs()
+	if err != nil {
 		return err
 	}
 
-	if !input.EnableDeleteOrgs {
+	if !orgsConfig.EnableDeleteOrgs {
 		lo.G.Info("Org deletion is not enabled.  Set enable-delete-orgs: true")
 		return nil
 	}
 
 	configuredOrgs := make(map[string]bool)
-	for _, orgName := range input.Orgs {
+	for _, orgName := range orgsConfig.Orgs {
 		configuredOrgs[orgName] = true
 	}
 
 	protectedOrgs := make(map[string]bool)
-	//never allow accidental deletion of system org
+	// never allow accidental deletion of system org
 	protectedOrgs["system"] = true
-	for _, orgName := range input.ProtectedOrgs {
+	for _, orgName := range orgsConfig.ProtectedOrgs {
 		protectedOrgs[orgName] = true
 	}
 
@@ -261,7 +257,7 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 	return nil
 }
 
-func (m *DefaultOrgManager) DoesOrgExist(orgName string, orgs []*cloudcontroller.Org) bool {
+func doesOrgExist(orgName string, orgs []*cloudcontroller.Org) bool {
 	for _, org := range orgs {
 		if org.Entity.Name == orgName {
 			return true

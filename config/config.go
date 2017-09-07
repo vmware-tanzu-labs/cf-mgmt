@@ -28,6 +28,7 @@ type Updater interface {
 
 // Reader is used to read the cf-mgmt configuration.
 type Reader interface {
+	Orgs() (Orgs, error)
 	GetOrgConfigs() ([]OrgConfig, error)
 }
 
@@ -43,6 +44,17 @@ func NewManager(configDir string) Manager {
 	return &yamlManager{
 		ConfigDir: configDir,
 	}
+}
+
+// Orgs reads the config for all orgs.
+func (m *yamlManager) Orgs() (Orgs, error) {
+	configFile := filepath.Join(m.ConfigDir, "orgs.yml")
+	lo.G.Info("Processing org file", configFile)
+	input := Orgs{}
+	if err := utils.NewDefaultManager().LoadFile(configFile, &input); err != nil {
+		return Orgs{}, err
+	}
+	return input, nil
 }
 
 // GetOrgConfigs reads all orgs from the cf-mgmt configuration.

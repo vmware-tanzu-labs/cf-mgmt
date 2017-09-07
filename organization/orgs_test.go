@@ -37,6 +37,7 @@ var _ = Describe("given OrgManager", func() {
 		mockLdap = ldap.NewMockManager(ctrl)
 		mockUaac = uaac.NewMockManager(ctrl)
 		orgManager = DefaultOrgManager{
+			Cfg:             config.NewManager("./fixtures/config"),
 			CloudController: mockCloudController,
 			UAACMgr:         mockUaac,
 			UtilsMgr:        utils.NewDefaultManager(),
@@ -111,57 +112,25 @@ var _ = Describe("given OrgManager", func() {
 		Ω(guid).Should(Equal(""))
 	})
 
-	Context("DoesOrgExist()", func() {
-		It("should return true", func() {
-			orgs := []*cloudcontroller.Org{
-				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "theGUID",
-					},
-				},
-			}
-			exists := orgManager.DoesOrgExist("test", orgs)
-			Ω(exists).Should(BeTrue())
-		})
-	})
-
-	It("should return false", func() {
-		orgs := []*cloudcontroller.Org{
-			{
-				Entity: cloudcontroller.OrgEntity{
-					Name: "test",
-				},
-				MetaData: cloudcontroller.OrgMetaData{
-					GUID: "theGUID",
-				},
-			},
-		}
-		exists := orgManager.DoesOrgExist("blah", orgs)
-		Ω(exists).Should(BeFalse())
-	})
-
 	Context("CreateOrgs()", func() {
 		It("should create 2", func() {
 			orgs := []*cloudcontroller.Org{}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().CreateOrg("test").Return(nil)
 			mockCloudController.EXPECT().CreateOrg("test2").Return(nil)
-			err := orgManager.CreateOrgs("./fixtures/config")
+			err := orgManager.CreateOrgs()
 			Ω(err).Should(BeNil())
 		})
 		It("should error on list orgs", func() {
 			mockCloudController.EXPECT().ListOrgs().Return(nil, fmt.Errorf("test"))
-			err := orgManager.CreateOrgs("./fixtures/config")
+			err := orgManager.CreateOrgs()
 			Ω(err).Should(HaveOccurred())
 		})
 		It("should error on create org", func() {
 			orgs := []*cloudcontroller.Org{}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().CreateOrg("test").Return(fmt.Errorf("test"))
-			err := orgManager.CreateOrgs("./fixtures/config")
+			err := orgManager.CreateOrgs()
 			Ω(err).Should(HaveOccurred())
 		})
 		It("should not create any orgs", func() {
@@ -178,7 +147,7 @@ var _ = Describe("given OrgManager", func() {
 				},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			err := orgManager.CreateOrgs("./fixtures/config")
+			err := orgManager.CreateOrgs()
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 		It("should not create test2 org", func() {
@@ -191,12 +160,16 @@ var _ = Describe("given OrgManager", func() {
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().CreateOrg("test2").Return(nil)
-			err := orgManager.CreateOrgs("./fixtures/config")
+			err := orgManager.CreateOrgs()
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 	})
 
 	Context("DeleteOrgs()", func() {
+		BeforeEach(func() {
+			orgManager.Cfg = config.NewManager("./fixtures/config-delete")
+		})
+
 		It("should delete 1", func() {
 			orgs := []*cloudcontroller.Org{
 				&cloudcontroller.Org{
@@ -226,7 +199,7 @@ var _ = Describe("given OrgManager", func() {
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().DeleteOrg("test2-guid").Return(nil)
-			err := orgManager.DeleteOrgs("./fixtures/config-delete", false)
+			err := orgManager.DeleteOrgs(false)
 			Ω(err).Should(BeNil())
 		})
 		It("should just peek", func() {
@@ -257,11 +230,7 @@ var _ = Describe("given OrgManager", func() {
 				},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			err := orgManager.DeleteOrgs("./fixtures/config-delete", true)
-			Ω(err).Should(BeNil())
-		})
-		It("should just peek", func() {
-			err := orgManager.DeleteOrgs("./fixtures/config", true)
+			err := orgManager.DeleteOrgs(true)
 			Ω(err).Should(BeNil())
 		})
 	})
@@ -322,13 +291,13 @@ var _ = Describe("given OrgManager", func() {
 				TotalServiceKeys:        -1,
 			}).Return("test2QuotaGUID", nil)
 			mockCloudController.EXPECT().AssignQuotaToOrg("test2OrgGUID", "test2QuotaGUID").Return(nil)
-			err := orgManager.CreateQuotas("./fixtures/config")
+			err := orgManager.CreateQuotas()
 			Ω(err).Should(BeNil())
 		})
 
 		It("list quotas returns error", func() {
 			mockCloudController.EXPECT().ListAllOrgQuotas().Return(nil, fmt.Errorf("test"))
-			err := orgManager.CreateQuotas("./fixtures/config")
+			err := orgManager.CreateQuotas()
 			Ω(err).Should(HaveOccurred())
 		})
 
@@ -336,7 +305,7 @@ var _ = Describe("given OrgManager", func() {
 			quotas := make(map[string]string)
 			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
 			mockCloudController.EXPECT().ListOrgs().Return(nil, fmt.Errorf("test"))
-			err := orgManager.CreateQuotas("./fixtures/config")
+			err := orgManager.CreateQuotas()
 			Ω(err).Should(HaveOccurred())
 		})
 
@@ -356,7 +325,7 @@ var _ = Describe("given OrgManager", func() {
 				TotalPrivateDomains:     -1,
 				TotalServiceKeys:        -1,
 			}).Return("", fmt.Errorf("test"))
-			err := orgManager.CreateQuotas("./fixtures/config")
+			err := orgManager.CreateQuotas()
 			Ω(err).Should(HaveOccurred())
 		})
 
@@ -377,7 +346,7 @@ var _ = Describe("given OrgManager", func() {
 				TotalServiceKeys:        -1,
 			}).Return("testQuotaGUID", nil)
 			mockCloudController.EXPECT().AssignQuotaToOrg("testOrgGUID", "testQuotaGUID").Return(fmt.Errorf("test"))
-			err := orgManager.CreateQuotas("./fixtures/config")
+			err := orgManager.CreateQuotas()
 			Ω(err).Should(HaveOccurred())
 		})
 
@@ -414,7 +383,7 @@ var _ = Describe("given OrgManager", func() {
 				TotalServiceKeys:        -1,
 			}).Return(nil)
 			mockCloudController.EXPECT().AssignQuotaToOrg("test2OrgGUID", "test2QuotaGUID").Return(nil)
-			err := orgManager.CreateQuotas("./fixtures/config")
+			err := orgManager.CreateQuotas()
 			Ω(err).Should(BeNil())
 		})
 
@@ -435,9 +404,10 @@ var _ = Describe("given OrgManager", func() {
 				TotalPrivateDomains:     -1,
 				TotalServiceKeys:        -1,
 			}).Return(fmt.Errorf("test"))
-			err := orgManager.CreateQuotas("./fixtures/config")
+			err := orgManager.CreateQuotas()
 			Ω(err).Should(HaveOccurred())
 		})
+
 		It("assign org to quota errors", func() {
 			quotas := make(map[string]string)
 			quotas["test"] = "testQuotaGUID"
@@ -456,7 +426,7 @@ var _ = Describe("given OrgManager", func() {
 				TotalServiceKeys:        -1,
 			}).Return(nil)
 			mockCloudController.EXPECT().AssignQuotaToOrg("testOrgGUID", "testQuotaGUID").Return(fmt.Errorf("test"))
-			err := orgManager.CreateQuotas("./fixtures/config")
+			err := orgManager.CreateQuotas()
 			Ω(err).Should(HaveOccurred())
 		})
 	})
@@ -493,7 +463,7 @@ var _ = Describe("given OrgManager", func() {
 			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test.com").Return(nil)
 			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test2.com").Return(nil)
 			mockCloudController.EXPECT().ListOrgPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
-			err := orgManager.CreatePrivateDomains("./fixtures/config-private-domains")
+			err := orgManager.CreatePrivateDomains()
 			Ω(err).Should(BeNil())
 		})
 		It("should create no private domains", func() {
@@ -506,7 +476,7 @@ var _ = Describe("given OrgManager", func() {
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
 			mockCloudController.EXPECT().ListOrgPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
-			err := orgManager.CreatePrivateDomains("./fixtures/config-private-domains")
+			err := orgManager.CreatePrivateDomains()
 			Ω(err).Should(BeNil())
 		})
 
@@ -526,7 +496,7 @@ var _ = Describe("given OrgManager", func() {
 			mockCloudController.EXPECT().ListOrgPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
 			mockCloudController.EXPECT().DeletePrivateDomain("test3.com.guid").Return(nil)
 			mockCloudController.EXPECT().DeletePrivateDomain("test4.com.guid").Return(nil)
-			err := orgManager.CreatePrivateDomains("./fixtures/config-private-domains")
+			err := orgManager.CreatePrivateDomains()
 			Ω(err).Should(BeNil())
 		})
 		It("should error as private domain exists in other org", func() {
@@ -534,7 +504,7 @@ var _ = Describe("given OrgManager", func() {
 			allPrivateDomains["test.com"] = "testOtherOrgGUID"
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
-			err := orgManager.CreatePrivateDomains("./fixtures/config-private-domains")
+			err := orgManager.CreatePrivateDomains()
 			Ω(err).Should(Not(BeNil()))
 		})
 	})

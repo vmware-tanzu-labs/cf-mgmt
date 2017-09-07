@@ -11,11 +11,11 @@ import (
 //Manager -
 type Manager interface {
 	FindOrg(orgName string) (*cloudcontroller.Org, error)
-	CreateOrgs(configFile string) error
-	CreatePrivateDomains(configFile string) error
-	DeleteOrgs(configFile string, peekDeletion bool) error
+	CreateOrgs() error
+	CreatePrivateDomains() error
+	DeleteOrgs(peekDeletion bool) error
 	UpdateOrgUsers(configDir, ldapBindPassword string) error
-	CreateQuotas(configDir string) error
+	CreateQuotas() error
 	GetOrgGUID(orgName string) (string, error)
 }
 

@@ -383,7 +383,7 @@ func runCreateOrgs(c *cli.Context) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
-		err = cfMgmt.OrgManager.CreateOrgs(cfMgmt.ConfigDirectory)
+		err = cfMgmt.OrgManager.CreateOrgs()
 	}
 	return err
 }
@@ -392,7 +392,7 @@ func runCreateOrgPrivateDomains(c *cli.Context) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
-		err = cfMgmt.OrgManager.CreatePrivateDomains(cfMgmt.ConfigDirectory)
+		err = cfMgmt.OrgManager.CreatePrivateDomains()
 	}
 	return err
 }
@@ -401,7 +401,7 @@ func runDeleteOrgs(c *cli.Context) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
-		err = cfMgmt.OrgManager.DeleteOrgs(cfMgmt.ConfigDirectory, cfMgmt.PeekDeletion)
+		err = cfMgmt.OrgManager.DeleteOrgs(cfMgmt.PeekDeletion)
 	}
 	return err
 }
@@ -419,7 +419,7 @@ func runCreateOrgQuotas(c *cli.Context) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
-		err = cfMgmt.OrgManager.CreateQuotas(cfMgmt.ConfigDirectory)
+		err = cfMgmt.OrgManager.CreateQuotas()
 	}
 	return err
 }
