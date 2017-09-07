@@ -2,9 +2,6 @@ package space
 
 import (
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
-	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -21,7 +18,7 @@ func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
 	ldapMgr := ldap.NewManager()
 	uaacMgr := uaac.NewManager(sysDomain, uaacToken)
 	return &DefaultSpaceManager{
-		//Cfg:             cfg,
+		Cfg:             cfg,
 		UAACMgr:         uaacMgr,
 		CloudController: cloudController,
 		OrgMgr:          organization.NewManager(sysDomain, token, uaacToken, cfg),
@@ -31,55 +28,9 @@ func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
 	}
 }
 
-func (m *DefaultSpaceManager) GetSpaceConfigs(configDir string) ([]*config.SpaceConfig, error) {
-	spaceDefaults := &config.SpaceConfig{}
-	m.UtilsMgr.LoadFile(filepath.Join(configDir, "spaceDefaults.yml"), spaceDefaults)
-	files, err := utils.NewDefaultManager().FindFiles(configDir, "spaceConfig.yml")
-	if err != nil {
-		return nil, err
-	}
-	var spaceConfigs []*config.SpaceConfig
-	for _, f := range files {
-		lo.G.Info("Processing space file", f)
-		input := &config.SpaceConfig{
-			AppInstanceLimit:        -1,
-			TotalReservedRoutePorts: 0,
-			TotalPrivateDomains:     -1,
-			TotalServiceKeys:        -1,
-		}
-		if err = m.UtilsMgr.LoadFile(f, input); err != nil {
-			return nil, err
-		}
-		input.Developer.LDAPUsers = append(input.Developer.LDAPUsers, spaceDefaults.Developer.LDAPUsers...)
-		input.Developer.Users = append(input.Developer.Users, spaceDefaults.Developer.Users...)
-		input.Auditor.LDAPUsers = append(input.Auditor.LDAPUsers, spaceDefaults.Auditor.LDAPUsers...)
-		input.Auditor.Users = append(input.Auditor.Users, spaceDefaults.Auditor.Users...)
-		input.Manager.LDAPUsers = append(input.Manager.LDAPUsers, spaceDefaults.Manager.LDAPUsers...)
-		input.Manager.Users = append(input.Manager.Users, spaceDefaults.Manager.Users...)
-
-		input.Developer.LDAPGroups = append(input.GetDeveloperGroups(), spaceDefaults.GetDeveloperGroups()...)
-		input.Auditor.LDAPGroups = append(input.GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
-		input.Manager.LDAPGroups = append(input.GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
-
-		spaceConfigs = append(spaceConfigs, input)
-		if input.EnableSecurityGroup {
-			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
-			lo.G.Debug("Loading security group contents", securityGroupFile)
-			var bytes []byte
-			bytes, err := ioutil.ReadFile(securityGroupFile)
-			if err != nil {
-				return nil, err
-			}
-			lo.G.Debug("setting security group contents", string(bytes))
-			input.SecurityGroupContents = string(bytes)
-		}
-	}
-	return spaceConfigs, nil
-}
-
 //CreateApplicationSecurityGroups -
 func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) error {
-	spaceConfigs, err := m.GetSpaceConfigs(configDir)
+	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		return err
 	}
@@ -118,8 +69,7 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 
 //CreateQuotas -
 func (m *DefaultSpaceManager) CreateQuotas(configDir string) error {
-
-	spaceConfigs, err := m.GetSpaceConfigs(configDir)
+	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		return err
 	}
@@ -174,7 +124,7 @@ func (m *DefaultSpaceManager) CreateQuotas(configDir string) error {
 
 //UpdateSpaces -
 func (m *DefaultSpaceManager) UpdateSpaces(configDir string) error {
-	spaceConfigs, err := m.GetSpaceConfigs(configDir)
+	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		return err
 	}
@@ -207,14 +157,14 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 		return err
 	}
 
-	spaceConfigs, err := m.GetSpaceConfigs(configDir)
+	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		lo.G.Error(err)
 		return err
 	}
 
 	for _, input := range spaceConfigs {
-		if err := m.updateSpaceUsers(config, input, uaacUsers); err != nil {
+		if err := m.updateSpaceUsers(config, &input, uaacUsers); err != nil {
 			return err
 		}
 	}
@@ -290,25 +240,9 @@ func (m *DefaultSpaceManager) FindSpace(orgName, spaceName string) (*cloudcontro
 	return nil, fmt.Errorf("space [%s] not found in org [%s]", spaceName, orgName)
 }
 
-func (m *DefaultSpaceManager) GetSpaceConfigList(configDir string) ([]config.Spaces, error) {
-	files, err := m.UtilsMgr.FindFiles(configDir, "spaces.yml")
-	if err != nil {
-		return nil, err
-	}
-	spaceList := []config.Spaces{}
-	for _, f := range files {
-		lo.G.Info("Processing space file", f)
-		input := config.Spaces{}
-		if err := m.UtilsMgr.LoadFile(f, &input); err == nil {
-			spaceList = append(spaceList, input)
-		}
-	}
-	return spaceList, nil
-}
-
 //CreateSpaces -
 func (m *DefaultSpaceManager) CreateSpaces(configDir, ldapBindPassword string) error {
-	configSpaceList, err := m.GetSpaceConfigList(configDir)
+	configSpaceList, err := m.Cfg.Spaces()
 	if err != nil {
 		return err
 	}
@@ -344,12 +278,12 @@ func (m *DefaultSpaceManager) CreateSpaces(configDir, ldapBindPassword string) e
 }
 
 func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgName, ldapBindPassword string) error {
-	defaultSpaceConfigFile := filepath.Join(configDir, "spaceDefaults.yml")
-	if !m.UtilsMgr.FileOrDirectoryExists(defaultSpaceConfigFile) {
+	defaults, err := m.Cfg.GetSpaceDefaults()
+	if err != nil || defaults == nil {
 		return nil
 	}
+
 	var ldapCfg *ldap.Config
-	var err error
 	if ldapBindPassword == "" {
 		ldapCfg = &ldap.Config{
 			Enabled: false,
@@ -367,18 +301,9 @@ func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgN
 		return err
 	}
 
-	var defaultSpaceConfig *config.SpaceConfig
-	if err = m.UtilsMgr.LoadFile(defaultSpaceConfigFile, &defaultSpaceConfig); err != nil {
-		lo.G.Info(defaultSpaceConfigFile, "doesn't exist")
-		return nil
-	}
-	defaultSpaceConfig.Org = orgName
-	defaultSpaceConfig.Space = spaceName
-	if err = m.updateSpaceUsers(ldapCfg, defaultSpaceConfig, uaacUsers); err != nil {
-		return err
-	}
-
-	return nil
+	defaults.Org = orgName
+	defaults.Space = spaceName
+	return m.updateSpaceUsers(ldapCfg, defaults, uaacUsers)
 }
 
 func (m *DefaultSpaceManager) doesSpaceExist(spaces []*cloudcontroller.Space, spaceName string) bool {
@@ -391,7 +316,7 @@ func (m *DefaultSpaceManager) doesSpaceExist(spaces []*cloudcontroller.Space, sp
 }
 
 func (m *DefaultSpaceManager) DeleteSpaces(configDir string, peekDeletion bool) error {
-	configSpaceList, err := m.GetSpaceConfigList(configDir)
+	configSpaceList, err := m.Cfg.Spaces()
 	if err != nil {
 		return err
 	}

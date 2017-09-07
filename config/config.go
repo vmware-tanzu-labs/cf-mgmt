@@ -4,8 +4,10 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/utils"
@@ -29,7 +31,11 @@ type Updater interface {
 // Reader is used to read the cf-mgmt configuration.
 type Reader interface {
 	Orgs() (Orgs, error)
+	Spaces() ([]Spaces, error)
+
 	GetOrgConfigs() ([]OrgConfig, error)
+	GetSpaceConfigs() ([]SpaceConfig, error)
+	GetSpaceDefaults() (*SpaceConfig, error)
 }
 
 // yamlManager is the default implementation of Manager.
@@ -77,6 +83,85 @@ func (m *yamlManager) GetOrgConfigs() ([]OrgConfig, error) {
 		}
 	}
 	return result, nil
+}
+
+func (m *yamlManager) Spaces() ([]Spaces, error) {
+	fs := utils.NewDefaultManager()
+	files, err := fs.FindFiles(m.ConfigDir, "spaces.yml")
+	if err != nil {
+		return nil, err
+	}
+
+	spaceList := make([]Spaces, len(files))
+	for i, f := range files {
+		lo.G.Info("Processing space file", f)
+
+		if err = fs.LoadFile(f, &spaceList[i]); err != nil {
+			lo.G.Errorf("reading config for space %s: %v", f, err)
+			return nil, err
+		}
+	}
+	return spaceList, nil
+}
+
+func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
+	fs := utils.NewDefaultManager()
+
+	spaceDefaults := SpaceConfig{}
+	fs.LoadFile(filepath.Join(m.ConfigDir, "spaceDefaults.yml"), &spaceDefaults)
+
+	files, err := fs.FindFiles(m.ConfigDir, "spaceConfig.yml")
+	if err != nil {
+		return nil, err
+	}
+	result := make([]SpaceConfig, len(files))
+	for i, f := range files {
+		result[i].AppInstanceLimit = -1
+		result[i].TotalReservedRoutePorts = 0
+		result[i].TotalPrivateDomains = -1
+		result[i].TotalServiceKeys = -1
+
+		if err = fs.LoadFile(f, &result[i]); err != nil {
+			return nil, err
+		}
+
+		result[i].Developer.LDAPUsers = append(result[i].Developer.LDAPUsers, spaceDefaults.Developer.LDAPUsers...)
+		result[i].Developer.Users = append(result[i].Developer.Users, spaceDefaults.Developer.Users...)
+		result[i].Auditor.LDAPUsers = append(result[i].Auditor.LDAPUsers, spaceDefaults.Auditor.LDAPUsers...)
+		result[i].Auditor.Users = append(result[i].Auditor.Users, spaceDefaults.Auditor.Users...)
+		result[i].Manager.LDAPUsers = append(result[i].Manager.LDAPUsers, spaceDefaults.Manager.LDAPUsers...)
+		result[i].Manager.Users = append(result[i].Manager.Users, spaceDefaults.Manager.Users...)
+
+		result[i].Developer.LDAPGroups = append(result[i].GetDeveloperGroups(), spaceDefaults.GetDeveloperGroups()...)
+		result[i].Auditor.LDAPGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
+		result[i].Manager.LDAPGroups = append(result[i].GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
+
+		if result[i].EnableSecurityGroup {
+			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
+			lo.G.Debug("Loading security group contents", securityGroupFile)
+			bytes, err := ioutil.ReadFile(securityGroupFile)
+			if err != nil {
+				return nil, err
+			}
+			lo.G.Debug("setting security group contents", string(bytes))
+			result[i].SecurityGroupContents = string(bytes)
+		}
+	}
+	return result, nil
+}
+
+// GetSpaceDefaults returns the default space configuration, if one was provided.
+// If no space defaults were configured, a nil config and a nil error are returned.
+func (m *yamlManager) GetSpaceDefaults() (*SpaceConfig, error) {
+	fp := filepath.Join(m.ConfigDir, "spaceDefaults.yml")
+	fs := utils.NewDefaultManager()
+
+	if !fs.FileOrDirectoryExists(fp) {
+		return nil, nil
+	}
+	result := SpaceConfig{}
+	err := fs.LoadFile(fp, &result)
+	return &result, err
 }
 
 // AddOrgToConfig adds an organization to the cf-mgmt configuration.

@@ -2,6 +2,7 @@ package space
 
 import (
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
+	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/uaac"
@@ -26,6 +27,7 @@ type Manager interface {
 
 //DefaultSpaceManager -
 type DefaultSpaceManager struct {
+	Cfg             config.Reader
 	FilePattern     string
 	FilePaths       []string
 	CloudController cloudcontroller.Manager
