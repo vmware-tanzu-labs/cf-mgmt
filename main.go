@@ -153,9 +153,27 @@ func NewApp(eh *ErrorHandler) *cli.App {
 		CreateCommand("update-space-quotas", runCreateSpaceQuotas, defaultFlags(), eh),
 		CreateCommand("update-space-users", runUpdateSpaceUsers, defaultFlagsWithLdap(), eh),
 		CreateCommand("update-space-security-groups", runCreateSpaceSecurityGroups, defaultFlags(), eh),
+		createIsoSegmentsCommand(),
 	}
 
 	return app
+}
+
+func createIsoSegmentsCommand() cli.Command {
+	flags := defaultFlags()
+	flags = append(flags, cli.BoolFlag{
+		Name:  "delete",
+		Usage: "Delete isolation segments that aren't specified in the config",
+	}, cli.BoolFlag{
+		Name:  "dry-run",
+		Usage: "Show the actions that would be taken without actually making any changes",
+	})
+	return cli.Command{
+		Name:        "update-iso-segments",
+		Description: "Ensure that all isolation segments exist and are enabled for the specified orgs and spaces.",
+		Action:      runUpdateIsoSegments,
+		Flags:       flags,
+	}
 }
 
 // CreateExportConfigCommand - Creates CLI command for export config
@@ -481,12 +499,32 @@ func runUpdateOrgUsers(c *cli.Context) error {
 	return err
 }
 
+func runUpdateIsoSegments(c *cli.Context) error {
+	cleanUp := c.Bool("clean-up")
+	dryRun := c.Bool("dry-run")
+
+	_ = cleanUp
+	_ = dryRun
+	// TODO:
+	// - get list of all isolation segments, compare that to what currently exists
+	//    - create as necessary
+	//    - [if cleanUp] delete any extra segments
+	// - for each org:
+	//    - make sure org is entitled to its default and any of its spaces default
+	//    - [if cleanUp] disable-org-isolation for any unneeded segments
+	//    - [if default] set-org-default-isolation-segment (or reset-org-default-isolation-segment)
+	//    - for each space:
+	//       - repeat the above
+
+	return nil
+}
+
 func defaultFlagsWithLdap() (flags []cli.Flag) {
 	flags = defaultFlags()
 	flag := cli.StringFlag{
 		Name:   getFlag(ldapPassword),
 		EnvVar: ldapPassword,
-		Usage:  "Ldap password for binding",
+		Usage:  "LDAP password for binding",
 	}
 	flags = append(flags, flag)
 	return
@@ -502,14 +540,12 @@ func defaultFlagsWithDelete() (flags []cli.Flag) {
 	return
 }
 
-func defaultFlags() (flags []cli.Flag) {
-	var flagList = buildDefaultFlags()
-	flags = buildFlags(flagList)
-	return
+func defaultFlags() []cli.Flag {
+	return buildFlags(buildDefaultFlags())
 }
 
-func buildDefaultFlags() (flagList map[string]flagBucket) {
-	flagList = map[string]flagBucket{
+func buildDefaultFlags() map[string]flagBucket {
+	return map[string]flagBucket{
 		systemDomain: {
 			Desc:   "system domain",
 			EnvVar: systemDomain,
@@ -531,8 +567,8 @@ func buildDefaultFlags() (flagList map[string]flagBucket) {
 			EnvVar: configDirectory,
 		},
 	}
-	return
 }
+
 func buildFlags(flagList map[string]flagBucket) (flags []cli.Flag) {
 	for _, v := range flagList {
 		if v.StringSlice {
