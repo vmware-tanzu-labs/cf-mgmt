@@ -23,12 +23,6 @@ var (
 	VERSION string
 )
 
-//ErrorHandler -
-type ErrorHandler struct {
-	ExitCode int
-	Error    error
-}
-
 type flagBucket struct {
 	Desc        string
 	EnvVar      string
@@ -110,19 +104,15 @@ const (
 )
 
 func main() {
-	eh := new(ErrorHandler)
-	eh.ExitCode = 0
-	app := NewApp(eh)
+	app := NewApp()
 	if err := app.Run(os.Args); err != nil {
-		eh.ExitCode = 1
-		eh.Error = err
-		lo.G.Error(eh.Error)
+		lo.G.Error(err)
+		os.Exit(1)
 	}
-	os.Exit(eh.ExitCode)
 }
 
 // NewApp creates a new cli app
-func NewApp(eh *ErrorHandler) *cli.App {
+func NewApp() *cli.App {
 	//cli.AppHelpTemplate = CfopsHelpTemplate
 	app := cli.NewApp()
 	app.Version = VERSION
@@ -137,22 +127,22 @@ func NewApp(eh *ErrorHandler) *cli.App {
 				return
 			},
 		},
-		CreateInitCommand(eh),
-		CreateAddOrgCommand(eh),
-		CreateAddSpaceCommand(eh),
-		CreateExportConfigCommand(eh),
-		CreateGeneratePipelineCommand(runGeneratePipeline, eh),
-		CreateCommand("create-orgs", runCreateOrgs, defaultFlags(), eh),
-		CreateCommand("create-org-private-domains", runCreateOrgPrivateDomains, defaultFlags(), eh),
-		CreateCommand("delete-orgs", runDeleteOrgs, defaultFlagsWithDelete(), eh),
-		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags(), eh),
-		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlagsWithLdap(), eh),
-		CreateCommand("create-spaces", runCreateSpaces, defaultFlagsWithLdap(), eh),
-		CreateCommand("delete-spaces", runDeleteSpaces, defaultFlagsWithDelete(), eh),
-		CreateCommand("update-spaces", runUpdateSpaces, defaultFlags(), eh),
-		CreateCommand("update-space-quotas", runCreateSpaceQuotas, defaultFlags(), eh),
-		CreateCommand("update-space-users", runUpdateSpaceUsers, defaultFlagsWithLdap(), eh),
-		CreateCommand("update-space-security-groups", runCreateSpaceSecurityGroups, defaultFlags(), eh),
+		CreateInitCommand(),
+		CreateAddOrgCommand(),
+		CreateAddSpaceCommand(),
+		CreateExportConfigCommand(),
+		CreateGeneratePipelineCommand(runGeneratePipeline),
+		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
+		CreateCommand("create-org-private-domains", runCreateOrgPrivateDomains, defaultFlags()),
+		CreateCommand("delete-orgs", runDeleteOrgs, defaultFlagsWithDelete()),
+		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags()),
+		CreateCommand("update-org-users", runUpdateOrgUsers, defaultFlagsWithLdap()),
+		CreateCommand("create-spaces", runCreateSpaces, defaultFlagsWithLdap()),
+		CreateCommand("delete-spaces", runDeleteSpaces, defaultFlagsWithDelete()),
+		CreateCommand("update-spaces", runUpdateSpaces, defaultFlags()),
+		CreateCommand("update-space-quotas", runCreateSpaceQuotas, defaultFlags()),
+		CreateCommand("update-space-users", runUpdateSpaceUsers, defaultFlagsWithLdap()),
+		CreateCommand("update-space-security-groups", runCreateSpaceSecurityGroups, defaultFlags()),
 		createIsoSegmentsCommand(),
 	}
 
@@ -177,7 +167,7 @@ func createIsoSegmentsCommand() cli.Command {
 }
 
 // CreateExportConfigCommand - Creates CLI command for export config
-func CreateExportConfigCommand(eh *ErrorHandler) (command cli.Command) {
+func CreateExportConfigCommand() cli.Command {
 	flags := defaultFlags()
 	flag := cli.StringSliceFlag{
 		Name:  "excluded-org",
@@ -189,18 +179,17 @@ func CreateExportConfigCommand(eh *ErrorHandler) (command cli.Command) {
 		Usage: "Space to be excluded from export. Repeat the flag to specify multiple spaces",
 	}
 	flags = append(flags, flag)
-	command = cli.Command{
+	return cli.Command{
 		Name:        "export-config",
 		Usage:       "Exports org, space and user configuration from an existing CF instance. Try export-config --help for more options",
 		Description: "Exports org and space configurations from an existing Cloud Foundry instance. [Warning: This operation will delete existing config folder]",
 		Action:      runExportConfig,
 		Flags:       flags,
 	}
-	return
 }
 
 //CreateInitCommand -
-func CreateInitCommand(eh *ErrorHandler) (command cli.Command) {
+func CreateInitCommand() cli.Command {
 	flagList := map[string]flagBucket{
 		configDirectory: {
 			Desc:   "Name of the config directory. Default config directory is `config`",
@@ -208,25 +197,23 @@ func CreateInitCommand(eh *ErrorHandler) (command cli.Command) {
 		},
 	}
 
-	command = cli.Command{
+	return cli.Command{
 		Name:        "init-config",
 		Usage:       "Initializes folder structure for configuration",
 		Description: "Initializes folder structure for configuration",
 		Action:      runInit,
 		Flags:       buildFlags(flagList),
 	}
-	return
 }
 
-func runInit(c *cli.Context) (err error) {
+func runInit(c *cli.Context) error {
 	configDir := getConfigDir(c)
 	configManager := config.NewManager(configDir)
-	err = configManager.CreateConfigIfNotExists("ldap")
-	return err
+	return configManager.CreateConfigIfNotExists("ldap")
 }
 
 //CreateAddOrgCommand -
-func CreateAddOrgCommand(eh *ErrorHandler) cli.Command {
+func CreateAddOrgCommand() cli.Command {
 	flagList := map[string]flagBucket{
 		configDirectory: {
 			Desc:   "Config directory name.  Default is config",
@@ -271,7 +258,7 @@ func runAddOrg(c *cli.Context) error {
 }
 
 //CreateAddSpaceCommand -
-func CreateAddSpaceCommand(eh *ErrorHandler) (command cli.Command) {
+func CreateAddSpaceCommand() cli.Command {
 	flagList := map[string]flagBucket{
 		configDirectory: {
 			Desc:   "config dir.  Default is config",
@@ -299,18 +286,16 @@ func CreateAddSpaceCommand(eh *ErrorHandler) (command cli.Command) {
 		},
 	}
 
-	command = cli.Command{
+	return cli.Command{
 		Name:        "add-space-to-config",
 		Usage:       "adds specified space to configuration for org",
 		Description: "adds specified space to configuration for org",
 		Action:      runAddSpace,
 		Flags:       buildFlags(flagList),
 	}
-	return
 }
 
-func runAddSpace(c *cli.Context) (err error) {
-
+func runAddSpace(c *cli.Context) error {
 	inputOrg := c.String(getFlag(orgName))
 	inputSpace := c.String(getFlag(spaceName))
 
@@ -323,22 +308,19 @@ func runAddSpace(c *cli.Context) (err error) {
 
 	configDr := getConfigDir(c)
 	if inputOrg == "" || inputSpace == "" {
-		err = fmt.Errorf("Must provide org name and space name")
-	} else {
-		err = config.NewManager(configDr).AddSpaceToConfig(spaceConfig)
+		return fmt.Errorf("Must provide org name and space name")
 	}
-	return
+	return config.NewManager(configDr).AddSpaceToConfig(spaceConfig)
 }
 
 //CreateGeneratePipelineCommand -
-func CreateGeneratePipelineCommand(action func(c *cli.Context) (err error), eh *ErrorHandler) (command cli.Command) {
-	command = cli.Command{
+func CreateGeneratePipelineCommand(action func(c *cli.Context) error) cli.Command {
+	return cli.Command{
 		Name:        "generate-concourse-pipeline",
 		Usage:       "generates a concourse pipline based on convention of org/space metadata",
 		Description: "generate-concourse-pipeline",
 		Action:      action,
 	}
-	return
 }
 
 func runGeneratePipeline(c *cli.Context) (err error) {
@@ -388,16 +370,14 @@ func createFile(assetName, fileName string) error {
 	return ioutil.WriteFile(fileName, bytes, perm)
 }
 
-//CreateCommand -
-func CreateCommand(commandName string, action func(c *cli.Context) (err error), flags []cli.Flag, eh *ErrorHandler) (command cli.Command) {
-	command = cli.Command{
+func CreateCommand(commandName string, action func(c *cli.Context) (err error), flags []cli.Flag) cli.Command {
+	return cli.Command{
 		Name:        commandName,
 		Usage:       fmt.Sprintf("%s with what is defined in config", commandName),
 		Description: commandName,
 		Action:      action,
 		Flags:       flags,
 	}
-	return
 }
 
 func runCreateOrgs(c *cli.Context) error {
