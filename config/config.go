@@ -41,7 +41,6 @@ type OrgConfig struct {
 	OrgBillingMgrLDAPUsers []string
 	OrgMgrLDAPUsers        []string
 	OrgAuditorLDAPUsers    []string
-	IsoSegments            []string
 	DefaultIsoSegment      string
 	OrgQuota               cloudcontroller.QuotaEntity
 }
@@ -112,7 +111,6 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 		PaidServicePlansAllowed: orgConfig.OrgQuota.IsPaidServicesAllowed(),
 		RemoveUsers:             true,
 		RemovePrivateDomains:    true,
-		IsoSegments:             orgConfig.IsoSegments,
 	}
 	mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "orgConfig.yml"), orgConfigYml)
 	return mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "spaces.yml"), &space.InputSpaces{
