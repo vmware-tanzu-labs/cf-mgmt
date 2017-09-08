@@ -1,6 +1,11 @@
-hash: 348e47b7f1d63eb81724c44a599158f4e2658bb1bc34c950a5476fc0f59511e9
-updated: 2017-09-07T15:27:33.133051043-06:00
+hash: 977830f674d3358adba3af25edfa4ac9f5c9f12f50fafe368c132d165ccbb3dc
+updated: 2017-09-08T08:17:05.895289792-06:00
 imports:
+- name: code.cloudfoundry.org/cli
+  version: 69c29f4dfcd4fdb0f9f413af3654dbcc0d88317d
+  subpackages:
+  - api/cloudcontroller
+  - api/cloudcontroller/ccv3
 - name: github.com/codegangsta/cli
   version: 2526b57c56f30b50466c96c4133b1a4ad0f0191f
 - name: github.com/go-ldap/ldap

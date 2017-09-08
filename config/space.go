@@ -31,6 +31,7 @@ type SpaceConfig struct {
 	TotalReservedRoutePorts int      `yaml:"total_reserved_route_ports"`
 	TotalServiceKeys        int      `yaml:"total_service_keys"`
 	AppInstanceLimit        int      `yaml:"app_instance_limit"`
+	IsoSegment              string   `yaml:"isolation_segment"`
 }
 
 // Contains determines whether a space is present in a list of spaces.

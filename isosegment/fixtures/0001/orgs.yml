@@ -1,0 +1,6 @@
+orgs:
+- org1
+- org2
+enable-delete-orgs: true
+protected_orgs:
+- system
