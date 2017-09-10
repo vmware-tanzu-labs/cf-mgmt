@@ -1,10 +1,9 @@
 # Cloud Foundry Management (cf-mgmt)
-Go automation for managing orgs, spaces, users (from ldap groups or interal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
+Go automation for managing orgs, spaces, users (from ldap groups or internal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
 
-## Maintainers
+## Maintainer
 
 * [Caleb Washburn](https://github.com/calebwashburn)
-* [Anwar Chirakkattil](https://github.com/anwarchk)
 
 ## Support
 cf-mgmt is a community supported cloud foundry add-on.  Opening issues for questions, feature requests and/or bugs is the best path to getting "support".  We strive to be active in keeping this tool working and meeting your needs in a timely fashion.
@@ -393,7 +392,7 @@ enable-remove-users: true/false
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
 
 ### SAML Configuration
-LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users.  In orgConfig.yml and spaceConfig.yml leaverage either/or `ldap_users` or `ldap_group(s)`  
+LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users.  In orgConfig.yml and spaceConfig.yml leverage either/or `ldap_users` or `ldap_group(s)`  
 
 ```
 enabled: true
@@ -414,7 +413,7 @@ origin: <needs to match origin configured for elastic runtime>
 
 - Removing orgs and spaces from cf that are not in cf-mgmt metadata was added in 0.0.63+ release.  This is an opt-in feature for existing cf-mgmt users at an org and space config level.  For any new orgs/config created with cf-mgmt cli 0.0.63+ it will default this parameter to true.  To opt-in ensure you are using latest cf-mgmt version when running pipeline and add `enable-delete-orgs: true` or `enable-delete-spaces: true` to your configuration.
 
-- Managing private domains at org level was added with 0.0.64+.  This requires you to update concourse pipeline to to invoke `create-org-private-domains` command.  By default `enable-remove-private-domains: true` is set for any new orgs creted with 0.0.64+ cli.  This will remove any private domains for that org that are not in array of private domain names.
+- Managing private domains at org level was added with 0.0.64+.  This requires you to update concourse pipeline to to invoke `create-org-private-domains` command.  By default `enable-remove-private-domains: true` is set for any new orgs created with 0.0.64+ cli.  This will remove any private domains for that org that are not in array of private domain names.
 
 ### Recommended workflow
 
@@ -441,9 +440,22 @@ If both ```vars.yml``` and ```--var``` are specified, ```--vars``` values takes 
 ### The following operation are enabled with cf-mgmt that will leverage configuration to modify your Cloud Foundry installation
 
 To execute any of the following you will need to provide:
-- **user id** that has privileges to create orgs/spaces
-- **password** for the above user account
-- **uaac client secret** for the account that can add users (assumes the same user account for cf commands is used)
+- **user id** that has privileges to create/update/delete users, orgs and spaces. This user doesn't have to be an admin user. Assuming you have [Cloud Foundry UAA Client](https://docs.pivotal.io/pivotalcf/1-11/adminguide/uaa-user-management.html) installed, you can create a non-admin user with just enough privileges in the following way:
+
+```
+$ uaac token client get <adminuserid> -s admin-client-secret
+
+$ uaac client add cf-mgmt \
+  --name cf-mgmt \
+  --secret cf-mgmt-secret \
+  --authorized_grant_types client_credentials,refresh_token \
+  --authorities cloud_controller.admin,scim.read,scim.write
+
+```
+As you can see, `cloud_controller.admin,scim.read,scim.write` gives this user just enough rights to add/update/delete users, orgs and space and still being a non-admin user. Learn more about the scopes authorized by UAA at [UAA Scopes](https://github.com/cloudfoundry/uaa/blob/master/docs/UAA-APIs.rst#scopes-authorized-by-the-uaa)
+
+- **password** , an optional password for the above user
+- **uaac client secret** for the above user (assumes the same user account for cf commands is used)
 - **system domain** name of your foundation
 
 #### create-orgs
