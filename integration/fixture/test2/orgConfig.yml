@@ -18,3 +18,4 @@ total-routes: 10
 total-services: -1
 paid-service-plans-allowed: true
 enable-remove-users: true
+enable-delete-orgs: true
