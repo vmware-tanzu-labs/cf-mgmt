@@ -63,31 +63,37 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 
 	if sysDomain == "" ||
 		user == "" ||
-		pwd == "" ||
 		secret == "" {
-		err = fmt.Errorf("Must set system-domain, user-id, password, client-secret properties")
+		err = fmt.Errorf("must set system-domain, user-id, client-secret properties")
 		return nil, err
 	}
 
 	var cfToken, uaacToken string
 	cfMgmt := &CFMgmt{}
 	cfMgmt.LdapBindPwd = ldapPwd
+	cfMgmt.PeekDeletion = peek
+	cfMgmt.ConfigDirectory = configDir
+	cfMgmt.SystemDomain = sysDomain
 	cfMgmt.UAAManager = uaa.NewDefaultUAAManager(sysDomain, user)
-	if cfToken, err = cfMgmt.UAAManager.GetCFToken(pwd); err != nil {
-		return nil, err
-	}
+
 	if uaacToken, err = cfMgmt.UAAManager.GetUAACToken(secret); err != nil {
 		return nil, err
 	}
-	cfMgmt.PeekDeletion = peek
-	cfMgmt.ConfigDirectory = configDir
 	cfMgmt.UaacToken = uaacToken
-	cfMgmt.SystemDomain = sysDomain
+	cfMgmt.UAACManager = uaac.NewManager(sysDomain, uaacToken)
+
+	if pwd != "" {
+		if cfToken, err = cfMgmt.UAAManager.GetCFToken(pwd); err != nil {
+			return nil, err
+		}
+		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken)
+	} else {
+		cfToken = uaacToken
+		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), uaacToken)
+	}
 	cfMgmt.OrgManager = organization.NewManager(sysDomain, cfToken, uaacToken)
 	cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken)
 	cfMgmt.ConfigManager = config.NewManager(configDir)
-	cfMgmt.UAACManager = uaac.NewManager(sysDomain, uaacToken)
-	cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken)
 
 	return cfMgmt, nil
 }
@@ -515,15 +521,15 @@ func buildDefaultFlags() (flagList map[string]flagBucket) {
 			EnvVar: systemDomain,
 		},
 		userID: {
-			Desc:   "user id that has admin privileges",
+			Desc:   "user id that has privileges to create/update/delete users, orgs and spaces",
 			EnvVar: userID,
 		},
 		password: {
-			Desc:   "password for user account that has admin privileges",
+			Desc:   "password for user account [optional if client secret is provided]",
 			EnvVar: password,
 		},
 		clientSecret: {
-			Desc:   "secret for user account that has admin privileges",
+			Desc:   "secret for user account that has sufficient privileges to create/update/delete users, orgs and spaces]",
 			EnvVar: clientSecret,
 		},
 		configDirectory: {
