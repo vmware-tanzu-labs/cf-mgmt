@@ -53,8 +53,6 @@ jobs:
         tag: compiled-output/tag
         globs:
         - compiled-output/cf-mgmt-linux
-        - compiled-output/cf-mgmt-osx
-        - compiled-output/cf-mgmt-exe
 - name: deploy
   plan:
     - aggregate:
@@ -62,7 +60,7 @@ jobs:
       - get: releases
         trigger: true
     - task: prepare
-      file: ci/tasks/prepare.sh
+      file: source/ci/tasks/prepare.yml
     - put: docker-registry
       params:
         build: prepare-output
