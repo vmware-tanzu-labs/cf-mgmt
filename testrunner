@@ -1,9 +1,0 @@
-# Check if images are available locally
-DOCKER_LOCAL=""
-if [[ $(docker images|grep golang) ]]; then
-  echo "Using previously cached docker images"
-  DOCKER_LOCAL="--docker-local"
-fi
-rm -fR _builds _steps _projects _cache _temp
-wercker --verbose --environment ".testrunner_env_defaults" build --git-domain github.com --git-owner pivotalservices --git-repository cf-mgmt ${DOCKER_LOCAL}
-rm -fR _builds _steps _projects _cache _temp

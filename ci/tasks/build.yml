@@ -1,0 +1,11 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+run:
+  path: source/ci/tasks/build.sh
+inputs:
+- name: source
+outputs:
+- name: compiled-output

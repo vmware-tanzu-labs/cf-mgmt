@@ -1,0 +1,13 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: concourse/buildroot
+    tag: git
+run:
+  path: source/ci/tasks/prepare.sh
+inputs:
+- name: source
+- name: releases
+outputs:
+- name: prepare-output

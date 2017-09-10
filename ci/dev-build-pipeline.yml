@@ -1,0 +1,29 @@
+resources:
+- name: source
+  type: git
+  source:
+    uri: git@github.com:pivotalservices/cf-mgmt.git
+    branch: {{dev-build-branch}}
+    private_key: {{git-ssh-key}}
+
+- name: docker-registry
+  type: docker-image
+  source:
+    repository: {{docker-repository}}
+    username: {{docker-registry-username}}
+    password: {{docker-registry-password}}
+    tag: {{docker-dev-build-tag}}
+
+jobs:
+- name: test-and-build
+  plan:
+    - aggregate:
+      - get: source
+        trigger: true
+    - task: test
+      file: source/ci/tasks/runTests.yml
+    - task: build
+      file: source/ci/tasks/build.yml
+    - put: docker-registry
+      params:
+        build: compiled-output
