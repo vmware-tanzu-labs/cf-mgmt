@@ -2,6 +2,7 @@ package cloudcontroller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -179,6 +180,20 @@ func (m *DefaultManager) CreateOrg(orgName string) error {
 func (m *DefaultManager) DeleteOrg(orgGUID string) error {
 	url := fmt.Sprintf("%s/v2/organizations/%s?recursive=true", m.Host, orgGUID)
 	return m.HTTP.Delete(url, m.Token)
+}
+
+func (m *DefaultManager) DeleteOrgByName(orgName string) error {
+	orgs, err := m.ListOrgs()
+	if err != nil {
+		return err
+	}
+	for _, org := range orgs {
+		if org.Entity.Name == orgName {
+			url := fmt.Sprintf("%s/v2/organizations/%s?recursive=true", m.Host, org.MetaData.GUID)
+			return m.HTTP.Delete(url, m.Token)
+		}
+	}
+	return errors.New(fmt.Sprintf("org[%s] not found", orgName))
 }
 
 //DeleteSpace - deletes a space based on GUID

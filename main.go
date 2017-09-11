@@ -83,6 +83,7 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	cfMgmt.UAACManager = uaac.NewManager(sysDomain, uaacToken)
 
 	if pwd != "" {
+		lo.G.Warning("Password parameter is deprecated, create uaa client and client-secret instead")
 		if cfToken, err = cfMgmt.UAAManager.GetCFToken(pwd); err != nil {
 			return nil, err
 		}

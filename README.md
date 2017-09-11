@@ -55,6 +55,13 @@ The remaining integration tests require [PCF Dev](https://pivotal.io/pcf-dev) to
 
 ```
 cf dev start
+uaac target uaa.local.pcfdev.io
+uaac token client get admin -s admin-client-secret
+uaac client add cf-mgmt \
+  --name cf-mgmt \
+  --secret cf-mgmt-secret \
+  --authorized_grant_types client_credentials,refresh_token \
+  --authorities cloud_controller.admin,scim.read,scim.write
 RUN_INTEGRATION_TESTS=true go test ./integration/...
 ```
 
@@ -443,6 +450,7 @@ To execute any of the following you will need to provide:
 - **user id** that has privileges to create/update/delete users, orgs and spaces. This user doesn't have to be an admin user. Assuming you have [Cloud Foundry UAA Client](https://docs.pivotal.io/pivotalcf/1-11/adminguide/uaa-user-management.html) installed, you can create a non-admin user with just enough privileges in the following way:
 
 ```
+$ uaac target uaa.<system-domain>
 $ uaac token client get <adminuserid> -s admin-client-secret
 
 $ uaac client add cf-mgmt \

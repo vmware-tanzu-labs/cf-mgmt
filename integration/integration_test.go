@@ -30,26 +30,30 @@ var _ = Describe("cf-mgmt cli", func() {
 			cfToken   string
 		)
 		BeforeEach(func() {
+			fmt.Println("********   Before called *********")
 			uaaManager := uaa.NewDefaultUAAManager(systemDomain, userId)
 			cfToken, err = uaaManager.GetCFToken(password)
 			Expect(err).ShouldNot(HaveOccurred())
 
 			ccManager = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken)
+
 			outPath, err = Build("github.com/pivotalservices/cf-mgmt")
-
-			ccManager.CreateOrg("rogue-org1")
-			ccManager.CreateOrg("rogue-org2")
-
+			ccManager.DeleteOrgByName("test1")
+			ccManager.DeleteOrgByName("test2")
+			ccManager.DeleteOrgByName("rogue-org1")
+			ccManager.DeleteOrgByName("rogue-org2")
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 		AfterEach(func() {
+			fmt.Println("********   after called *********")
 			os.RemoveAll("./config")
-			ccManager.DeleteOrg("test1")
-			ccManager.DeleteOrg("test2")
-			ccManager.DeleteOrg("rogue-org1")
-			ccManager.DeleteOrg("rogue-org2")
+			ccManager.DeleteOrgByName("test1")
+			ccManager.DeleteOrgByName("test2")
+			ccManager.DeleteOrgByName("rogue-org1")
+			ccManager.DeleteOrgByName("rogue-org2")
 			CleanupBuildArtifacts()
 		})
+
 		It("should complete successfully", func() {
 			var orgs []*cloudcontroller.Org
 			var spaces []*cloudcontroller.Space
@@ -84,22 +88,6 @@ var _ = Describe("cf-mgmt cli", func() {
 			Expect(getOrg(orgs, "rogue-org1")).Should(BeNil())
 			Expect(getOrg(orgs, "rogue-org2")).Should(BeNil())
 
-			ccManager.CreateOrg("rogue-org1")
-			ccManager.CreateOrg("rogue-org2")
-			peekDeleteOrgsCommand := exec.Command(outPath, "delete-orgs", "--peek", "--config-dir", configDir,
-				"--system-domain", systemDomain, "--user-id", userId, "--password",
-				password, "--client-secret", clientSecret)
-			session, err = Start(peekDeleteOrgsCommand, GinkgoWriter, GinkgoWriter)
-			Expect(err).ShouldNot(HaveOccurred())
-			Eventually(session).Should(Exit(0))
-
-			orgs, err = ccManager.ListOrgs()
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(getOrg(orgs, "system")).ShouldNot(BeNil())
-			Expect(getOrg(orgs, "pcfdev-org")).ShouldNot(BeNil())
-			Expect(getOrg(orgs, "rogue-org1")).ShouldNot(BeNil())
-			Expect(getOrg(orgs, "rogue-org2")).ShouldNot(BeNil())
-
 			createSpacesCommand := exec.Command(outPath, "create-spaces", "--config-dir", configDir,
 				"--system-domain", systemDomain, "--user-id", userId, "--password",
 				password, "--client-secret", clientSecret)
@@ -116,7 +104,53 @@ var _ = Describe("cf-mgmt cli", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(len(spaces)).Should(BeEquivalentTo(0))
 		})
+		It("should complete successfully without password", func() {
+			var orgs []*cloudcontroller.Org
+			var spaces []*cloudcontroller.Space
+			orgs, err = ccManager.ListOrgs()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(getOrg(orgs, "test1")).Should(BeNil())
+			Expect(getOrg(orgs, "test2")).Should(BeNil())
 
+			createOrgsCommand := exec.Command(outPath, "create-orgs", "--config-dir", configDir,
+				"--system-domain", systemDomain, "--user-id", "cf-mgmt", "--client-secret", "cf-mgmt-secret")
+			session, err := Start(createOrgsCommand, GinkgoWriter, GinkgoWriter)
+			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+
+			orgs, err = ccManager.ListOrgs()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(getOrg(orgs, "test1")).ShouldNot(BeNil())
+			Expect(getOrg(orgs, "test2")).ShouldNot(BeNil())
+
+			deleteOrgsCommand := exec.Command(outPath, "delete-orgs", "--config-dir", configDir,
+				"--system-domain", systemDomain, "--user-id", "cf-mgmt", "--client-secret", "cf-mgmt-secret")
+			session, err = Start(deleteOrgsCommand, GinkgoWriter, GinkgoWriter)
+			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+
+			orgs, err = ccManager.ListOrgs()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(getOrg(orgs, "system")).ShouldNot(BeNil())
+			Expect(getOrg(orgs, "pcfdev-org")).ShouldNot(BeNil())
+			Expect(getOrg(orgs, "rogue-org1")).Should(BeNil())
+			Expect(getOrg(orgs, "rogue-org2")).Should(BeNil())
+
+			createSpacesCommand := exec.Command(outPath, "create-spaces", "--config-dir", configDir,
+				"--system-domain", systemDomain, "--user-id", "cf-mgmt", "--client-secret", "cf-mgmt-secret")
+			session, err = Start(createSpacesCommand, GinkgoWriter, GinkgoWriter)
+			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+
+			spaces, err = ccManager.ListSpaces(getOrg(orgs, "test1").MetaData.GUID)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(getSpace(spaces, "dev")).ShouldNot(BeNil())
+			Expect(getSpace(spaces, "prod")).ShouldNot(BeNil())
+
+			spaces, err = ccManager.ListSpaces(getOrg(orgs, "test2").MetaData.GUID)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(len(spaces)).Should(BeEquivalentTo(0))
+		})
 		It("should export config with > 50 spaces", func() {
 
 			ccManager := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken)

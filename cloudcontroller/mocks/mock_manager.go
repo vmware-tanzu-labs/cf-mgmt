@@ -162,6 +162,16 @@ func (_mr *_MockManagerRecorder) DeleteOrg(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteOrg", arg0)
 }
 
+func (_m *MockManager) DeleteOrgByName(_param0 string) error {
+	ret := _m.ctrl.Call(_m, "DeleteOrgByName", _param0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockManagerRecorder) DeleteOrgByName(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteOrgByName", arg0)
+}
+
 func (_m *MockManager) DeletePrivateDomain(_param0 string) error {
 	ret := _m.ctrl.Call(_m, "DeletePrivateDomain", _param0)
 	ret0, _ := ret[0].(error)
