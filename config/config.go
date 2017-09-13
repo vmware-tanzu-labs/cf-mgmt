@@ -38,6 +38,9 @@ type OrgConfig struct {
 	OrgBillingMgrLDAPUsers []string
 	OrgMgrLDAPUsers        []string
 	OrgAuditorLDAPUsers    []string
+	OrgBillingMgrSamlUsers []string
+	OrgMgrSamlUsers        []string
+	OrgAuditorSamlUsers    []string
 	OrgQuota               cloudcontroller.QuotaEntity
 }
 
@@ -54,6 +57,9 @@ type SpaceConfig struct {
 	SpaceDevLDAPUsers     []string
 	SpaceMgrLDAPUsers     []string
 	SpaceAuditorLDAPUsers []string
+	SpaceDevSamlUsers     []string
+	SpaceMgrSamlUsers     []string
+	SpaceAuditorSamlUsers []string
 	SpaceQuota            cloudcontroller.QuotaEntity
 	AllowSSH              bool
 }
@@ -95,9 +101,9 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	}
 	orgConfigYml := &organization.InputUpdateOrgs{
 		Org:                     orgName,
-		BillingManager:          newUserMgmt(orgConfig.OrgBillingMgrLDAPGrp, orgConfig.OrgBillingMgrUAAUsers, orgConfig.OrgBillingMgrLDAPUsers),
-		Manager:                 newUserMgmt(orgConfig.OrgMgrLDAPGrp, orgConfig.OrgMgrUAAUsers, orgConfig.OrgMgrLDAPUsers),
-		Auditor:                 newUserMgmt(orgConfig.OrgAuditorLDAPGrp, orgConfig.OrgAuditorUAAUsers, orgConfig.OrgAuditorLDAPUsers),
+		BillingManager:          newUserMgmt(orgConfig.OrgBillingMgrLDAPGrp, orgConfig.OrgBillingMgrUAAUsers, orgConfig.OrgBillingMgrLDAPUsers, orgConfig.OrgBillingMgrSamlUsers),
+		Manager:                 newUserMgmt(orgConfig.OrgMgrLDAPGrp, orgConfig.OrgMgrUAAUsers, orgConfig.OrgMgrLDAPUsers, orgConfig.OrgMgrSamlUsers),
+		Auditor:                 newUserMgmt(orgConfig.OrgAuditorLDAPGrp, orgConfig.OrgAuditorUAAUsers, orgConfig.OrgAuditorLDAPUsers, orgConfig.OrgAuditorSamlUsers),
 		EnableOrgQuota:          orgConfig.OrgQuota.IsQuotaEnabled(),
 		MemoryLimit:             orgConfig.OrgQuota.GetMemoryLimit(),
 		InstanceMemoryLimit:     orgConfig.OrgQuota.GetInstanceMemoryLimit(),
@@ -116,11 +122,12 @@ func (m *DefaultManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	return nil
 }
 
-func newUserMgmt(ldapGroup string, users, ldapUsers []string) organization.UserMgmt {
+func newUserMgmt(ldapGroup string, users, ldapUsers, samlUsers []string) organization.UserMgmt {
 	return organization.UserMgmt{
 		LdapGroup: ldapGroup,
 		Users:     users,
 		LdapUsers: ldapUsers,
+		SamlUsers: samlUsers,
 	}
 }
 
@@ -150,9 +157,9 @@ func (m *DefaultManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	spaceConfigYml := &space.InputSpaceConfig{
 		Org:                     orgName,
 		Space:                   spaceName,
-		Developer:               space.UserMgmt{LdapGroup: spaceConfig.SpaceDevLDAPGrp, Users: spaceConfig.SpaceDevUAAUsers, LdapUsers: spaceConfig.SpaceDevLDAPUsers},
-		Manager:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceMgrLDAPGrp, Users: spaceConfig.SpaceMgrUAAUsers, LdapUsers: spaceConfig.SpaceMgrLDAPUsers},
-		Auditor:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceAuditorLDAPGrp, Users: spaceConfig.SpaceAuditorUAAUsers, LdapUsers: spaceConfig.SpaceAuditorLDAPUsers},
+		Developer:               space.UserMgmt{LdapGroup: spaceConfig.SpaceDevLDAPGrp, Users: spaceConfig.SpaceDevUAAUsers, LdapUsers: spaceConfig.SpaceDevLDAPUsers, SamlUsers: spaceConfig.SpaceDevSamlUsers},
+		Manager:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceMgrLDAPGrp, Users: spaceConfig.SpaceMgrUAAUsers, LdapUsers: spaceConfig.SpaceMgrLDAPUsers, SamlUsers: spaceConfig.SpaceMgrSamlUsers},
+		Auditor:                 space.UserMgmt{LdapGroup: spaceConfig.SpaceAuditorLDAPGrp, Users: spaceConfig.SpaceAuditorUAAUsers, LdapUsers: spaceConfig.SpaceAuditorLDAPUsers, SamlUsers: spaceConfig.SpaceAuditorSamlUsers},
 		EnableSpaceQuota:        spaceConfig.SpaceQuota.IsQuotaEnabled(),
 		MemoryLimit:             spaceConfig.SpaceQuota.GetMemoryLimit(),
 		InstanceMemoryLimit:     spaceConfig.SpaceQuota.GetInstanceMemoryLimit(),

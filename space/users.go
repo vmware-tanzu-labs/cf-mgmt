@@ -35,13 +35,13 @@ type UserManager struct {
 
 // UpdateSpaceUserInput
 type UpdateUsersInput struct {
-	SpaceGUID                        string
-	OrgGUID                          string
-	Role                             string
-	LdapUsers, Users, LdapGroupNames []string
-	SpaceName                        string
-	OrgName                          string
-	RemoveUsers                      bool
+	SpaceGUID                                   string
+	OrgGUID                                     string
+	Role                                        string
+	LdapUsers, Users, LdapGroupNames, SamlUsers []string
+	SpaceName                                   string
+	OrgName                                     string
+	RemoveUsers                                 bool
 }
 
 //UpdateSpaceUsers Update space users
@@ -80,6 +80,27 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 			}
 		} else {
 			delete(spaceUsers, lowerUserID)
+		}
+	}
+
+	for _, userEmail := range updateUsersInput.SamlUsers {
+		lowerUserEmail := strings.ToLower(userEmail)
+		if _, userExists := uaacUsers[lowerUserEmail]; !userExists {
+			lo.G.Info("User", userEmail, "doesn't exist in cloud foundry, so creating user")
+			if err = m.UAACMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
+				lo.G.Info("Unable to create user", userEmail)
+				return err
+			} else {
+				uaacUsers[userEmail] = userEmail
+			}
+		}
+		if _, ok := spaceUsers[lowerUserEmail]; !ok {
+			if err = m.addUserToOrgAndRole(userEmail, updateUsersInput.OrgGUID, updateUsersInput.SpaceGUID, updateUsersInput.Role, updateUsersInput.OrgName, updateUsersInput.SpaceName); err != nil {
+				lo.G.Error(err)
+				return err
+			}
+		} else {
+			delete(spaceUsers, lowerUserEmail)
 		}
 	}
 	if updateUsersInput.RemoveUsers {

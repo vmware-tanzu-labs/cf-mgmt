@@ -136,6 +136,7 @@ type UserMgmt struct {
 	Users      []string `yaml:"users"`
 	LdapGroup  string   `yaml:"ldap_group"`
 	LdapGroups []string `yaml:"ldap_groups"`
+	SamlUsers  []string `yaml:"saml_users"`
 }
 
 //Entity -

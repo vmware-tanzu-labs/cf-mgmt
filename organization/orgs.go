@@ -348,6 +348,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			LdapGroupNames: input.GetBillingManagerGroups(),
 			LdapUsers:      input.BillingManager.LdapUsers,
 			Users:          input.BillingManager.Users,
+			SamlUsers:      input.BillingManager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		})
 	if err != nil {
@@ -362,6 +363,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			LdapGroupNames: input.GetAuditorGroups(),
 			LdapUsers:      input.Auditor.LdapUsers,
 			Users:          input.Auditor.Users,
+			SamlUsers:      input.Auditor.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		})
 	if err != nil {
@@ -376,6 +378,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			LdapGroupNames: input.GetManagerGroups(),
 			LdapUsers:      input.Manager.LdapUsers,
 			Users:          input.Manager.Users,
+			SamlUsers:      input.Manager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		})
 	if err != nil {

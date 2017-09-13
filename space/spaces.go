@@ -59,6 +59,10 @@ func (m *DefaultSpaceManager) GetSpaceConfigs(configDir string) ([]*InputSpaceCo
 		input.Auditor.LdapGroups = append(input.GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
 		input.Manager.LdapGroups = append(input.GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
 
+		input.Developer.SamlUsers = append(input.Developer.SamlUsers, spaceDefaults.Developer.SamlUsers...)
+		input.Auditor.SamlUsers = append(input.Auditor.SamlUsers, spaceDefaults.Auditor.SamlUsers...)
+		input.Manager.SamlUsers = append(input.Manager.SamlUsers, spaceDefaults.Manager.SamlUsers...)
+
 		spaceConfigs = append(spaceConfigs, input)
 		if input.EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
@@ -234,6 +238,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 		LdapGroupNames: input.GetDeveloperGroups(),
 		LdapUsers:      input.Developer.LdapUsers,
 		Users:          input.Developer.Users,
+		SamlUsers:      input.Developer.SamlUsers,
 		RemoveUsers:    input.RemoveUsers,
 	}); err != nil {
 		return err
@@ -249,6 +254,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 			LdapGroupNames: input.GetManagerGroups(),
 			LdapUsers:      input.Manager.LdapUsers,
 			Users:          input.Manager.Users,
+			SamlUsers:      input.Manager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		}); err != nil {
 		return err
@@ -263,6 +269,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *Input
 			LdapGroupNames: input.GetAuditorGroups(),
 			LdapUsers:      input.Auditor.LdapUsers,
 			Users:          input.Auditor.Users,
+			SamlUsers:      input.Auditor.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		}); err != nil {
 		return err

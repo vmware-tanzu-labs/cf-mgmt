@@ -36,11 +36,11 @@ type UserManager struct {
 
 // UpdateUsersInput -
 type UpdateUsersInput struct {
-	OrgName                          string
-	OrgGUID                          string
-	Role                             string
-	LdapUsers, Users, LdapGroupNames []string
-	RemoveUsers                      bool
+	OrgName                                     string
+	OrgGUID                                     string
+	Role                                        string
+	LdapUsers, Users, LdapGroupNames, SamlUsers []string
+	RemoveUsers                                 bool
 }
 
 //UpdateOrgUsers -
@@ -80,6 +80,28 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 			delete(orgUsers, lowerUserID)
 		}
 	}
+
+	for _, userEmail := range updateUsersInput.SamlUsers {
+		lowerUserEmail := strings.ToLower(userEmail)
+		if _, userExists := uaacUsers[lowerUserEmail]; !userExists {
+			lo.G.Info("User", userEmail, "doesn't exist in cloud foundry, so creating user")
+			if err = m.UAACMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
+				lo.G.Info("Unable to create user", userEmail)
+				return err
+			} else {
+				uaacUsers[userEmail] = userEmail
+			}
+		}
+		if _, ok := orgUsers[lowerUserEmail]; !ok {
+			if err = m.addUserToOrgAndRole(userEmail, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName); err != nil {
+				lo.G.Error(err)
+				return err
+			}
+		} else {
+			delete(orgUsers, lowerUserEmail)
+		}
+	}
+
 	if updateUsersInput.RemoveUsers {
 		lo.G.Debugf("Deleting users for org: %s", updateUsersInput.OrgName)
 		for orgUser, orgUserGUID := range orgUsers {
