@@ -255,6 +255,10 @@ org-billingmanager:
   ldap_groups:
     - test_billing_managers_2
 
+  # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
+  saml_users:
+    - cwashburn@testdomain.com
+    - cwashburn2@testdomain.com
 org-manager:
   # list of ldap users that will be created in cf and given org manager role
   ldap_users:
@@ -273,6 +277,10 @@ org-manager:
   ldap_groups:
     - test_org_managers_2
 
+  # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
+  saml_users:
+    - cwashburn@testdomain.com
+    - cwashburn2@testdomain.com
 org-auditor:
   # list of ldap users that will be created in cf and given org manager role
   ldap_users:
@@ -290,7 +298,11 @@ org-auditor:
   # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
   ldap_groups:
     - test_org_auditors_2
-    -
+
+  # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
+  saml_users:
+    - cwashburn@testdomain.com
+    - cwashburn2@testdomain.com
 # if you wish to enable custom org quotas
 enable-org-quota: true
 # 10 GB limit
@@ -341,6 +353,10 @@ space-manager:
   ldap_groups:
     - test_space1_managers_2
 
+  # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
+  saml_users:
+    - cwashburn@testdomain.com
+    - cwashburn2@testdomain.com
 space-auditor:
   # list of ldap users that will be created in cf and given space auditor role
   ldap_users:
@@ -358,6 +374,11 @@ space-auditor:
   # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
   ldap_groups:
     - test_space1_auditors_2
+
+  # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
+  saml_users:
+    - cwashburn@testdomain.com
+    - cwashburn2@testdomain.com
 
 space-developer:
   # list of ldap users that will be created in cf and given space developer role
@@ -377,6 +398,10 @@ space-developer:
   ldap_groups:
     - test_space1_developers_2
 
+  # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
+  saml_users:
+    - cwashburn@testdomain.com
+    - cwashburn2@testdomain.com
 # to enable custom quota at space level  
 enable-space-quota: true
 # 10 GB limit
@@ -398,7 +423,7 @@ enable-remove-users: true/false
 ### LDAP Configuration
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
 
-### SAML Configuration
+### SAML Configuration with ldap group lookups
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users.  In orgConfig.yml and spaceConfig.yml leverage either/or `ldap_users` or `ldap_group(s)`  
 
 ```
@@ -412,6 +437,22 @@ userMailAttribute: mail
 groupSearchBase: ou=groups,dc=example,dc=com
 groupAttribute: member
 origin: <needs to match origin configured for elastic runtime>
+```
+
+### SAML Configuration
+LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users you can disable ldap integration for looking up users in ldap groups with v0.0.66+ as orgConfig.yml and spaceConfig.yml now includes a saml_users array attribute which can contain a list of email addresses.
+
+```
+enabled: false
+origin: <needs to match origin configured for elastic runtime>
+ldapHost:
+ldapPort: 389
+bindDN:
+userSearchBase:
+userNameAttribute:
+userMailAttribute:
+groupSearchBase:
+groupAttribute:
 ```
 
 
