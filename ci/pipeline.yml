@@ -53,6 +53,8 @@ jobs:
         tag: compiled-output/tag
         globs:
         - compiled-output/cf-mgmt-linux
+        - compiled-output/cf-mgmt-osx
+        - compiled-output/cf-mgmt.exe
 - name: deploy
   plan:
     - aggregate:
