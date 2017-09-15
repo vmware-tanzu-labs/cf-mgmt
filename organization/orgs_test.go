@@ -19,7 +19,8 @@ var _ = Describe("given OrgManager", func() {
 		It("should setup default protected orgs", func() {
 			Ω(DefaultProtectedOrgs).Should(HaveKey("system"))
 			Ω(DefaultProtectedOrgs).Should(HaveKey("p-spring-cloud-services"))
-			Ω(DefaultProtectedOrgs).Should(HaveLen(2))
+			Ω(DefaultProtectedOrgs).Should(HaveKey("splunk-nozzle-org"))
+			Ω(DefaultProtectedOrgs).Should(HaveLen(3))
 		})
 	})
 	Describe("create new manager", func() {

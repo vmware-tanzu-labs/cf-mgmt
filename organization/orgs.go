@@ -15,6 +15,7 @@ import (
 var DefaultProtectedOrgs = map[string]bool{
 	"system":                  true,
 	"p-spring-cloud-services": true,
+	"splunk-nozzle-org":       true,
 }
 
 //NewManager -
