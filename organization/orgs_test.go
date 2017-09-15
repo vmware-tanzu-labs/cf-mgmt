@@ -15,6 +15,13 @@ import (
 )
 
 var _ = Describe("given OrgManager", func() {
+	Describe("defaults", func() {
+		It("should setup default protected orgs", func() {
+			Ω(DefaultProtectedOrgs).Should(HaveKey("system"))
+			Ω(DefaultProtectedOrgs).Should(HaveKey("p-spring-cloud-services"))
+			Ω(DefaultProtectedOrgs).Should(HaveLen(2))
+		})
+	})
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
 			manager := NewManager("test.com", "token", "uaacToken")

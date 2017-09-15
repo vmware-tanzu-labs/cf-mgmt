@@ -11,6 +11,12 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
+//DefaultProtectedOrgs - map of orgs that should be protected
+var DefaultProtectedOrgs = map[string]bool{
+	"system":                  true,
+	"p-spring-cloud-services": true,
+}
+
 //NewManager -
 func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 
@@ -244,9 +250,7 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 	for _, orgName := range input.Orgs {
 		configuredOrgs[orgName] = true
 	}
-	protectedOrgs := make(map[string]bool)
-	//never allow accidental deletion of system org
-	protectedOrgs["system"] = true
+	protectedOrgs := DefaultProtectedOrgs
 	for _, orgName := range input.ProtectedOrgs {
 		protectedOrgs[orgName] = true
 	}

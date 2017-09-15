@@ -187,9 +187,13 @@ func (m *DefaultManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	}
 	lo.G.Infof("Config directory %s created", m.ConfigDir)
 	mgr.WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin})
+	var protectedOrgs []string
+	for protectedOrg := range organization.DefaultProtectedOrgs {
+		protectedOrgs = append(protectedOrgs, protectedOrg)
+	}
 	mgr.WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &organization.InputOrgs{
 		EnableDeleteOrgs: true,
-		ProtectedOrgs:    []string{"system"},
+		ProtectedOrgs:    protectedOrgs,
 	})
 	mgr.WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", m.ConfigDir), &space.ConfigSpaceDefaults{})
 	return nil
