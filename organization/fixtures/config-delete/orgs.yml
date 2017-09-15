@@ -3,3 +3,4 @@ orgs:
 enable-delete-orgs: true
 protected_orgs:
 - system
+- splunk-nozzle-space
