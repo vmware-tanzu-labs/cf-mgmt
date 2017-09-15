@@ -128,6 +128,10 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 	if config.Origin != "ldap" {
 		userID = user.Email
 		externalID = user.Email
+	} else {
+		if user.Email == "" {
+			user.Email = fmt.Sprintf("%s@user.from.ldap.cf", userID)
+		}
 	}
 	userID = strings.ToLower(userID)
 
