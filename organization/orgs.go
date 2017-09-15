@@ -247,6 +247,7 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 	protectedOrgs := make(map[string]bool)
 	//never allow accidental deletion of system org
 	protectedOrgs["system"] = true
+	protectedOrgs["splunk-nozzle-org"] = true
 	for _, orgName := range input.ProtectedOrgs {
 		protectedOrgs[orgName] = true
 	}
