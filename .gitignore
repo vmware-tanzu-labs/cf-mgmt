@@ -1,5 +1,4 @@
 vendor
-merrill_example
 ldap_test
 main
 .DS_Store
@@ -7,3 +6,6 @@ main
 brownbag
 cf-mgmt*
 *.iml
+compiled-output
+prepare-output
+vars.yml

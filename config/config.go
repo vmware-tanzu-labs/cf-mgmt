@@ -14,6 +14,14 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
+// DefaultProtectedOrgs lists the organizations that are considered protected
+// and should never be deleted by cf-mgmt.
+var DefaultProtectedOrgs = map[string]bool{
+	"system":                  true,
+	"p-spring-cloud-services": true,
+	"splunk-nozzle-org":       true,
+}
+
 // Manager can read and write the cf-mgmt configuration.
 type Manager interface {
 	Updater
@@ -127,10 +135,15 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 
 		result[i].Developer.LDAPUsers = append(result[i].Developer.LDAPUsers, spaceDefaults.Developer.LDAPUsers...)
 		result[i].Developer.Users = append(result[i].Developer.Users, spaceDefaults.Developer.Users...)
+		result[i].Developer.SamlUsers = append(result[i].Developer.SamlUsers, spaceDefaults.Developer.SamlUsers...)
+
 		result[i].Auditor.LDAPUsers = append(result[i].Auditor.LDAPUsers, spaceDefaults.Auditor.LDAPUsers...)
 		result[i].Auditor.Users = append(result[i].Auditor.Users, spaceDefaults.Auditor.Users...)
+		result[i].Auditor.SamlUsers = append(result[i].Auditor.SamlUsers, spaceDefaults.Auditor.SamlUsers...)
+
 		result[i].Manager.LDAPUsers = append(result[i].Manager.LDAPUsers, spaceDefaults.Manager.LDAPUsers...)
 		result[i].Manager.Users = append(result[i].Manager.Users, spaceDefaults.Manager.Users...)
+		result[i].Manager.SamlUsers = append(result[i].Manager.SamlUsers, spaceDefaults.Manager.SamlUsers...)
 
 		result[i].Developer.LDAPGroups = append(result[i].GetDeveloperGroups(), spaceDefaults.GetDeveloperGroups()...)
 		result[i].Auditor.LDAPGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
@@ -246,9 +259,14 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	}
 	lo.G.Infof("Config directory %s created", m.ConfigDir)
 	mgr.WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin})
+
+	var protectedOrgs []string
+	for protectedOrg := range DefaultProtectedOrgs {
+		protectedOrgs = append(protectedOrgs, protectedOrg)
+	}
 	mgr.WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &Orgs{
 		EnableDeleteOrgs: true,
-		ProtectedOrgs:    []string{"system"},
+		ProtectedOrgs:    protectedOrgs,
 	})
 	mgr.WriteFile(fmt.Sprintf("%s/spaceDefaults.yml", m.ConfigDir), struct {
 		Developer UserMgmt `yaml:"space-developer"`
@@ -277,6 +295,7 @@ func (m *yamlManager) DeleteConfigIfExists() error {
 type UserMgmt struct {
 	LDAPUsers  []string `yaml:"ldap_users"`
 	Users      []string `yaml:"users"`
+	SamlUsers  []string `yaml:"saml_users"`
 	LDAPGroup  string   `yaml:"ldap_group"`
 	LDAPGroups []string `yaml:"ldap_groups"`
 }

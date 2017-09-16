@@ -352,5 +352,36 @@ var _ = Describe("given UserManager", func() {
 			err := userManager.UpdateOrgUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
 		})
+		It("adding users to uaac based on saml", func() {
+			config := &l.Config{
+				Enabled: false,
+				Origin:  "https://saml.example.com",
+			}
+
+			uaacUsers := make(map[string]string)
+			uaacUsers["chris.a.washburn@example.com"] = "cwashburn-uaac-guid"
+			uaacUsers["joe.h.fitzy@example.com"] = "jfitzy-uaac-guid"
+
+			orgUsers := make(map[string]string)
+			orgUsers["chris.a.washburn@example.com"] = "cwashburn-space-user-guid"
+			orgUsers["joe.h.fitzy@example.com"] = "jfitzy-space-user-guid"
+
+			updateUsersInput := UpdateUsersInput{
+				OrgName:     "org-name",
+				OrgGUID:     "org-guid",
+				Role:        "org-role-name",
+				SamlUsers:   []string{"chris.a.washburn@example.com", "joe.h.fitzy@example.com", "test@test.com"},
+				RemoveUsers: true,
+			}
+
+			mockCloudController.EXPECT().GetCFUsers("org-guid", "organizations", "org-role-name").Return(orgUsers, nil)
+			mockUaac.EXPECT().CreateExternalUser("test@test.com", "test@test.com", "test@test.com", "https://saml.example.com").Return(nil)
+
+			mockCloudController.EXPECT().AddUserToOrg("test@test.com", "org-guid").Return(nil)
+			mockCloudController.EXPECT().AddUserToOrgRole("test@test.com", "org-role-name", "org-guid").Return(nil)
+			err := userManager.UpdateOrgUsers(config, uaacUsers, updateUsersInput)
+			Ω(err).Should(BeNil())
+			Ω(uaacUsers).Should(HaveKey("test@test.com"))
+		})
 	})
 })

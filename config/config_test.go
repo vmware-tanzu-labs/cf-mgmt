@@ -7,8 +7,18 @@ import (
 )
 
 var _ = Describe("CF-Mgmt Config", func() {
-	Context("Default Config Reader", func() {
+	Context("Protected Org Defaults", func() {
+		Describe("Defaults", func() {
+			It("should setup default protected orgs", func() {
+				Ω(config.DefaultProtectedOrgs).Should(HaveKey("system"))
+				Ω(config.DefaultProtectedOrgs).Should(HaveKey("p-spring-cloud-services"))
+				Ω(config.DefaultProtectedOrgs).Should(HaveKey("splunk-nozzle-org"))
+				Ω(config.DefaultProtectedOrgs).Should(HaveLen(3))
+			})
+		})
+	})
 
+	Context("Default Config Reader", func() {
 		Context("GetOrgConfigs", func() {
 			It("should return a list of 2", func() {
 				m := config.NewManager("./fixtures/config")

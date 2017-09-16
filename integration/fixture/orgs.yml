@@ -4,3 +4,4 @@ orgs:
 protected_orgs:
 - system
 - pcfdev-org
+- p-spring-cloud-services

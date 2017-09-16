@@ -20,7 +20,8 @@ type Manager interface {
 	AssignQuotaToSpace(spaceGUID, quotaGUID string) error
 
 	CreateOrg(orgName string) error
-	DeleteOrg(orgName string) error
+	DeleteOrg(orgGUID string) error
+	DeleteOrgByName(orgName string) error
 	ListOrgs() ([]*Org, error)
 	AddUserToOrgRole(userName, role, orgGUID string) error
 	AddUserToOrg(userName, orgGUID string) error

@@ -5,9 +5,10 @@
 package mock_cloudcontroller
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	cloudcontroller "github.com/pivotalservices/cf-mgmt/cloudcontroller"
-	reflect "reflect"
 )
 
 // MockManager is a mock of Manager interface
@@ -190,6 +191,18 @@ func (m *MockManager) DeleteOrg(arg0 string) error {
 // DeleteOrg indicates an expected call of DeleteOrg
 func (mr *MockManagerMockRecorder) DeleteOrg(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrg", reflect.TypeOf((*MockManager)(nil).DeleteOrg), arg0)
+}
+
+// DeleteOrgByName mocks base method
+func (m *MockManager) DeleteOrgByName(arg0 string) error {
+	ret := m.ctrl.Call(m, "DeleteOrgByName", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOrgByName indicates an expected call of DeleteOrgByName
+func (mr *MockManagerMockRecorder) DeleteOrgByName(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrgByName", reflect.TypeOf((*MockManager)(nil).DeleteOrgByName), arg0)
 }
 
 // DeletePrivateDomain mocks base method

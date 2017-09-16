@@ -217,10 +217,7 @@ func (m *DefaultOrgManager) DeleteOrgs(peekDeletion bool) error {
 	for _, orgName := range orgsConfig.Orgs {
 		configuredOrgs[orgName] = true
 	}
-
-	protectedOrgs := make(map[string]bool)
-	// never allow accidental deletion of system org
-	protectedOrgs["system"] = true
+	protectedOrgs := config.DefaultProtectedOrgs
 	for _, orgName := range orgsConfig.ProtectedOrgs {
 		protectedOrgs[orgName] = true
 	}
@@ -322,6 +319,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *config.Or
 			LdapGroupNames: input.GetBillingManagerGroups(),
 			LdapUsers:      input.BillingManager.LDAPUsers,
 			Users:          input.BillingManager.Users,
+			SamlUsers:      input.BillingManager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		})
 	if err != nil {
@@ -336,6 +334,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *config.Or
 			LdapGroupNames: input.GetAuditorGroups(),
 			LdapUsers:      input.Auditor.LDAPUsers,
 			Users:          input.Auditor.Users,
+			SamlUsers:      input.Auditor.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		})
 	if err != nil {
@@ -350,6 +349,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *config.Or
 			LdapGroupNames: input.GetManagerGroups(),
 			LdapUsers:      input.Manager.LDAPUsers,
 			Users:          input.Manager.Users,
+			SamlUsers:      input.Manager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		})
 }

@@ -186,6 +186,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *confi
 		LdapGroupNames: input.GetDeveloperGroups(),
 		LdapUsers:      input.Developer.LDAPUsers,
 		Users:          input.Developer.Users,
+		SamlUsers:      input.Developer.SamlUsers,
 		RemoveUsers:    input.RemoveUsers,
 	}); err != nil {
 		return err
@@ -201,6 +202,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *confi
 			LdapGroupNames: input.GetManagerGroups(),
 			LdapUsers:      input.Manager.LDAPUsers,
 			Users:          input.Manager.Users,
+			SamlUsers:      input.Manager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		}); err != nil {
 		return err
@@ -215,6 +217,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *confi
 			LdapGroupNames: input.GetAuditorGroups(),
 			LdapUsers:      input.Auditor.LDAPUsers,
 			Users:          input.Auditor.Users,
+			SamlUsers:      input.Auditor.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		}); err != nil {
 		return err
