@@ -11,6 +11,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/export"
 	"github.com/pivotalservices/cf-mgmt/generated"
+	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
@@ -486,21 +487,29 @@ func runUpdateOrgUsers(c *cli.Context) error {
 }
 
 func runUpdateIsoSegments(c *cli.Context) error {
-	cleanUp := c.Bool("clean-up")
-	dryRun := c.Bool("dry-run")
+	// TODO: we don't actually need a CFMgmt, but there's some validation logic in here
+	cfMgmt, err := InitializeManager(c)
+	if err != nil {
+		return err
+	}
+	u := &isosegment.Updater{
+		Cfg:     config.NewManager(cfMgmt.ConfigDirectory),
+		CleanUp: c.Bool("clean-up"),
+		DryRun:  c.Bool("dry-run"),
+	}
 
-	_ = cleanUp
-	_ = dryRun
-	// TODO:
-	// - get list of all isolation segments, compare that to what currently exists
-	//    - create as necessary
-	//    - [if cleanUp] delete any extra segments
-	// - for each org:
-	//    - make sure org is entitled to its default and any of its spaces default
-	//    - [if cleanUp] disable-org-isolation for any unneeded segments
-	//    - [if default] set-org-default-isolation-segment (or reset-org-default-isolation-segment)
-	//    - for each space:
-	//       - repeat the above
+	if err := u.Ensure(); err != nil {
+		return err
+	}
+	if err := u.Entitle(); err != nil {
+		return err
+	}
+	if err := u.UpdateOrgs(); err != nil {
+		return err
+	}
+	if err := u.UpdateSpaces(); err != nil {
+		return err
+	}
 
 	return nil
 }
