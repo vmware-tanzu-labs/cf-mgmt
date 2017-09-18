@@ -181,4 +181,32 @@ var _ = Describe("Isolation Segments", func() {
 			})
 		})
 	})
+
+	Describe("UpdateOrgs() default isolation segment", func() {
+		Context("when org2 is configured to use iso00 by default, and org1's config does not have a default", func() {
+			It("sets isolation segments correctly", func() {
+				m.EXPECT().SetOrgIsolationSegment("org2", Segment{Name: "iso00"})
+				m.EXPECT().SetOrgIsolationSegment("org1", Segment{})
+				Ω(u.UpdateOrgs()).Should(Succeed())
+			})
+		})
+
+		Context("when DryRun is enabled", func() {
+			It("does not modify org isolation segments", func() {
+				u.DryRun = true
+				m.EXPECT().SetOrgIsolationSegment(gomock.Any(), gomock.Any()).Times(0)
+				Ω(u.UpdateOrgs()).Should(Succeed())
+			})
+		})
+
+		Context("when there is an error setting the default isolation segment", func() {
+			BeforeEach(func() {
+				m.EXPECT().SetOrgIsolationSegment(gomock.Any(), gomock.Any()).Return(errors.New("fail"))
+			})
+
+			It("fails", func() {
+				Ω(u.UpdateOrgs()).ShouldNot(Succeed())
+			})
+		})
+	})
 })

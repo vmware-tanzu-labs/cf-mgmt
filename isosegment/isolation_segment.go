@@ -1,6 +1,8 @@
 package isosegment
 
 import (
+	"fmt"
+
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/xchapter7x/lo"
 )
@@ -74,6 +76,30 @@ func (u *Updater) Entitle() error {
 		err = c.update(org, u.entitle, u.revoke)
 		if err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+// UpdateOrgs sets the default isolation segment for each org,
+// as specified in the cf-mgmt config.
+func (u *Updater) UpdateOrgs() error {
+	ocs, err := u.Cfg.GetOrgConfigs()
+	if err != nil {
+		return err
+	}
+	for _, oc := range ocs {
+		if u.DryRun {
+			if oc.DefaultIsoSegment != "" {
+				lo.G.Info("[dry-run]: set default isolation segment for org %s to %s", oc.Org, oc.DefaultIsoSegment)
+			} else {
+				lo.G.Info("[dry-run]: reset default isolation segment for org %s", oc.Org)
+			}
+			continue
+		}
+		err = u.cc.SetOrgIsolationSegment(oc.Org, Segment{Name: oc.DefaultIsoSegment})
+		if err != nil {
+			return fmt.Errorf("set iso segment for org %s: %v", oc.Org, err)
 		}
 	}
 	return nil

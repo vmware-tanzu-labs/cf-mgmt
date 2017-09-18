@@ -17,6 +17,8 @@ type manager interface {
 
 	EnableOrgIsolation(orgName, segmentName string) error
 	RevokeOrgIsolation(orgName, segmentName string) error
+
+	SetOrgIsolationSegment(orgName string, s Segment) error
 }
 
 type ccv3Manager struct {
@@ -123,6 +125,24 @@ func (c *ccv3Manager) DeleteIsolationSegment(segmentName string) error {
 	}
 	delete(c.segments, segmentName)
 	return nil
+}
+
+// SetOrgIsolationSegment sets the default isolation segment for the specified org.
+// If the segment name is empty, it resets the default isolation segment.
+func (c *ccv3Manager) SetOrgIsolationSegment(orgName string, s Segment) error {
+	orgGUID, err := c.orgGUID(orgName)
+	if err != nil {
+		return err
+	}
+	var segmentGUID string
+	if s.GUID == "" && s.Name != "" {
+		segmentGUID, err = c.segmentGUID(s.Name)
+		if err != nil {
+			return err
+		}
+	}
+	_, err = c.cc.PatchOrganizationDefaultIsolationSegment(orgGUID, segmentGUID)
+	return err
 }
 
 func (c *ccv3Manager) orgGUID(name string) (string, error) {

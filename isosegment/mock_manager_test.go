@@ -105,3 +105,15 @@ func (m *Mockmanager) RevokeOrgIsolation(orgName, segmentName string) error {
 func (mr *MockmanagerMockRecorder) RevokeOrgIsolation(orgName, segmentName interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeOrgIsolation", reflect.TypeOf((*Mockmanager)(nil).RevokeOrgIsolation), orgName, segmentName)
 }
+
+// SetOrgIsolationSegment mocks base method
+func (m *Mockmanager) SetOrgIsolationSegment(orgName string, s Segment) error {
+	ret := m.ctrl.Call(m, "SetOrgIsolationSegment", orgName, s)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetOrgIsolationSegment indicates an expected call of SetOrgIsolationSegment
+func (mr *MockmanagerMockRecorder) SetOrgIsolationSegment(orgName, s interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOrgIsolationSegment", reflect.TypeOf((*Mockmanager)(nil).SetOrgIsolationSegment), orgName, s)
+}
