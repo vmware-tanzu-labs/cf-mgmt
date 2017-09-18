@@ -117,3 +117,15 @@ func (m *Mockmanager) SetOrgIsolationSegment(orgName string, s Segment) error {
 func (mr *MockmanagerMockRecorder) SetOrgIsolationSegment(orgName, s interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOrgIsolationSegment", reflect.TypeOf((*Mockmanager)(nil).SetOrgIsolationSegment), orgName, s)
 }
+
+// SetSpaceIsolationSegment mocks base method
+func (m *Mockmanager) SetSpaceIsolationSegment(orgName, spaceName string, s Segment) error {
+	ret := m.ctrl.Call(m, "SetSpaceIsolationSegment", orgName, spaceName, s)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetSpaceIsolationSegment indicates an expected call of SetSpaceIsolationSegment
+func (mr *MockmanagerMockRecorder) SetSpaceIsolationSegment(orgName, spaceName, s interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSpaceIsolationSegment", reflect.TypeOf((*Mockmanager)(nil).SetSpaceIsolationSegment), orgName, spaceName, s)
+}

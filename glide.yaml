@@ -11,6 +11,9 @@ import:
 - package: github.com/go-ldap/ldap
   version: ^2.5.0
 - package: code.cloudfoundry.org/cli
+  vcs: git
+  repo: git@github.com:zmb3/cli.git
+  version: zb-v3-spaces
   subpackages:
   - api/cloudcontroller
   - api/cloudcontroller/ccv3

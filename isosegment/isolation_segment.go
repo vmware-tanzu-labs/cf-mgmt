@@ -105,6 +105,31 @@ func (u *Updater) UpdateOrgs() error {
 	return nil
 }
 
+// UpdateSpaces sets the isolation segment for each space,
+// as specified in the cf-mgmt config.
+func (u *Updater) UpdateSpaces() error {
+	scs, err := u.Cfg.GetSpaceConfigs()
+	if err != nil {
+		return err
+	}
+
+	for _, sc := range scs {
+		if u.DryRun {
+			if sc.IsoSegment != "" {
+				lo.G.Info("[dry-run]: set isolation segment for space %s to %s", sc.Space, sc.IsoSegment)
+			} else {
+				lo.G.Info("[dry-run]: reset isolation segment for space %s", sc.Space)
+			}
+			continue
+		}
+		err = u.cc.SetSpaceIsolationSegment(sc.Org, sc.Space, Segment{Name: sc.IsoSegment})
+		if err != nil {
+			return fmt.Errorf("set iso segment for space %s in org %s: %v", sc.Space, sc.Org, err)
+		}
+	}
+	return nil
+}
+
 func (u *Updater) create(s *Segment, _ string) error {
 	if u.DryRun {
 		lo.G.Info("[dry-run]: create segment", s.Name)

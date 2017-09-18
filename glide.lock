@@ -1,11 +1,22 @@
-hash: 977830f674d3358adba3af25edfa4ac9f5c9f12f50fafe368c132d165ccbb3dc
-updated: 2017-09-08T08:17:05.895289792-06:00
+hash: 1cff29afc38d55c322689752e28bbd836631840daf364994568304a1e150347c
+updated: 2017-09-18T11:25:09.207735077-06:00
 imports:
 - name: code.cloudfoundry.org/cli
-  version: 69c29f4dfcd4fdb0f9f413af3654dbcc0d88317d
+  version: 1418f76293cadfd0813fb274f23826d66d4bcb88
+  repo: git@github.com:zmb3/cli.git
+  vcs: git
   subpackages:
   - api/cloudcontroller
+  - api/cloudcontroller/ccerror
   - api/cloudcontroller/ccv3
+  - api/cloudcontroller/ccv3/internal
+  - types
+- name: github.com/blang/semver
+  version: 4a1e882c79dcf4ec00d2e29fac74b9c8938d5052
+  repo: https://github.com/blang/semver
+- name: github.com/cloudfoundry/bytefmt
+  version: f4415fafc5619dd75599a54a7c91fb3948ad58bd
+  repo: https://github.com/cloudfoundry/bytefmt
 - name: github.com/codegangsta/cli
   version: 2526b57c56f30b50466c96c4133b1a4ad0f0191f
 - name: github.com/go-ldap/ldap
@@ -38,8 +49,10 @@ imports:
 testImports:
 - name: github.com/golang/protobuf
   version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  repo: https://github.com/golang/protobuf
   subpackages:
   - proto
+  - ptypes/any
 - name: github.com/onsi/ginkgo
   version: 9eda700730cba42af70d53180f9dcce9266bc2bc
   subpackages:
@@ -78,11 +91,14 @@ testImports:
   - matchers/support/goraph/util
   - types
 - name: golang.org/x/sys
-  version: 9a7256cb28ed514b4e1e5f68959914c4c28a92e0
+  version: 7ddbeae9ae08c6a06a59597f0c9edbc5ff2444ce
+  repo: https://go.googlesource.com/sys
   subpackages:
   - unix
+  - windows
 - name: golang.org/x/text
   version: bd91bbf73e9a4a801adbfb97133c992678533126
+  repo: https://go.googlesource.com/text
   subpackages:
   - encoding
   - encoding/charmap
@@ -94,8 +110,10 @@ testImports:
   - encoding/simplifiedchinese
   - encoding/traditionalchinese
   - encoding/unicode
+  - internal/gen
   - internal/tag
   - internal/utf8internal
   - language
   - runes
   - transform
+  - unicode/cldr

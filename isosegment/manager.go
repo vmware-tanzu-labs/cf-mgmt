@@ -19,6 +19,7 @@ type manager interface {
 	RevokeOrgIsolation(orgName, segmentName string) error
 
 	SetOrgIsolationSegment(orgName string, s Segment) error
+	SetSpaceIsolationSegment(orgName, spaceName string, s Segment) error
 }
 
 type ccv3Manager struct {
@@ -142,6 +143,35 @@ func (c *ccv3Manager) SetOrgIsolationSegment(orgName string, s Segment) error {
 		}
 	}
 	_, err = c.cc.PatchOrganizationDefaultIsolationSegment(orgGUID, segmentGUID)
+	return err
+}
+
+func (c *ccv3Manager) SetSpaceIsolationSegment(orgName, spaceName string, s Segment) error {
+	orgGUID, err := c.orgGUID(orgName)
+	if err != nil {
+		return err
+	}
+
+	spaces, _, err := c.cc.GetSpaces(url.Values{
+		"organization_guids": []string{orgGUID},
+		"names":              []string{spaceName},
+	})
+	if err != nil {
+		return err
+	}
+	if l := len(spaces); l != 1 {
+		return fmt.Errorf("found %d spaces with name %s in org %s", l, spaceName, orgName)
+	}
+
+	var segmentGUID string
+	if s.GUID == "" && s.Name != "" {
+		segmentGUID, err = c.segmentGUID(s.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, _, err = c.cc.AssignSpaceToIsolationSegment(spaces[0].GUID, segmentGUID)
 	return err
 }
 

@@ -192,8 +192,11 @@ var _ = Describe("Isolation Segments", func() {
 		})
 
 		Context("when DryRun is enabled", func() {
-			It("does not modify org isolation segments", func() {
+			BeforeEach(func() {
 				u.DryRun = true
+			})
+
+			It("does not modify org isolation segments", func() {
 				m.EXPECT().SetOrgIsolationSegment(gomock.Any(), gomock.Any()).Times(0)
 				Ω(u.UpdateOrgs()).Should(Succeed())
 			})
@@ -206,6 +209,38 @@ var _ = Describe("Isolation Segments", func() {
 
 			It("fails", func() {
 				Ω(u.UpdateOrgs()).ShouldNot(Succeed())
+			})
+		})
+	})
+
+	Describe("UpdateSpaces() isolation segments", func() {
+		Context("when org1space2 is configured to use iso01", func() {
+			It("sets isolation segments correctly", func() {
+				m.EXPECT().SetSpaceIsolationSegment("org1", "org1space1", Segment{})
+				m.EXPECT().SetSpaceIsolationSegment("org1", "org1space2", Segment{Name: "iso01"})
+				m.EXPECT().SetSpaceIsolationSegment("org2", "org2space1", Segment{})
+				Ω(u.UpdateSpaces()).Should(Succeed())
+			})
+		})
+
+		Context("when DryRun is enabled", func() {
+			BeforeEach(func() {
+				u.DryRun = true
+			})
+
+			It("does not modify space isolation segments", func() {
+				m.EXPECT().SetSpaceIsolationSegment(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				Ω(u.UpdateSpaces()).Should(Succeed())
+			})
+		})
+
+		Context("when there is an error setting space isolation segment", func() {
+			BeforeEach(func() {
+				m.EXPECT().SetSpaceIsolationSegment(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("fail"))
+			})
+
+			It("fails", func() {
+				Ω(u.UpdateSpaces()).ShouldNot(Succeed())
 			})
 		})
 	})
