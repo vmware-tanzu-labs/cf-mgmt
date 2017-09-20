@@ -1,10 +1,8 @@
-hash: 1cff29afc38d55c322689752e28bbd836631840daf364994568304a1e150347c
-updated: 2017-09-18T11:25:09.207735077-06:00
+hash: 977830f674d3358adba3af25edfa4ac9f5c9f12f50fafe368c132d165ccbb3dc
+updated: 2017-09-19T20:58:55.009291349-06:00
 imports:
 - name: code.cloudfoundry.org/cli
-  version: 1418f76293cadfd0813fb274f23826d66d4bcb88
-  repo: git@github.com:zmb3/cli.git
-  vcs: git
+  version: 0a6c4bf2595c3b3abef6a087619f0c7b7eca7f78
   subpackages:
   - api/cloudcontroller
   - api/cloudcontroller/ccerror
