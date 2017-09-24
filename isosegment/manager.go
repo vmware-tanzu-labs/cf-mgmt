@@ -5,6 +5,10 @@ import (
 	"net/url"
 
 	"code.cloudfoundry.org/cli/api/cloudcontroller/ccv3"
+	ccwrap "code.cloudfoundry.org/cli/api/cloudcontroller/wrapper"
+	"code.cloudfoundry.org/cli/api/uaa"
+	uaawrap "code.cloudfoundry.org/cli/api/uaa/wrapper"
+	uaautil "code.cloudfoundry.org/cli/api/uaa/wrapper/util"
 	"github.com/xchapter7x/lo"
 )
 
@@ -23,7 +27,7 @@ type manager interface {
 }
 
 type ccv3Manager struct {
-	cc ccv3.Client
+	cc *ccv3.Client
 
 	// a cache mapping segment/org names to their GUIDs
 	segments map[string]string
@@ -203,4 +207,43 @@ func (c *ccv3Manager) segmentGUID(name string) (string, error) {
 		return "", fmt.Errorf("found %d iso segments with name %s", l, name)
 	}
 	return ss[0].GUID, nil
+}
+
+// ccv3Client creates a client for the V3 Cloud Controller API.
+func ccv3Client(cfURL, uaaToken string) (*ccv3.Client, error) {
+	tokenCache := uaautil.NewInMemoryTokenCache()
+	tokenCache.SetAccessToken("bearer " + uaaToken)
+
+	uaaClient := uaa.NewClient(uaa.Config{
+		AppName:           appName,
+		AppVersion:        appVersion,
+		SkipSSLValidation: true, // TODO
+
+		ClientID:     "cf-mgmt",
+		ClientSecret: "cf-mgmt-secret",
+	})
+	uaaClient.WrapConnection(uaawrap.NewRetryRequest(2))
+
+	ccClient := ccv3.NewClient(ccv3.Config{
+		AppName:    appName,
+		AppVersion: appVersion,
+
+		Wrappers: []ccv3.ConnectionWrapper{
+			ccwrap.NewUAAAuthentication(uaaClient, tokenCache),
+			ccwrap.NewRetryRequest(2),
+		},
+	})
+
+	warnings, err := ccClient.TargetCF(ccv3.TargetSettings{
+		SkipSSLValidation: true, // TODO
+		URL:               cfURL,
+	})
+	if len(warnings) > 0 {
+		lo.G.Warning(warnings)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("couldn't target CF: %v", err)
+	}
+
+	return ccClient, nil
 }

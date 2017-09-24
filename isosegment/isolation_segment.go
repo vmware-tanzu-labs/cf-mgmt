@@ -7,13 +7,38 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
+// TODO
+const (
+	appName    = "cf-mgmt"
+	appVersion = "1.0"
+)
+
 // Segment represents a Cloud Foundry isolation segment.
 type Segment struct {
 	Name string
 	GUID string
 }
 
+// NewUpdater creates an updater that runs against the specified CF endpoint.
+func NewUpdater(apiURL, uaaToken string) (*Updater, error) {
+	ccClient, err := ccv3Client(apiURL, uaaToken)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create cloud controller API client: %v", err)
+	}
+
+	mgr := &ccv3Manager{
+		cc:       ccClient,
+		orgs:     make(map[string]string),
+		segments: make(map[string]string),
+	}
+	return &Updater{
+		cc: mgr,
+	}, nil
+}
+
 // Updater performs the required updates to acheive the desired state wrt isolation segments.
+// Updaters should always be created with NewUpdater.  It is save to modify Updater's
+// exported fields after creation.
 type Updater struct {
 	Cfg config.Reader
 

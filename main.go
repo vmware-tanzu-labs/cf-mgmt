@@ -487,16 +487,19 @@ func runUpdateOrgUsers(c *cli.Context) error {
 }
 
 func runUpdateIsoSegments(c *cli.Context) error {
-	// TODO: we don't actually need a CFMgmt, but there's some validation logic in here
 	cfMgmt, err := InitializeManager(c)
 	if err != nil {
 		return err
 	}
-	u := &isosegment.Updater{
-		Cfg:     config.NewManager(cfMgmt.ConfigDirectory),
-		CleanUp: c.Bool("clean-up"),
-		DryRun:  c.Bool("dry-run"),
+
+	u, err := isosegment.NewUpdater("https://api."+cfMgmt.SystemDomain, cfMgmt.UaacToken)
+	if err != nil {
+		return err
 	}
+
+	u.Cfg = config.NewManager(cfMgmt.ConfigDirectory)
+	u.CleanUp = c.Bool("clean-up")
+	u.DryRun = c.Bool("dry-run")
 
 	if err := u.Ensure(); err != nil {
 		return err
