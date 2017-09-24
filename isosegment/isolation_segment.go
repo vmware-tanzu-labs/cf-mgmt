@@ -91,9 +91,9 @@ func (u *Updater) UpdateOrgs() error {
 	for _, oc := range ocs {
 		if u.DryRun {
 			if oc.DefaultIsoSegment != "" {
-				lo.G.Info("[dry-run]: set default isolation segment for org %s to %s", oc.Org, oc.DefaultIsoSegment)
+				lo.G.Infof("[dry-run]: set default isolation segment for org %s to %s", oc.Org, oc.DefaultIsoSegment)
 			} else {
-				lo.G.Info("[dry-run]: reset default isolation segment for org %s", oc.Org)
+				lo.G.Infof("[dry-run]: reset default isolation segment for org %s", oc.Org)
 			}
 			continue
 		}
@@ -116,9 +116,9 @@ func (u *Updater) UpdateSpaces() error {
 	for _, sc := range scs {
 		if u.DryRun {
 			if sc.IsoSegment != "" {
-				lo.G.Info("[dry-run]: set isolation segment for space %s to %s", sc.Space, sc.IsoSegment)
+				lo.G.Infof("[dry-run]: set isolation segment for space %s to %s (org %s)", sc.Space, sc.IsoSegment, sc.Org)
 			} else {
-				lo.G.Info("[dry-run]: reset isolation segment for space %s", sc.Space)
+				lo.G.Infof("[dry-run]: reset isolation segment for space %s (org %s)", sc.Space, sc.Org)
 			}
 			continue
 		}
