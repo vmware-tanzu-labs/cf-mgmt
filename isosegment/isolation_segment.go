@@ -7,10 +7,8 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-// TODO
 const (
-	appName    = "cf-mgmt"
-	appVersion = "1.0"
+	appName = "cf-mgmt"
 )
 
 // Segment represents a Cloud Foundry isolation segment.
@@ -20,8 +18,8 @@ type Segment struct {
 }
 
 // NewUpdater creates an updater that runs against the specified CF endpoint.
-func NewUpdater(apiURL, uaaToken string) (*Updater, error) {
-	ccClient, err := ccv3Client(apiURL, uaaToken)
+func NewUpdater(cfmgmtVersion, apiURL, uaaToken string) (*Updater, error) {
+	ccClient, err := ccv3Client(cfmgmtVersion, apiURL, uaaToken)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create cloud controller API client: %v", err)
 	}

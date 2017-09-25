@@ -492,7 +492,7 @@ func runUpdateIsoSegments(c *cli.Context) error {
 		return err
 	}
 
-	u, err := isosegment.NewUpdater("https://api."+cfMgmt.SystemDomain, cfMgmt.UaacToken)
+	u, err := isosegment.NewUpdater(Version, "https://api."+cfMgmt.SystemDomain, cfMgmt.UaacToken)
 	if err != nil {
 		return err
 	}

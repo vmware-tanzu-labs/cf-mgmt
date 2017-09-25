@@ -210,13 +210,13 @@ func (c *ccv3Manager) segmentGUID(name string) (string, error) {
 }
 
 // ccv3Client creates a client for the V3 Cloud Controller API.
-func ccv3Client(cfURL, uaaToken string) (*ccv3.Client, error) {
+func ccv3Client(cfmgmtVersion, cfURL, uaaToken string) (*ccv3.Client, error) {
 	tokenCache := uaautil.NewInMemoryTokenCache()
 	tokenCache.SetAccessToken("bearer " + uaaToken)
 
 	uaaClient := uaa.NewClient(uaa.Config{
 		AppName:           appName,
-		AppVersion:        appVersion,
+		AppVersion:        cfmgmtVersion,
 		SkipSSLValidation: true, // TODO
 
 		ClientID:     "cf-mgmt",
@@ -226,7 +226,7 @@ func ccv3Client(cfURL, uaaToken string) (*ccv3.Client, error) {
 
 	ccClient := ccv3.NewClient(ccv3.Config{
 		AppName:    appName,
-		AppVersion: appVersion,
+		AppVersion: cfmgmtVersion,
 
 		Wrappers: []ccv3.ConnectionWrapper{
 			ccwrap.NewUAAAuthentication(uaaClient, tokenCache),
