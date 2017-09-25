@@ -1,4 +1,5 @@
 # Cloud Foundry Management (cf-mgmt)
+
 Go automation for managing orgs, spaces, users (from ldap groups or internal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
 
 ## Maintainer
@@ -6,6 +7,7 @@ Go automation for managing orgs, spaces, users (from ldap groups or internal sto
 * [Caleb Washburn](https://github.com/calebwashburn)
 
 ## Support
+
 cf-mgmt is a community supported cloud foundry add-on.  Opening issues for questions, feature requests and/or bugs is the best path to getting "support".  We strive to be active in keeping this tool working and meeting your needs in a timely fashion.
 
 ## Install
@@ -51,7 +53,8 @@ docker run -d -p 389:389 --name ldap -t cwashburn/ldap
 RUN_INTEGRATION_TESTS=true go test ./ldap/...
 ```
 
-The remaining integration tests require [PCF Dev](https://pivotal.io/pcf-dev) to be running.
+The remaining integration tests require [PCF Dev](https://pivotal.io/pcf-dev)
+to be running and the CF CLI to be installed.
 
 ```
 cf dev start

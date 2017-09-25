@@ -19,3 +19,4 @@ total-services: -1
 paid-service-plans-allowed: true
 enable-remove-users: true
 enable-delete-orgs: true
+default_isolation_segment: "test2-iso-segment"
