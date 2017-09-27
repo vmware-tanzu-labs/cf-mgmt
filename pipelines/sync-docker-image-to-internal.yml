@@ -1,0 +1,26 @@
+---
+resources:
+- name: docker-hub
+  type: docker-image
+  source:
+    repository: pivotalservices/cf-mgmt
+    tag: latest
+- name: docker-registry
+  type: docker-image
+  source:
+    repository: {{internal-docker-repository}}
+    username: {{docker-registry-username}}
+    password: {{docker-registry-password}}
+    insecure_registries: [ {{insecure-docker-registries}} ]
+
+jobs:
+- name: copy-docker-image
+  public: true
+  plan:
+  - get: docker-hub
+    trigger: true
+    params:
+      save: true
+  - put: docker-registry
+    params:
+      load: docker-hub
