@@ -176,6 +176,30 @@ var _ = Describe("cf-mgmt cli", func() {
 			Eventually(session).Should(Exit(0))
 
 		})
+		It("should export config with > 50 spaces without a password", func() {
+
+			ccManager := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken)
+
+			ccManager.CreateOrg("test1")
+			orgs, _ := ccManager.ListOrgs()
+			for _, org := range orgs {
+				if org.Entity.Name == "test1" {
+					i := 1
+					for i < 101 {
+						ccManager.CreateSpace(fmt.Sprintf("space-%d", i), org.MetaData.GUID)
+						i++
+					}
+				}
+			}
+
+			exportConfigCommand := exec.Command(outPath, "export-config", "--config-dir", "./config",
+				"--system-domain", systemDomain, "--user-id", "cf-mgmt", "--client-secret", "cf-mgmt-secret")
+			session, err := Start(exportConfigCommand, GinkgoWriter, GinkgoWriter)
+			session.Wait(20)
+			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+
+		})
 
 	})
 })
