@@ -43,6 +43,7 @@ type Reader interface {
 
 	GetOrgConfigs() ([]OrgConfig, error)
 	GetSpaceConfigs() ([]SpaceConfig, error)
+	GetASGConfigs() ([]ASGConfig, error)
 	GetSpaceDefaults() (*SpaceConfig, error)
 }
 
@@ -69,6 +70,29 @@ func (m *yamlManager) Orgs() (Orgs, error) {
 		return Orgs{}, err
 	}
 	return input, nil
+}
+
+// GetASGConfigs reads all ASGs from the cf-mgmt configuration.
+func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
+	fs := utils.NewDefaultManager()
+	lo.G.Info(m.ConfigDir + "/asgs/")
+	files, err := fs.FindFiles(m.ConfigDir+"/asgs/", ".json")
+	if err != nil {
+		return nil, err
+	}
+	result := make([]ASGConfig, len(files))
+	for i, f := range files {
+
+		if err = fs.LoadJSONFile(f, &result[i].Rules); err != nil {
+			lo.G.Error(err)
+			return nil, err
+		}
+
+		//fmt.Println(string(result[i].rules[0]))
+		lo.G.Info("<" + result[i].Rules[0].Protocol + ">")
+
+	}
+	return result, nil
 }
 
 // GetOrgConfigs reads all orgs from the cf-mgmt configuration.

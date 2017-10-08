@@ -19,6 +19,21 @@ var _ = Describe("CF-Mgmt Config", func() {
 	})
 
 	Context("Default Config Reader", func() {
+		Context("GetASGConfigs", func() {
+			It("should return a single ASG", func() {
+				m := config.NewManager("./fixtures/asg-defaults")
+				cfgs, err := m.GetASGConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(cfgs).Should(HaveLen(1))
+
+				cfg := cfgs[0]
+				Ω(cfg.Rules[0].Protocol).Should(BeEquivalentTo("icmp"))
+				Ω(cfg.Rules[0].Destination).Should(BeEquivalentTo("0.0.0.0/0"))
+				Ω(cfg.Rules[0].Ruletype).Should(BeEquivalentTo(0))
+				Ω(cfg.Rules[0].Code).Should(BeEquivalentTo(1))
+			})
+		})
+
 		Context("GetOrgConfigs", func() {
 			It("should return a list of 2", func() {
 				m := config.NewManager("./fixtures/config")
