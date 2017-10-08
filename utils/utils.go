@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"encoding/json"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -44,6 +46,16 @@ func (m *DefaultManager) LoadFile(configFile string, dataType interface{}) error
 	return yaml.Unmarshal(data, dataType)
 }
 
+//LoadJSONFile - this is a hack
+func (m *DefaultManager) LoadJSONFile(configFile string, dataType interface{}) error {
+	var data []byte
+	data, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, dataType)
+}
+
 //WriteFileBytes -
 func (m *DefaultManager) WriteFileBytes(configFile string, data []byte) error {
 	return ioutil.WriteFile(configFile, data, 0755)
@@ -62,6 +74,7 @@ func (m *DefaultManager) WriteFile(configFile string, dataType interface{}) erro
 type Manager interface {
 	FindFiles(directoryName, pattern string) ([]string, error)
 	LoadFile(configFile string, dataType interface{}) error
+	LoadJSONFile(configFile string, dataType interface{}) error
 	WriteFile(configFile string, dataType interface{}) error
 	WriteFileBytes(configFile string, data []byte) error
 	FileOrDirectoryExists(path string) bool
