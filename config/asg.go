@@ -16,6 +16,7 @@ type ASGRule struct {
 // ASGConfig describes is an array of Rules
 type ASGConfig struct {
 	Rules []ASGRule
+	Name  string
 }
 
 // ASGs contains cf-mgmt configuration for all ASGs.

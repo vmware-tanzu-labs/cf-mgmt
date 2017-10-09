@@ -32,6 +32,18 @@ var _ = Describe("CF-Mgmt Config", func() {
 				Ω(cfg.Rules[0].Ruletype).Should(BeEquivalentTo(0))
 				Ω(cfg.Rules[0].Code).Should(BeEquivalentTo(1))
 			})
+
+			It("should have a name based on the ASG filename", func() {
+				m := config.NewManager("./fixtures/asg-defaults")
+				cfgs, err := m.GetASGConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(cfgs).Should(HaveLen(1))
+
+				cfg := cfgs[0]
+				Expect(cfg.Name).Should(BeEquivalentTo("test-asg"))
+
+			})
+
 		})
 
 		Context("GetOrgConfigs", func() {
