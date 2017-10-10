@@ -89,7 +89,6 @@ func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 		}
 		result[i].Name = filepath.Base(strings.TrimRight(f, ".json"))
 
-		//fmt.Println(string(result[i].rules[0]))
 		lo.G.Info("<" + result[i].Rules[0].Protocol + ">")
 
 	}
