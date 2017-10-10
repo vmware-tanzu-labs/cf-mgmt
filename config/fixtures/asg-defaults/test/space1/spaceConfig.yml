@@ -21,3 +21,5 @@ total-services: -1
 paid-service-plans-allowed: true
 enable-security-group: false
 enable-remove-users: true
+named-security-groups:
+- test-asg
