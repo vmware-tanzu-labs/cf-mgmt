@@ -143,6 +143,12 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 	spaceDefaults := SpaceConfig{}
 	fs.LoadFile(filepath.Join(m.ConfigDir, "spaceDefaults.yml"), &spaceDefaults)
 
+	// Load Globally Named ASGs
+	globalASGs, err := m.GetASGConfigs()
+	if err != nil {
+		return nil, err
+	}
+
 	files, err := fs.FindFiles(m.ConfigDir, "spaceConfig.yml")
 	if err != nil {
 		return nil, err
@@ -173,6 +179,22 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		result[i].Developer.LDAPGroups = append(result[i].GetDeveloperGroups(), spaceDefaults.GetDeveloperGroups()...)
 		result[i].Auditor.LDAPGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
 		result[i].Manager.LDAPGroups = append(result[i].GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
+
+		// Get space ASGs and validate they match a global ASG name.
+		asgs := result[i].ASGs
+		for _, localasg := range asgs {
+			found := false
+			for _, asg := range globalASGs {
+				if asg.Name == localasg {
+
+					found = true
+				}
+			}
+			if found == false {
+				return nil, errors.New("cannot have an named security group with a name that does not match the a global name")
+			}
+
+		}
 
 		if result[i].EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)

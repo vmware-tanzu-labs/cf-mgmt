@@ -44,6 +44,40 @@ var _ = Describe("CF-Mgmt Config", func() {
 
 			})
 
+			It("can optionally have a ASG name in the spaced config.", func() {
+				m := config.NewManager("./fixtures/asg-defaults")
+
+				// Get ASG Config
+				asgcfgs, err := m.GetASGConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get space config
+				cfgs, err := m.GetSpaceConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+
+				cfg := cfgs[0]
+				Ω(cfg.Space).Should(BeEquivalentTo("space1"))
+				Expect(cfg.ASGs).Should(ConsistOf("test-asg"))
+				// We expect the ASGs to reference actually defined asgs
+
+				namedList := make([]string, len(asgcfgs))
+				for i, asg := range asgcfgs {
+					namedList[i] = asg.Name
+				}
+
+				for _, asg := range cfg.ASGs {
+					Expect([]string{asg}).Should(ConsistOf(namedList))
+				}
+
+			})
+
+			It("should fail when spaceconfig gives an ASG name that doesn't exist in the global definition", func() {
+				m := config.NewManager("./fixtures/asg-defaults-invalid")
+				_, err := m.GetSpaceConfigs()
+				Ω(err).Should(HaveOccurred())
+
+			})
+
 		})
 
 		Context("GetOrgConfigs", func() {
