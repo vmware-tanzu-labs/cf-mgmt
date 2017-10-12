@@ -3,7 +3,7 @@ package export
 import (
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/organization"
+	kOrg "github.com/pivotalservices/cf-mgmt/organization/constants"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	"github.com/xchapter7x/lo"
@@ -71,7 +71,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		addOrgUsers(orgConfig, im.CloudController, userIDToUserMap, org.MetaData.GUID)
 		//Add Quota definition if applicable
 		if org.Entity.QuotaDefinitionGUID != "" {
-			quota := quotaDefinition(im.CloudController, org.Entity.QuotaDefinitionGUID, organization.ORGS)
+			quota := quotaDefinition(im.CloudController, org.Entity.QuotaDefinitionGUID, kOrg.ORGS)
 			orgConfig.EnableOrgQuota = quota.IsQuotaEnabled()
 			orgConfig.MemoryLimit = quota.GetMemoryLimit()
 			orgConfig.InstanceMemoryLimit = quota.GetInstanceMemoryLimit()
@@ -143,19 +143,19 @@ func addSpaceUsers(spaceConfig *config.SpaceConfig, controller cc.Manager, userI
 }
 
 func addOrgManagers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, orgGUID string) {
-	orgMgrs, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_MANAGERS)
+	orgMgrs, _ := getCFUsers(controller, orgGUID, kOrg.ORGS, kOrg.ROLE_ORG_MANAGERS)
 	lo.G.Debugf("Found %d Org Managers for Org: %s", len(orgMgrs), orgConfig.Org)
 	doAddUsers(orgMgrs, &orgConfig.Manager.Users, &orgConfig.Manager.LDAPUsers, userIDToUserMap)
 }
 
 func addBillingManagers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, orgGUID string) {
-	orgBillingMgrs, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_BILLING_MANAGERS)
+	orgBillingMgrs, _ := getCFUsers(controller, orgGUID, kOrg.ORGS, kOrg.ROLE_ORG_BILLING_MANAGERS)
 	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs), orgConfig.Org)
 	doAddUsers(orgBillingMgrs, &orgConfig.BillingManager.Users, &orgConfig.BillingManager.LDAPUsers, userIDToUserMap)
 }
 
 func addOrgAuditors(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, orgGUID string) {
-	orgAuditors, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_AUDITORS)
+	orgAuditors, _ := getCFUsers(controller, orgGUID, kOrg.ORGS, kOrg.ROLE_ORG_AUDITORS)
 	lo.G.Debugf("Found %d Org Auditors for Org: %s", len(orgAuditors), orgConfig.Org)
 	doAddUsers(orgAuditors, &orgConfig.Auditor.Users, &orgConfig.Auditor.LDAPUsers, userIDToUserMap)
 }
