@@ -40,6 +40,7 @@ type Updater interface {
 type Reader interface {
 	Orgs() (Orgs, error)
 	Spaces() ([]Spaces, error)
+	ASGs() (ASGs, error)
 
 	GetOrgConfigs() ([]OrgConfig, error)
 	GetSpaceConfigs() ([]SpaceConfig, error)
@@ -169,11 +170,8 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 	spaceDefaults := SpaceConfig{}
 	fs.LoadFile(filepath.Join(m.ConfigDir, "spaceDefaults.yml"), &spaceDefaults)
 
-	// Load Globally Named ASGs
-	globalASGs, err := m.GetASGConfigs()
-	if err != nil {
-		return nil, err
-	}
+	// Load Globally Named ASGs and ignore if we can't
+	globalASGs, _ := m.GetASGConfigs()
 
 	files, err := fs.FindFiles(m.ConfigDir, "spaceConfig.yml")
 	if err != nil {
