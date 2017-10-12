@@ -15,7 +15,8 @@ type ASGRule struct {
 
 // ASGConfig describes is an array of Rules
 type ASGConfig struct {
-	Rules []ASGRule
+	//Rules []ASGRule
+	Rules string
 	Name  string
 }
 

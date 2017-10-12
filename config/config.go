@@ -72,25 +72,52 @@ func (m *yamlManager) Orgs() (Orgs, error) {
 	return input, nil
 }
 
+// ASGs reads the config for All ASg names.
+func (m *yamlManager) ASGs() (ASGs, error) {
+	configFile := filepath.Join(m.ConfigDir, "orgs.yml")
+	lo.G.Info("Processing ASGs Directory", m.ConfigDir+"/asgs/")
+	input := ASGs{}
+	fs := utils.NewDefaultManager()
+	files, err := fs.FindFiles(m.ConfigDir+"/asgs/", ".json")
+	if err != nil {
+		return ASGs{}, err
+	}
+
+	input.ASGs = make([]string, len(files))
+	for i, f := range files {
+
+		input.ASGs[i] = filepath.Base(strings.TrimRight(f, ".json"))
+
+		//lo.G.Info("<" + result[i].Rules + ">")
+	}
+
+	/// Below is what it was doing.
+	if err := utils.NewDefaultManager().LoadFile(configFile, &input); err != nil {
+		return ASGs{}, err
+	}
+	return input, nil
+}
+
 // GetASGConfigs reads all ASGs from the cf-mgmt configuration.
 func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 	fs := utils.NewDefaultManager()
-	lo.G.Info(m.ConfigDir + "/asgs/")
+	//lo.G.Info(m.ConfigDir + "/asgs/")
 	files, err := fs.FindFiles(m.ConfigDir+"/asgs/", ".json")
 	if err != nil {
 		return nil, err
 	}
 	result := make([]ASGConfig, len(files))
-	for i, f := range files {
+	for i, securityGroupFile := range files {
 
-		if err = fs.LoadJSONFile(f, &result[i].Rules); err != nil {
-			lo.G.Error(err)
+		lo.G.Debug("Loading security group contents", securityGroupFile)
+		bytes, err := ioutil.ReadFile(securityGroupFile)
+		if err != nil {
 			return nil, err
 		}
-		result[i].Name = filepath.Base(strings.TrimRight(f, ".json"))
+		lo.G.Debug("setting security group contents", string(bytes))
+		result[i].Rules = string(bytes)
 
-		lo.G.Info("<" + result[i].Rules[0].Protocol + ">")
-
+		result[i].Name = filepath.Base(strings.TrimRight(securityGroupFile, ".json"))
 	}
 	return result, nil
 }

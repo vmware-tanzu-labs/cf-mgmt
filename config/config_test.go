@@ -27,10 +27,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 				Ω(cfgs).Should(HaveLen(1))
 
 				cfg := cfgs[0]
-				Ω(cfg.Rules[0].Protocol).Should(BeEquivalentTo("icmp"))
-				Ω(cfg.Rules[0].Destination).Should(BeEquivalentTo("0.0.0.0/0"))
-				Ω(cfg.Rules[0].Ruletype).Should(BeEquivalentTo(0))
-				Ω(cfg.Rules[0].Code).Should(BeEquivalentTo(1))
+				Expect(cfg.Rules).Should(BeEquivalentTo("[{\"protocol\": \"icmp\",\"destination\": \"0.0.0.0/0\"}]\n"))
 			})
 
 			It("should have a name based on the ASG filename", func() {
