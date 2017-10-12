@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 // Spaces describes cf-mgmt config for all spaces.
 type Spaces struct {
 	Org                string   `yaml:"org"`
@@ -42,6 +44,14 @@ func (s *Spaces) Contains(spaceName string) bool {
 		}
 	}
 	return false
+}
+
+func (i *SpaceConfig) GetSpaceConfigFilenameAndPath(configDir, orgName, spaceName string) string {
+	return fmt.Sprintf("%s/%s/%s/spaceConfig.yml", configDir, orgName, spaceName)
+}
+
+func (i *SpaceConfig) GetSpaceConfigFilePath(configDir, orgName, spaceName string) string {
+	return fmt.Sprintf("%s/%s/%s", configDir, orgName, spaceName)
 }
 
 func (i *SpaceConfig) GetDeveloperGroups() []string {

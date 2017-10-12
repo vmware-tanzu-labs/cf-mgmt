@@ -202,13 +202,15 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 		return err
 	}
 
-	if err = os.MkdirAll(fmt.Sprintf("%s/%s", m.ConfigDir, orgName), 0755); err != nil {
+	orgConfigFilePath := orgConfig.GetOrgConfigFilePath(m.ConfigDir, orgName)
+	orgConfigFilenameAndPath := orgConfig.GetOrgConfigFilenameAndPath(m.ConfigDir, orgName)
+	if err = os.MkdirAll(orgConfigFilePath, 0755); err != nil {
 		return err
 	}
 	orgConfig.RemoveUsers = true
 	orgConfig.RemovePrivateDomains = true
-	mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "orgConfig.yml"), orgConfig)
-	return mgr.WriteFile(filepath.Join(m.ConfigDir, orgName, "spaces.yml"), &Spaces{
+	mgr.WriteFile(orgConfigFilenameAndPath, orgConfig)
+	return mgr.WriteFile(fmt.Sprintf("%s/spaces.yml", orgConfigFilePath), &Spaces{
 		Org:                orgName,
 		EnableDeleteSpaces: true,
 	})
@@ -235,13 +237,14 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	if err := mgr.WriteFile(spaceFileName, spaceList); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(fmt.Sprintf("%s/%s/%s", m.ConfigDir, orgName, spaceName), 0755); err != nil {
+	spaceConfigPath := spaceConfig.GetSpaceConfigFilePath(m.ConfigDir, orgName, spaceName)
+	if err := os.MkdirAll(spaceConfigPath, 0755); err != nil {
 		return err
 	}
 	spaceConfig.RemoveUsers = true
 
-	mgr.WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.ConfigDir, orgName, spaceName), spaceConfig)
-	mgr.WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName), []byte("[]"))
+	mgr.WriteFile(fmt.Sprintf("%s/spaceConfig.yml", spaceConfigPath), spaceConfig)
+	mgr.WriteFileBytes(fmt.Sprintf("%s/security-group.json", spaceConfigPath), []byte("[]"))
 	return nil
 }
 

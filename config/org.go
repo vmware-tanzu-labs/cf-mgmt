@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 // OrgConfig describes configuration for an org.
 type OrgConfig struct {
 	Org                     string   `yaml:"org"`
@@ -40,6 +42,14 @@ func (o *Orgs) Contains(orgName string) bool {
 		}
 	}
 	return false
+}
+
+func (i *OrgConfig) GetOrgConfigFilenameAndPath(configDir, orgName string) string {
+	return fmt.Sprintf("%s/%s/orgConfig.yml", configDir, orgName)
+}
+
+func (i *OrgConfig) GetOrgConfigFilePath(configDir, orgName string) string {
+	return fmt.Sprintf("%s/%s", configDir, orgName)
 }
 
 func (o *OrgConfig) GetBillingManagerGroups() []string {
