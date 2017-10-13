@@ -4,7 +4,7 @@ import (
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	kOrg "github.com/pivotalservices/cf-mgmt/organization/constants"
-	"github.com/pivotalservices/cf-mgmt/space"
+	kSpace "github.com/pivotalservices/cf-mgmt/space/constants"
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	"github.com/xchapter7x/lo"
 )
@@ -101,7 +101,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, orgSpace.MetaData.GUID)
 			//Add Quota definition if applicable
 			if orgSpace.Entity.QuotaDefinitionGUID != "" {
-				quota := quotaDefinition(im.CloudController, orgSpace.Entity.QuotaDefinitionGUID, space.SPACES)
+				quota := quotaDefinition(im.CloudController, orgSpace.Entity.QuotaDefinitionGUID, kSpace.SPACES)
 				spaceConfig.EnableSpaceQuota = quota.IsQuotaEnabled()
 				spaceConfig.MemoryLimit = quota.GetMemoryLimit()
 				spaceConfig.InstanceMemoryLimit = quota.GetInstanceMemoryLimit()
@@ -161,19 +161,19 @@ func addOrgAuditors(orgConfig *config.OrgConfig, controller cc.Manager, userIDTo
 }
 
 func addSpaceManagers(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, spaceGUID string) {
-	spaceMgrs, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_MANAGERS)
+	spaceMgrs, _ := getCFUsers(controller, spaceGUID, kSpace.SPACES, kSpace.ROLE_SPACE_MANAGERS)
 	lo.G.Debugf("Found %d Space Managers for Org: %s and  Space:  %s", len(spaceMgrs), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceMgrs, &spaceConfig.Manager.Users, &spaceConfig.Manager.LDAPUsers, userIDToUserMap)
 }
 
 func addSpaceDevelopers(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, spaceGUID string) {
-	spaceDevs, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_DEVELOPERS)
+	spaceDevs, _ := getCFUsers(controller, spaceGUID, kSpace.SPACES, kSpace.ROLE_SPACE_DEVELOPERS)
 	lo.G.Debugf("Found %d Space Developers for Org: %s and  Space:  %s", len(spaceDevs), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceDevs, &spaceConfig.Developer.Users, &spaceConfig.Developer.LDAPUsers, userIDToUserMap)
 }
 
 func addSpaceAuditors(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, spaceGUID string) {
-	spaceAuditors, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_AUDITORS)
+	spaceAuditors, _ := getCFUsers(controller, spaceGUID, kSpace.SPACES, kSpace.ROLE_SPACE_AUDITORS)
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceAuditors, &spaceConfig.Auditor.Users, &spaceConfig.Auditor.LDAPUsers, userIDToUserMap)
 }

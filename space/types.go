@@ -9,11 +9,6 @@ import (
 	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
-const SPACES = "spaces"
-const ROLE_SPACE_DEVELOPERS = "developers"
-const ROLE_SPACE_MANAGERS = "managers"
-const ROLE_SPACE_AUDITORS = "auditors"
-
 //Manager -
 type Manager interface {
 	FindSpace(orgName, spaceName string) (*cloudcontroller.Space, error)
