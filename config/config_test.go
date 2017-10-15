@@ -1,10 +1,15 @@
 package config_test
 
 import (
+	"fmt"
+	"math/rand"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
 	. "github.com/pivotalservices/cf-mgmt/config/test_data"
+	kSpace "github.com/pivotalservices/cf-mgmt/space/constants"
 	mock "github.com/pivotalservices/cf-mgmt/utils/mocks"
 )
 
@@ -134,4 +139,177 @@ var _ = Describe("CF-Mgmt Config", func() {
 
 		})
 	})
+
+	Context("Adding Users", func() {
+		Context("AddUserToSpaceConfig", func() {
+			var utilsMgrMock *mock.MockUtilsManager
+			var configDir string
+			var randomUserName string
+			var orgName string
+			var spaceName string
+			BeforeEach(func() {
+				utilsMgrMock = mock.NewMockUtilsManager()
+				PopulateWithTestData(utilsMgrMock)
+				s1 := rand.NewSource(time.Now().UnixNano())
+				r1 := rand.New(s1)
+
+				firstName := make([]byte, 5)
+				lastName := make([]byte, 5)
+
+				r1.Read(firstName)
+				r1.Read(lastName)
+
+				randomUserName = fmt.Sprintf("%X.%X", firstName, lastName)
+				configDir = "./fixtures/user_update"
+				orgName = "test"
+				spaceName = "space1"
+			})
+
+			It("should be able to insert an LDAP space developer", func() {
+				isLdapUser := true
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToSpaceConfig(randomUserName, kSpace.ROLE_SPACE_DEVELOPERS, spaceName, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the space config and check that our randomUserName exists in the target role
+				spaceConfigs, err := m.GetSpaceConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(spaceConfigs).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, spaceConfig := range spaceConfigs {
+					if spaceConfig.Org == orgName && spaceConfig.Space == spaceName {
+						for _, LDAPUser := range spaceConfig.Developer.LDAPUsers {
+							if LDAPUser == randomUserName {
+								foundUserName = true
+								break
+							}
+						}
+					}
+				}
+				Ω(foundUserName).Should(BeTrue())
+			})
+			It("should be able to insert an LDAP space auditor", func() {
+				isLdapUser := true
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToSpaceConfig(randomUserName, kSpace.ROLE_SPACE_AUDITORS, spaceName, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the space config and check that our randomUserName exists in the target role
+				spaceConfigs, err := m.GetSpaceConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(spaceConfigs).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, spaceConfig := range spaceConfigs {
+					if spaceConfig.Org == orgName && spaceConfig.Space == spaceName {
+						for _, LDAPUser := range spaceConfig.Auditor.LDAPUsers {
+							if LDAPUser == randomUserName {
+								foundUserName = true
+								break
+							}
+						}
+					}
+				}
+				Ω(foundUserName).Should(BeTrue())
+			})
+			It("should be able to insert an LDAP space manager", func() {
+				isLdapUser := true
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToSpaceConfig(randomUserName, kSpace.ROLE_SPACE_MANAGERS, spaceName, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the space config and check that our randomUserName exists in the target role
+				spaceConfigs, err := m.GetSpaceConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(spaceConfigs).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, spaceConfig := range spaceConfigs {
+					if spaceConfig.Org == orgName && spaceConfig.Space == spaceName {
+						for _, LDAPUser := range spaceConfig.Manager.LDAPUsers {
+							if LDAPUser == randomUserName {
+								foundUserName = true
+								break
+							}
+						}
+					}
+				}
+				Ω(foundUserName).Should(BeTrue())
+			})
+			It("should be able to insert a service account space developer", func() {
+				isLdapUser := false
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToSpaceConfig(randomUserName, kSpace.ROLE_SPACE_DEVELOPERS, spaceName, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the space config and check that our randomUserName exists in the target role
+				spaceConfigs, err := m.GetSpaceConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(spaceConfigs).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, spaceConfig := range spaceConfigs {
+					if spaceConfig.Org == orgName && spaceConfig.Space == spaceName {
+						for _, User := range spaceConfig.Developer.Users {
+							if User == randomUserName {
+								foundUserName = true
+								break
+							}
+						}
+					}
+				}
+				Ω(foundUserName).Should(BeTrue())
+			})
+			It("should be able to insert a service account space auditor", func() {
+				isLdapUser := false
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToSpaceConfig(randomUserName, kSpace.ROLE_SPACE_AUDITORS, spaceName, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the space config and check that our randomUserName exists in the target role
+				spaceConfigs, err := m.GetSpaceConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(spaceConfigs).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, spaceConfig := range spaceConfigs {
+					if spaceConfig.Org == orgName && spaceConfig.Space == spaceName {
+						for _, User := range spaceConfig.Auditor.Users {
+							if User == randomUserName {
+								foundUserName = true
+								break
+							}
+						}
+					}
+				}
+				Ω(foundUserName).Should(BeTrue())
+			})
+			It("should be able to insert a service account space manager", func() {
+				isLdapUser := false
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToSpaceConfig(randomUserName, kSpace.ROLE_SPACE_MANAGERS, spaceName, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the space config and check that our randomUserName exists in the target role
+				spaceConfigs, err := m.GetSpaceConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(spaceConfigs).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, spaceConfig := range spaceConfigs {
+					if spaceConfig.Org == orgName && spaceConfig.Space == spaceName {
+						for _, User := range spaceConfig.Manager.Users {
+							if User == randomUserName {
+								foundUserName = true
+								break
+							}
+						}
+					}
+				}
+				Ω(foundUserName).Should(BeTrue())
+			})
+		})
+	})
+
 })

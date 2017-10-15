@@ -1,0 +1,12 @@
+space-developer:
+  ldap_users: [default-ldap-user]
+  users: [default-user@test.com]
+  ldap_group: "default-ldap-group"
+space-manager:
+  ldap_users: [default-ldap-user]
+  users: [default-user@test.com]
+  ldap_group: "default-ldap-group"
+space-auditor:
+  ldap_users: [default-ldap-user]
+  users: [default-user@test.com]
+  ldap_group: "default-ldap-group"

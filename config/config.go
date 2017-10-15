@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/ldap"
+	"github.com/pivotalservices/cf-mgmt/space/constants"
 	"github.com/pivotalservices/cf-mgmt/utils"
 	"github.com/xchapter7x/lo"
 )
@@ -33,6 +34,7 @@ type Updater interface {
 	AddSpaceToConfig(spaceConfig *SpaceConfig) error
 	CreateConfigIfNotExists(uaaOrigin string) error
 	DeleteConfigIfExists() error
+	AddUserToSpaceConfig(userName, roleType, spaceName, orgName string, isLdapUser bool) error
 }
 
 // Reader is used to read the cf-mgmt configuration.
@@ -43,6 +45,9 @@ type Reader interface {
 	GetOrgConfigs() ([]OrgConfig, error)
 	GetSpaceConfigs() ([]SpaceConfig, error)
 	GetSpaceDefaults() (*SpaceConfig, error)
+
+	// -- Non Public Facing Functions
+	getSpaceConfigsLoadDefaultOption(loadSpaceDefaults bool) ([]SpaceConfig, error)
 }
 
 // yamlManager is the default implementation of Manager.
@@ -114,11 +119,14 @@ func (m *yamlManager) Spaces() ([]Spaces, error) {
 	return spaceList, nil
 }
 
-func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
+func (m *yamlManager) getSpaceConfigsLoadDefaultOption(loadSpaceDefaults bool) ([]SpaceConfig, error) {
 	fs := m.UtilsMgr
 
 	spaceDefaults := SpaceConfig{}
-	fs.LoadFile(filepath.Join(m.ConfigDir, "spaceDefaults.yml"), &spaceDefaults)
+
+	if loadSpaceDefaults {
+		fs.LoadFile(filepath.Join(m.ConfigDir, "spaceDefaults.yml"), &spaceDefaults)
+	}
 
 	files, err := fs.FindFiles(m.ConfigDir, "spaceConfig.yml")
 	if err != nil {
@@ -135,21 +143,23 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 			return nil, err
 		}
 
-		result[i].Developer.LDAPUsers = append(result[i].Developer.LDAPUsers, spaceDefaults.Developer.LDAPUsers...)
-		result[i].Developer.Users = append(result[i].Developer.Users, spaceDefaults.Developer.Users...)
-		result[i].Developer.SamlUsers = append(result[i].Developer.SamlUsers, spaceDefaults.Developer.SamlUsers...)
+		if loadSpaceDefaults {
+			result[i].Developer.LDAPUsers = append(result[i].Developer.LDAPUsers, spaceDefaults.Developer.LDAPUsers...)
+			result[i].Developer.Users = append(result[i].Developer.Users, spaceDefaults.Developer.Users...)
+			result[i].Developer.SamlUsers = append(result[i].Developer.SamlUsers, spaceDefaults.Developer.SamlUsers...)
 
-		result[i].Auditor.LDAPUsers = append(result[i].Auditor.LDAPUsers, spaceDefaults.Auditor.LDAPUsers...)
-		result[i].Auditor.Users = append(result[i].Auditor.Users, spaceDefaults.Auditor.Users...)
-		result[i].Auditor.SamlUsers = append(result[i].Auditor.SamlUsers, spaceDefaults.Auditor.SamlUsers...)
+			result[i].Auditor.LDAPUsers = append(result[i].Auditor.LDAPUsers, spaceDefaults.Auditor.LDAPUsers...)
+			result[i].Auditor.Users = append(result[i].Auditor.Users, spaceDefaults.Auditor.Users...)
+			result[i].Auditor.SamlUsers = append(result[i].Auditor.SamlUsers, spaceDefaults.Auditor.SamlUsers...)
 
-		result[i].Manager.LDAPUsers = append(result[i].Manager.LDAPUsers, spaceDefaults.Manager.LDAPUsers...)
-		result[i].Manager.Users = append(result[i].Manager.Users, spaceDefaults.Manager.Users...)
-		result[i].Manager.SamlUsers = append(result[i].Manager.SamlUsers, spaceDefaults.Manager.SamlUsers...)
+			result[i].Manager.LDAPUsers = append(result[i].Manager.LDAPUsers, spaceDefaults.Manager.LDAPUsers...)
+			result[i].Manager.Users = append(result[i].Manager.Users, spaceDefaults.Manager.Users...)
+			result[i].Manager.SamlUsers = append(result[i].Manager.SamlUsers, spaceDefaults.Manager.SamlUsers...)
 
-		result[i].Developer.LDAPGroups = append(result[i].GetDeveloperGroups(), spaceDefaults.GetDeveloperGroups()...)
-		result[i].Auditor.LDAPGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
-		result[i].Manager.LDAPGroups = append(result[i].GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
+			result[i].Developer.LDAPGroups = append(result[i].GetDeveloperGroups(), spaceDefaults.GetDeveloperGroups()...)
+			result[i].Auditor.LDAPGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
+			result[i].Manager.LDAPGroups = append(result[i].GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
+		}
 
 		if result[i].EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
@@ -163,6 +173,10 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		}
 	}
 	return result, nil
+}
+
+func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
+	return m.getSpaceConfigsLoadDefaultOption(true)
 }
 
 // GetSpaceDefaults returns the default space configuration, if one was provided.
@@ -296,6 +310,72 @@ func (m *yamlManager) DeleteConfigIfExists() error {
 	return nil
 }
 
+// AddUserToSpaceConfig adds a user to space in a given org.  isLdapUser specifies if the user is to be an ldap user
+func (m *yamlManager) AddUserToSpaceConfig(userName, roleType, spaceName, orgName string, isLdapUser bool) error {
+	// We would like to get the space config first.
+	// This should not include the space defaults
+	spaceConfigs, err := m.getSpaceConfigsLoadDefaultOption(false)
+
+	if err != nil {
+		return err
+	}
+
+	// Add our user to the space users
+	// Find the space, in an Org, from the spaceConfigs array
+	var targetSpaceConfig *SpaceConfig
+
+	for _, spaceConfig := range spaceConfigs {
+		if spaceConfig.Space == spaceName && spaceConfig.Org == orgName {
+			targetSpaceConfig = &spaceConfig
+			break
+		}
+	}
+
+	// Check to ensure that our target space config was found.
+	if targetSpaceConfig == nil {
+		return fmt.Errorf("The space %s was not found in Org %s", spaceName, orgName)
+	}
+
+	// Once we have the space, determine the user management role it fits into
+	var userMgmtStruct *UserMgmt
+
+	switch roleType {
+	case space_constants.ROLE_SPACE_AUDITORS:
+		userMgmtStruct = &targetSpaceConfig.Auditor
+	case space_constants.ROLE_SPACE_DEVELOPERS:
+		userMgmtStruct = &targetSpaceConfig.Developer
+	case space_constants.ROLE_SPACE_MANAGERS:
+		userMgmtStruct = &targetSpaceConfig.Manager
+	default:
+		return fmt.Errorf("Invalid Space Role: %s", roleType)
+	}
+
+	// Choose whether to use the user or the ldapUser to assign the role
+	var targetUserRoleField *[]string
+	if isLdapUser {
+		targetUserRoleField = &userMgmtStruct.LDAPUsers
+	} else {
+		targetUserRoleField = &userMgmtStruct.Users
+	}
+
+	// Validate that the user is not already assigned with that role
+	for _, user := range *targetUserRoleField {
+		if user == userName {
+			userType := ""
+			if isLdapUser {
+				userType = "LDAP "
+			}
+			return fmt.Errorf("%sUser %s already exists in %s/%s with the %s role", userType, userName, orgName, spaceName, roleType)
+		}
+	}
+
+	// Add user into that role type
+	*targetUserRoleField = append(*targetUserRoleField, userName)
+
+	// Dump the file back out
+	return m.UtilsMgr.WriteFile((*targetSpaceConfig).GetSpaceConfigFilenameAndPath(m.ConfigDir, orgName, spaceName), *targetSpaceConfig)
+}
+
 // UserMgmt specifies users and groups that can be associated to a particular org or space.
 type UserMgmt struct {
 	LDAPUsers  []string `yaml:"ldap_users"`
@@ -310,7 +390,6 @@ func (u *UserMgmt) groups(groupName string) []string {
 	for _, group := range u.LDAPGroups {
 		groupMap[group] = group
 	}
-
 	if u.LDAPGroup != "" {
 		groupMap[u.LDAPGroup] = u.LDAPGroup
 	}

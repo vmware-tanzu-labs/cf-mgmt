@@ -105,6 +105,7 @@ const (
 	configDirectory  string = "CONFIG_DIR"
 	orgName          string = "ORG"
 	spaceName        string = "SPACE"
+	roleName         string = "USER_ROLE"
 	ldapPassword     string = "LDAP_PASSWORD"
 	orgBillingMgrGrp string = "ORG_BILLING_MGR_GRP"
 	orgMgrGrp        string = "ORG_MGR_GRP"
@@ -112,6 +113,7 @@ const (
 	spaceDevGrp      string = "SPACE_DEV_GRP"
 	spaceMgrGrp      string = "SPACE_MGR_GRP"
 	spaceAuditorGrp  string = "SPACE_AUDITOR_GRP"
+	isLdapUser       string = "IS_LDAP_USER"
 )
 
 func main() {
@@ -141,6 +143,7 @@ func NewApp() *cli.App {
 		CreateInitCommand(),
 		CreateAddOrgCommand(),
 		CreateAddSpaceCommand(),
+		CreateAddUserToSpaceConfigCommand(),
 		CreateExportConfigCommand(),
 		CreateGeneratePipelineCommand(runGeneratePipeline),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
@@ -304,6 +307,73 @@ func CreateAddSpaceCommand() cli.Command {
 		Action:      runAddSpace,
 		Flags:       buildFlags(flagList),
 	}
+}
+
+//CreateAddUserToSpaceConfigCommand -
+func CreateAddUserToSpaceConfigCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "org name of space",
+			EnvVar: orgName,
+		},
+		spaceName: {
+			Desc:   "space name to which we add our user to",
+			EnvVar: spaceName,
+		},
+		userID: {
+			Desc:   "The user ID to add",
+			EnvVar: userID,
+		},
+		roleName: {
+			Desc:   "The Space role name: developers, managers or auditors",
+			EnvVar: roleName,
+		},
+		isLdapUser: {
+			Desc:   "Boolean flag for whether the user is to be added into the LDAP Users. If blank, defaults to FALSE.",
+			EnvVar: isLdapUser,
+		},
+	}
+
+	return cli.Command{
+		Name:        "add-user-to-space-config",
+		Usage:       "adds specified user to space of an org",
+		Description: "adds specified user to space of an org",
+		Action:      runAddUserToSpaceConfig,
+		Flags:       buildFlags(flagList),
+	}
+}
+
+func runAddUserToSpaceConfig(c *cli.Context) error {
+	var err error
+
+	configDir := getConfigDir(c)
+	addUserID := c.String(getFlag(userID))
+	userRole := c.String(getFlag(roleName))
+	inputOrg := c.String(getFlag(orgName))
+	inputSpace := c.String(getFlag(spaceName))
+	isLdapUser := c.Bool(getFlag(isLdapUser))
+
+	if addUserID == "" ||
+		userRole == "" ||
+		inputOrg == "" ||
+		inputSpace == "" {
+		err = fmt.Errorf("Must ensure User ID, User Role, Org Name and Space name are not empty")
+	} else {
+		err = config.NewManager(configDir, utils.NewDefaultManager()).AddUserToSpaceConfig(addUserID, userRole, inputSpace, inputOrg, isLdapUser)
+		if err == nil {
+			userType := ""
+			if isLdapUser {
+				userType = "LDAP "
+			}
+			fmt.Printf("%sUser %s was successfully added into %s/%s with the %s role", userType, addUserID, inputOrg, inputSpace, userRole)
+		}
+	}
+
+	return err
 }
 
 func runAddSpace(c *cli.Context) error {
