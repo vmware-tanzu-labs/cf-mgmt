@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
 	. "github.com/pivotalservices/cf-mgmt/config/test_data"
+	kOrg "github.com/pivotalservices/cf-mgmt/organization/constants"
 	kSpace "github.com/pivotalservices/cf-mgmt/space/constants"
 	mock "github.com/pivotalservices/cf-mgmt/utils/mocks"
 )
@@ -305,6 +306,156 @@ var _ = Describe("CF-Mgmt Config", func() {
 								break
 							}
 						}
+					}
+				}
+				Ω(foundUserName).Should(BeTrue())
+			})
+		})
+
+		Context("AddUserToOrgConfig", func() {
+			var utilsMgrMock *mock.MockUtilsManager
+			var randomUserName string
+			var configDir string
+			var orgName string
+			BeforeEach(func() {
+				utilsMgrMock = mock.NewMockUtilsManager()
+				PopulateWithTestData(utilsMgrMock)
+				s1 := rand.NewSource(time.Now().UnixNano())
+				r1 := rand.New(s1)
+
+				firstName := make([]byte, 5)
+				lastName := make([]byte, 5)
+
+				r1.Read(firstName)
+				r1.Read(lastName)
+
+				randomUserName = fmt.Sprintf("%X.%X", firstName, lastName)
+				configDir = "./fixtures/user_update"
+				orgName = "test"
+			})
+
+			It("should be able to insert an LDAP Org Manager", func() {
+				isLdapUser := true
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToOrgConfig(randomUserName, kOrg.ROLE_ORG_MANAGERS, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the org config and check that our randomUserName exists in the target role
+				orgConfig, err := m.GetAnOrgConfig(orgName)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(orgConfig).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, LDAPUser := range orgConfig.Manager.LDAPUsers {
+					if LDAPUser == randomUserName {
+						foundUserName = true
+						break
+					}
+				}
+
+				Ω(foundUserName).Should(BeTrue())
+			})
+			It("should be able to insert an LDAP Org Auditor", func() {
+				isLdapUser := true
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToOrgConfig(randomUserName, kOrg.ROLE_ORG_AUDITORS, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the org config and check that our randomUserName exists in the target role
+				orgConfig, err := m.GetAnOrgConfig(orgName)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(orgConfig).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, LDAPUser := range orgConfig.Auditor.LDAPUsers {
+					if LDAPUser == randomUserName {
+						foundUserName = true
+						break
+					}
+				}
+
+				Ω(foundUserName).Should(BeTrue())
+			})
+			It("should be able to insert an LDAP Org Billing Manager", func() {
+				isLdapUser := true
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToOrgConfig(randomUserName, kOrg.ROLE_ORG_BILLING_MANAGERS, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the org config and check that our randomUserName exists in the target role
+				orgConfig, err := m.GetAnOrgConfig(orgName)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(orgConfig).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, LDAPUser := range orgConfig.BillingManager.LDAPUsers {
+					if LDAPUser == randomUserName {
+						foundUserName = true
+						break
+					}
+				}
+
+				Ω(foundUserName).Should(BeTrue())
+			})
+			It("should be able to insert a service account Org Manager", func() {
+				isLdapUser := false
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToOrgConfig(randomUserName, kOrg.ROLE_ORG_MANAGERS, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the org config and check that our randomUserName exists in the target role
+				m = config.NewManager(configDir, utilsMgrMock)
+				orgConfig, err := m.GetAnOrgConfig(orgName)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(orgConfig).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, User := range orgConfig.Manager.Users {
+					if User == randomUserName {
+						foundUserName = true
+						break
+					}
+				}
+
+				Ω(foundUserName).Should(BeTrue())
+			})
+			It("should be able to insert a service account Org auditor", func() {
+				isLdapUser := false
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToOrgConfig(randomUserName, kOrg.ROLE_ORG_AUDITORS, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the org config and check that our randomUserName exists in the target role
+				m = config.NewManager(configDir, utilsMgrMock)
+				orgConfig, err := m.GetAnOrgConfig(orgName)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(orgConfig).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, User := range orgConfig.Auditor.Users {
+					if User == randomUserName {
+						foundUserName = true
+						break
+					}
+				}
+				Ω(foundUserName).Should(BeTrue())
+			})
+			It("should be able to insert a service account Org billing manager", func() {
+				isLdapUser := false
+				m := config.NewManager(configDir, utilsMgrMock)
+				err := m.AddUserToOrgConfig(randomUserName, kOrg.ROLE_ORG_BILLING_MANAGERS, orgName, isLdapUser)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get the org config and check that our randomUserName exists in the target role
+				orgConfig, err := m.GetAnOrgConfig(orgName)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(orgConfig).ShouldNot(BeNil())
+
+				foundUserName := false
+				for _, User := range orgConfig.BillingManager.Users {
+					if User == randomUserName {
+						foundUserName = true
+						break
 					}
 				}
 				Ω(foundUserName).Should(BeTrue())

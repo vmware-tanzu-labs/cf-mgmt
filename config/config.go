@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/ldap"
+	"github.com/pivotalservices/cf-mgmt/organization/constants"
 	"github.com/pivotalservices/cf-mgmt/space/constants"
 	"github.com/pivotalservices/cf-mgmt/utils"
 	"github.com/xchapter7x/lo"
@@ -35,6 +36,7 @@ type Updater interface {
 	CreateConfigIfNotExists(uaaOrigin string) error
 	DeleteConfigIfExists() error
 	AddUserToSpaceConfig(userName, roleType, spaceName, orgName string, isLdapUser bool) error
+	AddUserToOrgConfig(userName, roleType, orgName string, isLdapUser bool) error
 }
 
 // Reader is used to read the cf-mgmt configuration.
@@ -43,6 +45,8 @@ type Reader interface {
 	Spaces() ([]Spaces, error)
 
 	GetOrgConfigs() ([]OrgConfig, error)
+	GetAnOrgConfig(orgName string) (*OrgConfig, error)
+
 	GetSpaceConfigs() ([]SpaceConfig, error)
 	GetSpaceDefaults() (*SpaceConfig, error)
 
@@ -374,6 +378,78 @@ func (m *yamlManager) AddUserToSpaceConfig(userName, roleType, spaceName, orgNam
 
 	// Dump the file back out
 	return m.UtilsMgr.WriteFile((*targetSpaceConfig).GetSpaceConfigFilenameAndPath(m.ConfigDir, orgName, spaceName), *targetSpaceConfig)
+}
+
+func (m *yamlManager) GetAnOrgConfig(orgName string) (*OrgConfig, error) {
+	orgConfigs, err := m.GetOrgConfigs()
+	if err != nil {
+		return nil, err
+	}
+
+	// Add our user to the org users
+	// Find the Org, from the orgConfigs array
+	var targetOrgConfig *OrgConfig
+	// Get a pointer to the target org
+	for _, orgConfig := range orgConfigs {
+		if orgConfig.Org == orgName {
+			targetOrgConfig = &orgConfig
+			break
+		}
+	}
+
+	// Check to ensure that our target org config was found.
+	if targetOrgConfig == nil {
+		return nil, fmt.Errorf("The org %s was not found", orgName)
+	}
+
+	return targetOrgConfig, nil
+}
+
+// AddUserToOrgConfig adds a user to a given org.  isLdapUser specifies if the user is to be an ldap user
+func (m *yamlManager) AddUserToOrgConfig(userName, roleType, orgName string, isLdapUser bool) error {
+	orgConfig, err := m.GetAnOrgConfig(orgName)
+	if err != nil {
+		return err
+	}
+
+	// Once we have the org, determine the user management role it fits into
+	var userMgmtStruct *UserMgmt
+
+	switch roleType {
+	case organization_constants.ROLE_ORG_AUDITORS:
+		userMgmtStruct = &orgConfig.Auditor
+	case organization_constants.ROLE_ORG_BILLING_MANAGERS:
+		userMgmtStruct = &orgConfig.BillingManager
+	case organization_constants.ROLE_ORG_MANAGERS:
+		userMgmtStruct = &orgConfig.Manager
+	default:
+		return fmt.Errorf("Invalid Org Role: %s", roleType)
+	}
+
+	// Choose whether to use the user or the ldapUser to assign the role
+	var targetUserRoleField *[]string
+	if isLdapUser {
+		targetUserRoleField = &userMgmtStruct.LDAPUsers
+	} else {
+		targetUserRoleField = &userMgmtStruct.Users
+	}
+
+	// Validate that the user is not already assigned with that role
+	for _, user := range *targetUserRoleField {
+		if user == userName {
+			userType := ""
+			if isLdapUser {
+				userType = "LDAP "
+			}
+			return fmt.Errorf("%sUser %s already exists in %s with the %s role", userType, userName, orgName, roleType)
+		}
+	}
+
+	// Add user into that role type
+	*targetUserRoleField = append(*targetUserRoleField, userName)
+
+	// Dump the file back out
+	return m.UtilsMgr.WriteFile((*orgConfig).GetOrgConfigFilenameAndPath(m.ConfigDir, orgName), *orgConfig)
 }
 
 // UserMgmt specifies users and groups that can be associated to a particular org or space.

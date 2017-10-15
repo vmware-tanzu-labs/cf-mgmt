@@ -144,6 +144,7 @@ func NewApp() *cli.App {
 		CreateAddOrgCommand(),
 		CreateAddSpaceCommand(),
 		CreateAddUserToSpaceConfigCommand(),
+		CreateAddUserToOrgConfigCommand(),
 		CreateExportConfigCommand(),
 		CreateGeneratePipelineCommand(runGeneratePipeline),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
@@ -345,6 +346,67 @@ func CreateAddUserToSpaceConfigCommand() cli.Command {
 		Action:      runAddUserToSpaceConfig,
 		Flags:       buildFlags(flagList),
 	}
+}
+
+//CreateAddUserToOrgConfigCommand -
+func CreateAddUserToOrgConfigCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "org name of space",
+			EnvVar: orgName,
+		},
+		userID: {
+			Desc:   "The user ID to add",
+			EnvVar: userID,
+		},
+		roleName: {
+			Desc:   "The Org role name: managers, billing_managers or auditors",
+			EnvVar: roleName,
+		},
+		isLdapUser: {
+			Desc:   "Boolean flag for whether the user is to be added into the LDAP Users. If blank, defaults to FALSE.",
+			EnvVar: isLdapUser,
+		},
+	}
+
+	return cli.Command{
+		Name:        "add-user-to-org-config",
+		Usage:       "adds specified user to an org",
+		Description: "adds specified user to an org",
+		Action:      runAddUserToOrgConfig,
+		Flags:       buildFlags(flagList),
+	}
+}
+
+func runAddUserToOrgConfig(c *cli.Context) error {
+	var err error
+
+	configDir := getConfigDir(c)
+	addUserID := c.String(getFlag(userID))
+	userRole := c.String(getFlag(roleName))
+	inputOrg := c.String(getFlag(orgName))
+	isLdapUser := c.Bool(getFlag(isLdapUser))
+
+	if addUserID == "" ||
+		userRole == "" ||
+		inputOrg == "" {
+		err = fmt.Errorf("Must ensure User ID, User Role and Org Name name are not empty")
+	} else {
+		err = config.NewManager(configDir, utils.NewDefaultManager()).AddUserToOrgConfig(addUserID, userRole, inputOrg, isLdapUser)
+		if err == nil {
+			userType := ""
+			if isLdapUser {
+				userType = "LDAP "
+			}
+			fmt.Printf("%sUser %s was successfully added to %s with the %s role", userType, addUserID, inputOrg, userRole)
+		}
+	}
+
+	return err
 }
 
 func runAddUserToSpaceConfig(c *cli.Context) error {
