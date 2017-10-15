@@ -4,7 +4,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,13 +49,15 @@ type Reader interface {
 // It is backed by a directory of YAML files.
 type yamlManager struct {
 	ConfigDir string
+	UtilsMgr  utils.Manager
 }
 
 // NewManager creates a Manager that is backed by a set of YAML
 // files in the specified configuration directory.
-func NewManager(configDir string) Manager {
+func NewManager(configDir string, utilsMgr utils.Manager) Manager {
 	return &yamlManager{
 		ConfigDir: configDir,
+		UtilsMgr:  utilsMgr,
 	}
 }
 
@@ -65,7 +66,7 @@ func (m *yamlManager) Orgs() (Orgs, error) {
 	configFile := filepath.Join(m.ConfigDir, "orgs.yml")
 	lo.G.Info("Processing org file", configFile)
 	input := Orgs{}
-	if err := utils.NewDefaultManager().LoadFile(configFile, &input); err != nil {
+	if err := m.UtilsMgr.LoadFile(configFile, &input); err != nil {
 		return Orgs{}, err
 	}
 	return input, nil
@@ -73,28 +74,29 @@ func (m *yamlManager) Orgs() (Orgs, error) {
 
 // GetOrgConfigs reads all orgs from the cf-mgmt configuration.
 func (m *yamlManager) GetOrgConfigs() ([]OrgConfig, error) {
-	fs := utils.NewDefaultManager()
+	fs := m.UtilsMgr
 	files, err := fs.FindFiles(m.ConfigDir, "orgConfig.yml")
 	if err != nil {
 		return nil, err
 	}
+
 	result := make([]OrgConfig, len(files))
 	for i, f := range files {
 		result[i].AppInstanceLimit = -1
 		result[i].TotalReservedRoutePorts = 0
 		result[i].TotalPrivateDomains = -1
 		result[i].TotalServiceKeys = -1
-
 		if err = fs.LoadFile(f, &result[i]); err != nil {
 			lo.G.Error(err)
 			return nil, err
 		}
 	}
+
 	return result, nil
 }
 
 func (m *yamlManager) Spaces() ([]Spaces, error) {
-	fs := utils.NewDefaultManager()
+	fs := m.UtilsMgr
 	files, err := fs.FindFiles(m.ConfigDir, "spaces.yml")
 	if err != nil {
 		return nil, err
@@ -113,7 +115,7 @@ func (m *yamlManager) Spaces() ([]Spaces, error) {
 }
 
 func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
-	fs := utils.NewDefaultManager()
+	fs := m.UtilsMgr
 
 	spaceDefaults := SpaceConfig{}
 	fs.LoadFile(filepath.Join(m.ConfigDir, "spaceDefaults.yml"), &spaceDefaults)
@@ -152,7 +154,7 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		if result[i].EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
 			lo.G.Debug("Loading security group contents", securityGroupFile)
-			bytes, err := ioutil.ReadFile(securityGroupFile)
+			bytes, err := m.UtilsMgr.LoadFileBytes(securityGroupFile)
 			if err != nil {
 				return nil, err
 			}
@@ -167,7 +169,7 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 // If no space defaults were configured, a nil config and a nil error are returned.
 func (m *yamlManager) GetSpaceDefaults() (*SpaceConfig, error) {
 	fp := filepath.Join(m.ConfigDir, "spaceDefaults.yml")
-	fs := utils.NewDefaultManager()
+	fs := m.UtilsMgr
 
 	if !fs.FileOrDirectoryExists(fp) {
 		return nil, nil
@@ -185,7 +187,7 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 		return errors.New("cannot have an empty org name")
 	}
 
-	mgr := utils.NewDefaultManager()
+	mgr := m.UtilsMgr
 	orgList := &Orgs{}
 	err := mgr.LoadFile(orgFileName, orgList)
 	if err != nil {
@@ -223,7 +225,7 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	spaceFileName := filepath.Join(m.ConfigDir, orgName, "spaces.yml")
 	spaceList := &Spaces{}
 	spaceName := spaceConfig.Space
-	mgr := utils.NewDefaultManager()
+	mgr := m.UtilsMgr
 
 	if err := mgr.LoadFile(spaceFileName, spaceList); err != nil {
 		return err
@@ -251,7 +253,7 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 // CreateConfigIfNotExists initializes a new configuration directory.
 // If the specified configuration directory already exists, it is left unmodified.
 func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
-	mgr := utils.NewDefaultManager()
+	mgr := m.UtilsMgr
 	if mgr.FileOrDirectoryExists(m.ConfigDir) {
 		lo.G.Infof("Config directory %s already exists, skipping creation", m.ConfigDir)
 		return nil
@@ -281,7 +283,7 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 
 // DeleteConfigIfExists deletes config directory if it exists.
 func (m *yamlManager) DeleteConfigIfExists() error {
-	utilsManager := utils.NewDefaultManager()
+	utilsManager := m.UtilsMgr
 	if !utilsManager.FileOrDirectoryExists(m.ConfigDir) {
 		lo.G.Infof("%s doesn't exists, nothing to delete", m.ConfigDir)
 		return nil
@@ -308,6 +310,7 @@ func (u *UserMgmt) groups(groupName string) []string {
 	for _, group := range u.LDAPGroups {
 		groupMap[group] = group
 	}
+
 	if u.LDAPGroup != "" {
 		groupMap[u.LDAPGroup] = u.LDAPGroup
 	}

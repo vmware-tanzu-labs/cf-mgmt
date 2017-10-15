@@ -7,11 +7,15 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
+	. "github.com/pivotalservices/cf-mgmt/isosegment/test_data"
+	mocks "github.com/pivotalservices/cf-mgmt/utils/mocks"
 )
 
 func newTestUpdater(m manager) *Updater {
+	utilsMockManager := mocks.NewMockUtilsManager()
+	PopulateWithTestData(utilsMockManager)
 	return &Updater{
-		Cfg:     config.NewManager("./fixtures/0001"),
+		Cfg:     config.NewManager("./fixtures/0001", utilsMockManager),
 		DryRun:  false,
 		CleanUp: true,
 		cc:      m,

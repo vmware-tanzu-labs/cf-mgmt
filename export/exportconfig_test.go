@@ -10,10 +10,10 @@ import (
 	ccmock "github.com/pivotalservices/cf-mgmt/cloudcontroller/mocks"
 	"github.com/pivotalservices/cf-mgmt/config"
 	. "github.com/pivotalservices/cf-mgmt/export"
+	"github.com/pivotalservices/cf-mgmt/utils"
 
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	uaacmock "github.com/pivotalservices/cf-mgmt/uaac/mocks"
-	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
 func cloudControllerOrgUserMock(mockController *ccmock.MockManager, entityGUID string, mangers, billingManagers, auditors map[string]string) {
@@ -31,12 +31,14 @@ func cloudControllerSpaceUserMock(mockController *ccmock.MockManager, entityGUID
 var _ = Describe("Export manager", func() {
 	Describe("Create new manager", func() {
 		It("should return new manager", func() {
+			utilsMgr := utils.NewDefaultManager()
 			ctrl := gomock.NewController(test)
-			manager := NewExportManager("config", uaacmock.NewMockManager(ctrl), ccmock.NewMockManager(ctrl))
+			manager := NewExportManager("config", uaacmock.NewMockManager(ctrl), ccmock.NewMockManager(ctrl), utilsMgr)
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})
 	var (
+		utilsMgr       utils.Manager
 		ctrl           *gomock.Controller
 		mockController *ccmock.MockManager
 		mockUaac       *uaacmock.MockManager
@@ -46,10 +48,11 @@ var _ = Describe("Export manager", func() {
 	)
 
 	BeforeEach(func() {
+		utilsMgr = utils.NewDefaultManager()
 		ctrl = gomock.NewController(test)
 		mockController = ccmock.NewMockManager(ctrl)
 		mockUaac = uaacmock.NewMockManager(ctrl)
-		exportManager = NewExportManager("test/config", mockUaac, mockController)
+		exportManager = NewExportManager("test/config", mockUaac, mockController, utilsMgr)
 		excludedOrgs = make(map[string]string)
 		excludedSpaces = make(map[string]string)
 	})

@@ -4,6 +4,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
+	. "github.com/pivotalservices/cf-mgmt/config/test_data"
+	mock "github.com/pivotalservices/cf-mgmt/utils/mocks"
 )
 
 var _ = Describe("CF-Mgmt Config", func() {
@@ -20,15 +22,20 @@ var _ = Describe("CF-Mgmt Config", func() {
 
 	Context("Default Config Reader", func() {
 		Context("GetOrgConfigs", func() {
+			var utilsMgrMock *mock.MockUtilsManager
+			BeforeEach(func() {
+				utilsMgrMock = mock.NewMockUtilsManager()
+				PopulateWithTestData(utilsMgrMock)
+			})
 			It("should return a list of 2", func() {
-				m := config.NewManager("./fixtures/config")
+				m := config.NewManager("./fixtures/config", utilsMgrMock)
 				c, err := m.GetOrgConfigs()
 				Ω(err).ShouldNot(HaveOccurred())
 				Ω(c).Should(HaveLen(2))
 			})
 
 			It("should return a list of 1", func() {
-				m := config.NewManager("./fixtures/user_config")
+				m := config.NewManager("./fixtures/user_config", utilsMgrMock)
 				c, err := m.GetOrgConfigs()
 				Ω(err).ShouldNot(HaveOccurred())
 				Ω(c).Should(HaveLen(1))
@@ -40,7 +47,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 			})
 
 			It("should fail when given an invalid config dir", func() {
-				m := config.NewManager("./fixtures/blah")
+				m := config.NewManager("./fixtures/blah", utilsMgrMock)
 				c, err := m.GetOrgConfigs()
 				Ω(err).Should(HaveOccurred())
 				Ω(c).Should(BeEmpty())
@@ -48,8 +55,13 @@ var _ = Describe("CF-Mgmt Config", func() {
 		})
 
 		Context("GetSpaceConfigs", func() {
+			var utilsMgrMock *mock.MockUtilsManager
+			BeforeEach(func() {
+				utilsMgrMock = mock.NewMockUtilsManager()
+				PopulateWithTestData(utilsMgrMock)
+			})
 			It("should return a single space", func() {
-				m := config.NewManager("./fixtures/space-defaults")
+				m := config.NewManager("./fixtures/space-defaults", utilsMgrMock)
 				cfgs, err := m.GetSpaceConfigs()
 				Ω(err).ShouldNot(HaveOccurred())
 				Ω(cfgs).Should(HaveLen(1))
@@ -70,21 +82,23 @@ var _ = Describe("CF-Mgmt Config", func() {
 			})
 
 			It("should return a list of 2", func() {
-				m := config.NewManager("./fixtures/config")
+				m := config.NewManager("./fixtures/config", utilsMgrMock)
 				configs, err := m.GetSpaceConfigs()
 				Ω(err).ShouldNot(HaveOccurred())
 				Ω(configs).Should(HaveLen(2))
 			})
 
 			It("should return configs for user info", func() {
-				m := config.NewManager("./fixtures/user_config")
+				utilsMgrMock.MockFileData = map[string]interface{}{}
+				PopulateWithTestData(utilsMgrMock)
+				m := config.NewManager("./fixtures/user_config", utilsMgrMock)
 				configs, err := m.GetSpaceConfigs()
 				Ω(err).ShouldNot(HaveOccurred())
 				Ω(configs).Should(HaveLen(1))
 			})
 
 			It("should return configs for user info", func() {
-				m := config.NewManager("./fixtures/user_config_multiple_groups")
+				m := config.NewManager("./fixtures/user_config_multiple_groups", utilsMgrMock)
 				configs, err := m.GetSpaceConfigs()
 				Ω(err).ShouldNot(HaveOccurred())
 				Ω(configs).Should(HaveLen(1))
@@ -96,21 +110,22 @@ var _ = Describe("CF-Mgmt Config", func() {
 
 			Context("failure cases", func() {
 				It("should return an error when no security.json file is provided", func() {
-					m := config.NewManager("./fixtures/no-security-json")
+					m := config.NewManager("./fixtures/no-security-json", utilsMgrMock)
 					configs, err := m.GetSpaceConfigs()
 					Ω(err).Should(HaveOccurred())
 					Ω(configs).Should(BeNil())
 				})
 
 				It("should return an error when malformed yaml", func() {
-					m := config.NewManager("./fixtures/bad-yml")
+					utilsMgrMock.MockFileDataHasError = true
+					m := config.NewManager("./fixtures/bad-yml", utilsMgrMock)
 					configs, err := m.GetSpaceConfigs()
 					Ω(err).Should(HaveOccurred())
 					Ω(configs).Should(BeNil())
 				})
 
 				It("should return an error when path does not exist", func() {
-					m := config.NewManager("./fixtures/blah")
+					m := config.NewManager("./fixtures/blah", utilsMgrMock)
 					configs, err := m.GetSpaceConfigs()
 					Ω(err).Should(HaveOccurred())
 					Ω(configs).Should(BeNil())

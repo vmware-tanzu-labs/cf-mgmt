@@ -1,4 +1,6 @@
 package: github.com/pivotalservices/cf-mgmt
+excludeDirs:
+- testdatagenerator
 import:
 - package: github.com/parnurzeal/gorequest
 - package: github.com/moul/http2curl

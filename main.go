@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pivotalservices/cf-mgmt/utils"
+
 	"github.com/codegangsta/cli"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -42,6 +44,7 @@ type CFMgmt struct {
 	SystemDomain    string
 	UAACManager     uaac.Manager
 	CloudController cloudcontroller.Manager
+	UtilsMgr        utils.Manager
 }
 
 //InitializeManager -
@@ -60,7 +63,6 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 		return nil, fmt.Errorf("must set system-domain, user-id, client-secret properties")
 	}
 
-	cfg := config.NewManager(configDir)
 	var cfToken, uaacToken string
 	var err error
 	cfMgmt := &CFMgmt{}
@@ -69,6 +71,8 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	cfMgmt.ConfigDirectory = configDir
 	cfMgmt.SystemDomain = sysDomain
 	cfMgmt.UAAManager = uaa.NewDefaultUAAManager(sysDomain, user)
+	cfMgmt.UtilsMgr = utils.NewDefaultManager()
+	cfg := config.NewManager(configDir, cfMgmt.UtilsMgr)
 
 	if uaacToken, err = cfMgmt.UAAManager.GetUAACToken(secret); err != nil {
 		return nil, err
@@ -88,7 +92,7 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	}
 	cfMgmt.OrgManager = organization.NewManager(sysDomain, cfToken, uaacToken, cfg)
 	cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken, cfg)
-	cfMgmt.ConfigManager = config.NewManager(configDir)
+	cfMgmt.ConfigManager = cfg
 
 	return cfMgmt, nil
 }
@@ -215,7 +219,7 @@ func CreateInitCommand() cli.Command {
 
 func runInit(c *cli.Context) error {
 	configDir := getConfigDir(c)
-	configManager := config.NewManager(configDir)
+	configManager := config.NewManager(configDir, utils.NewDefaultManager())
 	return configManager.CreateConfigIfNotExists("ldap")
 }
 
@@ -261,7 +265,7 @@ func runAddOrg(c *cli.Context) error {
 		ManagerGroup:        c.String(getFlag(orgMgrGrp)),
 		AuditorGroup:        c.String(getFlag(orgAuditorGrp)),
 	}
-	return config.NewManager(getConfigDir(c)).AddOrgToConfig(orgConfig)
+	return config.NewManager(getConfigDir(c), utils.NewDefaultManager()).AddOrgToConfig(orgConfig)
 }
 
 //CreateAddSpaceCommand -
@@ -318,7 +322,7 @@ func runAddSpace(c *cli.Context) error {
 	if inputOrg == "" || inputSpace == "" {
 		return fmt.Errorf("Must provide org name and space name")
 	}
-	return config.NewManager(configDr).AddSpaceToConfig(spaceConfig)
+	return config.NewManager(configDr, utils.NewDefaultManager()).AddSpaceToConfig(spaceConfig)
 }
 
 //CreateGeneratePipelineCommand -
@@ -498,7 +502,7 @@ func runUpdateIsoSegments(c *cli.Context) error {
 		return err
 	}
 
-	u.Cfg = config.NewManager(cfMgmt.ConfigDirectory)
+	u.Cfg = config.NewManager(cfMgmt.ConfigDirectory, utils.NewDefaultManager())
 	u.CleanUp = c.Bool("clean-up")
 	u.DryRun = c.Bool("dry-run")
 
@@ -605,7 +609,7 @@ func runExportConfig(c *cli.Context) error {
 	var err error
 	cfMgmt, err = InitializeManager(c)
 	if cfMgmt != nil {
-		exportManager := export.NewExportManager(cfMgmt.ConfigDirectory, cfMgmt.UAACManager, cfMgmt.CloudController)
+		exportManager := export.NewExportManager(cfMgmt.ConfigDirectory, cfMgmt.UAACManager, cfMgmt.CloudController, cfMgmt.UtilsMgr)
 		excludedOrgs := make(map[string]string)
 		excludedOrgs["system"] = "system"
 		orgsExcludedByUser := c.StringSlice(getFlag("excluded-org"))

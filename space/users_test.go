@@ -8,6 +8,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	l "github.com/pivotalservices/cf-mgmt/ldap"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap/mocks"
+	"github.com/pivotalservices/cf-mgmt/utils"
 
 	. "github.com/pivotalservices/cf-mgmt/space"
 	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
@@ -16,7 +17,7 @@ import (
 var _ = Describe("given SpaceManager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("."))
+			manager := NewManager("test.com", "token", "uaacToken", config.NewManager(".", utils.NewDefaultManager()))
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})

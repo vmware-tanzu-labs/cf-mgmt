@@ -18,12 +18,14 @@ import (
 var _ = Describe("given OrgManager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/config"))
+
+			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/config", utils.NewDefaultManager()))
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})
 
 	var (
+		utilsMgr            utils.Manager
 		ctrl                *gomock.Controller
 		mockCloudController *cc.MockManager
 		mockLdap            *ldap.MockManager
@@ -32,12 +34,13 @@ var _ = Describe("given OrgManager", func() {
 	)
 
 	BeforeEach(func() {
+		utilsMgr = utils.NewDefaultManager()
 		ctrl = gomock.NewController(test)
 		mockCloudController = cc.NewMockManager(ctrl)
 		mockLdap = ldap.NewMockManager(ctrl)
 		mockUaac = uaac.NewMockManager(ctrl)
 		orgManager = DefaultOrgManager{
-			Cfg:             config.NewManager("./fixtures/config"),
+			Cfg:             config.NewManager("./fixtures/config", utilsMgr),
 			CloudController: mockCloudController,
 			UAACMgr:         mockUaac,
 			UtilsMgr:        utils.NewDefaultManager(),
@@ -167,7 +170,7 @@ var _ = Describe("given OrgManager", func() {
 
 	Context("DeleteOrgs()", func() {
 		BeforeEach(func() {
-			orgManager.Cfg = config.NewManager("./fixtures/config-delete")
+			orgManager.Cfg = config.NewManager("./fixtures/config-delete", utilsMgr)
 		})
 
 		It("should delete 1", func() {
@@ -238,7 +241,7 @@ var _ = Describe("given OrgManager", func() {
 	Context("CreateQuotas()", func() {
 		var orgs []*cloudcontroller.Org
 		BeforeEach(func() {
-			orgManager.Cfg = config.NewManager("./fixtures/config")
+			orgManager.Cfg = config.NewManager("./fixtures/config", utilsMgr)
 
 			orgs = []*cloudcontroller.Org{
 				{
@@ -434,7 +437,7 @@ var _ = Describe("given OrgManager", func() {
 	Context("CreatePrivateDomains()", func() {
 		var orgs []*cloudcontroller.Org
 		BeforeEach(func() {
-			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains")
+			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains", utilsMgr)
 
 			orgs = []*cloudcontroller.Org{
 				{

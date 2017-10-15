@@ -6,6 +6,7 @@ import (
 	kOrg "github.com/pivotalservices/cf-mgmt/organization/constants"
 	kSpace "github.com/pivotalservices/cf-mgmt/space/constants"
 	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/utils"
 	"github.com/xchapter7x/lo"
 )
 
@@ -13,11 +14,12 @@ import (
 func NewExportManager(
 	configDir string,
 	uaacMgr uaac.Manager,
-	cloudController cc.Manager) Manager {
+	cloudController cc.Manager, utilsMgr utils.Manager) Manager {
 	return &DefaultImportManager{
 		ConfigDir:       configDir,
 		UAACMgr:         uaacMgr,
 		CloudController: cloudController,
+		UtilsMgr:        utilsMgr,
 	}
 }
 
@@ -36,7 +38,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		lo.G.Errorf("Unable to retrieve orgs. Error : %s", err)
 		return err
 	}
-	configMgr := config.NewManager(im.ConfigDir)
+	configMgr := config.NewManager(im.ConfigDir, im.UtilsMgr)
 	lo.G.Info("Trying to delete existing config directory")
 	//Delete existing config directory
 	err = configMgr.DeleteConfigIfExists()
