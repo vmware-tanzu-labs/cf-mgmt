@@ -1,7 +1,5 @@
 package config
 
-import "errors"
-
 // Spaces describes cf-mgmt config for all spaces.
 type Spaces struct {
 	Org                string   `yaml:"org"`
