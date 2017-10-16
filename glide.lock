@@ -1,13 +1,18 @@
 hash: 977830f674d3358adba3af25edfa4ac9f5c9f12f50fafe368c132d165ccbb3dc
-updated: 2017-09-19T20:58:55.009291349-06:00
+updated: 2017-10-11T16:17:13.942947-05:00
 imports:
 - name: code.cloudfoundry.org/cli
-  version: 0a6c4bf2595c3b3abef6a087619f0c7b7eca7f78
+  version: ec915913ecaa30df275ee2aef9df5b58743bc6d4
   subpackages:
   - api/cloudcontroller
   - api/cloudcontroller/ccerror
   - api/cloudcontroller/ccv3
   - api/cloudcontroller/ccv3/internal
+  - api/cloudcontroller/wrapper
+  - api/uaa
+  - api/uaa/internal
+  - api/uaa/wrapper
+  - api/uaa/wrapper/util
   - types
 - name: github.com/blang/semver
   version: 4a1e882c79dcf4ec00d2e29fac74b9c8938d5052
