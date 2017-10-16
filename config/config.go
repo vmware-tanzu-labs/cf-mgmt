@@ -102,7 +102,6 @@ func (m *yamlManager) ASGs() (ASGs, error) {
 // GetASGConfigs reads all ASGs from the cf-mgmt configuration.
 func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 	fs := utils.NewDefaultManager()
-	//lo.G.Info(m.ConfigDir + "/asgs/")
 	files, err := fs.FindFiles(m.ConfigDir+"/asgs/", ".json")
 	if err != nil {
 		return nil, err
@@ -215,11 +214,9 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 				}
 			}
 			if found == false {
-				return nil, errors.New("cannot have an named security group with a name that does not match the a global name")
+				return nil, fmt.Errorf("cannot have an named security group with a name that does not match the a global name")
 			}
-
 		}
-
 		if result[i].EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
 			lo.G.Debug("Loading security group contents", securityGroupFile)
