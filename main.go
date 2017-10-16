@@ -104,6 +104,7 @@ const (
 	clientSecret     string = "CLIENT_SECRET"
 	configDirectory  string = "CONFIG_DIR"
 	orgName          string = "ORG"
+	privateDomain    string = "PRIVATE_DOMAIN_NAME"
 	spaceName        string = "SPACE"
 	roleName         string = "USER_ROLE"
 	ldapPassword     string = "LDAP_PASSWORD"
@@ -145,6 +146,7 @@ func NewApp() *cli.App {
 		CreateAddSpaceCommand(),
 		CreateAddUserToSpaceConfigCommand(),
 		CreateAddUserToOrgConfigCommand(),
+		CreateAddPrivateDomainToOrgConfigCommand(),
 		CreateExportConfigCommand(),
 		CreateGeneratePipelineCommand(runGeneratePipeline),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
@@ -435,6 +437,50 @@ func runAddUserToSpaceConfig(c *cli.Context) error {
 		}
 	}
 
+	return err
+}
+
+//CreateAddPrivateDomainToOrgConfigCommand - Creates CLI command for adding private domains to an org configuration
+func CreateAddPrivateDomainToOrgConfigCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "org name",
+			EnvVar: orgName,
+		},
+		privateDomain: {
+			Desc:   "Private domain name. HTTP or HTTPS only",
+			EnvVar: privateDomain,
+		},
+	}
+
+	command := cli.Command{
+		Name:        "add-private-domain-to-org-config",
+		Usage:       "adds specified private domain to the org configuration",
+		Description: "adds specified private domain to the org configuration",
+		Action:      runAddOrgPrivateDomainToConfig,
+		Flags:       buildFlags(flagList),
+	}
+	return command
+}
+
+func runAddOrgPrivateDomainToConfig(c *cli.Context) error {
+	var err error
+	configDir := getConfigDir(c)
+	inputOrg := c.String(getFlag(orgName))
+	privateDomainName := c.String(getFlag(privateDomain))
+	if inputOrg == "" || privateDomainName == "" {
+		err = fmt.Errorf("Must ensure Org name or private domain name is provided")
+	} else {
+		err = config.NewManager(configDir, utils.NewDefaultManager()).AddPrivateDomainToOrgConfig(inputOrg, privateDomainName)
+		if err == nil {
+			fmt.Printf("The private domain %s was successfully added into %s", privateDomainName, inputOrg)
+		}
+
+	}
 	return err
 }
 

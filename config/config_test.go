@@ -461,6 +461,51 @@ var _ = Describe("CF-Mgmt Config", func() {
 				Ω(foundUserName).Should(BeTrue())
 			})
 		})
+
+		Context("Adding Private Domains", func() {
+			Context("AddOrgPrivateDomainToConfig", func() {
+				var utilsMgrMock *mock.MockUtilsManager
+				var randomDomainName string
+				var configDir string
+				var orgName string
+				BeforeEach(func() {
+					utilsMgrMock = mock.NewMockUtilsManager()
+					PopulateWithTestData(utilsMgrMock)
+					s1 := rand.NewSource(time.Now().UnixNano())
+					r1 := rand.New(s1)
+
+					firstName := make([]byte, 5)
+					lastName := make([]byte, 5)
+
+					r1.Read(firstName)
+					r1.Read(lastName)
+
+					randomDomainName = fmt.Sprintf("%X-%X.com", firstName, lastName)
+					configDir = "./fixtures/user_update"
+					orgName = "test"
+				})
+
+				It("should be able to insert a private domain name", func() {
+					m := config.NewManager(configDir, utilsMgrMock)
+					err := m.AddPrivateDomainToOrgConfig(orgName, randomDomainName)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					orgConfig, err := m.GetAnOrgConfig(orgName)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(orgConfig).ShouldNot(BeNil())
+
+					foundPrivateDomain := false
+					for _, privateDomainName := range orgConfig.PrivateDomains {
+						if privateDomainName == randomDomainName {
+							foundPrivateDomain = true
+						}
+					}
+					Ω(foundPrivateDomain).Should(BeTrue())
+				})
+
+			})
+
+		})
 	})
 
 })

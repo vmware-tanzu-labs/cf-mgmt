@@ -37,6 +37,7 @@ type Updater interface {
 	DeleteConfigIfExists() error
 	AddUserToSpaceConfig(userName, roleType, spaceName, orgName string, isLdapUser bool) error
 	AddUserToOrgConfig(userName, roleType, orgName string, isLdapUser bool) error
+	AddPrivateDomainToOrgConfig(orgName, privateDomainName string) error
 }
 
 // Reader is used to read the cf-mgmt configuration.
@@ -447,6 +448,27 @@ func (m *yamlManager) AddUserToOrgConfig(userName, roleType, orgName string, isL
 
 	// Add user into that role type
 	*targetUserRoleField = append(*targetUserRoleField, userName)
+
+	// Dump the file back out
+	return m.UtilsMgr.WriteFile((*orgConfig).GetOrgConfigFilenameAndPath(m.ConfigDir, orgName), *orgConfig)
+}
+
+// AddOrgPrivateDomainToConfig adds a private domain to a given org.
+func (m *yamlManager) AddPrivateDomainToOrgConfig(orgName, privateDomainName string) error {
+	orgConfig, err := m.GetAnOrgConfig(orgName)
+	if err != nil {
+		return err
+	}
+
+	// Once we have the org, ensure the private domain doesn't already exist
+	for _, storedPrivateDomainNamed := range orgConfig.PrivateDomains {
+		if storedPrivateDomainNamed == privateDomainName {
+			return fmt.Errorf("Private Domain Name %s already exists in %s", privateDomainName, orgName)
+		}
+	}
+
+	// Add private domain to the org
+	orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, privateDomainName)
 
 	// Dump the file back out
 	return m.UtilsMgr.WriteFile((*orgConfig).GetOrgConfigFilenameAndPath(m.ConfigDir, orgName), *orgConfig)
