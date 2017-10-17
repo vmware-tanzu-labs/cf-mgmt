@@ -1,10 +1,8 @@
-hash: 83e5ecf50e3f1c08cdda7f8c10d0ba7f134878fd8fcae7e062ac450bc8614424
-updated: 2017-10-16T22:24:45.118850169-04:00
+hash: 977830f674d3358adba3af25edfa4ac9f5c9f12f50fafe368c132d165ccbb3dc
+updated: 2017-10-16T22:33:44.909804748-04:00
 imports:
 - name: code.cloudfoundry.org/cli
   version: d0d93ba6098018aa8f55451e12b1ef5d79978190
-  repo: git@github.com:cloudfoundry/cli.git
-  vcs: git
   subpackages:
   - api/cloudcontroller
   - api/cloudcontroller/ccerror
@@ -23,21 +21,21 @@ imports:
   version: f4415fafc5619dd75599a54a7c91fb3948ad58bd
   repo: https://github.com/cloudfoundry/bytefmt
 - name: github.com/codegangsta/cli
-  version: 2526b57c56f30b50466c96c4133b1a4ad0f0191f
+  version: 7bc6a0acffa589f415f88aca16cc1de5ffd66f9c
 - name: github.com/go-ldap/ldap
   version: 8168ee085ee43257585e50c6441aadf54ecb2c9f
 - name: github.com/golang/mock
-  version: 13f360950a79f5864a972c786a10a50e44b69541
+  version: 6e20fef50e74e443696bc32b693cf286b612d45b
   subpackages:
   - gomock
 - name: github.com/moul/http2curl
-  version: 4e24498b31dba4683efb9d35c1c8a91e2eda28c8
+  version: 9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9
 - name: github.com/parnurzeal/gorequest
-  version: ea779001e09326d30d455dbf37bc0d08c49941a2
+  version: 8e3aed27fe49f7fdc765dad067845f600fc984e8
 - name: github.com/pkg/errors
-  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+  version: 2b3a18b5f0fb6b4f9190549597d3f962c02bc5eb
 - name: github.com/xchapter7x/lo
   version: e33b245fc7a8186582208abc2458c2691bff681c
 - name: golang.org/x/net
@@ -48,9 +46,9 @@ imports:
   - html/charset
   - publicsuffix
 - name: gopkg.in/asn1-ber.v1
-  version: 4e86f4367175e39f69d9358a5f17b4dda270378d
+  version: 379148ca0225df7a432012b8df0355c2a2063ac0
 - name: gopkg.in/yaml.v2
-  version: a83829b6f1293c91addabc89d0571c246397bbf4
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 testImports:
 - name: github.com/golang/protobuf
   version: 8ee79997227bf9b34611aee7946ae64735e6fd93

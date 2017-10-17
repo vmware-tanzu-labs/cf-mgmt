@@ -11,8 +11,6 @@ import:
 - package: github.com/go-ldap/ldap
   version: ^2.5.0
 - package: code.cloudfoundry.org/cli
-  vcs: git
-  repo: git@github.com:cloudfoundry/cli.git
   subpackages:
   - api/cloudcontroller
   - api/cloudcontroller/ccv3

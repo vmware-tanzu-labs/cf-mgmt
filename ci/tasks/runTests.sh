@@ -1,8 +1,5 @@
 #!/bin/bash -e
 
-mkdir ~/.ssh/ && touch ~/.ssh/known_hosts
-ssh-keyscan github.com >>~/.ssh/known_hosts
-
 export GOPATH=$PWD/go
 export PATH=$GOPATH/bin:$PATH
 
