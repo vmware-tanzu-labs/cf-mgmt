@@ -10,6 +10,10 @@ import:
   - gomock
 - package: github.com/go-ldap/ldap
   version: ^2.5.0
+- package: code.cloudfoundry.org/cli
+  subpackages:
+  - api/cloudcontroller
+  - api/cloudcontroller/ccv3
 testImport:
 - package: github.com/onsi/gomega
   version: ^1.1.0

@@ -1,12 +1,26 @@
-hash: 348e47b7f1d63eb81724c44a599158f4e2658bb1bc34c950a5476fc0f59511e9
-updated: 2017-05-20T10:47:50.069862591-06:00
+hash: 977830f674d3358adba3af25edfa4ac9f5c9f12f50fafe368c132d165ccbb3dc
+updated: 2017-09-19T20:58:55.009291349-06:00
 imports:
+- name: code.cloudfoundry.org/cli
+  version: 0a6c4bf2595c3b3abef6a087619f0c7b7eca7f78
+  subpackages:
+  - api/cloudcontroller
+  - api/cloudcontroller/ccerror
+  - api/cloudcontroller/ccv3
+  - api/cloudcontroller/ccv3/internal
+  - types
+- name: github.com/blang/semver
+  version: 4a1e882c79dcf4ec00d2e29fac74b9c8938d5052
+  repo: https://github.com/blang/semver
+- name: github.com/cloudfoundry/bytefmt
+  version: f4415fafc5619dd75599a54a7c91fb3948ad58bd
+  repo: https://github.com/cloudfoundry/bytefmt
 - name: github.com/codegangsta/cli
   version: 2526b57c56f30b50466c96c4133b1a4ad0f0191f
 - name: github.com/go-ldap/ldap
   version: 8168ee085ee43257585e50c6441aadf54ecb2c9f
 - name: github.com/golang/mock
-  version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
+  version: 13f360950a79f5864a972c786a10a50e44b69541
   subpackages:
   - gomock
 - name: github.com/moul/http2curl
@@ -20,8 +34,11 @@ imports:
 - name: github.com/xchapter7x/lo
   version: e33b245fc7a8186582208abc2458c2691bff681c
 - name: golang.org/x/net
-  version: db8e4de5b2d6653f66aea53094624468caad15d2
+  version: 66aacef3dd8a676686c7ae3716979581e8b03c47
   subpackages:
+  - html
+  - html/atom
+  - html/charset
   - publicsuffix
 - name: gopkg.in/asn1-ber.v1
   version: 4e86f4367175e39f69d9358a5f17b4dda270378d
@@ -29,11 +46,13 @@ imports:
   version: a83829b6f1293c91addabc89d0571c246397bbf4
 testImports:
 - name: github.com/golang/protobuf
-  version: 3b06fc7a4cad73efce5fe6217ab6c33e7231ab4a
+  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  repo: https://github.com/golang/protobuf
   subpackages:
   - proto
+  - ptypes/any
 - name: github.com/onsi/ginkgo
-  version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
+  version: 9eda700730cba42af70d53180f9dcce9266bc2bc
   subpackages:
   - config
   - internal/codelocation
@@ -53,7 +72,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 334b8f472b3af5d541c5642701c1e29e2126f486
+  version: c893efa28eb45626cdaa76c9f653b62488858837
   subpackages:
   - format
   - gbytes
@@ -70,6 +89,29 @@ testImports:
   - matchers/support/goraph/util
   - types
 - name: golang.org/x/sys
-  version: 9a7256cb28ed514b4e1e5f68959914c4c28a92e0
+  version: 7ddbeae9ae08c6a06a59597f0c9edbc5ff2444ce
+  repo: https://go.googlesource.com/sys
   subpackages:
   - unix
+  - windows
+- name: golang.org/x/text
+  version: bd91bbf73e9a4a801adbfb97133c992678533126
+  repo: https://go.googlesource.com/text
+  subpackages:
+  - encoding
+  - encoding/charmap
+  - encoding/htmlindex
+  - encoding/internal
+  - encoding/internal/identifier
+  - encoding/japanese
+  - encoding/korean
+  - encoding/simplifiedchinese
+  - encoding/traditionalchinese
+  - encoding/unicode
+  - internal/gen
+  - internal/tag
+  - internal/utf8internal
+  - language
+  - runes
+  - transform
+  - unicode/cldr

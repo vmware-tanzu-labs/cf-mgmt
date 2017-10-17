@@ -2,31 +2,23 @@ package organization
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
+	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	"github.com/pivotalservices/cf-mgmt/utils"
 	"github.com/xchapter7x/lo"
 )
 
-//DefaultProtectedOrgs - map of orgs that should be protected
-var DefaultProtectedOrgs = map[string]bool{
-	"system":                  true,
-	"p-spring-cloud-services": true,
-	"splunk-nozzle-org":       true,
-}
-
-//NewManager -
-func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
-
+func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
 	cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token)
 	ldapMgr := ldap.NewManager()
 	uaacMgr := uaac.NewManager(sysDomain, uaacToken)
 	UserMgr := NewUserManager(cloudController, ldapMgr, uaacMgr)
 
 	return &DefaultOrgManager{
+		Cfg:             cfg,
 		CloudController: cloudController,
 		UAACMgr:         uaacMgr,
 		UtilsMgr:        utils.NewDefaultManager(),
@@ -35,31 +27,9 @@ func NewManager(sysDomain, token, uaacToken string) (mgr Manager) {
 	}
 }
 
-func (m *DefaultOrgManager) GetOrgConfigs(configDir string) ([]*InputUpdateOrgs, error) {
-	orgConfigs := []*InputUpdateOrgs{}
-	files, err := m.UtilsMgr.FindFiles(configDir, "orgConfig.yml")
-	if err != nil {
-		return nil, err
-	}
-	for _, f := range files {
-		input := &InputUpdateOrgs{
-			AppInstanceLimit:        -1,
-			TotalReservedRoutePorts: 0,
-			TotalPrivateDomains:     -1,
-			TotalServiceKeys:        -1,
-		}
-		if err = m.UtilsMgr.LoadFile(f, input); err != nil {
-			lo.G.Error(err)
-			return nil, err
-		}
-		orgConfigs = append(orgConfigs, input)
-	}
-	return orgConfigs, nil
-}
-
 //CreateQuotas -
-func (m *DefaultOrgManager) CreateQuotas(configDir string) error {
-	orgs, err := m.GetOrgConfigs(configDir)
+func (m *DefaultOrgManager) CreateQuotas() error {
+	orgs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return err
 	}
@@ -125,34 +95,32 @@ func (m *DefaultOrgManager) GetOrgGUID(orgName string) (string, error) {
 }
 
 //CreateOrgs -
-func (m *DefaultOrgManager) CreateOrgs(configDir string) error {
-	configFile := filepath.Join(configDir, "orgs.yml")
-	lo.G.Info("Processing org file", configFile)
-	input := &InputOrgs{}
-	if err := m.UtilsMgr.LoadFile(configFile, input); err != nil {
-		return err
-	}
-	orgs, err := m.CloudController.ListOrgs()
+func (m *DefaultOrgManager) CreateOrgs() error {
+	desiredOrgs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return err
 	}
 
-	for _, orgName := range input.Orgs {
-		if m.DoesOrgExist(orgName, orgs) {
-			lo.G.Infof("[%s] org already exists", orgName)
+	currentOrgs, err := m.CloudController.ListOrgs()
+	if err != nil {
+		return err
+	}
+
+	for _, org := range desiredOrgs {
+		if doesOrgExist(org.Org, currentOrgs) {
+			lo.G.Infof("[%s] org already exists", org)
 			continue
 		}
-		lo.G.Infof("Creating [%s] org", orgName)
-		if err := m.CloudController.CreateOrg(orgName); err != nil {
+		lo.G.Infof("Creating [%s] org", org)
+		if err := m.CloudController.CreateOrg(org.Org); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (m *DefaultOrgManager) CreatePrivateDomains(configDir string) error {
-
-	orgConfigs, err := m.GetOrgConfigs(configDir)
+func (m *DefaultOrgManager) CreatePrivateDomains() error {
+	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		lo.G.Error(err)
 		return err
@@ -221,7 +189,7 @@ func (m *DefaultOrgManager) getOrgName(orgs []*cloudcontroller.Org, orgGUID stri
 			return org.Entity.Name, nil
 		}
 	}
-	return "", fmt.Errorf("Org for GUID %s does not exist", orgGUID)
+	return "", fmt.Errorf("org for GUID %s does not exist", orgGUID)
 }
 
 func (m *DefaultOrgManager) getOrgGUID(orgs []*cloudcontroller.Org, orgName string) (string, error) {
@@ -230,29 +198,27 @@ func (m *DefaultOrgManager) getOrgGUID(orgs []*cloudcontroller.Org, orgName stri
 			return org.MetaData.GUID, nil
 		}
 	}
-	return "", fmt.Errorf("Org %s does not exist", orgName)
+	return "", fmt.Errorf("org %s does not exist", orgName)
 }
 
 //DeleteOrgs -
-func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) error {
-	configFile := filepath.Join(configDir, "orgs.yml")
-	lo.G.Info("Processing org file", configFile)
-	input := &InputOrgs{}
-	if err := m.UtilsMgr.LoadFile(configFile, input); err != nil {
+func (m *DefaultOrgManager) DeleteOrgs(peekDeletion bool) error {
+	orgsConfig, err := m.Cfg.Orgs()
+	if err != nil {
 		return err
 	}
 
-	if !input.EnableDeleteOrgs {
+	if !orgsConfig.EnableDeleteOrgs {
 		lo.G.Info("Org deletion is not enabled.  Set enable-delete-orgs: true")
 		return nil
 	}
 
 	configuredOrgs := make(map[string]bool)
-	for _, orgName := range input.Orgs {
+	for _, orgName := range orgsConfig.Orgs {
 		configuredOrgs[orgName] = true
 	}
-	protectedOrgs := DefaultProtectedOrgs
-	for _, orgName := range input.ProtectedOrgs {
+	protectedOrgs := config.DefaultProtectedOrgs
+	for _, orgName := range orgsConfig.ProtectedOrgs {
 		protectedOrgs[orgName] = true
 	}
 
@@ -288,7 +254,7 @@ func (m *DefaultOrgManager) DeleteOrgs(configDir string, peekDeletion bool) erro
 	return nil
 }
 
-func (m *DefaultOrgManager) DoesOrgExist(orgName string, orgs []*cloudcontroller.Org) bool {
+func doesOrgExist(orgName string, orgs []*cloudcontroller.Org) bool {
 	for _, org := range orgs {
 		if org.Entity.Name == orgName {
 			return true
@@ -325,21 +291,21 @@ func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) e
 		return err
 	}
 
-	orgConfigs, err := m.GetOrgConfigs(configDir)
+	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		lo.G.Error(err)
 		return err
 	}
 
 	for _, input := range orgConfigs {
-		if err := m.updateOrgUsers(config, input, uaacUsers); err != nil {
+		if err := m.updateOrgUsers(config, &input, uaacUsers); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpdateOrgs, uaacUsers map[string]string) error {
+func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *config.OrgConfig, uaacUsers map[string]string) error {
 	org, err := m.FindOrg(input.Org)
 	if err != nil {
 		return err
@@ -351,7 +317,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			OrgGUID:        org.MetaData.GUID,
 			Role:           "billing_managers",
 			LdapGroupNames: input.GetBillingManagerGroups(),
-			LdapUsers:      input.BillingManager.LdapUsers,
+			LdapUsers:      input.BillingManager.LDAPUsers,
 			Users:          input.BillingManager.Users,
 			SamlUsers:      input.BillingManager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
@@ -366,7 +332,7 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 			OrgGUID:        org.MetaData.GUID,
 			Role:           "auditors",
 			LdapGroupNames: input.GetAuditorGroups(),
-			LdapUsers:      input.Auditor.LdapUsers,
+			LdapUsers:      input.Auditor.LDAPUsers,
 			Users:          input.Auditor.Users,
 			SamlUsers:      input.Auditor.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
@@ -375,19 +341,15 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *InputUpda
 		return err
 	}
 
-	err = m.UserMgr.UpdateOrgUsers(
+	return m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
 			OrgName:        org.Entity.Name,
 			OrgGUID:        org.MetaData.GUID,
 			Role:           "managers",
 			LdapGroupNames: input.GetManagerGroups(),
-			LdapUsers:      input.Manager.LdapUsers,
+			LdapUsers:      input.Manager.LDAPUsers,
 			Users:          input.Manager.Users,
 			SamlUsers:      input.Manager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
 		})
-	if err != nil {
-		return err
-	}
-	return nil
 }

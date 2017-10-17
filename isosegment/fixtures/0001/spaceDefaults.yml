@@ -1,0 +1,15 @@
+space-developer:
+  ldap_users: []
+  users: []
+  ldap_group: ""
+  ldap_groups: []
+space-manager:
+  ldap_users: []
+  users: []
+  ldap_group: ""
+  ldap_groups: []
+space-auditor:
+  ldap_users: []
+  users: []
+  ldap_group: ""
+  ldap_groups: []
