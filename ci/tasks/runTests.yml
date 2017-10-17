@@ -3,6 +3,7 @@ image_resource:
   type: docker-image
   source:
     repository: golang
+    tag: 1.8
 run:
   path: source/ci/tasks/runTests.sh
 inputs:
