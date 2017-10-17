@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/codegangsta/cli"
@@ -346,13 +347,13 @@ func runGeneratePipeline(c *cli.Context) (err error) {
 		return
 	}
 	if err = os.MkdirAll("ci/tasks", 0755); err == nil {
-		targetFile = fmt.Sprintf("./ci/tasks/%s", cfMgmtYml)
+		targetFile = filepath.Join("ci", "tasks", cfMgmtYml)
 		lo.G.Debug("Creating", targetFile)
 		if err = createFile(cfMgmtYml, targetFile); err != nil {
 			lo.G.Error("Error creating cf-mgmt.yml", err)
 			return
 		}
-		targetFile = fmt.Sprintf("./ci/tasks/%s", cfMgmtSh)
+		targetFile = filepath.Join("ci", "tasks", cfMgmtSh)
 		lo.G.Debug("Creating", targetFile)
 		if err = createFile(cfMgmtSh, targetFile); err != nil {
 			lo.G.Error("Error creating cf-mgmt.sh", err)
