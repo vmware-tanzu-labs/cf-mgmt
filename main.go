@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/utils"
@@ -147,6 +148,7 @@ func NewApp() *cli.App {
 		CreateAddUserToSpaceConfigCommand(),
 		CreateAddUserToOrgConfigCommand(),
 		CreateAddPrivateDomainToOrgConfigCommand(),
+		CreateUpdateQuotasInOrgConfigCommand(),
 		CreateExportConfigCommand(),
 		CreateGeneratePipelineCommand(runGeneratePipeline),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
@@ -480,6 +482,132 @@ func runAddOrgPrivateDomainToConfig(c *cli.Context) error {
 			fmt.Printf("The private domain %s was successfully added into %s", privateDomainName, inputOrg)
 		}
 
+	}
+	return err
+}
+
+// Below are the constants associated with the Quotas in the Org Config
+// The string names case sensitivity must be adhered to -- accordingly to the OrgConfig names
+const (
+	enableOrgQuota          string = "EnableOrgQuota"
+	memoryLimit             string = "MemoryLimit"
+	instanceMemoryLimit     string = "InstanceMemoryLimit"
+	totalRoutes             string = "TotalRoutes"
+	totalServices           string = "TotalServices"
+	paidServicePlansAllowed string = "PaidServicePlansAllowed"
+	totalPrivateDomains     string = "TotalPrivateDomains"
+	totalReservedRoutePorts string = "TotalReservedRoutePorts"
+	totalServiceKeys        string = "TotalServiceKeys"
+	appInstanceLimit        string = "AppInstanceLimit"
+)
+
+// CreateUpdateQuotasInOrgConfigCommand  - Creates CLI command for updating an org's quotas
+func CreateUpdateQuotasInOrgConfigCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "The org name of where the new quotas will go in",
+			EnvVar: orgName,
+		},
+		enableOrgQuota: {
+			Desc:   "(MANDATORY) Enable the Org Quota in the config (TRUE or FALSE)",
+			EnvVar: enableOrgQuota,
+		},
+		memoryLimit: {
+			Desc:   "(OPTIONAL) An Org's memory limit in Megabytes",
+			EnvVar: memoryLimit,
+		},
+		instanceMemoryLimit: {
+			Desc:   "(OPTIONAL) Global Org Application instance memory limit in Megabytes",
+			EnvVar: instanceMemoryLimit,
+		},
+		totalRoutes: {
+			Desc:   "(OPTIONAL) Total Routes capacity for an Org",
+			EnvVar: totalRoutes,
+		},
+		totalServices: {
+			Desc:   "(OPTIONAL) Total Services capacity for an Org",
+			EnvVar: totalServices,
+		},
+		paidServicePlansAllowed: {
+			Desc:   "(OPTIONAL) Allow paid services to appear in an org (TRUE or FALSE)",
+			EnvVar: paidServicePlansAllowed,
+		},
+		totalPrivateDomains: {
+			Desc:   "(OPTIONAL) Total Private Domain capacity for an Org",
+			EnvVar: totalPrivateDomains,
+		},
+		totalReservedRoutePorts: {
+			Desc:   "(OPTIONAL) Total Reserved Route Ports capacity for an Org",
+			EnvVar: totalReservedRoutePorts,
+		},
+		totalServiceKeys: {
+			Desc:   "(OPTIONAL) Total Service Keys capacity for an Org",
+			EnvVar: totalServiceKeys,
+		},
+		appInstanceLimit: {
+			Desc:   "(OPTIONAL) Total Service Keys capacity for an Org",
+			EnvVar: appInstanceLimit,
+		},
+	}
+
+	command := cli.Command{
+		Name:        "update-quotas-in-org-config",
+		Usage:       "updates quota in specified orgs configuration",
+		Description: "updates quota in specified orgs configuration",
+		Action:      runUpdateQuotasInOrgConfig,
+		Flags:       buildFlags(flagList),
+	}
+	return command
+}
+
+func runUpdateQuotasInOrgConfig(c *cli.Context) error {
+	inputOrg := c.String(getFlag(orgName))
+	enableOrgQuota := c.String(getFlag(enableOrgQuota))
+
+	if inputOrg == "" {
+		return fmt.Errorf("Must provide an org name")
+	}
+	if enableOrgQuota == "" {
+		return fmt.Errorf("Must provide input to enable or disable applying of Org Quota Updates in Config File")
+	}
+
+	enableOrgQuotaBool, err := strconv.ParseBool(enableOrgQuota)
+
+	if err != nil {
+		return err
+	}
+
+	// Combine the parameters into a dictionary
+	var newQuotaSettings = map[string]string{
+		memoryLimit:             c.String(getFlag(memoryLimit)),
+		instanceMemoryLimit:     c.String(getFlag(instanceMemoryLimit)),
+		totalRoutes:             c.String(getFlag(totalRoutes)),
+		totalServices:           c.String(getFlag(totalServices)),
+		paidServicePlansAllowed: c.String(getFlag(paidServicePlansAllowed)),
+		totalPrivateDomains:     c.String(getFlag(totalPrivateDomains)),
+		totalReservedRoutePorts: c.String(getFlag(totalReservedRoutePorts)),
+		totalServiceKeys:        c.String(getFlag(totalServiceKeys)),
+		appInstanceLimit:        c.String(getFlag(appInstanceLimit)),
+	}
+
+	// Prune out the entries that have an empty value
+	for key, val := range newQuotaSettings {
+		if val == "" {
+			delete(newQuotaSettings, key)
+		}
+	}
+
+	// Run the update org quotas command
+	err = config.NewManager(getConfigDir(c), utils.NewDefaultManager()).UpdateQuotasInOrgConfig(inputOrg, enableOrgQuotaBool, newQuotaSettings)
+	if err == nil {
+		fmt.Println("Successfully set the following values: ")
+		for k, v := range newQuotaSettings {
+			fmt.Printf("\t%s: \t%s\n", k, v)
+		}
 	}
 	return err
 }

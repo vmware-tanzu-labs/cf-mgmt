@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/ldap"
@@ -38,6 +40,10 @@ type Updater interface {
 	AddUserToSpaceConfig(userName, roleType, spaceName, orgName string, isLdapUser bool) error
 	AddUserToOrgConfig(userName, roleType, orgName string, isLdapUser bool) error
 	AddPrivateDomainToOrgConfig(orgName, privateDomainName string) error
+	UpdateQuotasInOrgConfig(orgName string, enableQuota bool, parameters map[string]string) error
+
+	// -- Non Public Facing Functions
+	setFieldIn(inputStruct interface{}, field, val string) error
 }
 
 // Reader is used to read the cf-mgmt configuration.
@@ -469,6 +475,78 @@ func (m *yamlManager) AddPrivateDomainToOrgConfig(orgName, privateDomainName str
 
 	// Add private domain to the org
 	orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, privateDomainName)
+
+	// Dump the file back out
+	return m.UtilsMgr.WriteFile((*orgConfig).GetOrgConfigFilenameAndPath(m.ConfigDir, orgName), *orgConfig)
+}
+
+// Helper Function - setFieldIn.
+// Sets a field in an inputStruct specified by field, with a value specified by val
+func (m *yamlManager) setFieldIn(inputStruct interface{}, field, val string) error {
+	var err error
+	ps := reflect.ValueOf(inputStruct)
+	// struct
+	s := ps.Elem()
+	if s.Kind() == reflect.Struct {
+		// exported field
+		f := s.FieldByName(field)
+		if f.IsValid() {
+			// A Value can be changed only if it is
+			// addressable and it is exportable (i.e. has Capital letter at the start)
+			if f.CanSet() {
+				switch f.Kind() {
+				case reflect.Int:
+					var outVal int64
+					outVal, err = strconv.ParseInt(val, 10, 64)
+					// If there's no error, set the field value
+					if err == nil {
+						f.SetInt(outVal)
+					}
+				case reflect.Bool:
+					var outVal bool
+					outVal, err = strconv.ParseBool(val)
+					// If there's no error, set the field value
+					if err == nil {
+						f.SetBool(outVal)
+					}
+				default:
+					err = fmt.Errorf("The parameter %s cannot be set - ensure it is a valid field", field)
+				}
+
+			} else {
+				err = fmt.Errorf("The parameter %s cannot be set - ensure it is a valid field", field)
+			}
+		} else {
+			err = fmt.Errorf("The parameter %s does not exist in the input structure", field)
+		}
+	} else {
+		err = fmt.Errorf("Invalid structure input")
+	}
+
+	return err
+}
+
+// UpdateQuotasInOrgConfig adds a private domain to a given org.
+func (m *yamlManager) UpdateQuotasInOrgConfig(orgName string, enableQuota bool, parameters map[string]string) error {
+
+	// Get the Org Cofig
+	orgConfig, err := m.GetAnOrgConfig(orgName)
+	if err != nil {
+		return err
+	}
+
+	// Set the Enable Org Quota Field
+	orgConfig.EnableOrgQuota = enableQuota
+
+	// For each parameter key (field), find it in the OrgConfig struct
+	// If the field is is found, update it with the parameter value.
+	for field, value := range parameters {
+		err := m.setFieldIn(orgConfig, field, value)
+		// We should always just error out if any of the parameters fail to set
+		if err != nil {
+			return err
+		}
+	}
 
 	// Dump the file back out
 	return m.UtilsMgr.WriteFile((*orgConfig).GetOrgConfigFilenameAndPath(m.ConfigDir, orgName), *orgConfig)

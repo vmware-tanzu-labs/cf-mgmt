@@ -3,6 +3,7 @@ package config_test
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -462,6 +463,102 @@ var _ = Describe("CF-Mgmt Config", func() {
 			})
 		})
 
+		Context("Update Org Quota", func() {
+			var utilsMgrMock *mock.MockUtilsManager
+			Context("UpdateQuotasInOrgConfig", func() {
+				var targetOrgName string
+				var configDir string
+				BeforeEach(func() {
+					utilsMgrMock = mock.NewMockUtilsManager()
+					PopulateWithTestData(utilsMgrMock)
+					targetOrgName = "test"
+					configDir = "./fixtures/config"
+				})
+				It("should be able to update org quota with with the enable org quotas off", func() {
+					// Some initial setup and assumptions
+					enableOrgQuota := false
+					m := config.NewManager(configDir, utilsMgrMock)
+
+					// Get a copy of the original Org Config
+					originalOrgConfig, err := m.GetAnOrgConfig(targetOrgName)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(originalOrgConfig).ShouldNot(BeNil())
+
+					newQuotaSettings := map[string]string{
+						"MemoryLimit":             strconv.FormatInt(int64(originalOrgConfig.MemoryLimit+0*10*1024), 10),
+						"InstanceMemoryLimit":     strconv.FormatInt(int64(originalOrgConfig.InstanceMemoryLimit+0*1024), 10),
+						"TotalRoutes":             strconv.FormatInt(int64(originalOrgConfig.TotalRoutes+0*1000), 10),
+						"TotalServices":           strconv.FormatInt(int64(originalOrgConfig.TotalServices+0*1000), 10),
+						"PaidServicePlansAllowed": strconv.FormatBool(!originalOrgConfig.PaidServicePlansAllowed),
+						"TotalPrivateDomains":     strconv.FormatInt(int64(originalOrgConfig.TotalPrivateDomains+0*1000), 10),
+						"TotalReservedRoutePorts": strconv.FormatInt(int64(originalOrgConfig.TotalReservedRoutePorts+0*1000), 10),
+						"TotalServiceKeys":        strconv.FormatInt(int64(originalOrgConfig.TotalServiceKeys+0*1000), 10),
+						"AppInstanceLimit":        strconv.FormatInt(int64(originalOrgConfig.AppInstanceLimit+0*1000), 10),
+					}
+
+					err = m.UpdateQuotasInOrgConfig(targetOrgName, enableOrgQuota, newQuotaSettings)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					// Check the values to see if they match
+					newOrgConfig, err := m.GetAnOrgConfig(targetOrgName)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(newOrgConfig).ShouldNot(BeNil())
+
+					Ω(newOrgConfig.EnableOrgQuota).Should(Equal(false))
+					Ω(strconv.FormatInt(int64(newOrgConfig.MemoryLimit), 10)).Should(Equal(newQuotaSettings["MemoryLimit"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.InstanceMemoryLimit), 10)).Should(Equal(newQuotaSettings["InstanceMemoryLimit"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.TotalRoutes), 10)).Should(Equal(newQuotaSettings["TotalRoutes"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.TotalServices), 10)).Should(Equal(newQuotaSettings["TotalServices"]))
+					Ω(strconv.FormatBool(newOrgConfig.PaidServicePlansAllowed)).Should(Equal(newQuotaSettings["PaidServicePlansAllowed"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.TotalPrivateDomains), 10)).Should(Equal(newQuotaSettings["TotalPrivateDomains"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.TotalReservedRoutePorts), 10)).Should(Equal(newQuotaSettings["TotalReservedRoutePorts"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.TotalServiceKeys), 10)).Should(Equal(newQuotaSettings["TotalServiceKeys"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.AppInstanceLimit), 10)).Should(Equal(newQuotaSettings["AppInstanceLimit"]))
+				})
+
+				It("should be able to update org quota with with the enable org quotas on", func() {
+					// Some initial setup and assumptions
+					enableOrgQuota := true
+					m := config.NewManager(configDir, utilsMgrMock)
+
+					// Get a copy of the original Org Config
+					originalOrgConfig, err := m.GetAnOrgConfig(targetOrgName)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(originalOrgConfig).ShouldNot(BeNil())
+
+					newQuotaSettings := map[string]string{
+						"MemoryLimit":             strconv.FormatInt(int64(originalOrgConfig.MemoryLimit+0*10*1024), 10),
+						"InstanceMemoryLimit":     strconv.FormatInt(int64(originalOrgConfig.InstanceMemoryLimit+0*1024), 10),
+						"TotalRoutes":             strconv.FormatInt(int64(originalOrgConfig.TotalRoutes+0*1000), 10),
+						"TotalServices":           strconv.FormatInt(int64(originalOrgConfig.TotalServices+0*1000), 10),
+						"PaidServicePlansAllowed": strconv.FormatBool(!originalOrgConfig.PaidServicePlansAllowed),
+						"TotalPrivateDomains":     strconv.FormatInt(int64(originalOrgConfig.TotalPrivateDomains+0*1000), 10),
+						"TotalReservedRoutePorts": strconv.FormatInt(int64(originalOrgConfig.TotalReservedRoutePorts+0*1000), 10),
+						"TotalServiceKeys":        strconv.FormatInt(int64(originalOrgConfig.TotalServiceKeys+0*1000), 10),
+						"AppInstanceLimit":        strconv.FormatInt(int64(originalOrgConfig.AppInstanceLimit+0*1000), 10),
+					}
+
+					err = m.UpdateQuotasInOrgConfig(targetOrgName, enableOrgQuota, newQuotaSettings)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					// Check the values to see if they match
+					newOrgConfig, err := m.GetAnOrgConfig(targetOrgName)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(newOrgConfig).ShouldNot(BeNil())
+
+					Ω(newOrgConfig.EnableOrgQuota).Should(Equal(true))
+					Ω(strconv.FormatInt(int64(newOrgConfig.MemoryLimit), 10)).Should(Equal(newQuotaSettings["MemoryLimit"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.InstanceMemoryLimit), 10)).Should(Equal(newQuotaSettings["InstanceMemoryLimit"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.TotalRoutes), 10)).Should(Equal(newQuotaSettings["TotalRoutes"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.TotalServices), 10)).Should(Equal(newQuotaSettings["TotalServices"]))
+					Ω(strconv.FormatBool(newOrgConfig.PaidServicePlansAllowed)).Should(Equal(newQuotaSettings["PaidServicePlansAllowed"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.TotalPrivateDomains), 10)).Should(Equal(newQuotaSettings["TotalPrivateDomains"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.TotalReservedRoutePorts), 10)).Should(Equal(newQuotaSettings["TotalReservedRoutePorts"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.TotalServiceKeys), 10)).Should(Equal(newQuotaSettings["TotalServiceKeys"]))
+					Ω(strconv.FormatInt(int64(newOrgConfig.AppInstanceLimit), 10)).Should(Equal(newQuotaSettings["AppInstanceLimit"]))
+				})
+			})
+		})
 		Context("Adding Private Domains", func() {
 			Context("AddOrgPrivateDomainToConfig", func() {
 				var utilsMgrMock *mock.MockUtilsManager
