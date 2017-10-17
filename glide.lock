@@ -1,5 +1,5 @@
-hash: 977830f674d3358adba3af25edfa4ac9f5c9f12f50fafe368c132d165ccbb3dc
-updated: 2017-10-16T22:33:44.909804748-04:00
+hash: 6d382c46083a69488b01be208c13342f4de97d7288f8c80fec44a496ace291ba
+updated: 2017-10-16T23:28:51.866450274-04:00
 imports:
 - name: code.cloudfoundry.org/cli
   version: d0d93ba6098018aa8f55451e12b1ef5d79978190
@@ -25,7 +25,7 @@ imports:
 - name: github.com/go-ldap/ldap
   version: 8168ee085ee43257585e50c6441aadf54ecb2c9f
 - name: github.com/golang/mock
-  version: 6e20fef50e74e443696bc32b693cf286b612d45b
+  version: 13f360950a79f5864a972c786a10a50e44b69541
   subpackages:
   - gomock
 - name: github.com/moul/http2curl
