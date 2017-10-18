@@ -183,6 +183,8 @@ func (m *DefaultOrgManager) CreatePrivateDomains() error {
 	return nil
 }
 
+
+
 func (m *DefaultOrgManager) getOrgName(orgs []*cloudcontroller.Org, orgGUID string) (string, error) {
 	for _, org := range orgs {
 		if org.MetaData.GUID == orgGUID {

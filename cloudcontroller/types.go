@@ -42,6 +42,7 @@ type Manager interface {
 	ListOrgPrivateDomains(orgGUID string) (map[string]string, error)
 	DeletePrivateDomain(guid string) error
 	CreatePrivateDomain(orgGUID, privateDomain string) error
+    SharePrivateDomain(owningOrgGUID, sharedOrgGUID, privateDomain string) error
 }
 
 type DefaultManager struct {

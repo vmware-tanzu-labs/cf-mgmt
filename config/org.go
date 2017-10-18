@@ -9,7 +9,8 @@ type OrgConfig struct {
 	BillingManager          UserMgmt `yaml:"org-billingmanager"`
 	Manager                 UserMgmt `yaml:"org-manager"`
 	Auditor                 UserMgmt `yaml:"org-auditor"`
-	PrivateDomains          []string `yaml:"private-domains"`
+    PrivateDomains          []string `yaml:"private-domains"`
+    SharedPrivateDomains    []string `yaml:"shared-private-domains"`
 	RemovePrivateDomains    bool     `yaml:"enable-remove-private-domains"`
 	EnableOrgQuota          bool     `yaml:"enable-org-quota"`
 	MemoryLimit             int      `yaml:"memory-limit"`
