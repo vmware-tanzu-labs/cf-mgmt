@@ -1010,4 +1010,19 @@ var _ = Describe("given CloudControllerManager", func() {
 		})
 	})
 
+	Context("SharePrivateDomain()", func() {
+		It("should be successful", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("PUT", "/v2/organizations/1234o/private_domains/1234d"),
+					RespondWithJSONEncoded(http.StatusCreated, ""),
+				),
+			)
+			err := manager.SharePrivateDomain("1234o", "1234d")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+
+		})
+	})
+
 })

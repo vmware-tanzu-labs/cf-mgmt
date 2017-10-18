@@ -349,3 +349,12 @@ func (m *DefaultManager) CreatePrivateDomain(orgGUID, privateDomain string) erro
 	_, err := m.HTTP.Post(url, m.Token, sendString)
 	return err
 }
+func (m *DefaultManager) SharePrivateDomain(sharedOrgGUID, privateDomainGUID string) error {
+	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains/%s", m.Host, sharedOrgGUID, privateDomainGUID)
+	err := m.HTTP.Put(url, m.Token, "")
+	return err
+}
+func (m *DefaultManager) UnsharePrivateDomain(sharedOrgGUID, privateDomainGUID string) error {
+	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains/%s", m.Host, sharedOrgGUID, privateDomainGUID)
+	return m.HTTP.Delete(url, m.Token)
+}

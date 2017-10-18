@@ -13,7 +13,7 @@ type Manager interface {
 	FindOrg(orgName string) (*cloudcontroller.Org, error)
 	CreateOrgs() error
 	CreatePrivateDomains() error
-    SharePrivateDomains() error
+	//SharePrivateDomains() error
 	DeleteOrgs(peekDeletion bool) error
 	UpdateOrgUsers(configDir, ldapBindPassword string) error
 	CreateQuotas() error
