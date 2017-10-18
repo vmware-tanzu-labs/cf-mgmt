@@ -149,6 +149,7 @@ func NewApp() *cli.App {
 		CreateAddUserToOrgConfigCommand(),
 		CreateAddPrivateDomainToOrgConfigCommand(),
 		CreateUpdateQuotasInOrgConfigCommand(),
+		CreateUpdateQuotasInSpaceConfigCommand(),
 		CreateExportConfigCommand(),
 		CreateGeneratePipelineCommand(runGeneratePipeline),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
@@ -489,6 +490,7 @@ func runAddOrgPrivateDomainToConfig(c *cli.Context) error {
 // Below are the constants associated with the Quotas in the Org Config
 // The string names case sensitivity must be adhered to -- accordingly to the OrgConfig names
 const (
+	enableSpaceQuota        string = "EnableSpaceQuota"
 	enableOrgQuota          string = "EnableOrgQuota"
 	memoryLimit             string = "MemoryLimit"
 	instanceMemoryLimit     string = "InstanceMemoryLimit"
@@ -603,6 +605,122 @@ func runUpdateQuotasInOrgConfig(c *cli.Context) error {
 
 	// Run the update org quotas command
 	err = config.NewManager(getConfigDir(c), utils.NewDefaultManager()).UpdateQuotasInOrgConfig(inputOrg, enableOrgQuotaBool, newQuotaSettings)
+	if err == nil {
+		fmt.Println("Successfully set the following values: ")
+		for k, v := range newQuotaSettings {
+			fmt.Printf("\t%s: \t%s\n", k, v)
+		}
+	}
+	return err
+}
+
+// CreateUpdateQuotasInSpaceConfigCommand  - Creates CLI command for updating an space's quotas
+func CreateUpdateQuotasInSpaceConfigCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "The org name of where the new quotas will go in",
+			EnvVar: orgName,
+		},
+		spaceName: {
+			Desc:   "The space name of where the new quotas will go in",
+			EnvVar: spaceName,
+		},
+		enableSpaceQuota: {
+			Desc:   "(MANDATORY) Enable the Space Quota in the config (TRUE or FALSE)",
+			EnvVar: enableSpaceQuota,
+		},
+		memoryLimit: {
+			Desc:   "(OPTIONAL) An Space's memory limit in Megabytes",
+			EnvVar: memoryLimit,
+		},
+		instanceMemoryLimit: {
+			Desc:   "(OPTIONAL) Global Space Application instance memory limit in Megabytes",
+			EnvVar: instanceMemoryLimit,
+		},
+		totalRoutes: {
+			Desc:   "(OPTIONAL) Total Routes capacity for an space",
+			EnvVar: totalRoutes,
+		},
+		totalServices: {
+			Desc:   "(OPTIONAL) Total Services capacity for an space",
+			EnvVar: totalServices,
+		},
+		paidServicePlansAllowed: {
+			Desc:   "(OPTIONAL) Allow paid services to appear in an space (TRUE or FALSE)",
+			EnvVar: paidServicePlansAllowed,
+		},
+		totalPrivateDomains: {
+			Desc:   "(OPTIONAL) Total Private Domain capacity for an space",
+			EnvVar: totalPrivateDomains,
+		},
+		totalReservedRoutePorts: {
+			Desc:   "(OPTIONAL) Total Reserved Route Ports capacity for an space",
+			EnvVar: totalReservedRoutePorts,
+		},
+		totalServiceKeys: {
+			Desc:   "(OPTIONAL) Total Service Keys capacity for an space",
+			EnvVar: totalServiceKeys,
+		},
+		appInstanceLimit: {
+			Desc:   "(OPTIONAL) Total Service Keys capacity for an space",
+			EnvVar: appInstanceLimit,
+		},
+	}
+
+	command := cli.Command{
+		Name:        "update-quotas-in-space-config",
+		Usage:       "updates quota in specified space configuration",
+		Description: "updates quota in specified space configuration",
+		Action:      runUpdateQuotasInSpaceConfig,
+		Flags:       buildFlags(flagList),
+	}
+	return command
+}
+
+func runUpdateQuotasInSpaceConfig(c *cli.Context) error {
+	inputOrg := c.String(getFlag(orgName))
+	inputSpace := c.String(getFlag(spaceName))
+	enableSpaceQuota := c.String(getFlag(enableSpaceQuota))
+
+	if inputOrg == "" || inputSpace == "" {
+		return fmt.Errorf("Must provide an org and space name")
+	}
+	if enableSpaceQuota == "" {
+		return fmt.Errorf("Must provide input to enable or disable applying of Space Quota Updates in Config File")
+	}
+
+	enableSpaceQuotaBool, err := strconv.ParseBool(enableSpaceQuota)
+
+	if err != nil {
+		return err
+	}
+
+	// Combine the parameters into a dictionary
+	var newQuotaSettings = map[string]string{
+		memoryLimit:             c.String(getFlag(memoryLimit)),
+		instanceMemoryLimit:     c.String(getFlag(instanceMemoryLimit)),
+		totalRoutes:             c.String(getFlag(totalRoutes)),
+		totalServices:           c.String(getFlag(totalServices)),
+		paidServicePlansAllowed: c.String(getFlag(paidServicePlansAllowed)),
+		totalPrivateDomains:     c.String(getFlag(totalPrivateDomains)),
+		totalReservedRoutePorts: c.String(getFlag(totalReservedRoutePorts)),
+		totalServiceKeys:        c.String(getFlag(totalServiceKeys)),
+		appInstanceLimit:        c.String(getFlag(appInstanceLimit)),
+	}
+
+	// Prune out the entries that have an empty value
+	for key, val := range newQuotaSettings {
+		if val == "" {
+			delete(newQuotaSettings, key)
+		}
+	}
+
+	// Run the update space quotas command
+	err = config.NewManager(getConfigDir(c), utils.NewDefaultManager()).UpdateQuotasInSpaceConfig(inputOrg, inputSpace, enableSpaceQuotaBool, newQuotaSettings)
 	if err == nil {
 		fmt.Println("Successfully set the following values: ")
 		for k, v := range newQuotaSettings {

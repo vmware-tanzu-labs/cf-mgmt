@@ -559,6 +559,106 @@ var _ = Describe("CF-Mgmt Config", func() {
 				})
 			})
 		})
+		Context("Update Space Quota", func() {
+			var utilsMgrMock *mock.MockUtilsManager
+			Context("UpdateQuotasInSpaceConfig", func() {
+				var targetOrgName string
+				var targetSpaceName string
+				var configDir string
+				BeforeEach(func() {
+					utilsMgrMock = mock.NewMockUtilsManager()
+					PopulateWithTestData(utilsMgrMock)
+					targetOrgName = "test"
+					targetSpaceName = "space1"
+					configDir = "./fixtures/config"
+				})
+				It("should be able to update space quota with with the enable space quotas off", func() {
+					// Some initial setup and assumptions
+					enableSpaceQuota := false
+					m := config.NewManager(configDir, utilsMgrMock)
+
+					// Get a copy of the original Space Config
+					loadSpaceDefaults := false
+					originalSpaceConfig, err := m.GetASpaceConfig(targetOrgName, targetSpaceName, loadSpaceDefaults)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(originalSpaceConfig).ShouldNot(BeNil())
+
+					newQuotaSettings := map[string]string{
+						"MemoryLimit":             strconv.FormatInt(int64(originalSpaceConfig.MemoryLimit+0*10*1024), 10),
+						"InstanceMemoryLimit":     strconv.FormatInt(int64(originalSpaceConfig.InstanceMemoryLimit+0*1024), 10),
+						"TotalRoutes":             strconv.FormatInt(int64(originalSpaceConfig.TotalRoutes+0*1000), 10),
+						"TotalServices":           strconv.FormatInt(int64(originalSpaceConfig.TotalServices+0*1000), 10),
+						"PaidServicePlansAllowed": strconv.FormatBool(!originalSpaceConfig.PaidServicePlansAllowed),
+						"TotalPrivateDomains":     strconv.FormatInt(int64(originalSpaceConfig.TotalPrivateDomains+0*1000), 10),
+						"TotalReservedRoutePorts": strconv.FormatInt(int64(originalSpaceConfig.TotalReservedRoutePorts+0*1000), 10),
+						"TotalServiceKeys":        strconv.FormatInt(int64(originalSpaceConfig.TotalServiceKeys+0*1000), 10),
+						"AppInstanceLimit":        strconv.FormatInt(int64(originalSpaceConfig.AppInstanceLimit+0*1000), 10),
+					}
+
+					err = m.UpdateQuotasInSpaceConfig(targetOrgName, targetSpaceName, enableSpaceQuota, newQuotaSettings)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					// Check the values to see if they match
+					newSpaceConfig, err := m.GetASpaceConfig(targetOrgName, targetSpaceName, loadSpaceDefaults)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(newSpaceConfig).ShouldNot(BeNil())
+
+					Ω(newSpaceConfig.EnableSpaceQuota).Should(Equal(false))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.MemoryLimit), 10)).Should(Equal(newQuotaSettings["MemoryLimit"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.InstanceMemoryLimit), 10)).Should(Equal(newQuotaSettings["InstanceMemoryLimit"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.TotalRoutes), 10)).Should(Equal(newQuotaSettings["TotalRoutes"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.TotalServices), 10)).Should(Equal(newQuotaSettings["TotalServices"]))
+					Ω(strconv.FormatBool(newSpaceConfig.PaidServicePlansAllowed)).Should(Equal(newQuotaSettings["PaidServicePlansAllowed"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.TotalPrivateDomains), 10)).Should(Equal(newQuotaSettings["TotalPrivateDomains"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.TotalReservedRoutePorts), 10)).Should(Equal(newQuotaSettings["TotalReservedRoutePorts"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.TotalServiceKeys), 10)).Should(Equal(newQuotaSettings["TotalServiceKeys"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.AppInstanceLimit), 10)).Should(Equal(newQuotaSettings["AppInstanceLimit"]))
+				})
+
+				It("should be able to update space quota with with the enable space quotas on", func() {
+					// Some initial setup and assumptions
+					enableSpaceQuota := true
+					m := config.NewManager(configDir, utilsMgrMock)
+
+					// Get a copy of the original Space Config
+					loadSpaceDefaults := false
+					originalSpaceConfig, err := m.GetASpaceConfig(targetOrgName, targetSpaceName, loadSpaceDefaults)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(originalSpaceConfig).ShouldNot(BeNil())
+
+					newQuotaSettings := map[string]string{
+						"MemoryLimit":             strconv.FormatInt(int64(originalSpaceConfig.MemoryLimit+0*10*1024), 10),
+						"InstanceMemoryLimit":     strconv.FormatInt(int64(originalSpaceConfig.InstanceMemoryLimit+0*1024), 10),
+						"TotalRoutes":             strconv.FormatInt(int64(originalSpaceConfig.TotalRoutes+0*1000), 10),
+						"TotalServices":           strconv.FormatInt(int64(originalSpaceConfig.TotalServices+0*1000), 10),
+						"PaidServicePlansAllowed": strconv.FormatBool(!originalSpaceConfig.PaidServicePlansAllowed),
+						"TotalPrivateDomains":     strconv.FormatInt(int64(originalSpaceConfig.TotalPrivateDomains+0*1000), 10),
+						"TotalReservedRoutePorts": strconv.FormatInt(int64(originalSpaceConfig.TotalReservedRoutePorts+0*1000), 10),
+						"TotalServiceKeys":        strconv.FormatInt(int64(originalSpaceConfig.TotalServiceKeys+0*1000), 10),
+						"AppInstanceLimit":        strconv.FormatInt(int64(originalSpaceConfig.AppInstanceLimit+0*1000), 10),
+					}
+
+					err = m.UpdateQuotasInSpaceConfig(targetOrgName, targetSpaceName, enableSpaceQuota, newQuotaSettings)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					// Check the values to see if they match
+					newSpaceConfig, err := m.GetASpaceConfig(targetOrgName, targetSpaceName, loadSpaceDefaults)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(newSpaceConfig).ShouldNot(BeNil())
+
+					Ω(newSpaceConfig.EnableSpaceQuota).Should(Equal(true))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.MemoryLimit), 10)).Should(Equal(newQuotaSettings["MemoryLimit"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.InstanceMemoryLimit), 10)).Should(Equal(newQuotaSettings["InstanceMemoryLimit"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.TotalRoutes), 10)).Should(Equal(newQuotaSettings["TotalRoutes"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.TotalServices), 10)).Should(Equal(newQuotaSettings["TotalServices"]))
+					Ω(strconv.FormatBool(newSpaceConfig.PaidServicePlansAllowed)).Should(Equal(newQuotaSettings["PaidServicePlansAllowed"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.TotalPrivateDomains), 10)).Should(Equal(newQuotaSettings["TotalPrivateDomains"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.TotalReservedRoutePorts), 10)).Should(Equal(newQuotaSettings["TotalReservedRoutePorts"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.TotalServiceKeys), 10)).Should(Equal(newQuotaSettings["TotalServiceKeys"]))
+					Ω(strconv.FormatInt(int64(newSpaceConfig.AppInstanceLimit), 10)).Should(Equal(newQuotaSettings["AppInstanceLimit"]))
+				})
+			})
+		})
 		Context("Adding Private Domains", func() {
 			Context("AddOrgPrivateDomainToConfig", func() {
 				var utilsMgrMock *mock.MockUtilsManager

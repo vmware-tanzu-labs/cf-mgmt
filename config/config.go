@@ -41,7 +41,7 @@ type Updater interface {
 	AddUserToOrgConfig(userName, roleType, orgName string, isLdapUser bool) error
 	AddPrivateDomainToOrgConfig(orgName, privateDomainName string) error
 	UpdateQuotasInOrgConfig(orgName string, enableQuota bool, parameters map[string]string) error
-
+	UpdateQuotasInSpaceConfig(orgName, spaceName string, enableQuota bool, parameters map[string]string) error
 	// -- Non Public Facing Functions
 	setFieldIn(inputStruct interface{}, field, val string) error
 }
@@ -55,6 +55,7 @@ type Reader interface {
 	GetAnOrgConfig(orgName string) (*OrgConfig, error)
 
 	GetSpaceConfigs() ([]SpaceConfig, error)
+	GetASpaceConfig(orgName, spaceName string, loadDefaults bool) (*SpaceConfig, error)
 	GetSpaceDefaults() (*SpaceConfig, error)
 
 	// -- Non Public Facing Functions
@@ -321,14 +322,15 @@ func (m *yamlManager) DeleteConfigIfExists() error {
 	return nil
 }
 
-// AddUserToSpaceConfig adds a user to space in a given org.  isLdapUser specifies if the user is to be an ldap user
-func (m *yamlManager) AddUserToSpaceConfig(userName, roleType, spaceName, orgName string, isLdapUser bool) error {
+// GetASpaceConfig - Retrieves a single space config. loadDefaults is a boolean indicating if the spaceDefaults should
+// be merged in together with the output spaceConfig.
+func (m *yamlManager) GetASpaceConfig(orgName, spaceName string, loadDefaults bool) (*SpaceConfig, error) {
 	// We would like to get the space config first.
 	// This should not include the space defaults
-	spaceConfigs, err := m.getSpaceConfigsLoadDefaultOption(false)
+	spaceConfigs, err := m.getSpaceConfigsLoadDefaultOption(loadDefaults)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Add our user to the space users
@@ -344,6 +346,23 @@ func (m *yamlManager) AddUserToSpaceConfig(userName, roleType, spaceName, orgNam
 
 	// Check to ensure that our target space config was found.
 	if targetSpaceConfig == nil {
+		return nil, fmt.Errorf("The space %s was not found in %s", spaceName, orgName)
+	}
+
+	return targetSpaceConfig, nil
+}
+
+// AddUserToSpaceConfig adds a user to space in a given org.  isLdapUser specifies if the user is to be an ldap user
+func (m *yamlManager) AddUserToSpaceConfig(userName, roleType, spaceName, orgName string, isLdapUser bool) error {
+	// We would like to get the space config first.
+	// This should not include the space defaults
+	loadSpaceDefaults := false
+	targetSpaceConfig, err := m.GetASpaceConfig(orgName, spaceName, loadSpaceDefaults)
+
+	// Check to ensure that our target space config was found.
+	if err != nil {
+		return fmt.Errorf("Error retrieving space %s in Org %s because: %s", spaceName, orgName, err)
+	} else if targetSpaceConfig == nil {
 		return fmt.Errorf("The space %s was not found in Org %s", spaceName, orgName)
 	}
 
@@ -526,7 +545,7 @@ func (m *yamlManager) setFieldIn(inputStruct interface{}, field, val string) err
 	return err
 }
 
-// UpdateQuotasInOrgConfig adds a private domain to a given org.
+// UpdateQuotasInOrgConfig updates the quotas specified in parameters and enables/disables the quotas
 func (m *yamlManager) UpdateQuotasInOrgConfig(orgName string, enableQuota bool, parameters map[string]string) error {
 
 	// Get the Org Cofig
@@ -550,6 +569,40 @@ func (m *yamlManager) UpdateQuotasInOrgConfig(orgName string, enableQuota bool, 
 
 	// Dump the file back out
 	return m.UtilsMgr.WriteFile((*orgConfig).GetOrgConfigFilenameAndPath(m.ConfigDir, orgName), *orgConfig)
+}
+
+// UpdateQuotasInSpaceConfig updates the quotas specified in parameters and enables/disables the quotas
+func (m *yamlManager) UpdateQuotasInSpaceConfig(orgName, spaceName string, enableQuota bool, parameters map[string]string) error {
+
+	// Get the space configuration without the space defaults loaded
+	loadSpaceDefaults := false
+	spaceConfig, err := m.GetASpaceConfig(orgName, spaceName, loadSpaceDefaults)
+	if err != nil {
+		return err
+	}
+
+	// Check to ensure that our target space config was found.
+	if err != nil {
+		return fmt.Errorf("Error retrieving space %s in Org %s because: %s", spaceName, orgName, err)
+	} else if spaceConfig == nil {
+		return fmt.Errorf("The space %s was not found in Org %s", spaceName, orgName)
+	}
+
+	// Set the Enable Space Quota Field
+	spaceConfig.EnableSpaceQuota = enableQuota
+
+	// For each parameter key (field), find it in the SpaceConfig struct
+	// If the field is is found, update it with the parameter value.
+	for field, value := range parameters {
+		err := m.setFieldIn(spaceConfig, field, value)
+		// We should always just error out if any of the parameters fail to set
+		if err != nil {
+			return err
+		}
+	}
+
+	// Dump the file back out
+	return m.UtilsMgr.WriteFile((*spaceConfig).GetSpaceConfigFilenameAndPath(m.ConfigDir, orgName, spaceName), *spaceConfig)
 }
 
 // UserMgmt specifies users and groups that can be associated to a particular org or space.
