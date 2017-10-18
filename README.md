@@ -2,8 +2,6 @@
 
 Go automation for managing orgs, spaces, users (from ldap groups or internal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
 
-hi mom
-
 ## Maintainer
 
 * [Caleb Washburn](https://github.com/calebwashburn)
