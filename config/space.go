@@ -1,6 +1,9 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"path/filepath"
+)
 
 // Spaces describes cf-mgmt config for all spaces.
 type Spaces struct {
@@ -44,6 +47,9 @@ func (s *Spaces) Contains(spaceName string) bool {
 		}
 	}
 	return false
+}
+func (s *Spaces) GetSpaceListFilenameAndPath(configDir, orgName string) string {
+	return filepath.Join(configDir, orgName, "spaces.yml")
 }
 
 func (i *SpaceConfig) GetSpaceConfigFilenameAndPath(configDir, orgName, spaceName string) string {

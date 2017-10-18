@@ -152,6 +152,7 @@ func NewApp() *cli.App {
 		CreateUpdateQuotasInOrgConfigCommand(),
 		CreateUpdateQuotasInSpaceConfigCommand(),
 		CreateDeleteOrgCommand(),
+		CreateDeleteSpaceCommand(),
 		CreateExportConfigCommand(),
 		CreateGeneratePipelineCommand(runGeneratePipeline),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
@@ -783,6 +784,66 @@ func runDeleteOrgConfig(c *cli.Context) error {
 			}
 		}
 
+	}
+	return err
+}
+
+//CreateDeleteSpaceCommand - Creates CLI command for deleting a space configuration
+func CreateDeleteSpaceCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "org name",
+			EnvVar: orgName,
+		},
+		spaceName: {
+			Desc:   "space name",
+			EnvVar: spaceName,
+		},
+		confirmDeletion: {
+			Desc:   "REQUIRED: Confirm Deletion",
+			EnvVar: confirmDeletion,
+		},
+	}
+
+	command := cli.Command{
+		Name:        "delete-space-configuration",
+		Usage:       "delete a space configuration",
+		Description: "delete a space configuration",
+		Action:      runDeleteSpaceConfig,
+		Flags:       buildFlags(flagList),
+	}
+	return command
+}
+
+func runDeleteSpaceConfig(c *cli.Context) error {
+	var err error
+	configDir := getConfigDir(c)
+	inputOrg := c.String(getFlag(orgName))
+	inputSpace := c.String(getFlag(spaceName))
+	confirmDeletionInput := c.String(getFlag(confirmDeletion))
+
+	if inputOrg == "" || inputSpace == "" {
+		err = fmt.Errorf("Must ensure Org and space name is provided")
+	} else if confirmDeletionInput == "" {
+		err = fmt.Errorf("Please confirm deletion with the flag --%s true", getFlag(confirmDeletion))
+	} else {
+		confirmDeleteSpace, err := strconv.ParseBool(confirmDeletionInput)
+
+		if err == nil && confirmDeleteSpace {
+			err = config.NewManager(configDir, utils.NewDefaultManager()).DeleteSpace(inputOrg, inputSpace)
+			if err == nil {
+				fmt.Printf("The space %s in the %s org was successfully deleted", inputSpace, inputOrg)
+			}
+		} else {
+			if err == nil {
+				err = fmt.Errorf("Please confirm deletion with the flag --%s true", getFlag(confirmDeletion))
+			}
+
+		}
 	}
 	return err
 }

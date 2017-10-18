@@ -583,6 +583,33 @@ var _ = Describe("CF-Mgmt Config", func() {
 				})
 			})
 		})
+		Context("Delete Space", func() {
+			var utilsMgrMock *mock.MockUtilsManager
+			Context("DeleteSpace", func() {
+				var targetOrgName string
+				var targetSpaceName string
+				var configDir string
+				BeforeEach(func() {
+					utilsMgrMock = mock.NewMockUtilsManager()
+					PopulateWithTestData(utilsMgrMock)
+					targetOrgName = "test"
+					targetSpaceName = "space1"
+					configDir = "./fixtures/config"
+				})
+				It("should be able to delete a space within an org", func() {
+					loadSpaceDefaults := false
+					// Delete the Space in an Org and then try to get the configuration.
+					m := config.NewManager(configDir, utilsMgrMock)
+
+					err := m.DeleteSpace(targetOrgName, targetSpaceName)
+					Ω(err).Should(BeNil())
+
+					spaceConfig, err := m.GetASpaceConfig(targetOrgName, targetSpaceName, loadSpaceDefaults)
+					Ω(err).Should(HaveOccurred())
+					Ω(spaceConfig).Should(BeNil())
+				})
+			})
+		})
 		Context("Update Space Quota", func() {
 			var utilsMgrMock *mock.MockUtilsManager
 			Context("UpdateQuotasInSpaceConfig", func() {

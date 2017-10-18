@@ -43,6 +43,7 @@ type Updater interface {
 	UpdateQuotasInOrgConfig(orgName string, enableQuota bool, parameters map[string]string) error
 	UpdateQuotasInSpaceConfig(orgName, spaceName string, enableQuota bool, parameters map[string]string) error
 	DeleteOrg(orgName string) error
+	DeleteSpace(orgName, spaceName string) error
 
 	// -- Non Public Facing Functions
 	setFieldIn(inputStruct interface{}, field, val string) error
@@ -82,9 +83,9 @@ func NewManager(configDir string, utilsMgr utils.Manager) Manager {
 
 // Orgs reads the config for all orgs.
 func (m *yamlManager) Orgs() (Orgs, error) {
-	configFile := filepath.Join(m.ConfigDir, "orgs.yml")
-	lo.G.Info("Processing org file", configFile)
 	input := Orgs{}
+	configFile := input.GetOrgListFilenameAndPath(m.ConfigDir)
+	lo.G.Info("Processing org file", configFile)
 	if err := m.UtilsMgr.LoadFile(configFile, &input); err != nil {
 		return Orgs{}, err
 	}
@@ -241,7 +242,8 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	orgConfig.RemoveUsers = true
 	orgConfig.RemovePrivateDomains = true
 	mgr.WriteFile(orgConfigFilenameAndPath, orgConfig)
-	return mgr.WriteFile(fmt.Sprintf("%s/spaces.yml", orgConfigFilePath), &Spaces{
+	spaceListFile := (&Spaces{}).GetSpaceListFilenameAndPath(m.ConfigDir, orgName)
+	return mgr.WriteFile(spaceListFile, &Spaces{
 		Org:                orgName,
 		EnableDeleteSpaces: true,
 	})
@@ -251,8 +253,8 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 // space with the specified name doesn't already exist.
 func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	orgName := spaceConfig.Org
-	spaceFileName := filepath.Join(m.ConfigDir, orgName, "spaces.yml")
 	spaceList := &Spaces{}
+	spaceFileName := spaceList.GetSpaceListFilenameAndPath(m.ConfigDir, orgName)
 	spaceName := spaceConfig.Space
 	mgr := m.UtilsMgr
 
@@ -298,7 +300,7 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	for protectedOrg := range DefaultProtectedOrgs {
 		protectedOrgs = append(protectedOrgs, protectedOrg)
 	}
-	mgr.WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &Orgs{
+	mgr.WriteFile((&Orgs{}).GetOrgListFilenameAndPath(m.ConfigDir), &Orgs{
 		EnableDeleteOrgs: true,
 		ProtectedOrgs:    protectedOrgs,
 	})
@@ -652,6 +654,53 @@ func (m *yamlManager) DeleteOrg(orgName string) error {
 		}
 	} else {
 		return fmt.Errorf("%s was not found in this configuration", orgName)
+	}
+	return nil
+}
+
+// DeleteSpace - Irreversibly remove a space in an org from the configuration
+func (m *yamlManager) DeleteSpace(orgName, spaceName string) error {
+	// Remove element helper - Does not retain order!
+	var removeStringElement = func(array []string, indexToRemove int) []string {
+		// Swap the target deletion entry with the last element
+		// and then just return a slice up to before the last element
+		arrayLen := len(array)
+		array[arrayLen-1], array[indexToRemove] = array[indexToRemove], array[arrayLen-1]
+		return array[:arrayLen-1]
+	}
+
+	// Get the spaceList
+	spaceList := &Spaces{}
+	spacesFilename := spaceList.GetSpaceListFilenameAndPath(m.ConfigDir, orgName)
+
+	err := m.UtilsMgr.LoadFile(spacesFilename, spaceList)
+	if err != nil {
+		return err
+	}
+	// Remove it from the spaceList
+	if spaceList.Org == orgName && spaceList.Contains(spaceName) {
+		indexToRemove := -1
+		for idxToSpace, foundSpaceName := range spaceList.Spaces {
+			if foundSpaceName == spaceName {
+				indexToRemove = idxToSpace
+				break
+			}
+		}
+		// Enable Syncing of Space Deletion on the Foundation
+		spaceList.EnableDeleteSpaces = true
+		spaceList.Spaces = removeStringElement(spaceList.Spaces, indexToRemove)
+		// Dump the file back out
+		err := m.UtilsMgr.WriteFile(spacesFilename, spaceList)
+		if err != nil {
+			return err
+		}
+		// Delete the specific Space Config Directory in an Org
+		err = m.UtilsMgr.DeleteDirectory((&SpaceConfig{}).GetSpaceConfigFilePath(m.ConfigDir, orgName, spaceName))
+		if err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("%s/%s was not found in this configuration", orgName, spaceName)
 	}
 	return nil
 }
