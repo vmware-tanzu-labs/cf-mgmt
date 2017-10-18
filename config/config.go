@@ -42,6 +42,8 @@ type Updater interface {
 	AddPrivateDomainToOrgConfig(orgName, privateDomainName string) error
 	UpdateQuotasInOrgConfig(orgName string, enableQuota bool, parameters map[string]string) error
 	UpdateQuotasInSpaceConfig(orgName, spaceName string, enableQuota bool, parameters map[string]string) error
+	DeleteOrg(orgName string) error
+
 	// -- Non Public Facing Functions
 	setFieldIn(inputStruct interface{}, field, val string) error
 }
@@ -207,14 +209,15 @@ func (m *yamlManager) GetSpaceDefaults() (*SpaceConfig, error) {
 
 // AddOrgToConfig adds an organization to the cf-mgmt configuration.
 func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
-	orgFileName := filepath.Join(m.ConfigDir, "orgs.yml")
+	orgList := &Orgs{}
+	orgFileName := orgList.GetOrgListFilenameAndPath(m.ConfigDir)
 	orgName := orgConfig.Org
 	if orgName == "" {
 		return errors.New("cannot have an empty org name")
 	}
 
 	mgr := m.UtilsMgr
-	orgList := &Orgs{}
+
 	err := mgr.LoadFile(orgFileName, orgList)
 	if err != nil {
 		return err
@@ -603,6 +606,54 @@ func (m *yamlManager) UpdateQuotasInSpaceConfig(orgName, spaceName string, enabl
 
 	// Dump the file back out
 	return m.UtilsMgr.WriteFile((*spaceConfig).GetSpaceConfigFilenameAndPath(m.ConfigDir, orgName, spaceName), *spaceConfig)
+}
+
+// DeleteOrg - Irreversibly remove an org from the configuration
+func (m *yamlManager) DeleteOrg(orgName string) error {
+	// Remove element helper - Does not retain order!
+	var removeStringElement = func(array []string, indexToRemove int) []string {
+		// Swap the target deletion entry with the last element
+		// and then just return a slice up to before the last element
+		arrayLen := len(array)
+		array[arrayLen-1], array[indexToRemove] = array[indexToRemove], array[arrayLen-1]
+		return array[:arrayLen-1]
+	}
+
+	// Get the orgList
+	orgList := &Orgs{}
+	orgFileName := orgList.GetOrgListFilenameAndPath(m.ConfigDir)
+
+	err := m.UtilsMgr.LoadFile(orgFileName, orgList)
+	if err != nil {
+		return err
+	}
+	// Remove it from the orgList
+	if orgList.Contains(orgName) {
+		indexToRemove := -1
+		for idxToOrg, foundOrgName := range orgList.Orgs {
+			if foundOrgName == orgName {
+				indexToRemove = idxToOrg
+				break
+			}
+		}
+		// Enable Syncing of Org Deletion on the Foundation
+		orgList.EnableDeleteOrgs = true
+		orgList.Orgs = removeStringElement(orgList.Orgs, indexToRemove)
+		// Dump the file back out
+		err := m.UtilsMgr.WriteFile(orgFileName, orgList)
+		if err != nil {
+			return err
+		}
+		// Delete the specific Org Config Directory
+		var orgConfigInstance = OrgConfig{}
+		err = m.UtilsMgr.DeleteDirectory(orgConfigInstance.GetOrgConfigFilePath(m.ConfigDir, orgName))
+		if err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("%s was not found in this configuration", orgName)
+	}
+	return nil
 }
 
 // UserMgmt specifies users and groups that can be associated to a particular org or space.

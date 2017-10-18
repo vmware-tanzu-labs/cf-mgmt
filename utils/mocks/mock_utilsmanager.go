@@ -40,6 +40,21 @@ func (m *MockUtilsManager) LoadFileBytes(arg0 string) ([]byte, error) {
 	return nil, fmt.Errorf("%s not created in test data", arg0)
 }
 
+// DeleteDirectory mocks base method
+func (m *MockUtilsManager) DeleteDirectory(arg0 string) error {
+	var deleteKeys []string
+	for k := range m.MockFileData {
+		if strings.HasPrefix(k, arg0) {
+			deleteKeys = append(deleteKeys, k)
+		}
+	}
+
+	for _, keyToDelete := range deleteKeys {
+		delete(m.MockFileData, keyToDelete)
+	}
+	return nil
+}
+
 // FileOrDirectoryExists mocks base method
 func (m *MockUtilsManager) FileOrDirectoryExists(arg0 string) bool {
 	_, exists := m.MockFileData[arg0]

@@ -27,6 +27,12 @@ func (m *DefaultManager) FindFiles(configDir, pattern string) ([]string, error) 
 	return foundFiles, err
 }
 
+//DeleteDirectory - deletes a directory
+func (m *DefaultManager) DeleteDirectory(path string) error {
+	err := os.RemoveAll(path)
+	return err
+}
+
 //FileOrDirectoryExists - checks if file exists
 func (m *DefaultManager) FileOrDirectoryExists(path string) bool {
 	_, err := os.Stat(path)
@@ -70,6 +76,7 @@ type Manager interface {
 	WriteFileBytes(configFile string, data []byte) error
 	FileOrDirectoryExists(path string) bool
 	LoadFileBytes(path string) ([]byte, error)
+	DeleteDirectory(path string) error
 }
 
 //DefaultManager -

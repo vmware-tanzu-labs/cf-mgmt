@@ -559,6 +559,30 @@ var _ = Describe("CF-Mgmt Config", func() {
 				})
 			})
 		})
+		Context("Delete Org", func() {
+			var utilsMgrMock *mock.MockUtilsManager
+			Context("DeleteOrg", func() {
+				var targetOrgName string
+				var configDir string
+				BeforeEach(func() {
+					utilsMgrMock = mock.NewMockUtilsManager()
+					PopulateWithTestData(utilsMgrMock)
+					targetOrgName = "test"
+					configDir = "./fixtures/config"
+				})
+				It("should be able to delete an org", func() {
+					// Delete the Org and then try to get the configuration.
+					m := config.NewManager(configDir, utilsMgrMock)
+
+					err := m.DeleteOrg(targetOrgName)
+					Ω(err).Should(BeNil())
+
+					orgConfig, err := m.GetAnOrgConfig(targetOrgName)
+					Ω(err).Should(HaveOccurred())
+					Ω(orgConfig).Should(BeNil())
+				})
+			})
+		})
 		Context("Update Space Quota", func() {
 			var utilsMgrMock *mock.MockUtilsManager
 			Context("UpdateQuotasInSpaceConfig", func() {

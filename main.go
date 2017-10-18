@@ -116,6 +116,7 @@ const (
 	spaceMgrGrp      string = "SPACE_MGR_GRP"
 	spaceAuditorGrp  string = "SPACE_AUDITOR_GRP"
 	isLdapUser       string = "IS_LDAP_USER"
+	confirmDeletion  string = "CONFIRM_DELETION"
 )
 
 func main() {
@@ -150,6 +151,7 @@ func NewApp() *cli.App {
 		CreateAddPrivateDomainToOrgConfigCommand(),
 		CreateUpdateQuotasInOrgConfigCommand(),
 		CreateUpdateQuotasInSpaceConfigCommand(),
+		CreateDeleteOrgCommand(),
 		CreateExportConfigCommand(),
 		CreateGeneratePipelineCommand(runGeneratePipeline),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
@@ -726,6 +728,61 @@ func runUpdateQuotasInSpaceConfig(c *cli.Context) error {
 		for k, v := range newQuotaSettings {
 			fmt.Printf("\t%s: \t%s\n", k, v)
 		}
+	}
+	return err
+}
+
+//CreateDeleteOrgCommand - Creates CLI command for deleting an org configuration
+func CreateDeleteOrgCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "org name",
+			EnvVar: orgName,
+		},
+		confirmDeletion: {
+			Desc:   "REQUIRED: Confirm Deletion",
+			EnvVar: confirmDeletion,
+		},
+	}
+
+	command := cli.Command{
+		Name:        "delete-org-configuration",
+		Usage:       "delete an org configuration",
+		Description: "delete an org configuration",
+		Action:      runDeleteOrgConfig,
+		Flags:       buildFlags(flagList),
+	}
+	return command
+}
+
+func runDeleteOrgConfig(c *cli.Context) error {
+	var err error
+	configDir := getConfigDir(c)
+	inputOrg := c.String(getFlag(orgName))
+	confirmDeletionInput := c.String(getFlag(confirmDeletion))
+
+	if inputOrg == "" {
+		err = fmt.Errorf("Must ensure Org name is provided")
+	} else if confirmDeletionInput == "" {
+		err = fmt.Errorf("Please confirm deletion with the flag --%s true", getFlag(confirmDeletion))
+	} else {
+		confirmDeleteOrg, err := strconv.ParseBool(confirmDeletionInput)
+
+		if err == nil && confirmDeleteOrg {
+			err = config.NewManager(configDir, utils.NewDefaultManager()).DeleteOrg(inputOrg)
+			if err == nil {
+				fmt.Printf("The org %s was successfully deleted", inputOrg)
+			}
+		} else {
+			if err == nil {
+				err = fmt.Errorf("Please confirm deletion with the flag --%s true", getFlag(confirmDeletion))
+			}
+		}
+
 	}
 	return err
 }

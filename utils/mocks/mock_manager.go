@@ -33,6 +33,18 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 	return m.recorder
 }
 
+//DeleteDirectory - deletes a directory
+func (m *MockManager) DeleteDirectory(arg0 string) error {
+	ret := m.ctrl.Call(m, "DeleteDirectory", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDirectory indicates an expected call of DeleteDirectory
+func (mr *MockManagerMockRecorder) DeleteDirectory(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDirectory", reflect.TypeOf((*MockManager)(nil).DeleteDirectory), arg0)
+}
+
 // FileOrDirectoryExists mocks base method
 func (m *MockManager) FileOrDirectoryExists(arg0 string) bool {
 	ret := m.ctrl.Call(m, "FileOrDirectoryExists", arg0)

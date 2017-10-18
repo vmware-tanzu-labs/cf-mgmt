@@ -1,6 +1,9 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"path/filepath"
+)
 
 // OrgConfig describes configuration for an org.
 type OrgConfig struct {
@@ -42,6 +45,10 @@ func (o *Orgs) Contains(orgName string) bool {
 		}
 	}
 	return false
+}
+
+func (o *Orgs) GetOrgListFilenameAndPath(configDir string) string {
+	return filepath.Join(configDir, "orgs.yml")
 }
 
 func (i *OrgConfig) GetOrgConfigFilenameAndPath(configDir, orgName string) string {
