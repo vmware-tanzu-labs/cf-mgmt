@@ -357,6 +357,30 @@ func (mr *MockManagerMockRecorder) RemoveCFUser(arg0, arg1, arg2, arg3 interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveCFUser", reflect.TypeOf((*MockManager)(nil).RemoveCFUser), arg0, arg1, arg2, arg3)
 }
 
+// SharePrivateDomain mocks base method
+func (m *MockManager) SharePrivateDomain(arg0, arg1 string) error {
+	ret := m.ctrl.Call(m, "SharePrivateDomain", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SharePrivateDomain indicates an expected call of SharePrivateDomain
+func (mr *MockManagerMockRecorder) SharePrivateDomain(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SharePrivateDomain", reflect.TypeOf((*MockManager)(nil).SharePrivateDomain), arg0, arg1)
+}
+
+// UnsharePrivateDomain mocks base method
+func (m *MockManager) UnsharePrivateDomain(arg0, arg1 string) error {
+	ret := m.ctrl.Call(m, "UnsharePrivateDomain", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnsharePrivateDomain indicates an expected call of UnsharePrivateDomain
+func (mr *MockManagerMockRecorder) UnsharePrivateDomain(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsharePrivateDomain", reflect.TypeOf((*MockManager)(nil).UnsharePrivateDomain), arg0, arg1)
+}
+
 // UpdateQuota mocks base method
 func (m *MockManager) UpdateQuota(arg0 string, arg1 cloudcontroller.QuotaEntity) error {
 	ret := m.ctrl.Call(m, "UpdateQuota", arg0, arg1)

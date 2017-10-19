@@ -1023,6 +1023,17 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 
 		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("PUT", "/v2/organizations/1234o/private_domains/1234d"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			err := manager.SharePrivateDomain("1234o", "1234d")
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
 	})
 
 })
