@@ -1,5 +1,5 @@
 {
-  "total_results": 1,
+  "total_results": 2,
   "total_pages": 1,
   "prev_url": null,
   "next_url": null,
@@ -16,6 +16,20 @@
         "owning_organization_guid": "5afc3416-50ba-46db-ae2c-5e0c88cdac3f",
         "owning_organization_url": "/v2/organizations/5afc3416-50ba-46db-ae2c-5e0c88cdac3f",
         "shared_organizations_url": "/v2/private_domains/ffcf939a-22ed-4ae5-9371-2e737bd1eb48/shared_organizations"
+      }
+    },
+    {
+      "metadata": {
+        "guid": "718a97e7-db8a-46a7-874a-187b6b2a6ff1",
+        "url": "/v2/private_domains/718a97e7-db8a-46a7-874a-187b6b2a6ff1",
+        "created_at": "2016-06-08T16:41:35Z",
+        "updated_at": "2016-06-08T16:41:26Z"
+      },
+      "entity": {
+        "name": "domain-29.example.com",
+        "owning_organization_guid": "b37f9d43-f6c6-4129-b52e-661ddae02dcd",
+        "owning_organization_url": "/v2/organizations/b37f9d43-f6c6-4129-b52e-661ddae02dcd",
+        "shared_organizations_url": "/v2/private_domains/718a97e7-db8a-46a7-874a-187b6b2a6ff1/shared_organizations"
       }
     }
   ]

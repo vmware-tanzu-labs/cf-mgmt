@@ -162,7 +162,7 @@ func (m *DefaultOrgManager) CreatePrivateDomains() error {
 
 		if orgConfig.RemovePrivateDomains {
 			lo.G.Infof("Looking for private domains to remove for org [%s]", orgConfig.Org)
-			orgPrivateDomains, err := m.CloudController.ListOrgPrivateDomains(orgGUID)
+			orgPrivateDomains, err := m.CloudController.ListOrgOwnedPrivateDomains(orgGUID)
 			if err != nil {
 				return err
 			}
@@ -183,7 +183,62 @@ func (m *DefaultOrgManager) CreatePrivateDomains() error {
 	return nil
 }
 
+func (m *DefaultOrgManager) SharePrivateDomains() error {
+	orgConfigs, err := m.Cfg.GetOrgConfigs()
+	if err != nil {
+		lo.G.Error(err)
+		return err
+	}
 
+	orgs, err := m.CloudController.ListOrgs()
+	if err != nil {
+		return err
+	}
+	for _, orgConfig := range orgConfigs {
+		orgGUID, err := m.getOrgGUID(orgs, orgConfig.Org)
+		if err != nil {
+			return err
+		}
+		allSharedPrivateDomains, err := m.CloudController.ListOrgSharedPrivateDomains(orgGUID)
+		if err != nil {
+			return err
+		}
+
+		privateDomainMap := make(map[string]string)
+		for _, privateDomain := range orgConfig.SharedPrivateDomains {
+			if privateDomainGUID, ok := allSharedPrivateDomains[privateDomain]; !ok {
+
+				lo.G.Infof("Sharing Private Domain %s for Org %s", privateDomain, orgConfig.Org)
+				err = m.CloudController.SharePrivateDomain(orgGUID, privateDomainGUID)
+				if err != nil {
+					return err
+				}
+			}
+			privateDomainMap[privateDomain] = privateDomain
+		}
+
+		if orgConfig.RemoveSharedPrivateDomains {
+			lo.G.Infof("Looking for shared private domains to remove for org [%s]", orgConfig.Org)
+			orgSharedPrivateDomains, err := m.CloudController.ListOrgSharedPrivateDomains(orgGUID)
+			if err != nil {
+				return err
+			}
+			for existingPrivateDomain, privateDomainGUID := range orgSharedPrivateDomains {
+				if _, ok := privateDomainMap[existingPrivateDomain]; !ok {
+					lo.G.Infof("Removing Shared Private Domain %s for Org %s", existingPrivateDomain, orgConfig.Org)
+					err = m.CloudController.RemoveSharedPrivateDomain(orgGUID, privateDomainGUID)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		} else {
+			lo.G.Infof("Shared private domains will not be removed for org [%s], must set enable-remove-shared-private-domains: true in orgConfig.yml", orgConfig.Org)
+		}
+	}
+
+	return nil
+}
 
 func (m *DefaultOrgManager) getOrgName(orgs []*cloudcontroller.Org, orgGUID string) (string, error) {
 	for _, org := range orgs {

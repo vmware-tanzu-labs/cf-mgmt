@@ -87,7 +87,7 @@ func filesCfMgmtSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "files/cf-mgmt.sh", size: 67, mode: os.FileMode(493), modTime: time.Unix(1508346281, 0)}
+	info := bindataFileInfo{name: "files/cf-mgmt.sh", size: 67, mode: os.FileMode(493), modTime: time.Unix(1508358133, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -107,7 +107,7 @@ func filesCfMgmtYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "files/cf-mgmt.yml", size: 198, mode: os.FileMode(420), modTime: time.Unix(1508346281, 0)}
+	info := bindataFileInfo{name: "files/cf-mgmt.yml", size: 198, mode: os.FileMode(420), modTime: time.Unix(1508358133, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -127,7 +127,7 @@ func filesPipelineYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "files/pipeline.yml", size: 5029, mode: os.FileMode(420), modTime: time.Unix(1508346281, 0)}
+	info := bindataFileInfo{name: "files/pipeline.yml", size: 5029, mode: os.FileMode(420), modTime: time.Unix(1508358133, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -147,7 +147,7 @@ func filesSecurityGroupJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "files/security-group.json", size: 3, mode: os.FileMode(420), modTime: time.Unix(1508346281, 0)}
+	info := bindataFileInfo{name: "files/security-group.json", size: 3, mode: os.FileMode(420), modTime: time.Unix(1508358133, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -167,7 +167,7 @@ func filesVarsYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "files/vars.yml", size: 304, mode: os.FileMode(420), modTime: time.Unix(1508346281, 0)}
+	info := bindataFileInfo{name: "files/vars.yml", size: 304, mode: os.FileMode(420), modTime: time.Unix(1508358133, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

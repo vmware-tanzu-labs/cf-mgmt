@@ -39,11 +39,12 @@ type Manager interface {
 	QuotaDef(quotaDefGUID string, entityType string) (*Quota, error)
 
 	ListAllPrivateDomains() (map[string]string, error)
-	ListOrgPrivateDomains(orgGUID string) (map[string]string, error)
+	ListOrgOwnedPrivateDomains(orgGUID string) (map[string]string, error)
+	ListOrgSharedPrivateDomains(orgGUID string) (map[string]string, error)
 	DeletePrivateDomain(guid string) error
 	CreatePrivateDomain(orgGUID, privateDomain string) error
 	SharePrivateDomain(sharedOrgGUID, privateDomainGUID string) error
-	UnsharePrivateDomain(sharedOrgGUID, privateDomainGUID string) error
+	RemoveSharedPrivateDomain(sharedOrgGUID, privateDomainGUID string) error
 }
 
 type DefaultManager struct {

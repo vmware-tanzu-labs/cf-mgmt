@@ -107,6 +107,18 @@ func (mr *MockManagerMockRecorder) GetOrgGUID(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrgGUID", reflect.TypeOf((*MockManager)(nil).GetOrgGUID), arg0)
 }
 
+// SharePrivateDomains mocks base method
+func (m *MockManager) SharePrivateDomains() error {
+	ret := m.ctrl.Call(m, "SharePrivateDomains")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SharePrivateDomains indicates an expected call of SharePrivateDomains
+func (mr *MockManagerMockRecorder) SharePrivateDomains() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SharePrivateDomains", reflect.TypeOf((*MockManager)(nil).SharePrivateDomains))
+}
+
 // UpdateOrgUsers mocks base method
 func (m *MockManager) UpdateOrgUsers(arg0, arg1 string) error {
 	ret := m.ctrl.Call(m, "UpdateOrgUsers", arg0, arg1)
