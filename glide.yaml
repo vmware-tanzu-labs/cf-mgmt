@@ -6,6 +6,7 @@ import:
 - package: github.com/xchapter7x/lo
 - package: github.com/codegangsta/cli
 - package: github.com/golang/mock
+  version: v1.0.0
   subpackages:
   - gomock
 - package: github.com/go-ldap/ldap

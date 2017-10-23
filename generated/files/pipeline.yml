@@ -173,3 +173,16 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: update-org-quotas
+- name: update-iso-segments
+  plan:
+  - get: config-repo
+    trigger: true
+    passed: [create-orgs, delete-orgs, create-spaces, delete-spaces, update-spaces]
+  - task: update-iso-segments
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      CLIENT_SECRET: {{client_secret}}
+      CONFIG_DIR: ./config
+      CF_MGMT_COMMAND: update-iso-segments
