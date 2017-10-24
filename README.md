@@ -199,6 +199,7 @@ After running the above commands, there will be a config directory in the workin
 ```
 ├── ldap.yml
 ├── orgs.yml
+|── spaceDefaults.yml
 ├── test
 │   ├── orgConfig.yml
 │   ├── space1
@@ -417,6 +418,13 @@ enable-security-group: false
 # added in 0.0.48+ which will remove users from roles if not configured in cf-mgmt
 enable-remove-users: true/false
 ```
+
+#### Space Default Configuration
+
+The file spaceDefaults.yml can be used to specify a default set of roles for user and groups to be applied to all spaces.  
+This will be merged with the space-specific roles.  
+Note that this is actually processed at runtime, not when spaces are added to the config.  
+
 
 ### LDAP Configuration
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
