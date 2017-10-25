@@ -186,6 +186,8 @@ func doAddUsers(cfUsers map[string]string, uaaUsers *[]string, ldapUsers *[]stri
 			} else {
 				*ldapUsers = append(*ldapUsers, usr.UserName)
 			}
+		} else {
+			lo.G.Infof("CFUser [%s] not found in uaa user list", cfUser)
 		}
 	}
 }
