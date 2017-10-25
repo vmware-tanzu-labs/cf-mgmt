@@ -54,7 +54,7 @@ func (m *DefaultUAACManager) UsersByID() (userIDMap map[string]User, err error) 
 		return nil, err
 	}
 	for _, user := range userList.Users {
-		userIDMap[user.UserName] = user
+		userIDMap[strings.ToLower(user.UserName)] = user
 	}
 	return userIDMap, nil
 }
