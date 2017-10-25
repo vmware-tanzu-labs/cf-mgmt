@@ -30,6 +30,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		lo.G.Error("Unable to retrieve users")
 		return err
 	}
+	lo.G.Debugf("uaa user id map %v", userIDToUserMap)
 	//Get all the orgs
 	orgs, err := im.CloudController.ListOrgs()
 	if err != nil {
