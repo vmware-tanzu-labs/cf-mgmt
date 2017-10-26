@@ -22,12 +22,13 @@ import (
 var _ = Describe("given SpaceManager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/space-defaults"))
+			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/space-defaults", utils.NewDefaultManager()))
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})
 
 	var (
+		utilsMgr            utils.Manager
 		ctrl                *gomock.Controller
 		mockCloudController *cc.MockManager
 		mockLdap            *ldap.MockManager
@@ -38,6 +39,7 @@ var _ = Describe("given SpaceManager", func() {
 	)
 
 	BeforeEach(func() {
+		utilsMgr = utils.NewDefaultManager()
 		ctrl = gomock.NewController(test)
 		mockCloudController = cc.NewMockManager(ctrl)
 		mockLdap = ldap.NewMockManager(ctrl)
@@ -46,7 +48,7 @@ var _ = Describe("given SpaceManager", func() {
 		mockUserMgr = s.NewMockUserMgr(ctrl)
 
 		spaceManager = DefaultSpaceManager{
-			Cfg:             config.NewManager("./fixtures/config"),
+			Cfg:             config.NewManager("./fixtures/config", utilsMgr),
 			CloudController: mockCloudController,
 			UAACMgr:         mockUaac,
 			UtilsMgr:        utils.NewDefaultManager(),
@@ -109,7 +111,7 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("CreateSpaces()", func() {
 		BeforeEach(func() {
-			spaceManager.Cfg = config.NewManager("./fixtures/config")
+			spaceManager.Cfg = config.NewManager("./fixtures/config", utilsMgr)
 		})
 
 		It("should create 2 spaces", func() {
@@ -199,7 +201,7 @@ var _ = Describe("given SpaceManager", func() {
 					Users:          []string{"cwashburndefault1@testdomain.com"},
 				}).Return(nil)
 
-			spaceManager.Cfg = config.NewManager("./fixtures/default_config")
+			spaceManager.Cfg = config.NewManager("./fixtures/default_config", utilsMgr)
 			Ω(spaceManager.CreateSpaces("./fixtures/default_config", "test_pwd")).Should(Succeed())
 		})
 	})
@@ -412,7 +414,7 @@ var _ = Describe("given SpaceManager", func() {
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockCloudController.EXPECT().UpdateSpaceSSH(true, "space2GUID").Return(nil)
 
-			spaceManager.Cfg = config.NewManager("./fixtures/config")
+			spaceManager.Cfg = config.NewManager("./fixtures/config", utilsMgr)
 			err := spaceManager.UpdateSpaces("./fixtures/config")
 			Ω(err).Should(BeNil())
 		})
@@ -423,7 +425,7 @@ var _ = Describe("given SpaceManager", func() {
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 
-			spaceManager.Cfg = config.NewManager("./fixtures/config-sshoff")
+			spaceManager.Cfg = config.NewManager("./fixtures/config-sshoff", utilsMgr)
 			Ω(spaceManager.UpdateSpaces("./fixtures/config-sshoff")).Should(Succeed())
 		})
 
@@ -438,7 +440,7 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("DeleteSpaces()", func() {
 		BeforeEach(func() {
-			spaceManager.Cfg = config.NewManager("./fixtures/config-delete")
+			spaceManager.Cfg = config.NewManager("./fixtures/config-delete", utilsMgr)
 		})
 
 		It("should delete 1 and skip 1", func() {

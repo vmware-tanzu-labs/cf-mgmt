@@ -5,7 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+
+	"github.com/pivotalservices/cf-mgmt/utils"
 
 	"github.com/codegangsta/cli"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
@@ -42,6 +45,7 @@ type CFMgmt struct {
 	SystemDomain    string
 	UAACManager     uaac.Manager
 	CloudController cloudcontroller.Manager
+	UtilsMgr        utils.Manager
 }
 
 //InitializeManager -
@@ -60,7 +64,6 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 		return nil, fmt.Errorf("must set system-domain, user-id, client-secret properties")
 	}
 
-	cfg := config.NewManager(configDir)
 	var cfToken, uaacToken string
 	var err error
 	cfMgmt := &CFMgmt{}
@@ -69,6 +72,8 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	cfMgmt.ConfigDirectory = configDir
 	cfMgmt.SystemDomain = sysDomain
 	cfMgmt.UAAManager = uaa.NewDefaultUAAManager(sysDomain, user)
+	cfMgmt.UtilsMgr = utils.NewDefaultManager()
+	cfg := config.NewManager(configDir, cfMgmt.UtilsMgr)
 
 	if uaacToken, err = cfMgmt.UAAManager.GetUAACToken(secret); err != nil {
 		return nil, err
@@ -88,7 +93,7 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	}
 	cfMgmt.OrgManager = organization.NewManager(sysDomain, cfToken, uaacToken, cfg)
 	cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken, cfg)
-	cfMgmt.ConfigManager = config.NewManager(configDir)
+	cfMgmt.ConfigManager = cfg
 
 	return cfMgmt, nil
 }
@@ -100,7 +105,9 @@ const (
 	clientSecret     string = "CLIENT_SECRET"
 	configDirectory  string = "CONFIG_DIR"
 	orgName          string = "ORG"
+	privateDomain    string = "PRIVATE_DOMAIN_NAME"
 	spaceName        string = "SPACE"
+	roleName         string = "USER_ROLE"
 	ldapPassword     string = "LDAP_PASSWORD"
 	orgBillingMgrGrp string = "ORG_BILLING_MGR_GRP"
 	orgMgrGrp        string = "ORG_MGR_GRP"
@@ -108,6 +115,8 @@ const (
 	spaceDevGrp      string = "SPACE_DEV_GRP"
 	spaceMgrGrp      string = "SPACE_MGR_GRP"
 	spaceAuditorGrp  string = "SPACE_AUDITOR_GRP"
+	isLdapUser       string = "IS_LDAP_USER"
+	confirmDeletion  string = "CONFIRM_DELETION"
 )
 
 func main() {
@@ -137,6 +146,13 @@ func NewApp() *cli.App {
 		CreateInitCommand(),
 		CreateAddOrgCommand(),
 		CreateAddSpaceCommand(),
+		CreateAddUserToSpaceConfigCommand(),
+		CreateAddUserToOrgConfigCommand(),
+		CreateAddPrivateDomainToOrgConfigCommand(),
+		CreateUpdateQuotasInOrgConfigCommand(),
+		CreateUpdateQuotasInSpaceConfigCommand(),
+		CreateDeleteOrgCommand(),
+		CreateDeleteSpaceCommand(),
 		CreateExportConfigCommand(),
 		CreateGeneratePipelineCommand(runGeneratePipeline),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
@@ -215,7 +231,7 @@ func CreateInitCommand() cli.Command {
 
 func runInit(c *cli.Context) error {
 	configDir := getConfigDir(c)
-	configManager := config.NewManager(configDir)
+	configManager := config.NewManager(configDir, utils.NewDefaultManager())
 	return configManager.CreateConfigIfNotExists("ldap")
 }
 
@@ -261,7 +277,7 @@ func runAddOrg(c *cli.Context) error {
 		ManagerGroup:        c.String(getFlag(orgMgrGrp)),
 		AuditorGroup:        c.String(getFlag(orgAuditorGrp)),
 	}
-	return config.NewManager(getConfigDir(c)).AddOrgToConfig(orgConfig)
+	return config.NewManager(getConfigDir(c), utils.NewDefaultManager()).AddOrgToConfig(orgConfig)
 }
 
 //CreateAddSpaceCommand -
@@ -302,6 +318,536 @@ func CreateAddSpaceCommand() cli.Command {
 	}
 }
 
+//CreateAddUserToSpaceConfigCommand -
+func CreateAddUserToSpaceConfigCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "org name of space",
+			EnvVar: orgName,
+		},
+		spaceName: {
+			Desc:   "space name to which we add our user to",
+			EnvVar: spaceName,
+		},
+		userID: {
+			Desc:   "The user ID to add",
+			EnvVar: userID,
+		},
+		roleName: {
+			Desc:   "The Space role name: developers, managers or auditors",
+			EnvVar: roleName,
+		},
+		isLdapUser: {
+			Desc:   "Boolean flag for whether the user is to be added into the LDAP Users. If blank, defaults to FALSE.",
+			EnvVar: isLdapUser,
+		},
+	}
+
+	return cli.Command{
+		Name:        "add-user-to-space-config",
+		Usage:       "adds specified user to space of an org",
+		Description: "adds specified user to space of an org",
+		Action:      runAddUserToSpaceConfig,
+		Flags:       buildFlags(flagList),
+	}
+}
+
+//CreateAddUserToOrgConfigCommand -
+func CreateAddUserToOrgConfigCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "org name of space",
+			EnvVar: orgName,
+		},
+		userID: {
+			Desc:   "The user ID to add",
+			EnvVar: userID,
+		},
+		roleName: {
+			Desc:   "The Org role name: managers, billing_managers or auditors",
+			EnvVar: roleName,
+		},
+		isLdapUser: {
+			Desc:   "Boolean flag for whether the user is to be added into the LDAP Users. If blank, defaults to FALSE.",
+			EnvVar: isLdapUser,
+		},
+	}
+
+	return cli.Command{
+		Name:        "add-user-to-org-config",
+		Usage:       "adds specified user to an org",
+		Description: "adds specified user to an org",
+		Action:      runAddUserToOrgConfig,
+		Flags:       buildFlags(flagList),
+	}
+}
+
+func runAddUserToOrgConfig(c *cli.Context) error {
+	var err error
+
+	configDir := getConfigDir(c)
+	addUserID := c.String(getFlag(userID))
+	userRole := c.String(getFlag(roleName))
+	inputOrg := c.String(getFlag(orgName))
+	isLdapUser := c.Bool(getFlag(isLdapUser))
+
+	if addUserID == "" ||
+		userRole == "" ||
+		inputOrg == "" {
+		err = fmt.Errorf("Must ensure User ID, User Role and Org Name name are not empty")
+	} else {
+		err = config.NewManager(configDir, utils.NewDefaultManager()).AddUserToOrgConfig(addUserID, userRole, inputOrg, isLdapUser)
+		if err == nil {
+			userType := ""
+			if isLdapUser {
+				userType = "LDAP "
+			}
+			fmt.Printf("%sUser %s was successfully added to %s with the %s role", userType, addUserID, inputOrg, userRole)
+		}
+	}
+
+	return err
+}
+
+func runAddUserToSpaceConfig(c *cli.Context) error {
+	var err error
+
+	configDir := getConfigDir(c)
+	addUserID := c.String(getFlag(userID))
+	userRole := c.String(getFlag(roleName))
+	inputOrg := c.String(getFlag(orgName))
+	inputSpace := c.String(getFlag(spaceName))
+	isLdapUser := c.Bool(getFlag(isLdapUser))
+
+	if addUserID == "" ||
+		userRole == "" ||
+		inputOrg == "" ||
+		inputSpace == "" {
+		err = fmt.Errorf("Must ensure User ID, User Role, Org Name and Space name are not empty")
+	} else {
+		err = config.NewManager(configDir, utils.NewDefaultManager()).AddUserToSpaceConfig(addUserID, userRole, inputSpace, inputOrg, isLdapUser)
+		if err == nil {
+			userType := ""
+			if isLdapUser {
+				userType = "LDAP "
+			}
+			fmt.Printf("%sUser %s was successfully added into %s/%s with the %s role", userType, addUserID, inputOrg, inputSpace, userRole)
+		}
+	}
+
+	return err
+}
+
+//CreateAddPrivateDomainToOrgConfigCommand - Creates CLI command for adding private domains to an org configuration
+func CreateAddPrivateDomainToOrgConfigCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "org name",
+			EnvVar: orgName,
+		},
+		privateDomain: {
+			Desc:   "Private domain name. HTTP or HTTPS only",
+			EnvVar: privateDomain,
+		},
+	}
+
+	command := cli.Command{
+		Name:        "add-private-domain-to-org-config",
+		Usage:       "adds specified private domain to the org configuration",
+		Description: "adds specified private domain to the org configuration",
+		Action:      runAddOrgPrivateDomainToConfig,
+		Flags:       buildFlags(flagList),
+	}
+	return command
+}
+
+func runAddOrgPrivateDomainToConfig(c *cli.Context) error {
+	var err error
+	configDir := getConfigDir(c)
+	inputOrg := c.String(getFlag(orgName))
+	privateDomainName := c.String(getFlag(privateDomain))
+	if inputOrg == "" || privateDomainName == "" {
+		err = fmt.Errorf("Must ensure Org name or private domain name is provided")
+	} else {
+		err = config.NewManager(configDir, utils.NewDefaultManager()).AddPrivateDomainToOrgConfig(inputOrg, privateDomainName)
+		if err == nil {
+			fmt.Printf("The private domain %s was successfully added into %s", privateDomainName, inputOrg)
+		}
+
+	}
+	return err
+}
+
+// Below are the constants associated with the Quotas in the Org Config
+// The string names case sensitivity must be adhered to -- accordingly to the OrgConfig names
+const (
+	enableSpaceQuota        string = "EnableSpaceQuota"
+	enableOrgQuota          string = "EnableOrgQuota"
+	memoryLimit             string = "MemoryLimit"
+	instanceMemoryLimit     string = "InstanceMemoryLimit"
+	totalRoutes             string = "TotalRoutes"
+	totalServices           string = "TotalServices"
+	paidServicePlansAllowed string = "PaidServicePlansAllowed"
+	totalPrivateDomains     string = "TotalPrivateDomains"
+	totalReservedRoutePorts string = "TotalReservedRoutePorts"
+	totalServiceKeys        string = "TotalServiceKeys"
+	appInstanceLimit        string = "AppInstanceLimit"
+)
+
+// CreateUpdateQuotasInOrgConfigCommand  - Creates CLI command for updating an org's quotas
+func CreateUpdateQuotasInOrgConfigCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "The org name of where the new quotas will go in",
+			EnvVar: orgName,
+		},
+		enableOrgQuota: {
+			Desc:   "(MANDATORY) Enable the Org Quota in the config (TRUE or FALSE)",
+			EnvVar: enableOrgQuota,
+		},
+		memoryLimit: {
+			Desc:   "(OPTIONAL) An Org's memory limit in Megabytes",
+			EnvVar: memoryLimit,
+		},
+		instanceMemoryLimit: {
+			Desc:   "(OPTIONAL) Global Org Application instance memory limit in Megabytes",
+			EnvVar: instanceMemoryLimit,
+		},
+		totalRoutes: {
+			Desc:   "(OPTIONAL) Total Routes capacity for an Org",
+			EnvVar: totalRoutes,
+		},
+		totalServices: {
+			Desc:   "(OPTIONAL) Total Services capacity for an Org",
+			EnvVar: totalServices,
+		},
+		paidServicePlansAllowed: {
+			Desc:   "(OPTIONAL) Allow paid services to appear in an org (TRUE or FALSE)",
+			EnvVar: paidServicePlansAllowed,
+		},
+		totalPrivateDomains: {
+			Desc:   "(OPTIONAL) Total Private Domain capacity for an Org",
+			EnvVar: totalPrivateDomains,
+		},
+		totalReservedRoutePorts: {
+			Desc:   "(OPTIONAL) Total Reserved Route Ports capacity for an Org",
+			EnvVar: totalReservedRoutePorts,
+		},
+		totalServiceKeys: {
+			Desc:   "(OPTIONAL) Total Service Keys capacity for an Org",
+			EnvVar: totalServiceKeys,
+		},
+		appInstanceLimit: {
+			Desc:   "(OPTIONAL) Total Service Keys capacity for an Org",
+			EnvVar: appInstanceLimit,
+		},
+	}
+
+	command := cli.Command{
+		Name:        "update-quotas-in-org-config",
+		Usage:       "updates quota in specified orgs configuration",
+		Description: "updates quota in specified orgs configuration",
+		Action:      runUpdateQuotasInOrgConfig,
+		Flags:       buildFlags(flagList),
+	}
+	return command
+}
+
+func runUpdateQuotasInOrgConfig(c *cli.Context) error {
+	inputOrg := c.String(getFlag(orgName))
+	enableOrgQuota := c.String(getFlag(enableOrgQuota))
+
+	if inputOrg == "" {
+		return fmt.Errorf("Must provide an org name")
+	}
+	if enableOrgQuota == "" {
+		return fmt.Errorf("Must provide input to enable or disable applying of Org Quota Updates in Config File")
+	}
+
+	enableOrgQuotaBool, err := strconv.ParseBool(enableOrgQuota)
+
+	if err != nil {
+		return err
+	}
+
+	// Combine the parameters into a dictionary
+	var newQuotaSettings = map[string]string{
+		memoryLimit:             c.String(getFlag(memoryLimit)),
+		instanceMemoryLimit:     c.String(getFlag(instanceMemoryLimit)),
+		totalRoutes:             c.String(getFlag(totalRoutes)),
+		totalServices:           c.String(getFlag(totalServices)),
+		paidServicePlansAllowed: c.String(getFlag(paidServicePlansAllowed)),
+		totalPrivateDomains:     c.String(getFlag(totalPrivateDomains)),
+		totalReservedRoutePorts: c.String(getFlag(totalReservedRoutePorts)),
+		totalServiceKeys:        c.String(getFlag(totalServiceKeys)),
+		appInstanceLimit:        c.String(getFlag(appInstanceLimit)),
+	}
+
+	// Prune out the entries that have an empty value
+	for key, val := range newQuotaSettings {
+		if val == "" {
+			delete(newQuotaSettings, key)
+		}
+	}
+
+	// Run the update org quotas command
+	err = config.NewManager(getConfigDir(c), utils.NewDefaultManager()).UpdateQuotasInOrgConfig(inputOrg, enableOrgQuotaBool, newQuotaSettings)
+	if err == nil {
+		fmt.Println("Successfully set the following values: ")
+		for k, v := range newQuotaSettings {
+			fmt.Printf("\t%s: \t%s\n", k, v)
+		}
+	}
+	return err
+}
+
+// CreateUpdateQuotasInSpaceConfigCommand  - Creates CLI command for updating an space's quotas
+func CreateUpdateQuotasInSpaceConfigCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "The org name of where the new quotas will go in",
+			EnvVar: orgName,
+		},
+		spaceName: {
+			Desc:   "The space name of where the new quotas will go in",
+			EnvVar: spaceName,
+		},
+		enableSpaceQuota: {
+			Desc:   "(MANDATORY) Enable the Space Quota in the config (TRUE or FALSE)",
+			EnvVar: enableSpaceQuota,
+		},
+		memoryLimit: {
+			Desc:   "(OPTIONAL) An Space's memory limit in Megabytes",
+			EnvVar: memoryLimit,
+		},
+		instanceMemoryLimit: {
+			Desc:   "(OPTIONAL) Global Space Application instance memory limit in Megabytes",
+			EnvVar: instanceMemoryLimit,
+		},
+		totalRoutes: {
+			Desc:   "(OPTIONAL) Total Routes capacity for an space",
+			EnvVar: totalRoutes,
+		},
+		totalServices: {
+			Desc:   "(OPTIONAL) Total Services capacity for an space",
+			EnvVar: totalServices,
+		},
+		paidServicePlansAllowed: {
+			Desc:   "(OPTIONAL) Allow paid services to appear in an space (TRUE or FALSE)",
+			EnvVar: paidServicePlansAllowed,
+		},
+		totalPrivateDomains: {
+			Desc:   "(OPTIONAL) Total Private Domain capacity for an space",
+			EnvVar: totalPrivateDomains,
+		},
+		totalReservedRoutePorts: {
+			Desc:   "(OPTIONAL) Total Reserved Route Ports capacity for an space",
+			EnvVar: totalReservedRoutePorts,
+		},
+		totalServiceKeys: {
+			Desc:   "(OPTIONAL) Total Service Keys capacity for an space",
+			EnvVar: totalServiceKeys,
+		},
+		appInstanceLimit: {
+			Desc:   "(OPTIONAL) Total Service Keys capacity for an space",
+			EnvVar: appInstanceLimit,
+		},
+	}
+
+	command := cli.Command{
+		Name:        "update-quotas-in-space-config",
+		Usage:       "updates quota in specified space configuration",
+		Description: "updates quota in specified space configuration",
+		Action:      runUpdateQuotasInSpaceConfig,
+		Flags:       buildFlags(flagList),
+	}
+	return command
+}
+
+func runUpdateQuotasInSpaceConfig(c *cli.Context) error {
+	inputOrg := c.String(getFlag(orgName))
+	inputSpace := c.String(getFlag(spaceName))
+	enableSpaceQuota := c.String(getFlag(enableSpaceQuota))
+
+	if inputOrg == "" || inputSpace == "" {
+		return fmt.Errorf("Must provide an org and space name")
+	}
+	if enableSpaceQuota == "" {
+		return fmt.Errorf("Must provide input to enable or disable applying of Space Quota Updates in Config File")
+	}
+
+	enableSpaceQuotaBool, err := strconv.ParseBool(enableSpaceQuota)
+
+	if err != nil {
+		return err
+	}
+
+	// Combine the parameters into a dictionary
+	var newQuotaSettings = map[string]string{
+		memoryLimit:             c.String(getFlag(memoryLimit)),
+		instanceMemoryLimit:     c.String(getFlag(instanceMemoryLimit)),
+		totalRoutes:             c.String(getFlag(totalRoutes)),
+		totalServices:           c.String(getFlag(totalServices)),
+		paidServicePlansAllowed: c.String(getFlag(paidServicePlansAllowed)),
+		totalPrivateDomains:     c.String(getFlag(totalPrivateDomains)),
+		totalReservedRoutePorts: c.String(getFlag(totalReservedRoutePorts)),
+		totalServiceKeys:        c.String(getFlag(totalServiceKeys)),
+		appInstanceLimit:        c.String(getFlag(appInstanceLimit)),
+	}
+
+	// Prune out the entries that have an empty value
+	for key, val := range newQuotaSettings {
+		if val == "" {
+			delete(newQuotaSettings, key)
+		}
+	}
+
+	// Run the update space quotas command
+	err = config.NewManager(getConfigDir(c), utils.NewDefaultManager()).UpdateQuotasInSpaceConfig(inputOrg, inputSpace, enableSpaceQuotaBool, newQuotaSettings)
+	if err == nil {
+		fmt.Println("Successfully set the following values: ")
+		for k, v := range newQuotaSettings {
+			fmt.Printf("\t%s: \t%s\n", k, v)
+		}
+	}
+	return err
+}
+
+//CreateDeleteOrgCommand - Creates CLI command for deleting an org configuration
+func CreateDeleteOrgCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "org name",
+			EnvVar: orgName,
+		},
+		confirmDeletion: {
+			Desc:   "REQUIRED: Confirm Deletion",
+			EnvVar: confirmDeletion,
+		},
+	}
+
+	command := cli.Command{
+		Name:        "delete-org-configuration",
+		Usage:       "delete an org configuration",
+		Description: "delete an org configuration",
+		Action:      runDeleteOrgConfig,
+		Flags:       buildFlags(flagList),
+	}
+	return command
+}
+
+func runDeleteOrgConfig(c *cli.Context) error {
+	var err error
+	configDir := getConfigDir(c)
+	inputOrg := c.String(getFlag(orgName))
+	confirmDeletionInput := c.String(getFlag(confirmDeletion))
+
+	if inputOrg == "" {
+		err = fmt.Errorf("Must ensure Org name is provided")
+	} else if confirmDeletionInput == "" {
+		err = fmt.Errorf("Please confirm deletion with the flag --%s true", getFlag(confirmDeletion))
+	} else {
+		confirmDeleteOrg, err := strconv.ParseBool(confirmDeletionInput)
+
+		if err == nil && confirmDeleteOrg {
+			err = config.NewManager(configDir, utils.NewDefaultManager()).DeleteOrg(inputOrg)
+			if err == nil {
+				fmt.Printf("The org %s was successfully deleted", inputOrg)
+			}
+		} else {
+			if err == nil {
+				err = fmt.Errorf("Please confirm deletion with the flag --%s true", getFlag(confirmDeletion))
+			}
+		}
+
+	}
+	return err
+}
+
+//CreateDeleteSpaceCommand - Creates CLI command for deleting a space configuration
+func CreateDeleteSpaceCommand() cli.Command {
+	flagList := map[string]flagBucket{
+		configDirectory: {
+			Desc:   "config dir.  Default is config",
+			EnvVar: configDirectory,
+		},
+		orgName: {
+			Desc:   "org name",
+			EnvVar: orgName,
+		},
+		spaceName: {
+			Desc:   "space name",
+			EnvVar: spaceName,
+		},
+		confirmDeletion: {
+			Desc:   "REQUIRED: Confirm Deletion",
+			EnvVar: confirmDeletion,
+		},
+	}
+
+	command := cli.Command{
+		Name:        "delete-space-configuration",
+		Usage:       "delete a space configuration",
+		Description: "delete a space configuration",
+		Action:      runDeleteSpaceConfig,
+		Flags:       buildFlags(flagList),
+	}
+	return command
+}
+
+func runDeleteSpaceConfig(c *cli.Context) error {
+	var err error
+	configDir := getConfigDir(c)
+	inputOrg := c.String(getFlag(orgName))
+	inputSpace := c.String(getFlag(spaceName))
+	confirmDeletionInput := c.String(getFlag(confirmDeletion))
+
+	if inputOrg == "" || inputSpace == "" {
+		err = fmt.Errorf("Must ensure Org and space name is provided")
+	} else if confirmDeletionInput == "" {
+		err = fmt.Errorf("Please confirm deletion with the flag --%s true", getFlag(confirmDeletion))
+	} else {
+		confirmDeleteSpace, err := strconv.ParseBool(confirmDeletionInput)
+
+		if err == nil && confirmDeleteSpace {
+			err = config.NewManager(configDir, utils.NewDefaultManager()).DeleteSpace(inputOrg, inputSpace)
+			if err == nil {
+				fmt.Printf("The space %s in the %s org was successfully deleted", inputSpace, inputOrg)
+			}
+		} else {
+			if err == nil {
+				err = fmt.Errorf("Please confirm deletion with the flag --%s true", getFlag(confirmDeletion))
+			}
+
+		}
+	}
+	return err
+}
+
 func runAddSpace(c *cli.Context) error {
 	inputOrg := c.String(getFlag(orgName))
 	inputSpace := c.String(getFlag(spaceName))
@@ -318,7 +864,7 @@ func runAddSpace(c *cli.Context) error {
 	if inputOrg == "" || inputSpace == "" {
 		return fmt.Errorf("Must provide org name and space name")
 	}
-	return config.NewManager(configDr).AddSpaceToConfig(spaceConfig)
+	return config.NewManager(configDr, utils.NewDefaultManager()).AddSpaceToConfig(spaceConfig)
 }
 
 //CreateGeneratePipelineCommand -
@@ -498,7 +1044,7 @@ func runUpdateIsoSegments(c *cli.Context) error {
 		return err
 	}
 
-	u.Cfg = config.NewManager(cfMgmt.ConfigDirectory)
+	u.Cfg = config.NewManager(cfMgmt.ConfigDirectory, utils.NewDefaultManager())
 	u.CleanUp = c.Bool("clean-up")
 	u.DryRun = c.Bool("dry-run")
 
@@ -605,7 +1151,7 @@ func runExportConfig(c *cli.Context) error {
 	var err error
 	cfMgmt, err = InitializeManager(c)
 	if cfMgmt != nil {
-		exportManager := export.NewExportManager(cfMgmt.ConfigDirectory, cfMgmt.UAACManager, cfMgmt.CloudController)
+		exportManager := export.NewExportManager(cfMgmt.ConfigDirectory, cfMgmt.UAACManager, cfMgmt.CloudController, cfMgmt.UtilsMgr)
 		excludedOrgs := make(map[string]string)
 		excludedOrgs["system"] = "system"
 		orgsExcludedByUser := c.StringSlice(getFlag("excluded-org"))

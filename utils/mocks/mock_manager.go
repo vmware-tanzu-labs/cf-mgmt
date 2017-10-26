@@ -5,8 +5,9 @@
 package mock_utils
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockManager is a mock of Manager interface
@@ -32,11 +33,36 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 	return m.recorder
 }
 
+//DeleteDirectory - deletes a directory
+func (m *MockManager) DeleteDirectory(arg0 string) error {
+	ret := m.ctrl.Call(m, "DeleteDirectory", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDirectory indicates an expected call of DeleteDirectory
+func (mr *MockManagerMockRecorder) DeleteDirectory(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDirectory", reflect.TypeOf((*MockManager)(nil).DeleteDirectory), arg0)
+}
+
 // FileOrDirectoryExists mocks base method
 func (m *MockManager) FileOrDirectoryExists(arg0 string) bool {
 	ret := m.ctrl.Call(m, "FileOrDirectoryExists", arg0)
 	ret0, _ := ret[0].(bool)
 	return ret0
+}
+
+//LoadFileBytes - Load a file and return the bytes
+func (m *MockManager) LoadFileBytes(arg0 string) ([]byte, error) {
+	ret := m.ctrl.Call(m, "LoadFileBytes", arg0)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+//LoadFileBytes - Load a file and return the bytes
+func (mr *MockManagerMockRecorder) LoadFileBytes(arg0 string) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadFileBytes", reflect.TypeOf((*MockManager)(nil).LoadFileBytes), arg0)
 }
 
 // FileOrDirectoryExists indicates an expected call of FileOrDirectoryExists

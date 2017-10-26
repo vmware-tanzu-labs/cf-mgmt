@@ -19,12 +19,6 @@ type Manager interface {
 	GetOrgGUID(orgName string) (string, error)
 }
 
-// ORGS represents orgs constant
-const ORGS = "organizations"
-const ROLE_ORG_BILLING_MANAGERS = "billing_managers"
-const ROLE_ORG_MANAGERS = "managers"
-const ROLE_ORG_AUDITORS = "auditors"
-
 //Resources -
 type Resources struct {
 	Resource []*Resource `json:"resources"`

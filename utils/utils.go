@@ -16,22 +16,32 @@ func NewDefaultManager() (mgr Manager) {
 
 //FindFiles -
 func (m *DefaultManager) FindFiles(configDir, pattern string) ([]string, error) {
-	m.filePattern = pattern
-	err := filepath.Walk(configDir, m.walkDirectories)
-	return m.filePaths, err
+	var foundFiles = make([]string, 0)
+	err := filepath.Walk(configDir,
+		func(path string, info os.FileInfo, e error) error {
+			if strings.Contains(path, pattern) {
+				foundFiles = append(foundFiles, path)
+			}
+			return e
+		})
+	return foundFiles, err
 }
 
-func (m *DefaultManager) walkDirectories(path string, info os.FileInfo, e error) error {
-	if strings.Contains(path, m.filePattern) {
-		m.filePaths = append(m.filePaths, path)
-	}
-	return e
+//DeleteDirectory - deletes a directory
+func (m *DefaultManager) DeleteDirectory(path string) error {
+	err := os.RemoveAll(path)
+	return err
 }
 
 //FileOrDirectoryExists - checks if file exists
 func (m *DefaultManager) FileOrDirectoryExists(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
+}
+
+//LoadFileBytes - Load a file and return the bytes
+func (m *DefaultManager) LoadFileBytes(path string) ([]byte, error) {
+	return ioutil.ReadFile(path)
 }
 
 //LoadFile -
@@ -65,10 +75,10 @@ type Manager interface {
 	WriteFile(configFile string, dataType interface{}) error
 	WriteFileBytes(configFile string, data []byte) error
 	FileOrDirectoryExists(path string) bool
+	LoadFileBytes(path string) ([]byte, error)
+	DeleteDirectory(path string) error
 }
 
 //DefaultManager -
 type DefaultManager struct {
-	filePattern string
-	filePaths   []string
 }

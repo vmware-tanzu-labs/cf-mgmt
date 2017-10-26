@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
+	. "github.com/pivotalservices/cf-mgmt/space/constants"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	"github.com/xchapter7x/lo"

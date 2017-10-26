@@ -3,9 +3,10 @@ package export
 import (
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/organization"
-	"github.com/pivotalservices/cf-mgmt/space"
+	kOrg "github.com/pivotalservices/cf-mgmt/organization/constants"
+	kSpace "github.com/pivotalservices/cf-mgmt/space/constants"
 	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/utils"
 	"github.com/xchapter7x/lo"
 )
 
@@ -13,11 +14,12 @@ import (
 func NewExportManager(
 	configDir string,
 	uaacMgr uaac.Manager,
-	cloudController cc.Manager) Manager {
+	cloudController cc.Manager, utilsMgr utils.Manager) Manager {
 	return &DefaultImportManager{
 		ConfigDir:       configDir,
 		UAACMgr:         uaacMgr,
 		CloudController: cloudController,
+		UtilsMgr:        utilsMgr,
 	}
 }
 
@@ -37,7 +39,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		lo.G.Errorf("Unable to retrieve orgs. Error : %s", err)
 		return err
 	}
-	configMgr := config.NewManager(im.ConfigDir)
+	configMgr := config.NewManager(im.ConfigDir, im.UtilsMgr)
 	lo.G.Info("Trying to delete existing config directory")
 	//Delete existing config directory
 	err = configMgr.DeleteConfigIfExists()
@@ -72,7 +74,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		addOrgUsers(orgConfig, im.CloudController, userIDToUserMap, org.MetaData.GUID)
 		//Add Quota definition if applicable
 		if org.Entity.QuotaDefinitionGUID != "" {
-			quota := quotaDefinition(im.CloudController, org.Entity.QuotaDefinitionGUID, organization.ORGS)
+			quota := quotaDefinition(im.CloudController, org.Entity.QuotaDefinitionGUID, kOrg.ORGS)
 			orgConfig.EnableOrgQuota = quota.IsQuotaEnabled()
 			orgConfig.MemoryLimit = quota.GetMemoryLimit()
 			orgConfig.InstanceMemoryLimit = quota.GetInstanceMemoryLimit()
@@ -102,7 +104,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, orgSpace.MetaData.GUID)
 			//Add Quota definition if applicable
 			if orgSpace.Entity.QuotaDefinitionGUID != "" {
-				quota := quotaDefinition(im.CloudController, orgSpace.Entity.QuotaDefinitionGUID, space.SPACES)
+				quota := quotaDefinition(im.CloudController, orgSpace.Entity.QuotaDefinitionGUID, kSpace.SPACES)
 				spaceConfig.EnableSpaceQuota = quota.IsQuotaEnabled()
 				spaceConfig.MemoryLimit = quota.GetMemoryLimit()
 				spaceConfig.InstanceMemoryLimit = quota.GetInstanceMemoryLimit()
@@ -144,37 +146,37 @@ func addSpaceUsers(spaceConfig *config.SpaceConfig, controller cc.Manager, userI
 }
 
 func addOrgManagers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, orgGUID string) {
-	orgMgrs, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_MANAGERS)
+	orgMgrs, _ := getCFUsers(controller, orgGUID, kOrg.ORGS, kOrg.ROLE_ORG_MANAGERS)
 	lo.G.Debugf("Found %d Org Managers for Org: %s", len(orgMgrs), orgConfig.Org)
 	doAddUsers(orgMgrs, &orgConfig.Manager.Users, &orgConfig.Manager.LDAPUsers, userIDToUserMap)
 }
 
 func addBillingManagers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, orgGUID string) {
-	orgBillingMgrs, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_BILLING_MANAGERS)
+	orgBillingMgrs, _ := getCFUsers(controller, orgGUID, kOrg.ORGS, kOrg.ROLE_ORG_BILLING_MANAGERS)
 	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs), orgConfig.Org)
 	doAddUsers(orgBillingMgrs, &orgConfig.BillingManager.Users, &orgConfig.BillingManager.LDAPUsers, userIDToUserMap)
 }
 
 func addOrgAuditors(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, orgGUID string) {
-	orgAuditors, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_AUDITORS)
+	orgAuditors, _ := getCFUsers(controller, orgGUID, kOrg.ORGS, kOrg.ROLE_ORG_AUDITORS)
 	lo.G.Debugf("Found %d Org Auditors for Org: %s", len(orgAuditors), orgConfig.Org)
 	doAddUsers(orgAuditors, &orgConfig.Auditor.Users, &orgConfig.Auditor.LDAPUsers, userIDToUserMap)
 }
 
 func addSpaceManagers(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, spaceGUID string) {
-	spaceMgrs, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_MANAGERS)
+	spaceMgrs, _ := getCFUsers(controller, spaceGUID, kSpace.SPACES, kSpace.ROLE_SPACE_MANAGERS)
 	lo.G.Debugf("Found %d Space Managers for Org: %s and  Space:  %s", len(spaceMgrs), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceMgrs, &spaceConfig.Manager.Users, &spaceConfig.Manager.LDAPUsers, userIDToUserMap)
 }
 
 func addSpaceDevelopers(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, spaceGUID string) {
-	spaceDevs, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_DEVELOPERS)
+	spaceDevs, _ := getCFUsers(controller, spaceGUID, kSpace.SPACES, kSpace.ROLE_SPACE_DEVELOPERS)
 	lo.G.Debugf("Found %d Space Developers for Org: %s and  Space:  %s", len(spaceDevs), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceDevs, &spaceConfig.Developer.Users, &spaceConfig.Developer.LDAPUsers, userIDToUserMap)
 }
 
 func addSpaceAuditors(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaac.User, spaceGUID string) {
-	spaceAuditors, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_AUDITORS)
+	spaceAuditors, _ := getCFUsers(controller, spaceGUID, kSpace.SPACES, kSpace.ROLE_SPACE_AUDITORS)
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceAuditors, &spaceConfig.Auditor.Users, &spaceConfig.Auditor.LDAPUsers, userIDToUserMap)
 }

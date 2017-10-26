@@ -11,12 +11,13 @@ import (
 
 	. "github.com/pivotalservices/cf-mgmt/organization"
 	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
+	"github.com/pivotalservices/cf-mgmt/utils/mocks"
 )
 
 var _ = Describe("given UserManager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/config"))
+			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/config", mock_utils.NewMockUtilsManager()))
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})
