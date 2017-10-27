@@ -35,10 +35,6 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 		return err
 	}
 
-	asgConfigs, err := m.Cfg.GetASGConfigs()
-	if err != nil {
-		return err
-	}
 	for _, input := range spaceConfigs {
 		if !input.EnableSecurityGroup {
 			continue
@@ -75,32 +71,10 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 		for _, securityGroupName := range input.ASGs {
 			lo.G.Info("Security Group name: " + securityGroupName)
 			if sgGUID, ok := sgs[securityGroupName]; ok {
-				lo.G.Info("Updating security group", securityGroupName)
-				for _, globalSecurityGroup := range asgConfigs {
-					if globalSecurityGroup.Name == securityGroupName {
-						if err := m.CloudController.UpdateSecurityGroup(sgGUID, globalSecurityGroup.Name, globalSecurityGroup.Rules); err != nil {
-							continue
-						}
-						lo.G.Info("Binding NAMED security group", securityGroupName, "to space", space.Entity.Name)
-						m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgGUID)
-					}
-				}
+				lo.G.Info("Binding NAMED security group", securityGroupName, "to space", space.Entity.Name)
+				m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgGUID)
 			} else {
-				for _, globalSecurityGroup := range asgConfigs {
-					if globalSecurityGroup.Name == securityGroupName {
-						lo.G.Info("Creating Security Group " + globalSecurityGroup.Name + " with rule: " + globalSecurityGroup.Rules)
-						targetSGGUID, err := m.CloudController.CreateSecurityGroup(globalSecurityGroup.Name, globalSecurityGroup.Rules)
-						if err != nil {
-							lo.G.Info("Error during create")
-							continue
-						}
-						lo.G.Info("Binding security group", securityGroupName, "to space", space.Entity.Name)
-						m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, targetSGGUID)
-						_ = targetSGGUID
-					}
-
-				}
-
+				return fmt.Errorf("Security group [%s] does not exist", securityGroupName)
 			}
 
 		}

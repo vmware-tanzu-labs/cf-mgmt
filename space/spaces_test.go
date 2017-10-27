@@ -219,8 +219,6 @@ var _ = Describe("given SpaceManager", func() {
 
 			bytes, e := ioutil.ReadFile("./fixtures/config/test/space1/security-group.json")
 			Ω(e).Should(BeNil())
-			namedASGBytes, e := ioutil.ReadFile("./fixtures/asg-config/asgs/test-asg.json")
-			Ω(e).Should(BeNil())
 
 			spaces := []*cloudcontroller.Space{
 				{
@@ -241,9 +239,6 @@ var _ = Describe("given SpaceManager", func() {
 			mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
 			mockCloudController.EXPECT().UpdateSecurityGroup("SGGUID", "test-space1", string(bytes)).Return(nil)
 			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space1GUID", "SGGUID").Return(nil)
-			//These two should be the named ASG.
-			fmt.Println("string: " + string(namedASGBytes))
-			mockCloudController.EXPECT().UpdateSecurityGroup("SGGZZUID", "test-asg", string(namedASGBytes)).Return(nil)
 			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space1GUID", "SGGZZUID").Return(nil)
 			err := spaceManager.CreateApplicationSecurityGroups("./fixtures/config")
 			Ω(err).Should(BeNil())
