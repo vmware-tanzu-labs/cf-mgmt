@@ -1,0 +1,25 @@
+org: test
+space: space1
+space-developer:
+  ldap_users: [space1-ldap-user]
+  users: [space-1-user@test.com]
+  ldap_group: "space-1-ldap-group"
+space-manager:
+  ldap_users: [space1-ldap-user]
+  users: [space-1-user@test.com]
+  ldap_group: "space-1-ldap-group"
+space-auditor:
+  ldap_users: [space1-ldap-user]
+  users: [space-1-user@test.com]
+  ldap_group: "space-1-ldap-group"
+allow-ssh: false
+enable-space-quota: false
+memory-limit: 10240
+instance-memory-limit: -1
+total-routes: 10
+total-services: -1
+paid-service-plans-allowed: true
+enable-security-group: false
+enable-remove-users: true
+named-security-groups:
+- test-asg

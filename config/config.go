@@ -40,9 +40,11 @@ type Updater interface {
 type Reader interface {
 	Orgs() (Orgs, error)
 	Spaces() ([]Spaces, error)
+	ASGs() (ASGs, error)
 
 	GetOrgConfigs() ([]OrgConfig, error)
 	GetSpaceConfigs() ([]SpaceConfig, error)
+	GetASGConfigs() ([]ASGConfig, error)
 	GetSpaceDefaults() (*SpaceConfig, error)
 }
 
@@ -69,6 +71,55 @@ func (m *yamlManager) Orgs() (Orgs, error) {
 		return Orgs{}, err
 	}
 	return input, nil
+}
+
+// ASGs reads the config for All ASg names.
+func (m *yamlManager) ASGs() (ASGs, error) {
+	configFile := filepath.Join(m.ConfigDir, "orgs.yml")
+	lo.G.Info("Processing ASGs Directory", m.ConfigDir+"/asgs/")
+	input := ASGs{}
+	fs := utils.NewDefaultManager()
+	files, err := fs.FindFiles(m.ConfigDir+"/asgs/", ".json")
+	if err != nil {
+		return ASGs{}, err
+	}
+
+	input.ASGs = make([]string, len(files))
+	for i, f := range files {
+
+		input.ASGs[i] = filepath.Base(strings.TrimRight(f, ".json"))
+
+		//lo.G.Info("<" + result[i].Rules + ">")
+	}
+
+	/// Below is what it was doing.
+	if err := utils.NewDefaultManager().LoadFile(configFile, &input); err != nil {
+		return ASGs{}, err
+	}
+	return input, nil
+}
+
+// GetASGConfigs reads all ASGs from the cf-mgmt configuration.
+func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
+	fs := utils.NewDefaultManager()
+	files, err := fs.FindFiles(m.ConfigDir+"/asgs/", ".json")
+	if err != nil {
+		return nil, err
+	}
+	result := make([]ASGConfig, len(files))
+	for i, securityGroupFile := range files {
+
+		lo.G.Debug("Loading security group contents", securityGroupFile)
+		bytes, err := ioutil.ReadFile(securityGroupFile)
+		if err != nil {
+			return nil, err
+		}
+		lo.G.Debug("setting security group contents", string(bytes))
+		result[i].Rules = string(bytes)
+
+		result[i].Name = filepath.Base(strings.TrimRight(securityGroupFile, ".json"))
+	}
+	return result, nil
 }
 
 // GetOrgConfigs reads all orgs from the cf-mgmt configuration.
@@ -118,6 +169,9 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 	spaceDefaults := SpaceConfig{}
 	fs.LoadFile(filepath.Join(m.ConfigDir, "spaceDefaults.yml"), &spaceDefaults)
 
+	// Load Globally Named ASGs and ignore if we can't
+	globalASGs, _ := m.GetASGConfigs()
+
 	files, err := fs.FindFiles(m.ConfigDir, "spaceConfig.yml")
 	if err != nil {
 		return nil, err
@@ -149,6 +203,20 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		result[i].Auditor.LDAPGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
 		result[i].Manager.LDAPGroups = append(result[i].GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
 
+		// Get space ASGs and validate they match a global ASG name.
+		asgs := result[i].ASGs
+		for _, localasg := range asgs {
+			found := false
+			for _, asg := range globalASGs {
+				if asg.Name == localasg {
+
+					found = true
+				}
+			}
+			if found == false {
+				return nil, fmt.Errorf("cannot have an named security group with a name that does not match the a global name")
+			}
+		}
 		if result[i].EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
 			lo.G.Debug("Loading security group contents", securityGroupFile)
