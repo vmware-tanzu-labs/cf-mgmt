@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -32,6 +33,8 @@ type Manager interface {
 type Updater interface {
 	AddOrgToConfig(orgConfig *OrgConfig) error
 	AddSpaceToConfig(spaceConfig *SpaceConfig) error
+	AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error
+	AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error
 	CreateConfigIfNotExists(uaaOrigin string) error
 	DeleteConfigIfExists() error
 }
@@ -40,8 +43,6 @@ type Updater interface {
 type Reader interface {
 	Orgs() (Orgs, error)
 	Spaces() ([]Spaces, error)
-	ASGs() (ASGs, error)
-
 	GetOrgConfigs() ([]OrgConfig, error)
 	GetSpaceConfigs() ([]SpaceConfig, error)
 	GetASGConfigs() ([]ASGConfig, error)
@@ -69,32 +70,6 @@ func (m *yamlManager) Orgs() (Orgs, error) {
 	input := Orgs{}
 	if err := utils.NewDefaultManager().LoadFile(configFile, &input); err != nil {
 		return Orgs{}, err
-	}
-	return input, nil
-}
-
-// ASGs reads the config for All ASg names.
-func (m *yamlManager) ASGs() (ASGs, error) {
-	configFile := filepath.Join(m.ConfigDir, "orgs.yml")
-	lo.G.Info("Processing ASGs Directory", m.ConfigDir+"/asgs/")
-	input := ASGs{}
-	fs := utils.NewDefaultManager()
-	files, err := fs.FindFiles(m.ConfigDir+"/asgs/", ".json")
-	if err != nil {
-		return ASGs{}, err
-	}
-
-	input.ASGs = make([]string, len(files))
-	for i, f := range files {
-
-		input.ASGs[i] = filepath.Base(strings.TrimRight(f, ".json"))
-
-		//lo.G.Info("<" + result[i].Rules + ">")
-	}
-
-	/// Below is what it was doing.
-	if err := utils.NewDefaultManager().LoadFile(configFile, &input); err != nil {
-		return ASGs{}, err
 	}
 	return input, nil
 }
@@ -169,9 +144,6 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 	spaceDefaults := SpaceConfig{}
 	fs.LoadFile(filepath.Join(m.ConfigDir, "spaceDefaults.yml"), &spaceDefaults)
 
-	// Load Globally Named ASGs and ignore if we can't
-	globalASGs, _ := m.GetASGConfigs()
-
 	files, err := fs.FindFiles(m.ConfigDir, "spaceConfig.yml")
 	if err != nil {
 		return nil, err
@@ -203,20 +175,6 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		result[i].Auditor.LDAPGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
 		result[i].Manager.LDAPGroups = append(result[i].GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
 
-		// Get space ASGs and validate they match a global ASG name.
-		asgs := result[i].ASGs
-		for _, localasg := range asgs {
-			found := false
-			for _, asg := range globalASGs {
-				if asg.Name == localasg {
-
-					found = true
-				}
-			}
-			if found == false {
-				return nil, fmt.Errorf("cannot have an named security group with a name that does not match the a global name")
-			}
-		}
 		if result[i].EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
 			lo.G.Debug("Loading security group contents", securityGroupFile)
@@ -313,6 +271,20 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	return nil
 }
 
+//AddSecurityGroupToSpace - adds security group json to org/space location
+func (m *yamlManager) AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error {
+	mgr := utils.NewDefaultManager()
+	return mgr.WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName), securityGroupDefinition)
+
+}
+
+//AddSecurityGroupToSpace - adds security group json to org/space location
+func (m *yamlManager) AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error {
+	mgr := utils.NewDefaultManager()
+	lo.G.Infof("Writing out bytes for security group %s", securityGroupName)
+	return mgr.WriteFileBytes(fmt.Sprintf("%s/asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)
+}
+
 // CreateConfigIfNotExists initializes a new configuration directory.
 // If the specified configuration directory already exists, it is left unmodified.
 func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
@@ -326,6 +298,14 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 		return fmt.Errorf("cannot create directory %s: %v", m.ConfigDir, err)
 	}
 	lo.G.Infof("Config directory %s created", m.ConfigDir)
+
+	asgDir := path.Join(m.ConfigDir, "asgs")
+	if err := os.MkdirAll(asgDir, 0755); err != nil {
+		lo.G.Errorf("Error creating config directory %s. Error : %s", asgDir, err)
+		return fmt.Errorf("cannot create directory %s: %v", asgDir, err)
+	}
+	lo.G.Infof("ASG directory %s created", asgDir)
+
 	mgr.WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin})
 
 	var protectedOrgs []string

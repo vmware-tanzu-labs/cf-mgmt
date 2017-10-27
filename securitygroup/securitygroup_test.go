@@ -19,7 +19,7 @@ import (
 var _ = Describe("given SecurityGroupManager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/asg-config"))
+			manager := NewManager("test.com", "token", config.NewManager("./fixtures/asg-config"))
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})
@@ -56,7 +56,7 @@ var _ = Describe("given SecurityGroupManager", func() {
 	var _ = Describe("given SecurityGroupManager", func() {
 		Describe("create new manager", func() {
 			It("should return new manager", func() {
-				manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/asg-config"))
+				manager := NewManager("test.com", "token", config.NewManager("./fixtures/asg-config"))
 				Ω(manager).ShouldNot(BeNil())
 			})
 		})
@@ -73,7 +73,7 @@ var _ = Describe("given SecurityGroupManager", func() {
 				sgs := make(map[string]string)
 				mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
 				mockCloudController.EXPECT().CreateSecurityGroup("test-asg", string(bytes)).Return("SGGUID", nil)
-				err := securityManager.CreateApplicationSecurityGroups("./fixtures/asg-config")
+				err := securityManager.CreateApplicationSecurityGroups()
 				Expect(err).Should(BeNil())
 			})
 		})

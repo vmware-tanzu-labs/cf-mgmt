@@ -22,6 +22,20 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: create-orgs
+- name: create-security-groups
+  plan:
+  - get: config-repo
+    trigger: true
+  - task: create-security-groups
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      CF_MGMT_COMMAND: create-security-groups
+
 - name: delete-orgs
   plan:
   - get: config-repo
@@ -131,7 +145,7 @@ jobs:
 - name: update-space-security-groups
   plan:
   - get: config-repo
-    passed: [create-spaces]
+    passed: [create-spaces,create-security-groups]
     trigger: true
   - task: update-space-security-groups
     file: config-repo/ci/tasks/cf-mgmt.yml

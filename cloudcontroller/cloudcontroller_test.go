@@ -254,6 +254,78 @@ var _ = Describe("given CloudControllerManager", func() {
 		})
 	})
 
+	Context("GetSecurityGroupRules()", func() {
+
+		It("should be successful", func() {
+			bytes, err := ioutil.ReadFile("fixtures/security-group.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/security_groups/sg-guid"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			rules, err := manager.GetSecurityGroupRules("sg-guid")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(rules).Should(MatchJSON(`[
+	      {
+	        "protocol": "udp",
+	        "ports": "8080",
+	        "destination": "198.41.191.47/1"
+	      },
+	      {
+	        "protocol": "tcp",
+	        "ports": "8080",
+	        "destination": "198.41.191.47/1"
+	      }
+	    ]`))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/security_groups/sg-guid"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			_, err := manager.GetSecurityGroupRules("sg-guid")
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Context("ListSpaceSecurityGroups()", func() {
+
+		It("should be successful", func() {
+			bytes, err := ioutil.ReadFile("fixtures/space-security-groups.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/spaces/space-guid/security_groups"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			ruleNames, err := manager.ListSpaceSecurityGroups("space-guid")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(ruleNames).Should(HaveLen(3))
+			Ω(ruleNames).Should(ConsistOf("public_networks", "dns", "all_pcfdev"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/spaces/space-guid/security_groups"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			_, err := manager.ListSpaceSecurityGroups("space-guid")
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
 	Context("UpdateSecurityGroup()", func() {
 
 		It("should be successful", func() {

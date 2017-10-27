@@ -14,6 +14,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/generated"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/pivotalservices/cf-mgmt/uaac"
@@ -31,17 +32,18 @@ type flagBucket struct {
 
 //CFMgmt -
 type CFMgmt struct {
-	UAAManager      uaa.Manager
-	OrgManager      organization.Manager
-	SpaceManager    space.Manager
-	ConfigManager   config.Updater
-	ConfigDirectory string
-	PeekDeletion    bool
-	LdapBindPwd     string
-	UaacToken       string
-	SystemDomain    string
-	UAACManager     uaac.Manager
-	CloudController cloudcontroller.Manager
+	UAAManager           uaa.Manager
+	OrgManager           organization.Manager
+	SpaceManager         space.Manager
+	ConfigManager        config.Updater
+	ConfigDirectory      string
+	PeekDeletion         bool
+	LdapBindPwd          string
+	UaacToken            string
+	SystemDomain         string
+	UAACManager          uaac.Manager
+	CloudController      cloudcontroller.Manager
+	SecurityGroupManager securitygroup.Manager
 }
 
 //InitializeManager -
@@ -88,6 +90,8 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	}
 	cfMgmt.OrgManager = organization.NewManager(sysDomain, cfToken, uaacToken, cfg)
 	cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken, cfg)
+	cfMgmt.SecurityGroupManager = securitygroup.NewManager(sysDomain, cfToken, cfg)
+
 	cfMgmt.ConfigManager = config.NewManager(configDir)
 
 	return cfMgmt, nil
@@ -140,6 +144,7 @@ func NewApp() *cli.App {
 		CreateExportConfigCommand(),
 		CreateGeneratePipelineCommand(runGeneratePipeline),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
+		CreateCommand("create-security-groups", runCreateSecurityGroups, defaultFlags()),
 		CreateCommand("create-org-private-domains", runCreateOrgPrivateDomains, defaultFlags()),
 		CreateCommand("delete-orgs", runDeleteOrgs, defaultFlagsWithDelete()),
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags()),
@@ -393,6 +398,15 @@ func runCreateOrgs(c *cli.Context) error {
 	var err error
 	if cfMgmt, err = InitializeManager(c); err == nil {
 		err = cfMgmt.OrgManager.CreateOrgs()
+	}
+	return err
+}
+
+func runCreateSecurityGroups(c *cli.Context) error {
+	var cfMgmt *CFMgmt
+	var err error
+	if cfMgmt, err = InitializeManager(c); err == nil {
+		err = cfMgmt.SecurityGroupManager.CreateApplicationSecurityGroups()
 	}
 	return err
 }

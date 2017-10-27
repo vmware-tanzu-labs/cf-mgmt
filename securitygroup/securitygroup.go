@@ -10,7 +10,7 @@ import (
 )
 
 //NewManager -
-func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
+func NewManager(sysDomain, token string, cfg config.Reader) Manager {
 	cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token)
 
 	return &DefaultSecurityGroupManager{
@@ -22,7 +22,7 @@ func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
 }
 
 //CreateApplicationSecurityGroups -
-func (m *DefaultSecurityGroupManager) CreateApplicationSecurityGroups(configDir string) error {
+func (m *DefaultSecurityGroupManager) CreateApplicationSecurityGroups() error {
 
 	sgs, err := m.CloudController.ListSecurityGroups()
 	if err != nil {

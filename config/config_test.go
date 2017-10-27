@@ -68,13 +68,6 @@ var _ = Describe("CF-Mgmt Config", func() {
 
 			})
 
-			It("should fail when spaceconfig gives an ASG name that doesn't exist in the global definition", func() {
-				m := config.NewManager("./fixtures/asg-defaults-invalid")
-				_, err := m.GetSpaceConfigs()
-				Ω(err).Should(HaveOccurred())
-
-			})
-
 		})
 
 		Context("GetOrgConfigs", func() {

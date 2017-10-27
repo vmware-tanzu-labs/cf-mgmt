@@ -1,6 +1,8 @@
 package export
 
 import (
+	"fmt"
+
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organization"
@@ -37,6 +39,13 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		lo.G.Errorf("Unable to retrieve orgs. Error : %s", err)
 		return err
 	}
+
+	securityGroups, err := im.CloudController.ListSecurityGroups()
+	if err != nil {
+		lo.G.Errorf("Unable to retrieve security groups. Error : %s", err)
+		return err
+	}
+
 	configMgr := config.NewManager(im.ConfigDir)
 	lo.G.Info("Trying to delete existing config directory")
 	//Delete existing config directory
@@ -62,12 +71,14 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	lo.G.Debugf("Orgs to process: %s", orgs)
 
 	for _, org := range orgs {
-		if _, ok := excludedOrgs[org.Entity.Name]; ok {
-			lo.G.Infof("Skipping org: %s as it is ignored from import", org.Entity.Name)
+		orgName := org.Entity.Name
+		if _, ok := excludedOrgs[orgName]; ok {
+			lo.G.Infof("Skipping org: %s as it is ignored from import", orgName)
 			continue
 		}
-		lo.G.Infof("Processing org: %s ", org.Entity.Name)
-		orgConfig := &config.OrgConfig{Org: org.Entity.Name}
+
+		lo.G.Infof("Processing org: %s ", orgName)
+		orgConfig := &config.OrgConfig{Org: orgName}
 		//Add users
 		addOrgUsers(orgConfig, im.CloudController, userIDToUserMap, org.MetaData.GUID)
 		//Add Quota definition if applicable
@@ -91,13 +102,14 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		spaces, _ := im.CloudController.ListSpaces(org.MetaData.GUID)
 		lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
 		for _, orgSpace := range spaces {
-			if _, ok := excludedSpaces[orgSpace.Entity.Name]; ok {
-				lo.G.Infof("Skipping space: %s as it is ignored from import", orgSpace.Entity.Name)
+			spaceName := orgSpace.Entity.Name
+			if _, ok := excludedSpaces[spaceName]; ok {
+				lo.G.Infof("Skipping space: %s as it is ignored from import", spaceName)
 				continue
 			}
-			lo.G.Infof("Processing space: %s", orgSpace.Entity.Name)
+			lo.G.Infof("Processing space: %s", spaceName)
 
-			spaceConfig := &config.SpaceConfig{Org: org.Entity.Name, Space: orgSpace.Entity.Name}
+			spaceConfig := &config.SpaceConfig{Org: org.Entity.Name, Space: spaceName}
 			//Add users
 			addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, orgSpace.MetaData.GUID)
 			//Add Quota definition if applicable
@@ -117,7 +129,36 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			if orgSpace.Entity.AllowSSH {
 				spaceConfig.AllowSSH = true
 			}
+
+			spaceSGName := fmt.Sprintf("%s-%s", orgName, spaceName)
+			if spaceSGNames, err := im.CloudController.ListSpaceSecurityGroups(orgSpace.MetaData.GUID); err == nil {
+				for _, securityGroupName := range spaceSGNames {
+					lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
+					if securityGroupName != spaceSGName {
+						spaceConfig.ASGs = append(spaceConfig.ASGs, securityGroupName)
+					}
+				}
+			}
+
 			configMgr.AddSpaceToConfig(spaceConfig)
+
+			if sgGUID, ok := securityGroups[spaceSGName]; ok {
+				delete(securityGroups, spaceSGName)
+				if rules, err := im.CloudController.GetSecurityGroupRules(sgGUID); err == nil {
+					configMgr.AddSecurityGroupToSpace(orgName, spaceName, rules)
+				}
+			}
+
+		}
+	}
+
+	for sgName, sgGUID := range securityGroups {
+		lo.G.Infof("Adding security group %s", sgName)
+		if rules, err := im.CloudController.GetSecurityGroupRules(sgGUID); err == nil {
+			lo.G.Infof("Adding rules for %s", sgName)
+			configMgr.AddSecurityGroup(sgName, rules)
+		} else {
+			lo.G.Error(err)
 		}
 	}
 	return nil

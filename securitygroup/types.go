@@ -42,5 +42,5 @@ type DefaultSecurityGroupManager struct {
 }
 
 type Manager interface {
-	CreateApplicationSecurityGroups(configDir string) error
+	CreateApplicationSecurityGroups() error
 }
