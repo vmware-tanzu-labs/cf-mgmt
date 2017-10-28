@@ -219,8 +219,8 @@ func ccv3Client(cfmgmtVersion, cfURL, uaaToken string) (*ccv3.Client, error) {
 		AppVersion:        cfmgmtVersion,
 		SkipSSLValidation: true, // TODO
 
-		ClientID:     "cf-mgmt",
-		ClientSecret: "cf-mgmt-secret",
+		//ClientID:     "cf-mgmt",
+		//ClientSecret: "cf-mgmt-secret",
 	})
 	uaaClient.WrapConnection(uaawrap.NewRetryRequest(2))
 

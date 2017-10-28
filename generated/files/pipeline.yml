@@ -22,6 +22,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: create-orgs
+
 - name: create-security-groups
   plan:
   - get: config-repo
@@ -51,6 +52,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: delete-orgs
+
 - name: create-org-private-domains
   plan:
   - get: config-repo
@@ -66,6 +68,7 @@ jobs:
       CLIENT_SECRET: {{client_secret}}
       LDAP_PASSWORD: {{ldap_password}}
       CF_MGMT_COMMAND: create-org-private-domains
+
 - name: create-spaces
   plan:
   - get: config-repo
@@ -81,6 +84,7 @@ jobs:
       CLIENT_SECRET: {{client_secret}}
       LDAP_PASSWORD: {{ldap_password}}
       CF_MGMT_COMMAND: create-spaces
+
 - name: delete-spaces
   plan:
   - get: config-repo
@@ -97,6 +101,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: delete-spaces
+
 - name: update-spaces
   plan:
   - get: config-repo
@@ -111,6 +116,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: update-spaces
+
 - name: update-space-users
   plan:
   - get: config-repo
@@ -128,6 +134,7 @@ jobs:
       CLIENT_SECRET: {{client_secret}}
       LDAP_PASSWORD: {{ldap_password}}
       CF_MGMT_COMMAND: update-space-users
+
 - name: update-space-quotas
   plan:
   - get: config-repo
@@ -142,6 +149,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: update-space-quotas
+
 - name: update-space-security-groups
   plan:
   - get: config-repo
@@ -156,6 +164,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: update-space-security-groups
+
 - name: update-org-users
   plan:
   - get: config-repo
@@ -173,6 +182,7 @@ jobs:
       CLIENT_SECRET: {{client_secret}}
       LDAP_PASSWORD: {{ldap_password}}
       CF_MGMT_COMMAND: update-org-users
+
 - name: update-org-quotas
   plan:
   - get: config-repo
@@ -187,16 +197,19 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: update-org-quotas
-- name: update-iso-segments
+
+- name: isolation-segments
   plan:
   - get: config-repo
     trigger: true
-    passed: [create-orgs, delete-orgs, create-spaces, delete-spaces, update-spaces]
-  - task: update-iso-segments
+    passed: [create-orgs, create-spaces]
+  - get: 15m
+    trigger: true
+  - task: isolation-segments
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
       SYSTEM_DOMAIN: {{system_domain}}
       USER_ID: {{user_id}}
       CLIENT_SECRET: {{client_secret}}
       CONFIG_DIR: ./config
-      CF_MGMT_COMMAND: update-iso-segments
+      CF_MGMT_COMMAND: isolation-segments

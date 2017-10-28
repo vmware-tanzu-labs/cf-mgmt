@@ -18,8 +18,8 @@ type Segment struct {
 }
 
 // NewUpdater creates an updater that runs against the specified CF endpoint.
-func NewUpdater(cfmgmtVersion, apiURL, uaaToken string) (*Updater, error) {
-	ccClient, err := ccv3Client(cfmgmtVersion, apiURL, uaaToken)
+func NewUpdater(cfmgmtVersion, systemDomain, uaaToken string, cfg config.Manager) (*Updater, error) {
+	ccClient, err := ccv3Client(cfmgmtVersion, fmt.Sprintf("https://api.%s", systemDomain), uaaToken)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create cloud controller API client: %v", err)
 	}
@@ -29,8 +29,15 @@ func NewUpdater(cfmgmtVersion, apiURL, uaaToken string) (*Updater, error) {
 		orgs:     make(map[string]string),
 		segments: make(map[string]string),
 	}
+
+	var globalCfg config.GlobalConfig
+	if globalCfg, err = cfg.GetGlobalConfig(); err != nil {
+		return nil, err
+	}
 	return &Updater{
-		cc: mgr,
+		cc:      mgr,
+		Cfg:     cfg,
+		CleanUp: globalCfg.EnableDeleteIsolationSegments,
 	}, nil
 }
 
@@ -169,6 +176,10 @@ func (u *Updater) delete(s *Segment, _ string) error {
 		lo.G.Infof("[dry-run]: delete segment %s (%s)", s.Name, s.GUID)
 		return nil
 	}
+	if s.Name == "shared" {
+		return nil
+	}
+	lo.G.Infof("delete segment %s (%s)", s.Name, s.GUID)
 	return u.cc.DeleteIsolationSegment(s.Name)
 }
 

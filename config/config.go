@@ -46,6 +46,7 @@ type Reader interface {
 	GetOrgConfigs() ([]OrgConfig, error)
 	GetSpaceConfigs() ([]SpaceConfig, error)
 	GetASGConfigs() ([]ASGConfig, error)
+	GetGlobalConfig() (GlobalConfig, error)
 	GetSpaceDefaults() (*SpaceConfig, error)
 }
 
@@ -95,6 +96,14 @@ func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 		result[i].Name = filepath.Base(strings.TrimRight(securityGroupFile, ".json"))
 	}
 	return result, nil
+}
+
+// GetIsolationSegmentConfig reads isolation segment config
+func (m *yamlManager) GetGlobalConfig() (GlobalConfig, error) {
+	fs := utils.NewDefaultManager()
+	globalConfig := &GlobalConfig{}
+	fs.LoadFile(path.Join(m.ConfigDir, "cf-mgmt.yml"), globalConfig)
+	return *globalConfig, nil
 }
 
 // GetOrgConfigs reads all orgs from the cf-mgmt configuration.
@@ -306,6 +315,7 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	}
 	lo.G.Infof("ASG directory %s created", asgDir)
 
+	mgr.WriteFile(fmt.Sprintf("%s/cf-mgmt.yml", m.ConfigDir), &GlobalConfig{})
 	mgr.WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin})
 
 	var protectedOrgs []string

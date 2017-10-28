@@ -48,7 +48,7 @@ var _ = Describe("Isolation Segments", func() {
 
 		Context("when no segments exist", func() {
 			BeforeEach(func() {
-				m.EXPECT().GetIsolationSegments().Return(nil, nil)
+				m.EXPECT().GetIsolationSegments().Return([]Segment{Segment{Name: "shared"}}, nil)
 			})
 
 			It("creates two isolation segments", func() {
