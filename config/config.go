@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -32,6 +33,8 @@ type Manager interface {
 type Updater interface {
 	AddOrgToConfig(orgConfig *OrgConfig) error
 	AddSpaceToConfig(spaceConfig *SpaceConfig) error
+	AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error
+	AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error
 	CreateConfigIfNotExists(uaaOrigin string) error
 	DeleteConfigIfExists() error
 }
@@ -40,9 +43,10 @@ type Updater interface {
 type Reader interface {
 	Orgs() (Orgs, error)
 	Spaces() ([]Spaces, error)
-
 	GetOrgConfigs() ([]OrgConfig, error)
 	GetSpaceConfigs() ([]SpaceConfig, error)
+	GetASGConfigs() ([]ASGConfig, error)
+	GetGlobalConfig() (GlobalConfig, error)
 	GetSpaceDefaults() (*SpaceConfig, error)
 }
 
@@ -69,6 +73,37 @@ func (m *yamlManager) Orgs() (Orgs, error) {
 		return Orgs{}, err
 	}
 	return input, nil
+}
+
+// GetASGConfigs reads all ASGs from the cf-mgmt configuration.
+func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
+	fs := utils.NewDefaultManager()
+	files, err := fs.FindFiles(m.ConfigDir+"/asgs/", ".json")
+	if err != nil {
+		return nil, err
+	}
+	result := make([]ASGConfig, len(files))
+	for i, securityGroupFile := range files {
+
+		lo.G.Debug("Loading security group contents", securityGroupFile)
+		bytes, err := ioutil.ReadFile(securityGroupFile)
+		if err != nil {
+			return nil, err
+		}
+		lo.G.Debug("setting security group contents", string(bytes))
+		result[i].Rules = string(bytes)
+
+		result[i].Name = filepath.Base(strings.TrimRight(securityGroupFile, ".json"))
+	}
+	return result, nil
+}
+
+// GetIsolationSegmentConfig reads isolation segment config
+func (m *yamlManager) GetGlobalConfig() (GlobalConfig, error) {
+	fs := utils.NewDefaultManager()
+	globalConfig := &GlobalConfig{}
+	fs.LoadFile(path.Join(m.ConfigDir, "cf-mgmt.yml"), globalConfig)
+	return *globalConfig, nil
 }
 
 // GetOrgConfigs reads all orgs from the cf-mgmt configuration.
@@ -245,6 +280,20 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	return nil
 }
 
+//AddSecurityGroupToSpace - adds security group json to org/space location
+func (m *yamlManager) AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error {
+	mgr := utils.NewDefaultManager()
+	return mgr.WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName), securityGroupDefinition)
+
+}
+
+//AddSecurityGroupToSpace - adds security group json to org/space location
+func (m *yamlManager) AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error {
+	mgr := utils.NewDefaultManager()
+	lo.G.Infof("Writing out bytes for security group %s", securityGroupName)
+	return mgr.WriteFileBytes(fmt.Sprintf("%s/asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)
+}
+
 // CreateConfigIfNotExists initializes a new configuration directory.
 // If the specified configuration directory already exists, it is left unmodified.
 func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
@@ -258,6 +307,15 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 		return fmt.Errorf("cannot create directory %s: %v", m.ConfigDir, err)
 	}
 	lo.G.Infof("Config directory %s created", m.ConfigDir)
+
+	asgDir := path.Join(m.ConfigDir, "asgs")
+	if err := os.MkdirAll(asgDir, 0755); err != nil {
+		lo.G.Errorf("Error creating config directory %s. Error : %s", asgDir, err)
+		return fmt.Errorf("cannot create directory %s: %v", asgDir, err)
+	}
+	lo.G.Infof("ASG directory %s created", asgDir)
+
+	mgr.WriteFile(fmt.Sprintf("%s/cf-mgmt.yml", m.ConfigDir), &GlobalConfig{})
 	mgr.WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin})
 
 	var protectedOrgs []string

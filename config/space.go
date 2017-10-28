@@ -32,6 +32,7 @@ type SpaceConfig struct {
 	TotalServiceKeys        int      `yaml:"total_service_keys"`
 	AppInstanceLimit        int      `yaml:"app_instance_limit"`
 	IsoSegment              string   `yaml:"isolation_segment"`
+	ASGs                    []string `yaml:"named-security-groups"`
 }
 
 // Contains determines whether a space is present in a list of spaces.

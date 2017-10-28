@@ -14,6 +14,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/generated"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/pivotalservices/cf-mgmt/uaac"
@@ -31,17 +32,19 @@ type flagBucket struct {
 
 //CFMgmt -
 type CFMgmt struct {
-	UAAManager      uaa.Manager
-	OrgManager      organization.Manager
-	SpaceManager    space.Manager
-	ConfigManager   config.Updater
-	ConfigDirectory string
-	PeekDeletion    bool
-	LdapBindPwd     string
-	UaacToken       string
-	SystemDomain    string
-	UAACManager     uaac.Manager
-	CloudController cloudcontroller.Manager
+	UAAManager              uaa.Manager
+	OrgManager              organization.Manager
+	SpaceManager            space.Manager
+	ConfigManager           config.Updater
+	ConfigDirectory         string
+	PeekDeletion            bool
+	LdapBindPwd             string
+	UaacToken               string
+	SystemDomain            string
+	UAACManager             uaac.Manager
+	CloudController         cloudcontroller.Manager
+	SecurityGroupManager    securitygroup.Manager
+	IsolationSegmentUpdater *isosegment.Updater
 }
 
 //InitializeManager -
@@ -88,8 +91,14 @@ func InitializeManager(c *cli.Context) (*CFMgmt, error) {
 	}
 	cfMgmt.OrgManager = organization.NewManager(sysDomain, cfToken, uaacToken, cfg)
 	cfMgmt.SpaceManager = space.NewManager(sysDomain, cfToken, uaacToken, cfg)
-	cfMgmt.ConfigManager = config.NewManager(configDir)
+	cfMgmt.SecurityGroupManager = securitygroup.NewManager(sysDomain, cfToken, cfg)
 
+	cfMgmt.ConfigManager = config.NewManager(configDir)
+	if isoSegmentUpdater, err := isosegment.NewUpdater(Version, sysDomain, cfToken, cfg); err == nil {
+		cfMgmt.IsolationSegmentUpdater = isoSegmentUpdater
+	} else {
+		return nil, err
+	}
 	return cfMgmt, nil
 }
 
@@ -140,6 +149,7 @@ func NewApp() *cli.App {
 		CreateExportConfigCommand(),
 		CreateGeneratePipelineCommand(runGeneratePipeline),
 		CreateCommand("create-orgs", runCreateOrgs, defaultFlags()),
+		CreateCommand("create-security-groups", runCreateSecurityGroups, defaultFlags()),
 		CreateCommand("create-org-private-domains", runCreateOrgPrivateDomains, defaultFlags()),
 		CreateCommand("delete-orgs", runDeleteOrgs, defaultFlagsWithDelete()),
 		CreateCommand("update-org-quotas", runCreateOrgQuotas, defaultFlags()),
@@ -150,7 +160,7 @@ func NewApp() *cli.App {
 		CreateCommand("update-space-quotas", runCreateSpaceQuotas, defaultFlags()),
 		CreateCommand("update-space-users", runUpdateSpaceUsers, defaultFlagsWithLdap()),
 		CreateCommand("update-space-security-groups", runCreateSpaceSecurityGroups, defaultFlags()),
-		createIsoSegmentsCommand(),
+		CreateCommand("isolation-segments", runUpdateIsoSegments, defaultFlags()),
 	}
 
 	return app
@@ -397,6 +407,15 @@ func runCreateOrgs(c *cli.Context) error {
 	return err
 }
 
+func runCreateSecurityGroups(c *cli.Context) error {
+	var cfMgmt *CFMgmt
+	var err error
+	if cfMgmt, err = InitializeManager(c); err == nil {
+		err = cfMgmt.SecurityGroupManager.CreateApplicationSecurityGroups()
+	}
+	return err
+}
+
 func runCreateOrgPrivateDomains(c *cli.Context) error {
 	var cfMgmt *CFMgmt
 	var err error
@@ -493,15 +512,7 @@ func runUpdateIsoSegments(c *cli.Context) error {
 		return err
 	}
 
-	u, err := isosegment.NewUpdater(Version, "https://api."+cfMgmt.SystemDomain, cfMgmt.UaacToken)
-	if err != nil {
-		return err
-	}
-
-	u.Cfg = config.NewManager(cfMgmt.ConfigDirectory)
-	u.CleanUp = c.Bool("clean-up")
-	u.DryRun = c.Bool("dry-run")
-
+	u := cfMgmt.IsolationSegmentUpdater
 	if err := u.Ensure(); err != nil {
 		return err
 	}

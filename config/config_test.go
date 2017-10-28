@@ -19,6 +19,57 @@ var _ = Describe("CF-Mgmt Config", func() {
 	})
 
 	Context("Default Config Reader", func() {
+		Context("GetASGConfigs", func() {
+			It("should return a single ASG", func() {
+				m := config.NewManager("./fixtures/asg-defaults")
+				cfgs, err := m.GetASGConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(cfgs).Should(HaveLen(1))
+
+				cfg := cfgs[0]
+				Expect(cfg.Rules).Should(BeEquivalentTo("[{\"protocol\": \"icmp\",\"destination\": \"0.0.0.0/0\"}]\n"))
+			})
+
+			It("should have a name based on the ASG filename", func() {
+				m := config.NewManager("./fixtures/asg-defaults")
+				cfgs, err := m.GetASGConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(cfgs).Should(HaveLen(1))
+
+				cfg := cfgs[0]
+				Expect(cfg.Name).Should(BeEquivalentTo("test-asg"))
+
+			})
+
+			It("can optionally have a ASG name in the spaced config.", func() {
+				m := config.NewManager("./fixtures/asg-defaults")
+
+				// Get ASG Config
+				asgcfgs, err := m.GetASGConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+
+				// Get space config
+				cfgs, err := m.GetSpaceConfigs()
+				Ω(err).ShouldNot(HaveOccurred())
+
+				cfg := cfgs[0]
+				Ω(cfg.Space).Should(BeEquivalentTo("space1"))
+				Expect(cfg.ASGs).Should(ConsistOf("test-asg"))
+				// We expect the ASGs to reference actually defined asgs
+
+				namedList := make([]string, len(asgcfgs))
+				for i, asg := range asgcfgs {
+					namedList[i] = asg.Name
+				}
+
+				for _, asg := range cfg.ASGs {
+					Expect([]string{asg}).Should(ConsistOf(namedList))
+				}
+
+			})
+
+		})
+
 		Context("GetOrgConfigs", func() {
 			It("should return a list of 2", func() {
 				m := config.NewManager("./fixtures/config")

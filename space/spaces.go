@@ -34,6 +34,7 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 	if err != nil {
 		return err
 	}
+
 	for _, input := range spaceConfigs {
 		if !input.EnableSecurityGroup {
 			continue
@@ -62,6 +63,20 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 			}
 			lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
 			m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, targetSGGUID)
+		}
+
+		// iterate through and assign named security groups to the space - ensuring that they are up to date is
+		// done elsewhere.
+
+		for _, securityGroupName := range input.ASGs {
+			lo.G.Info("Security Group name: " + securityGroupName)
+			if sgGUID, ok := sgs[securityGroupName]; ok {
+				lo.G.Info("Binding NAMED security group", securityGroupName, "to space", space.Entity.Name)
+				m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgGUID)
+			} else {
+				return fmt.Errorf("Security group [%s] does not exist", securityGroupName)
+			}
+
 		}
 	}
 	return nil

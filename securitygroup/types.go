@@ -1,5 +1,11 @@
 package securitygroup
 
+import (
+	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
+	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/utils"
+)
+
 //Resource -
 type Resource struct {
 	MetaData MetaData `json:"metadata"`
@@ -24,4 +30,17 @@ type Rule struct {
 	Destination string `json:"destination"`
 	Protocol    string `json:"protocol"`
 	Ports       string `json:"ports"`
+}
+
+//DefaultSecurityGroupManager -
+type DefaultSecurityGroupManager struct {
+	Cfg             config.Reader
+	FilePattern     string
+	FilePaths       []string
+	CloudController cloudcontroller.Manager
+	UtilsMgr        utils.Manager
+}
+
+type Manager interface {
+	CreateApplicationSecurityGroups() error
 }
