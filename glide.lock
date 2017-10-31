@@ -1,5 +1,5 @@
-hash: 6d382c46083a69488b01be208c13342f4de97d7288f8c80fec44a496ace291ba
-updated: 2017-10-16T23:28:51.866450274-04:00
+hash: 11886659c4135728f03653ae4905ccb06fcd1127396b6d00dbfdf52f5faa2d05
+updated: 2017-10-30T23:51:57.536696108-07:00
 imports:
 - name: code.cloudfoundry.org/cli
   version: d0d93ba6098018aa8f55451e12b1ef5d79978190
@@ -20,14 +20,14 @@ imports:
 - name: github.com/cloudfoundry/bytefmt
   version: f4415fafc5619dd75599a54a7c91fb3948ad58bd
   repo: https://github.com/cloudfoundry/bytefmt
-- name: github.com/codegangsta/cli
-  version: 7bc6a0acffa589f415f88aca16cc1de5ffd66f9c
 - name: github.com/go-ldap/ldap
   version: 8168ee085ee43257585e50c6441aadf54ecb2c9f
 - name: github.com/golang/mock
   version: 13f360950a79f5864a972c786a10a50e44b69541
   subpackages:
   - gomock
+- name: github.com/jessevdk/go-flags
+  version: 96dc06278ce32a0e9d957d590bb987c81ee66407
 - name: github.com/moul/http2curl
   version: 9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d
 - name: github.com/op/go-logging
