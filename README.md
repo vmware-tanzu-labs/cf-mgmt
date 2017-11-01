@@ -32,7 +32,8 @@ To build the binary yourself, follow these steps:
 * Install dependencies:
   - `cd cf-mgmt`
   - `glide install`
-  - `go build`
+  - `go build -o cf-mgmt cmd/cf-mgmt/main.go`
+  - `go build -o cf-mgmt-config cmd/cf-mgmt-config/main.go`
 
 To cross compile, set the `$GOOS` and `$GOARCH` environment variables.
 For example: `GOOS=linux GOARCH=amd64 go build`.
