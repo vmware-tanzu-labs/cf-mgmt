@@ -37,6 +37,12 @@ type Updater interface {
 	AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error
 	CreateConfigIfNotExists(uaaOrigin string) error
 	DeleteConfigIfExists() error
+
+	SaveSpaceConfig(spaceConfig *SpaceConfig) error
+	SaveOrgConfig(spaceConfig *OrgConfig) error
+
+	DeleteOrgConfig(orgName string) error
+	DeleteSpaceConfig(orgName, spaceName string) error
 }
 
 // Reader is used to read the cf-mgmt configuration.
@@ -48,6 +54,8 @@ type Reader interface {
 	GetASGConfigs() ([]ASGConfig, error)
 	GetGlobalConfig() (GlobalConfig, error)
 	GetSpaceDefaults() (*SpaceConfig, error)
+	GetOrgConfig(orgName string) (*OrgConfig, error)
+	GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, error)
 }
 
 // yamlManager is the default implementation of Manager.
@@ -196,6 +204,28 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		}
 	}
 	return result, nil
+}
+
+func (m *yamlManager) GetOrgConfig(orgName string) (*OrgConfig, error) {
+	return nil, errors.New("Not implemented")
+}
+func (m *yamlManager) GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, error) {
+	return nil, errors.New("Not implemented")
+}
+
+func (m *yamlManager) SaveSpaceConfig(spaceConfig *SpaceConfig) error {
+	return errors.New("Not implemented")
+}
+func (m *yamlManager) SaveOrgConfig(spaceConfig *OrgConfig) error {
+	return errors.New("Not implemented")
+}
+
+func (m *yamlManager) DeleteOrgConfig(orgName string) error {
+	return errors.New("Not implemented")
+}
+
+func (m *yamlManager) DeleteSpaceConfig(orgName, spaceName string) error {
+	return errors.New("Not implemented")
 }
 
 // GetSpaceDefaults returns the default space configuration, if one was provided.

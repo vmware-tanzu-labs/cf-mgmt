@@ -1,4 +1,4 @@
-package commands
+package configcommands
 
 import (
 	"github.com/pivotalservices/cf-mgmt/config"
