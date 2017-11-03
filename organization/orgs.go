@@ -108,10 +108,10 @@ func (m *DefaultOrgManager) CreateOrgs() error {
 
 	for _, org := range desiredOrgs {
 		if doesOrgExist(org.Org, currentOrgs) {
-			lo.G.Infof("[%s] org already exists", org)
+			lo.G.Infof("[%s] org already exists", org.Org)
 			continue
 		}
-		lo.G.Infof("Creating [%s] org", org)
+		lo.G.Infof("Creating [%s] org", org.Org)
 		if err := m.CloudController.CreateOrg(org.Org); err != nil {
 			return err
 		}
