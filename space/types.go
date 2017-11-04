@@ -6,7 +6,6 @@ import (
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/uaac"
-	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
 const SPACES = "spaces"
@@ -34,6 +33,5 @@ type DefaultSpaceManager struct {
 	UAACMgr         uaac.Manager
 	OrgMgr          organization.Manager
 	LdapMgr         ldap.Manager
-	UtilsMgr        utils.Manager
 	UserMgr         UserMgr
 }

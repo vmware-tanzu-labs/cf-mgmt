@@ -9,7 +9,7 @@ import (
 type DeleteOrgConfigurationCommand struct {
 	BaseConfigCommand
 	OrgName         string `long:"org" description:"Org name to delete" required:"true"`
-	ConfirmDeletion bool   `long:"confirm-deletion" default:"false" description:"REQUIRED: Confirm Deletion" required:"true"`
+	ConfirmDeletion bool   `long:"confirm-deletion" description:"Confirm Deletion" required:"true"`
 }
 
 //Execute - deletes org from config

@@ -13,7 +13,6 @@ import (
 	. "github.com/pivotalservices/cf-mgmt/securitygroup"
 	s "github.com/pivotalservices/cf-mgmt/space/mocks"
 	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
-	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
 var _ = Describe("given SecurityGroupManager", func() {
@@ -45,7 +44,6 @@ var _ = Describe("given SecurityGroupManager", func() {
 		securityManager = DefaultSecurityGroupManager{
 			Cfg:             config.NewManager("./fixtures/asg-config"),
 			CloudController: mockCloudController,
-			UtilsMgr:        utils.NewDefaultManager(),
 		}
 	})
 

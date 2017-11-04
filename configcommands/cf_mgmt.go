@@ -6,8 +6,10 @@ type CfMgmtConfigCommand struct {
 	AddOrgToConfigurationCommand     AddOrgToConfigurationCommand     `command:"add-org" description:"Adds specified org to configuration"`
 	AddSpaceToConfigurationCommand   AddSpaceToConfigurationCommand   `command:"add-space" description:"Adds specified space to configuration for org"`
 	GenerateConcoursePipelineCommand GenerateConcoursePipelineCommand `command:"generate-concourse-pipeline" description:"generates a concourse pipline to be used to drive cf-mgmt"`
+	UpdateOrgConfigurationCommand    UpdateOrgConfigurationCommand    `command:"update-org" description:"updates org configuration"`
+	DeleteOrgConfigurationCommand    DeleteOrgConfigurationCommand    `command:"delete-org" description:"deletes org configuration"`
 
-	UpdateOrgQuotaConfigurationCommand UpdateOrgQuotaConfigurationCommand `command:"update-org-quota" description:"generates a concourse pipline to be used to drive cf-mgmt"`
+	DeleteSpaceConfigurationCommand DeleteSpaceConfigurationCommand `command:"delete-space" description:"deletes space configuration"`
 }
 
 var CfMgmtConfig CfMgmtConfigCommand

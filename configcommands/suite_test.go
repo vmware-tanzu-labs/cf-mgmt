@@ -1,4 +1,4 @@
-package utils_test
+package configcommands_test
 
 import (
 	. "github.com/onsi/ginkgo"

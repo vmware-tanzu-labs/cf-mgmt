@@ -16,7 +16,6 @@ import (
 	. "github.com/pivotalservices/cf-mgmt/space"
 	s "github.com/pivotalservices/cf-mgmt/space/mocks"
 	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
-	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
 var _ = Describe("given SpaceManager", func() {
@@ -49,7 +48,6 @@ var _ = Describe("given SpaceManager", func() {
 			Cfg:             config.NewManager("./fixtures/config"),
 			CloudController: mockCloudController,
 			UAACMgr:         mockUaac,
-			UtilsMgr:        utils.NewDefaultManager(),
 			LdapMgr:         mockLdap,
 			OrgMgr:          mockOrgMgr,
 			UserMgr:         mockUserMgr,
@@ -211,7 +209,6 @@ var _ = Describe("given SpaceManager", func() {
 				Cfg:             config.NewManager("./fixtures/asg-config"),
 				CloudController: mockCloudController,
 				UAACMgr:         mockUaac,
-				UtilsMgr:        utils.NewDefaultManager(),
 				LdapMgr:         mockLdap,
 				OrgMgr:          mockOrgMgr,
 				UserMgr:         mockUserMgr,

@@ -1,6 +1,10 @@
 package config_test
 
 import (
+	"io/ioutil"
+	"os"
+	"path"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -98,6 +102,83 @@ var _ = Describe("CF-Mgmt Config", func() {
 			})
 		})
 
+		Context("GetOrgConfig", func() {
+			It("should return a org", func() {
+				m := config.NewManager("./fixtures/config")
+				c, err := m.GetOrgConfig("test")
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(c).ShouldNot(BeNil())
+			})
+
+			It("should return an error", func() {
+				m := config.NewManager("./fixtures/config")
+				c, err := m.GetOrgConfig("foo")
+				Ω(err).Should(HaveOccurred())
+				Ω(c).Should(BeNil())
+				Ω(err.Error()).Should(BeEquivalentTo("Org [foo] not found in config"))
+			})
+		})
+
+		Context("SaveOrgConfig", func() {
+			var tempDir string
+			var err error
+			var configManager config.Manager
+			BeforeEach(func() {
+				tempDir, err = ioutil.TempDir("", "cf-mgmt")
+				Ω(err).ShouldNot(HaveOccurred())
+				configManager = config.NewManager(tempDir)
+			})
+			AfterEach(func() {
+				os.RemoveAll(tempDir)
+			})
+			It("should succeed", func() {
+				orgName := "foo"
+				orgConfig := &config.OrgConfig{
+					Org: orgName,
+				}
+				saveError := configManager.SaveOrgConfig(orgConfig)
+				Ω(saveError).ShouldNot(HaveOccurred())
+				retrieveConfig, retrieveError := configManager.GetOrgConfig(orgName)
+				Ω(retrieveError).ShouldNot(HaveOccurred())
+				Ω(retrieveConfig).ShouldNot(BeNil())
+			})
+		})
+
+		Context("DeleteOrgConfig", func() {
+			var tempDir string
+			var err error
+			var configManager config.Manager
+			orgName := "foo"
+			orgConfig := &config.OrgConfig{
+				Org: orgName,
+			}
+			BeforeEach(func() {
+				tempDir, err = ioutil.TempDir("", "cf-mgmt")
+				Ω(err).ShouldNot(HaveOccurred())
+				configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
+				configManager.CreateConfigIfNotExists("ldap")
+				addError := configManager.AddOrgToConfig(orgConfig)
+				Ω(addError).ShouldNot(HaveOccurred())
+				addError = configManager.AddOrgToConfig(&config.OrgConfig{
+					Org: "sdfasdfdf",
+				})
+				Ω(addError).ShouldNot(HaveOccurred())
+			})
+			AfterEach(func() {
+				os.RemoveAll(tempDir)
+			})
+			It("should succeed", func() {
+				err := configManager.DeleteOrgConfig(orgName)
+				Ω(err).ShouldNot(HaveOccurred())
+				orgs, err := configManager.Orgs()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(orgs.Orgs).ShouldNot(ConsistOf(orgName))
+				_, err = configManager.GetOrgConfig(orgName)
+				Ω(err).Should(HaveOccurred())
+				Ω(err.Error()).Should(BeEquivalentTo("Org [foo] not found in config"))
+			})
+		})
+
 		Context("GetSpaceConfigs", func() {
 			It("should return a single space", func() {
 				m := config.NewManager("./fixtures/space-defaults")
@@ -143,6 +224,93 @@ var _ = Describe("CF-Mgmt Config", func() {
 				Ω(config.GetDeveloperGroups()).Should(ConsistOf([]string{"test_space1_developers"}))
 				Ω(config.GetAuditorGroups()).Should(ConsistOf([]string{"test_space1_auditors"}))
 				Ω(config.GetManagerGroups()).Should(ConsistOf([]string{"test_space1_managers", "test_space1_managers_2"}))
+			})
+
+			Context("GetSpaceConfig", func() {
+				It("should return a space", func() {
+					m := config.NewManager("./fixtures/config")
+					c, err := m.GetSpaceConfig("test", "space1")
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(c).ShouldNot(BeNil())
+				})
+
+				It("should return an error", func() {
+					m := config.NewManager("./fixtures/config")
+					c, err := m.GetSpaceConfig("test", "foo")
+					Ω(err).Should(HaveOccurred())
+					Ω(c).Should(BeNil())
+					Ω(err.Error()).Should(BeEquivalentTo("Space [foo] not found in org [test] config"))
+				})
+			})
+
+			Context("SaveSpaceConfig", func() {
+				var tempDir string
+				var err error
+				var configManager config.Manager
+				BeforeEach(func() {
+					tempDir, err = ioutil.TempDir("", "cf-mgmt")
+					Ω(err).ShouldNot(HaveOccurred())
+					configManager = config.NewManager(tempDir)
+				})
+				AfterEach(func() {
+					os.RemoveAll(tempDir)
+				})
+				It("should succeed", func() {
+					orgName := "foo"
+					spaceName := "bar"
+					spaceConfig := &config.SpaceConfig{
+						Org:   orgName,
+						Space: spaceName,
+					}
+					saveError := configManager.SaveSpaceConfig(spaceConfig)
+					Ω(saveError).ShouldNot(HaveOccurred())
+					retrieveConfig, retrieveError := configManager.GetSpaceConfig(orgName, spaceName)
+					Ω(retrieveError).ShouldNot(HaveOccurred())
+					Ω(retrieveConfig).ShouldNot(BeNil())
+				})
+			})
+
+			Context("DeleteSpaceConfig", func() {
+				var tempDir string
+				var err error
+				var configManager config.Manager
+				orgName := "foo"
+				spaceName := "bar"
+				orgConfig := &config.OrgConfig{
+					Org: orgName,
+				}
+				spaceConfig := &config.SpaceConfig{
+					Org:   orgName,
+					Space: spaceName,
+				}
+				BeforeEach(func() {
+					tempDir, err = ioutil.TempDir("", "cf-mgmt")
+					Ω(err).ShouldNot(HaveOccurred())
+					configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
+					configManager.CreateConfigIfNotExists("ldap")
+					addError := configManager.AddOrgToConfig(orgConfig)
+					Ω(addError).ShouldNot(HaveOccurred())
+					addError = configManager.AddSpaceToConfig(spaceConfig)
+					Ω(addError).ShouldNot(HaveOccurred())
+					addError = configManager.AddSpaceToConfig(&config.SpaceConfig{
+						Org:   orgName,
+						Space: "asdfsadfs",
+					})
+					Ω(addError).ShouldNot(HaveOccurred())
+				})
+				AfterEach(func() {
+					os.RemoveAll(tempDir)
+				})
+				It("should succeed", func() {
+					err := configManager.DeleteSpaceConfig(orgName, spaceName)
+					Ω(err).ShouldNot(HaveOccurred())
+					spaces, err := configManager.OrgSpaces(orgName)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(spaces.Spaces).ShouldNot(ConsistOf(spaceName))
+					_, err = configManager.GetSpaceConfig(orgName, spaceName)
+					Ω(err).Should(HaveOccurred())
+					Ω(err.Error()).Should(BeEquivalentTo("Space [bar] not found in org [foo] config"))
+				})
 			})
 
 			Context("failure cases", func() {

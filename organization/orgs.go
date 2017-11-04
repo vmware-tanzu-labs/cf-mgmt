@@ -7,7 +7,6 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaac"
-	"github.com/pivotalservices/cf-mgmt/utils"
 	"github.com/xchapter7x/lo"
 )
 
@@ -21,7 +20,6 @@ func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
 		Cfg:             cfg,
 		CloudController: cloudController,
 		UAACMgr:         uaacMgr,
-		UtilsMgr:        utils.NewDefaultManager(),
 		LdapMgr:         ldapMgr,
 		UserMgr:         UserMgr,
 	}

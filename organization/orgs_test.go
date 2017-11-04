@@ -12,7 +12,6 @@ import (
 	ldap "github.com/pivotalservices/cf-mgmt/ldap/mocks"
 	. "github.com/pivotalservices/cf-mgmt/organization"
 	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
-	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
 var _ = Describe("given OrgManager", func() {
@@ -40,7 +39,6 @@ var _ = Describe("given OrgManager", func() {
 			Cfg:             config.NewManager("./fixtures/config"),
 			CloudController: mockCloudController,
 			UAACMgr:         mockUaac,
-			UtilsMgr:        utils.NewDefaultManager(),
 			LdapMgr:         mockLdap,
 		}
 	})

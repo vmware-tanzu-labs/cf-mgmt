@@ -10,7 +10,7 @@ type DeleteSpaceConfigurationCommand struct {
 	BaseConfigCommand
 	OrgName         string `long:"org" description:"Org name to delete" required:"true"`
 	SpaceName       string `long:"space" description:"Space name to delete" required:"true"`
-	ConfirmDeletion bool   `long:"confirm-deletion" default:"false" description:"REQUIRED: Confirm Deletion" required:"true"`
+	ConfirmDeletion bool   `long:"confirm-deletion" description:"Confirm Deletion" required:"true"`
 }
 
 //Execute - deletes space from config
