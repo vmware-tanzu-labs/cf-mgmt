@@ -5,7 +5,7 @@ type UserMgmt struct {
 	LDAPUsers  []string `yaml:"ldap_users"`
 	Users      []string `yaml:"users"`
 	SamlUsers  []string `yaml:"saml_users"`
-	LDAPGroup  string   `yaml:"ldap_group"`
+	LDAPGroup  string   `yaml:"ldap_group,omitempty"`
 	LDAPGroups []string `yaml:"ldap_groups"`
 }
 

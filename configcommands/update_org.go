@@ -10,11 +10,14 @@ import (
 type UpdateOrgConfigurationCommand struct {
 	ConfigManager config.Manager
 	BaseConfigCommand
-	OrgName                    string   `long:"org" description:"Org name" required:"true"`
-	PrivateDomains             []string `long:"private-domain" description:"Private Domain(s) to add, specify muliple times"`
-	PrivateDomainsToRemove     []string `long:"private-domain-to-remove" description:"Private Domain(s) to remove, specify muliple times"`
-	EnableRemovePrivateDomains string   `long:"enable-remove-private-domains" description:"Enable removing private domains" choice:"true" choice:"false"`
-	Quota                      struct {
+	OrgName                      string   `long:"org" description:"Org name" required:"true"`
+	PrivateDomains               []string `long:"private-domain" description:"Private Domain(s) to add, specify muliple times"`
+	PrivateDomainsToRemove       []string `long:"private-domain-to-remove" description:"Private Domain(s) to remove, specify muliple times"`
+	EnableRemovePrivateDomains   string   `long:"enable-remove-private-domains" description:"Enable removing private domains" choice:"true" choice:"false"`
+	DefaultIsolationSegment      string   `long:"default-isolation-segment" description:"Default isolation segment for org" `
+	ClearDefaultIsolationSegment bool     `long:"clear-default-isolation-segment" description:"Sets the default isolation segment to blank"`
+	EnableRemoveUsers            string   `long:"enable-remove-users" description:"Enable removing users from the org" choice:"true" choice:"false"`
+	Quota                        struct {
 		EnableOrgQuota          string `long:"enable-org-quota" description:"Enable the Org Quota in the config" choice:"true" choice:"false"`
 		MemoryLimit             string `long:"memory-limit" description:"An Org's memory limit in Megabytes"`
 		InstanceMemoryLimit     string `long:"instance-memory-limit" description:"Global Org Application instance memory limit in Megabytes"`
@@ -26,23 +29,12 @@ type UpdateOrgConfigurationCommand struct {
 		TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Org"`
 		AppInstanceLimit        string `long:"app-instance-limit" description:"Total Service Keys capacity for an Org"`
 	} `group:"quota"`
-	BillingManager User `group:"billing-manager" namespace:"billing-manager"`
-	Manager        User `group:"manager" namespace:"manager"`
-	Auditor        User `group:"auditor" namespace:"auditor"`
+	BillingManager UserRole `group:"billing-manager" namespace:"billing-manager"`
+	Manager        UserRole `group:"manager" namespace:"manager"`
+	Auditor        UserRole `group:"auditor" namespace:"auditor"`
 }
 
-type User struct {
-	LDAPUsers          []string `long:"ldap-user" description:"Ldap User to add, specify muliple times"`
-	LDAPUsersToRemove  []string `long:"ldap-user-to-remove" description:"Ldap User to remove, specify muliple times"`
-	Users              []string `long:"user" description:"User to add, specify muliple times"`
-	UsersToRemove      []string `long:"user-to-remove" description:"User to remove, specify muliple times"`
-	SamlUsers          []string `long:"saml-user" description:"SAML user to add, specify muliple times"`
-	SamlUsersToRemove  []string `long:"saml-user-to-remove" description:"SAML user to remove, specify muliple times"`
-	LDAPGroups         []string `long:"ldap-group" description:"User to add, specify muliple times"`
-	LDAPGroupsToRemove []string `long:"ldap-group-to-remove" description:"User to remove, specify muliple times"`
-}
-
-//Execute - updates org quota configuration`
+//Execute - updates org configuration`
 func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 	c.initConfig()
 	orgConfig, err := c.ConfigManager.GetOrgConfig(c.OrgName)
@@ -50,10 +42,17 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 		return err
 	}
 	errorString := ""
+
+	if c.DefaultIsolationSegment != "" {
+		orgConfig.DefaultIsoSegment = c.DefaultIsolationSegment
+	}
+	if c.ClearDefaultIsolationSegment {
+		orgConfig.DefaultIsoSegment = ""
+	}
+	convertToBool("enable-remove-users", &orgConfig.RemoveUsers, c.EnableRemoveUsers, &errorString)
 	c.updatePrivateDomainConfig(orgConfig, &errorString)
 	c.updateQuotaConfig(orgConfig, &errorString)
-
-	//TODO Map all the users.....
+	c.updateUsers(orgConfig, &errorString)
 
 	if errorString != "" {
 		return errors.New(errorString)
@@ -66,16 +65,18 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 	return nil
 }
 
+func (c *UpdateOrgConfigurationCommand) updateUsers(orgConfig *config.OrgConfig, errorString *string) {
+	updateUsersBasedOnRole(&orgConfig.BillingManager, orgConfig.GetBillingManagerGroups(), &c.BillingManager)
+	updateUsersBasedOnRole(&orgConfig.Auditor, orgConfig.GetAuditorGroups(), &c.Auditor)
+	updateUsersBasedOnRole(&orgConfig.Manager, orgConfig.GetManagerGroups(), &c.Manager)
+
+	orgConfig.BillingManagerGroup = ""
+	orgConfig.ManagerGroup = ""
+	orgConfig.AuditorGroup = ""
+}
+
 func (c *UpdateOrgConfigurationCommand) updatePrivateDomainConfig(orgConfig *config.OrgConfig, errorString *string) {
-	orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, c.PrivateDomains...)
-	privateDomainToRemove := SliceToMap(c.PrivateDomainsToRemove)
-	var updatedPrivateDomains []string
-	for _, privateDomain := range orgConfig.PrivateDomains {
-		if _, ok := privateDomainToRemove[privateDomain]; !ok {
-			updatedPrivateDomains = append(updatedPrivateDomains, privateDomain)
-		}
-	}
-	orgConfig.PrivateDomains = updatedPrivateDomains
+	orgConfig.PrivateDomains = removeFromSlice(append(orgConfig.PrivateDomains, c.PrivateDomains...), c.PrivateDomainsToRemove)
 	convertToBool("enable-remove-private-domains", &orgConfig.RemovePrivateDomains, c.EnableRemovePrivateDomains, errorString)
 }
 
@@ -90,14 +91,6 @@ func (c *UpdateOrgConfigurationCommand) updateQuotaConfig(orgConfig *config.OrgC
 	convertToInt("total-reserved-route-ports", &orgConfig.TotalReservedRoutePorts, c.Quota.TotalReservedRoutePorts, errorString)
 	convertToInt("total-service-keys", &orgConfig.TotalServiceKeys, c.Quota.TotalServiceKeys, errorString)
 	convertToInt("app-instance-limit", &orgConfig.AppInstanceLimit, c.Quota.AppInstanceLimit, errorString)
-}
-
-func SliceToMap(theSlice []string) map[string]string {
-	theMap := make(map[string]string)
-	for _, val := range theSlice {
-		theMap[val] = val
-	}
-	return theMap
 }
 
 func (c *UpdateOrgConfigurationCommand) initConfig() {
