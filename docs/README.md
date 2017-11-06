@@ -410,24 +410,10 @@ If both ```vars.yml``` and ```--var``` are specified, ```--vars``` values takes 
 ### The following operation are enabled with cf-mgmt that will leverage configuration to modify your Cloud Foundry installation
 
 To execute any of the following you will need to provide:
-- **user id** that has privileges to create/update/delete users, orgs and spaces. This user doesn't have to be an admin user. Assuming you have [Cloud Foundry UAA Client](https://docs.pivotal.io/pivotalcf/1-11/adminguide/uaa-user-management.html) installed, you can create a non-admin user with just enough privileges in the following way:
-
-```
-$ uaac target uaa.<system-domain>
-$ uaac token client get <adminuserid> -s admin-client-secret
-
-$ uaac client add cf-mgmt \
-  --name cf-mgmt \
-  --secret cf-mgmt-secret \
-  --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write
-
-```
-As you can see, `cloud_controller.admin,scim.read,scim.write` gives this user just enough rights to add/update/delete users, orgs and space and still being a non-admin user. Learn more about the scopes authorized by UAA at [UAA Scopes](https://github.com/cloudfoundry/uaa/blob/master/docs/UAA-APIs.rst#scopes-authorized-by-the-uaa)
-
-- **password** , an optional password for the above user
-- **uaac client secret** for the above user (assumes the same user account for cf commands is used)
-- **system domain** name of your foundation
+- **user-id** that has privileges to create/update/delete users, orgs and spaces. This user doesn't have to be an admin user. Assuming you have [Cloud Foundry UAA
+- **password** , **DEPRECATED** an optional password for the above user
+- **client-secret** for the above user (assumes the same user account for cf commands is used)
+- **system-domain** name of your foundation
 
 #### create-orgs
 - creates orgs specified in orgs.yml
