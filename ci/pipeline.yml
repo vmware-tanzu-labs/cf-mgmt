@@ -13,6 +13,7 @@ resources:
     uri: git@github.com:pivotalservices/cf-mgmt.git
     branch: master
     private_key: {{git-ssh-key}}
+    ignore_paths: ["README.md","docs/*"]
 
 - name: draft-cfmgmt-resource
   type: github-release
