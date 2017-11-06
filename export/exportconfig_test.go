@@ -14,7 +14,6 @@ import (
 
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	uaacmock "github.com/pivotalservices/cf-mgmt/uaac/mocks"
-	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
 func cloudControllerOrgUserMock(mockController *ccmock.MockManager, entityGUID string, mangers, billingManagers, auditors map[string]string) {
@@ -42,6 +41,7 @@ var _ = Describe("Export manager", func() {
 		mockController *ccmock.MockManager
 		mockUaac       *uaacmock.MockManager
 		exportManager  Manager
+		configManager  config.Manager
 		excludedOrgs   map[string]string
 		excludedSpaces map[string]string
 	)
@@ -51,6 +51,7 @@ var _ = Describe("Export manager", func() {
 		mockController = ccmock.NewMockManager(ctrl)
 		mockUaac = uaacmock.NewMockManager(ctrl)
 		exportManager = NewExportManager("test/config", mockUaac, mockController)
+		configManager = config.NewManager("test/config")
 		excludedOrgs = make(map[string]string)
 		excludedSpaces = make(map[string]string)
 	})
@@ -91,7 +92,8 @@ var _ = Describe("Export manager", func() {
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 			Ω(err).Should(BeNil())
 			orgDetails := &config.OrgConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
+
+			orgDetails, err = configManager.GetOrgConfig("org1")
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
 			Ω(len(orgDetails.Manager.Users)).Should(BeEquivalentTo(1))
@@ -101,8 +103,7 @@ var _ = Describe("Export manager", func() {
 			Ω(len(orgDetails.BillingManager.Users)).Should(BeEquivalentTo(0))
 			Ω(len(orgDetails.Auditor.Users)).Should(BeEquivalentTo(0))
 
-			spaceDetails := &config.SpaceConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/dev/spaceConfig.yml", spaceDetails)
+			spaceDetails, err := configManager.GetSpaceConfig("org1", "dev")
 			Ω(err).Should(BeNil())
 			Ω(spaceDetails.Org).Should(Equal("org1"))
 			Ω(spaceDetails.Space).Should(Equal("dev"))
@@ -150,15 +151,13 @@ var _ = Describe("Export manager", func() {
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 
 			Ω(err).Should(BeNil())
-			orgDetails := &config.OrgConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
+			orgDetails, err := configManager.GetOrgConfig("org1")
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
 			Ω(orgDetails.MemoryLimit).Should(Equal(2))
 			Ω(orgDetails.InstanceMemoryLimit).Should(Equal(5))
 
-			spaceDetails := &config.SpaceConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/dev/spaceConfig.yml", spaceDetails)
+			spaceDetails, err := configManager.GetSpaceConfig("org1", "dev")
 			Ω(err).Should(BeNil())
 			Ω(spaceDetails.Org).Should(Equal("org1"))
 			Ω(spaceDetails.Space).Should(Equal("dev"))
@@ -207,13 +206,11 @@ var _ = Describe("Export manager", func() {
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 
 			Ω(err).Should(BeNil())
-			orgDetails := &config.OrgConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
+			orgDetails, err := configManager.GetOrgConfig("org1")
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
 
-			spaceDetails := &config.SpaceConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/dev/spaceConfig.yml", spaceDetails)
+			spaceDetails, err := configManager.GetSpaceConfig("org1", "dev")
 			Ω(err).Should(BeNil())
 			Ω(spaceDetails.Org).Should(Equal("org1"))
 			Ω(spaceDetails.Space).Should(Equal("dev"))
@@ -264,13 +261,11 @@ var _ = Describe("Export manager", func() {
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 
 			Ω(err).Should(BeNil())
-			orgDetails := &config.OrgConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
+			orgDetails, err := configManager.GetOrgConfig("org1")
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
 
-			spaceDetails := &config.SpaceConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/dev/spaceConfig.yml", spaceDetails)
+			spaceDetails, err := configManager.GetSpaceConfig("org1", "dev")
 			Ω(err).Should(BeNil())
 			Ω(spaceDetails.Org).Should(Equal("org1"))
 			Ω(spaceDetails.Space).Should(Equal("dev"))
@@ -308,12 +303,11 @@ var _ = Describe("Export manager", func() {
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 
 			Ω(err).Should(BeNil())
-			orgDetails := &config.OrgConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
+			orgDetails, err := configManager.GetOrgConfig("org1")
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
 
-			err = utils.NewDefaultManager().LoadFile("test/config/org2/orgConfig.yml", orgDetails)
+			_, err = configManager.GetOrgConfig("org2")
 			Ω(err).Should(Not(BeNil()))
 
 		})

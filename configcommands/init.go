@@ -1,7 +1,8 @@
-package commands
+package configcommands
 
 import (
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/xchapter7x/lo"
 )
 
 type InitConfigurationCommand struct {
@@ -10,6 +11,7 @@ type InitConfigurationCommand struct {
 
 //Execute - initializes cf-mgmt configuration
 func (c *InitConfigurationCommand) Execute([]string) error {
+	lo.G.Infof("Initializing config in directory %s", c.ConfigDirectory)
 	configManager := config.NewManager(c.ConfigDirectory)
 	return configManager.CreateConfigIfNotExists("ldap")
 }

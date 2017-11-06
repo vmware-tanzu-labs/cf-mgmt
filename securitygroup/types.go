@@ -3,7 +3,6 @@ package securitygroup
 import (
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
 //Resource -
@@ -38,7 +37,6 @@ type DefaultSecurityGroupManager struct {
 	FilePattern     string
 	FilePaths       []string
 	CloudController cloudcontroller.Manager
-	UtilsMgr        utils.Manager
 }
 
 type Manager interface {

@@ -5,7 +5,7 @@ resources:
     uri: git@github.com:pivotalservices/cf-mgmt.git
     branch: {{dev-build-branch}}
     private_key: {{git-ssh-key}}
-
+    ignore_paths: ["README.md","docs/*"]
 - name: docker-registry
   type: docker-image
   source:

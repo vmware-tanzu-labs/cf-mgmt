@@ -5,11 +5,11 @@ import (
 	"os"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/pivotalservices/cf-mgmt/commands"
+	"github.com/pivotalservices/cf-mgmt/configcommands"
 )
 
 func main() {
-	parser := flags.NewParser(&commands.CfMgmtConfig, flags.HelpFlag)
+	parser := flags.NewParser(&configcommands.CfMgmtConfig, flags.HelpFlag)
 	parser.NamespaceDelimiter = "-"
 
 	_, err := parser.Parse()

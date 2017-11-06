@@ -1,5 +1,5 @@
-hash: 11886659c4135728f03653ae4905ccb06fcd1127396b6d00dbfdf52f5faa2d05
-updated: 2017-10-30T23:51:57.536696108-07:00
+hash: 2e9460799bea24f85e68194477fea05e1f691ab04130e88ff9dbda76c3a9de8d
+updated: 2017-11-04T00:23:44.874908078-07:00
 imports:
 - name: code.cloudfoundry.org/cli
   version: d0d93ba6098018aa8f55451e12b1ef5d79978190
@@ -56,6 +56,8 @@ testImports:
   subpackages:
   - proto
   - ptypes/any
+- name: github.com/maxbrunsfeld/counterfeiter
+  version: c1f2005ff133f81907ce72f3d20e1169799317fe
 - name: github.com/onsi/ginkgo
   version: 9eda700730cba42af70d53180f9dcce9266bc2bc
   subpackages:

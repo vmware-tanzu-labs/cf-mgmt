@@ -5,6 +5,7 @@ import (
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/configcommands"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
@@ -70,7 +71,7 @@ func InitializeManagers(baseCommand BaseCFConfigCommand) (*CFMgmt, error) {
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(cfMgmt.SystemDomain, cfToken, cfg)
 
 	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
-	if isoSegmentUpdater, err := isosegment.NewUpdater(VERSION, cfMgmt.SystemDomain, cfToken, cfg); err == nil {
+	if isoSegmentUpdater, err := isosegment.NewUpdater(configcommands.VERSION, cfMgmt.SystemDomain, cfToken, cfg); err == nil {
 		cfMgmt.IsolationSegmentUpdater = isoSegmentUpdater
 	} else {
 		return nil, err
