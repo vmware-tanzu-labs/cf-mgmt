@@ -13,14 +13,14 @@ type BaseConfigCommand struct {
 }
 
 type UserRole struct {
-	LDAPUsers          []string `long:"ldap-user" description:"Ldap User to add, specify muliple times"`
-	LDAPUsersToRemove  []string `long:"ldap-user-to-remove" description:"Ldap User to remove, specify muliple times"`
-	Users              []string `long:"user" description:"User to add, specify muliple times"`
-	UsersToRemove      []string `long:"user-to-remove" description:"User to remove, specify muliple times"`
-	SamlUsers          []string `long:"saml-user" description:"SAML user to add, specify muliple times"`
-	SamlUsersToRemove  []string `long:"saml-user-to-remove" description:"SAML user to remove, specify muliple times"`
-	LDAPGroups         []string `long:"ldap-group" description:"User to add, specify muliple times"`
-	LDAPGroupsToRemove []string `long:"ldap-group-to-remove" description:"User to remove, specify muliple times"`
+	LDAPUsers          []string `long:"ldap-user" description:"Ldap User to add, specify multiple times"`
+	LDAPUsersToRemove  []string `long:"ldap-user-to-remove" description:"Ldap User to remove, specify multiple times"`
+	Users              []string `long:"user" description:"User to add, specify multiple times"`
+	UsersToRemove      []string `long:"user-to-remove" description:"User to remove, specify multiple times"`
+	SamlUsers          []string `long:"saml-user" description:"SAML user to add, specify multiple times"`
+	SamlUsersToRemove  []string `long:"saml-user-to-remove" description:"SAML user to remove, specify multiple times"`
+	LDAPGroups         []string `long:"ldap-group" description:"Group to add, specify multiple times"`
+	LDAPGroupsToRemove []string `long:"ldap-group-to-remove" description:"Group to remove, specify multiple times"`
 }
 
 func updateUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, userRole *UserRole) {
