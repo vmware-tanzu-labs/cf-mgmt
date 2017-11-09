@@ -411,9 +411,10 @@ If both ```vars.yml``` and ```--var``` are specified, ```--vars``` values takes 
 
 To execute any of the following you will need to provide:
 - **user-id** that has privileges to create/update/delete users, orgs and spaces. This user doesn't have to be an admin user. Assuming you have [Cloud Foundry UAA
-- **password** , **DEPRECATED** an optional password for the above user
 - **client-secret** for the above user (assumes the same user account for cf commands is used)
 - **system-domain** name of your foundation
+
+Prior to v0.0.66 a **password** as also needed as you had to provide both a uaa user and uaa client.  This field has been deprecated and will be removed in a future release as going forward cf-mgmt will require a uaa client per the [authentication directions](../README.md)
 
 #### create-orgs
 - creates orgs specified in orgs.yml
