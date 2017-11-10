@@ -23,11 +23,11 @@ type UserRole struct {
 	LDAPGroupsToRemove []string `long:"ldap-group-to-remove" description:"Group to remove, specify multiple times"`
 }
 
-func updateUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, userRole *UserRole) {
-	userMgmt.LDAPGroups = removeFromSlice(append(currentLDAPGroups, userRole.LDAPGroups...), userRole.LDAPGroupsToRemove)
-	userMgmt.Users = removeFromSlice(append(userMgmt.Users, userRole.Users...), userRole.UsersToRemove)
-	userMgmt.SamlUsers = removeFromSlice(append(userMgmt.SamlUsers, userRole.SamlUsers...), userRole.SamlUsersToRemove)
-	userMgmt.LDAPUsers = removeFromSlice(append(userMgmt.LDAPUsers, userRole.LDAPUsers...), userRole.LDAPUsersToRemove)
+func updateUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, userRole *UserRole, errorString *string) {
+	userMgmt.LDAPGroups = removeFromSlice(addToSlice(currentLDAPGroups, userRole.LDAPGroups, errorString), userRole.LDAPGroupsToRemove)
+	userMgmt.Users = removeFromSlice(addToSlice(userMgmt.Users, userRole.Users, errorString), userRole.UsersToRemove)
+	userMgmt.SamlUsers = removeFromSlice(addToSlice(userMgmt.SamlUsers, userRole.SamlUsers, errorString), userRole.SamlUsersToRemove)
+	userMgmt.LDAPUsers = removeFromSlice(addToSlice(userMgmt.LDAPUsers, userRole.LDAPUsers, errorString), userRole.LDAPUsersToRemove)
 	userMgmt.LDAPGroup = ""
 }
 
@@ -53,6 +53,31 @@ func convertToBool(parameterName string, currentValue *bool, proposedValue strin
 		return
 	}
 	*currentValue = b
+}
+
+func addToSlice(theSlice, sliceToAdd []string, errorString *string) []string {
+	checkForDuplicates(sliceToAdd, errorString)
+	sliceToReturn := theSlice
+	valuesThatExist := sliceToMap(theSlice)
+	for _, val := range sliceToAdd {
+		if _, ok := valuesThatExist[val]; !ok && val != "" {
+			sliceToReturn = append(sliceToReturn, val)
+		} else {
+			*errorString += fmt.Sprintf("\n--value [%s] already exists in %v", val, theSlice)
+		}
+	}
+	return sliceToReturn
+}
+
+func checkForDuplicates(slice []string, errorString *string) {
+	sliceMap := make(map[string]string)
+	for _, val := range slice {
+		if _, ok := sliceMap[val]; ok && val != "" {
+			*errorString += fmt.Sprintf("\n--value [%s] cannot be specified more than once %v", val, slice)
+		} else {
+			sliceMap[val] = val
+		}
+	}
 }
 
 func removeFromSlice(theSlice, sliceToRemove []string) []string {

@@ -66,9 +66,9 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 }
 
 func (c *UpdateOrgConfigurationCommand) updateUsers(orgConfig *config.OrgConfig, errorString *string) {
-	updateUsersBasedOnRole(&orgConfig.BillingManager, orgConfig.GetBillingManagerGroups(), &c.BillingManager)
-	updateUsersBasedOnRole(&orgConfig.Auditor, orgConfig.GetAuditorGroups(), &c.Auditor)
-	updateUsersBasedOnRole(&orgConfig.Manager, orgConfig.GetManagerGroups(), &c.Manager)
+	updateUsersBasedOnRole(&orgConfig.BillingManager, orgConfig.GetBillingManagerGroups(), &c.BillingManager, errorString)
+	updateUsersBasedOnRole(&orgConfig.Auditor, orgConfig.GetAuditorGroups(), &c.Auditor, errorString)
+	updateUsersBasedOnRole(&orgConfig.Manager, orgConfig.GetManagerGroups(), &c.Manager, errorString)
 
 	orgConfig.BillingManagerGroup = ""
 	orgConfig.ManagerGroup = ""

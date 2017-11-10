@@ -179,6 +179,47 @@ var _ = Describe("given update orgs config command", func() {
 			}))
 		})
 
+		It("should not add users that already exist", func() {
+			configuration.Manager.Users = []string{"bar"}
+			configuration.BillingManager.Users = []string{"world"}
+			configuration.Auditor.Users = []string{"value"}
+			mockConfig.GetOrgConfigReturns(&config.OrgConfig{
+				Org: orgName,
+				Manager: config.UserMgmt{
+					Users: []string{"foo", "bar"},
+				},
+				BillingManager: config.UserMgmt{
+					Users: []string{"hello", "world"},
+				},
+				Auditor: config.UserMgmt{
+					Users: []string{"test", "value"},
+				},
+			}, nil)
+
+			err := configuration.Execute(nil)
+			Expect(err).Should(HaveOccurred())
+			Expect(err.Error()).Should(ContainSubstring("--value [world] already exists in [hello world]"))
+			Expect(err.Error()).Should(ContainSubstring("--value [value] already exists in [test value]"))
+			Expect(err.Error()).Should(ContainSubstring("--value [bar] already exists in [foo bar]"))
+			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(0))
+		})
+
+		It("should not duplicates", func() {
+			configuration.Manager.Users = []string{"bar", "bar", "foo"}
+			configuration.BillingManager.Users = []string{"world", "world", "hello"}
+			configuration.Auditor.Users = []string{"value", "value", "test"}
+			mockConfig.GetOrgConfigReturns(&config.OrgConfig{
+				Org: orgName,
+			}, nil)
+
+			err := configuration.Execute(nil)
+
+			Expect(err).Should(HaveOccurred())
+			Expect(err.Error()).Should(ContainSubstring("value [bar] cannot be specified more than once [bar bar foo]"))
+			Expect(err.Error()).Should(ContainSubstring("value [world] cannot be specified more than once [world world hello]"))
+			Expect(err.Error()).Should(ContainSubstring("value [value] cannot be specified more than once [value value test]"))
+			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(0))
+		})
 		It("should remove users from existing", func() {
 			configuration.Manager.UsersToRemove = []string{"bar"}
 			configuration.BillingManager.UsersToRemove = []string{"world"}
@@ -346,8 +387,8 @@ var _ = Describe("given update orgs config command", func() {
 			}, nil)
 
 			err := configuration.Execute(nil)
-			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(1))
 			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(1))
 			Expect(mockConfig.SaveOrgConfigArgsForCall(0)).To(BeEquivalentTo(&config.OrgConfig{
 				Org: orgName,
 				Manager: config.UserMgmt{
