@@ -1,13 +1,13 @@
 # Configuration Commands
-* [init](config/init/README.md)
-* [add-org](config/add-org/README.md)
-* [add-space](config/add-space/README.md)
-* [delete-org](config/delete-org/README.md)
-* [delete-space](config/delete-space/README.md)
-* [generate-concourse-pipeline](config/generate-concourse-pipeline/README.md)
-* [update-org](config/update-org/README.md)
-* [update-space](config/update-space/README.md)
-* [version ](config/version/README.md)
+* [init](init/README.md)
+* [add-org](add-org/README.md)
+* [add-space](add-space/README.md)
+* [delete-org](delete-org/README.md)
+* [delete-space](delete-space/README.md)
+* [generate-concourse-pipeline](generate-concourse-pipeline/README.md)
+* [update-org](update-org/README.md)
+* [update-space](update-space/README.md)
+* [version ](version/README.md)
 
 #### Org Configuration
 There is a orgs.yml that contains list of orgs that will be created.  This should have a corresponding folder with name of the orgs cf-mgmt is managing. orgs.yml also can be configured with a list of protected orgs which would never be deleted when using the the `delete-orgs` command. An example of how orgs.yml could be configured is seen below.
