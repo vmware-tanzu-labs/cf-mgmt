@@ -22,8 +22,8 @@ Help Options:
   --enable-remove-users=[true|false]        Enable removing users from the space
   --isolation-segment=                      Isolation segment assigned to space
   --clear-isolation-segment                 Sets the isolation segment to blank
-  --named-asg=                              Named asg(s) to assign to space, specify muliple times
-  --named-asg-to-remove=                    Named asg(s) to remove, specify muliple times
+  --named-asg=                              Named asg(s) to assign to space, specify multiple times
+  --named-asg-to-remove=                    Named asg(s) to remove, specify multiple times
 
 quota:
   --enable-space-quota=[true|false]         Enable the Space Quota in the config

@@ -17,8 +17,8 @@ Help Options:
 [update-org command options]
   --config-dir=                                Name of the config directory (default: config) [$CONFIG_DIR]
   --org=                                       Org name
-  --private-domain=                            Private Domain(s) to add, specify muliple times
-  --private-domain-to-remove=                  Private Domain(s) to remove, specify muliple times
+  --private-domain=                            Private Domain(s) to add, specify multiple times
+  --private-domain-to-remove=                  Private Domain(s) to remove, specify multiple times
   --enable-remove-private-domains=[true|false] Enable removing private domains
   --default-isolation-segment=                 Default isolation segment for org
   --clear-default-isolation-segment            Sets the default isolation segment to blank

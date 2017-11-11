@@ -13,14 +13,44 @@ type BaseConfigCommand struct {
 }
 
 type UserRole struct {
-	LDAPUsers          []string `long:"ldap-user" description:"Ldap User to add, specify multiple times"`
+	UserRoleAdd
 	LDAPUsersToRemove  []string `long:"ldap-user-to-remove" description:"Ldap User to remove, specify multiple times"`
-	Users              []string `long:"user" description:"User to add, specify multiple times"`
 	UsersToRemove      []string `long:"user-to-remove" description:"User to remove, specify multiple times"`
-	SamlUsers          []string `long:"saml-user" description:"SAML user to add, specify multiple times"`
 	SamlUsersToRemove  []string `long:"saml-user-to-remove" description:"SAML user to remove, specify multiple times"`
-	LDAPGroups         []string `long:"ldap-group" description:"Group to add, specify multiple times"`
 	LDAPGroupsToRemove []string `long:"ldap-group-to-remove" description:"Group to remove, specify multiple times"`
+}
+
+type UserRoleAdd struct {
+	LDAPUsers  []string `long:"ldap-user" description:"Ldap User to add, specify multiple times"`
+	Users      []string `long:"user" description:"User to add, specify multiple times"`
+	SamlUsers  []string `long:"saml-user" description:"SAML user to add, specify multiple times"`
+	LDAPGroups []string `long:"ldap-group" description:"Group to add, specify multiple times"`
+}
+
+type OrgQuota struct {
+	EnableOrgQuota          string `long:"enable-org-quota" description:"Enable the Org Quota in the config" choice:"true" choice:"false"`
+	MemoryLimit             string `long:"memory-limit" description:"An Org's memory limit in Megabytes"`
+	InstanceMemoryLimit     string `long:"instance-memory-limit" description:"Global Org Application instance memory limit in Megabytes"`
+	TotalRoutes             string `long:"total-routes" description:"Total Routes capacity for an Org"`
+	TotalServices           string `long:"total-services" description:"Total Services capacity for an Org"`
+	PaidServicesAllowed     string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an org" choice:"true" choice:"false"`
+	TotalPrivateDomains     string `long:"total-private-domains" description:"Total Private Domain capacity for an Org"`
+	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Org"`
+	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Org"`
+	AppInstanceLimit        string `long:"app-instance-limit" description:"Total Service Keys capacity for an Org"`
+}
+
+type SpaceQuota struct {
+	EnableSpaceQuota        string `long:"enable-space-quota" description:"Enable the Space Quota in the config" choice:"true" choice:"false"`
+	MemoryLimit             string `long:"memory-limit" description:"An Space's memory limit in Megabytes"`
+	InstanceMemoryLimit     string `long:"instance-memory-limit" description:"Space Application instance memory limit in Megabytes"`
+	TotalRoutes             string `long:"total-routes" description:"Total Routes capacity for an Space"`
+	TotalServices           string `long:"total-services" description:"Total Services capacity for an Space"`
+	PaidServicesAllowed     string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an Space" choice:"true" choice:"false"`
+	TotalPrivateDomains     string `long:"total-private-domains" description:"Total Private Domain capacity for an Space"`
+	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Space"`
+	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Space"`
+	AppInstanceLimit        string `long:"app-instance-limit" description:"Total Service Keys capacity for an Space"`
 }
 
 func updateUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, userRole *UserRole, errorString *string) {
@@ -28,6 +58,14 @@ func updateUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []strin
 	userMgmt.Users = removeFromSlice(addToSlice(userMgmt.Users, userRole.Users, errorString), userRole.UsersToRemove)
 	userMgmt.SamlUsers = removeFromSlice(addToSlice(userMgmt.SamlUsers, userRole.SamlUsers, errorString), userRole.SamlUsersToRemove)
 	userMgmt.LDAPUsers = removeFromSlice(addToSlice(userMgmt.LDAPUsers, userRole.LDAPUsers, errorString), userRole.LDAPUsersToRemove)
+	userMgmt.LDAPGroup = ""
+}
+
+func addUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, userRole *UserRoleAdd, errorString *string) {
+	userMgmt.LDAPGroups = addToSlice(currentLDAPGroups, userRole.LDAPGroups, errorString)
+	userMgmt.Users = addToSlice(userMgmt.Users, userRole.Users, errorString)
+	userMgmt.SamlUsers = addToSlice(userMgmt.SamlUsers, userRole.SamlUsers, errorString)
+	userMgmt.LDAPUsers = addToSlice(userMgmt.LDAPUsers, userRole.LDAPUsers, errorString)
 	userMgmt.LDAPGroup = ""
 }
 
@@ -97,4 +135,30 @@ func sliceToMap(theSlice []string) map[string]string {
 		theMap[val] = val
 	}
 	return theMap
+}
+
+func updateOrgQuotaConfig(orgConfig *config.OrgConfig, orgQuota OrgQuota, errorString *string) {
+	convertToBool("enable-org-quota", &orgConfig.EnableOrgQuota, orgQuota.EnableOrgQuota, errorString)
+	convertToInt("memory-limit", &orgConfig.MemoryLimit, orgQuota.MemoryLimit, errorString)
+	convertToInt("instance-memory-limit", &orgConfig.InstanceMemoryLimit, orgQuota.InstanceMemoryLimit, errorString)
+	convertToInt("total-routes", &orgConfig.TotalRoutes, orgQuota.TotalRoutes, errorString)
+	convertToInt("total-services", &orgConfig.TotalServices, orgQuota.TotalServices, errorString)
+	convertToBool("paid-service-plans-allowed", &orgConfig.PaidServicePlansAllowed, orgQuota.PaidServicesAllowed, errorString)
+	convertToInt("total-private-domains", &orgConfig.TotalPrivateDomains, orgQuota.TotalPrivateDomains, errorString)
+	convertToInt("total-reserved-route-ports", &orgConfig.TotalReservedRoutePorts, orgQuota.TotalReservedRoutePorts, errorString)
+	convertToInt("total-service-keys", &orgConfig.TotalServiceKeys, orgQuota.TotalServiceKeys, errorString)
+	convertToInt("app-instance-limit", &orgConfig.AppInstanceLimit, orgQuota.AppInstanceLimit, errorString)
+}
+
+func updateSpaceQuotaConfig(spaceConfig *config.SpaceConfig, spaceQuota SpaceQuota, errorString *string) {
+	convertToBool("enable-space-quota", &spaceConfig.EnableSpaceQuota, spaceQuota.EnableSpaceQuota, errorString)
+	convertToInt("memory-limit", &spaceConfig.MemoryLimit, spaceQuota.MemoryLimit, errorString)
+	convertToInt("instance-memory-limit", &spaceConfig.InstanceMemoryLimit, spaceQuota.InstanceMemoryLimit, errorString)
+	convertToInt("total-routes", &spaceConfig.TotalRoutes, spaceQuota.TotalRoutes, errorString)
+	convertToInt("total-services", &spaceConfig.TotalServices, spaceQuota.TotalServices, errorString)
+	convertToBool("paid-service-plans-allowed", &spaceConfig.PaidServicePlansAllowed, spaceQuota.PaidServicesAllowed, errorString)
+	convertToInt("total-private-domains", &spaceConfig.TotalPrivateDomains, spaceQuota.TotalPrivateDomains, errorString)
+	convertToInt("total-reserved-route-ports", &spaceConfig.TotalReservedRoutePorts, spaceQuota.TotalReservedRoutePorts, errorString)
+	convertToInt("total-service-keys", &spaceConfig.TotalServiceKeys, spaceQuota.TotalServiceKeys, errorString)
+	convertToInt("app-instance-limit", &spaceConfig.AppInstanceLimit, spaceQuota.AppInstanceLimit, errorString)
 }

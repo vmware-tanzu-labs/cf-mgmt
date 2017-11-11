@@ -288,9 +288,6 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	if err = m.saveOrgList(orgList); err != nil {
 		return err
 	}
-
-	orgConfig.RemoveUsers = true
-	orgConfig.RemovePrivateDomains = true
 	m.SaveOrgConfig(orgConfig)
 	return m.saveSpaceList(Spaces{
 		Org:                orgName,
@@ -322,7 +319,6 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	if err := WriteFile(spaceFileName, spaceList); err != nil {
 		return err
 	}
-	spaceConfig.RemoveUsers = true
 
 	if err := m.SaveSpaceConfig(spaceConfig); err != nil {
 		return err
