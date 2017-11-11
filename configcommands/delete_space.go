@@ -8,7 +8,7 @@ import (
 
 type DeleteSpaceConfigurationCommand struct {
 	BaseConfigCommand
-	OrgName         string `long:"org" description:"Org name to delete" required:"true"`
+	OrgName         string `long:"org" description:"Org name of space to delete" required:"true"`
 	SpaceName       string `long:"space" description:"Space name to delete" required:"true"`
 	ConfirmDeletion bool   `long:"confirm-deletion" description:"Confirm Deletion" required:"true"`
 }
