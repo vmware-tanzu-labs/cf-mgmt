@@ -33,7 +33,7 @@ To execute any of the following you will need to provide:
 - **client-secret** for the above user (assumes the same user account for cf commands is used)
 - **system-domain** name of your foundation
 
-Prior to v0.0.66 a **password** was also needed as you had to provide both a uaa user and uaa client.  This field has been deprecated and will be removed in a future release as going forward cf-mgmt will require a uaa client per the [authentication directions](../README.md#authentication-requirements)
+Prior to v0.0.66 a **password** was also needed as you had to provide both a uaa user and uaa client.  This field has been deprecated and will be removed in a future release as going forward cf-mgmt will require a uaa client per the authentication directions.
 
 * [create-org-private-domains](create-org-private-domains/README.md)
 * [create-orgs](create-orgs/README.md)
