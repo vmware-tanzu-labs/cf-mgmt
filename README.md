@@ -86,21 +86,5 @@ PRs are always welcome or open issues if you are experiencing an issue and will 
 
 ## Documentation
 
-See [here](docs/README.md) for documentation on all the available commands
-
-## Authentication requirements
-
-Introduced in cf-mgmt 0.0.66+ is the ability to definee a non admin uaa client.  With this release the password field has been deprecated. To create a non-admin client execute the following command with [Cloud Foundry UAA Client](https://docs.pivotal.io/pivotalcf/1-11/adminguide/uaa-user-management.html).  
-
-```
-$ uaac target uaa.<system-domain>
-$ uaac token client get <adminuserid> -s <admin-client-secret>
-
-$ uaac client add cf-mgmt \
-  --name cf-mgmt \
-  --secret <cf-mgmt-secret> \
-  --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write
-
-```
-As you can see, `cloud_controller.admin,scim.read,scim.write` gives this user just enough rights to add/update/delete users, orgs and space and still being a non-admin user. Learn more about the scopes authorized by UAA at [UAA Scopes](https://github.com/cloudfoundry/uaa/blob/master/docs/UAA-APIs.rst#scopes-authorized-by-the-uaa)
+See [here](docs/README.md) for documentation on all the available commands for running cf-mgmt
+See [here](docs/config/README.md) for documentation on all the configuration documentation and commands 
