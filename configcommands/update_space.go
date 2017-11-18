@@ -31,6 +31,11 @@ func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
+	asgConfigs, err := c.ConfigManager.GetASGConfigs()
+	if err != nil {
+		return err
+	}
+
 	errorString := ""
 
 	convertToBool("allow-ssh", &spaceConfig.AllowSSH, c.AllowSSH, &errorString)
@@ -43,7 +48,7 @@ func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 	}
 
 	spaceConfig.ASGs = removeFromSlice(addToSlice(spaceConfig.ASGs, c.ASGs, &errorString), c.ASGsToRemove)
-
+	validateASGsExist(asgConfigs, spaceConfig.ASGs, &errorString)
 	updateSpaceQuotaConfig(spaceConfig, c.Quota, &errorString)
 	c.updateUsers(spaceConfig, &errorString)
 

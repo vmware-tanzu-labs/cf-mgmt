@@ -27,7 +27,10 @@ func (c *AddSpaceToConfigurationCommand) Execute([]string) error {
 		Org:   c.OrgName,
 		Space: c.SpaceName,
 	}
-
+	asgConfigs, err := c.ConfigManager.GetASGConfigs()
+	if err != nil {
+		return err
+	}
 	errorString := ""
 
 	spaceConfig.RemoveUsers = true
@@ -38,7 +41,7 @@ func (c *AddSpaceToConfigurationCommand) Execute([]string) error {
 	}
 
 	spaceConfig.ASGs = addToSlice(spaceConfig.ASGs, c.ASGs, &errorString)
-
+	validateASGsExist(asgConfigs, spaceConfig.ASGs, &errorString)
 	updateSpaceQuotaConfig(spaceConfig, c.Quota, &errorString)
 	c.updateUsers(spaceConfig, &errorString)
 

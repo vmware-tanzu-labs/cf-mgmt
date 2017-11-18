@@ -162,3 +162,15 @@ func updateSpaceQuotaConfig(spaceConfig *config.SpaceConfig, spaceQuota SpaceQuo
 	convertToInt("total-service-keys", &spaceConfig.TotalServiceKeys, spaceQuota.TotalServiceKeys, errorString)
 	convertToInt("app-instance-limit", &spaceConfig.AppInstanceLimit, spaceQuota.AppInstanceLimit, errorString)
 }
+
+func validateASGsExist(configuredASGs []config.ASGConfig, asgs []string, errorString *string) {
+	asgMap := make(map[string]string)
+	for _, configuredASG := range configuredASGs {
+		asgMap[configuredASG.Name] = configuredASG.Name
+	}
+	for _, asg := range asgs {
+		if _, ok := asgMap[asg]; !ok {
+			*errorString += fmt.Sprintf("\n--[%s.json] does not exist in asgs directory", asg)
+		}
+	}
+}

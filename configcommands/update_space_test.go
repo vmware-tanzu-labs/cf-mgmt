@@ -79,6 +79,78 @@ var _ = Describe("given update orgs config command", func() {
 
 	})
 
+	Context("Update named asgs", func() {
+		It("should add named asgs to empty list", func() {
+			configuration.ASGs = []string{"hello", "world"}
+			mockConfig.GetSpaceConfigReturns(&config.SpaceConfig{
+				Org:   orgName,
+				Space: spaceName,
+			}, nil)
+
+			mockConfig.GetASGConfigsReturns([]config.ASGConfig{
+				config.ASGConfig{
+					Name: "hello",
+				},
+				config.ASGConfig{
+					Name: "world",
+				},
+			}, nil)
+			err := configuration.Execute(nil)
+			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(1))
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveSpaceConfigArgsForCall(0)).To(BeEquivalentTo(&config.SpaceConfig{
+				Org:   orgName,
+				Space: spaceName,
+				ASGs:  []string{"hello", "world"},
+			}))
+		})
+
+		It("should error when asg definition doesn't exist", func() {
+			configuration.ASGs = []string{"hello"}
+			mockConfig.GetSpaceConfigReturns(&config.SpaceConfig{
+				Org:   orgName,
+				Space: spaceName,
+			}, nil)
+
+			mockConfig.GetASGConfigsReturns([]config.ASGConfig{
+				config.ASGConfig{
+					Name: "world",
+				},
+			}, nil)
+			err := configuration.Execute(nil)
+			Expect(err).Should(HaveOccurred())
+			Expect(err.Error()).Should(ContainSubstring("[hello.json] does not exist in asgs directory"))
+			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(0))
+		})
+
+		It("should not add asgs that already exist", func() {
+			configuration.ASGs = []string{"hello"}
+			mockConfig.GetSpaceConfigReturns(&config.SpaceConfig{
+				Org:   orgName,
+				Space: spaceName,
+				ASGs:  []string{"hello", "world"},
+			}, nil)
+
+			err := configuration.Execute(nil)
+			Expect(err).Should(HaveOccurred())
+			Expect(err.Error()).Should(ContainSubstring("--value [hello] already exists in [hello world]"))
+			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(0))
+		})
+
+		It("should not duplicates", func() {
+			configuration.ASGs = []string{"hello", "hello", "world"}
+			mockConfig.GetSpaceConfigReturns(&config.SpaceConfig{
+				Org:   orgName,
+				Space: spaceName,
+			}, nil)
+
+			err := configuration.Execute(nil)
+
+			Expect(err).Should(HaveOccurred())
+			Expect(err.Error()).Should(ContainSubstring("value [hello] cannot be specified more than once [hello hello world]"))
+			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(0))
+		})
+	})
 	Context("Update Users", func() {
 		It("should add users to empty list", func() {
 			configuration.Manager.Users = []string{"foo", "bar"}
