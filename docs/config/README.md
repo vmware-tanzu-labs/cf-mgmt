@@ -2,6 +2,7 @@
 * [init](init/README.md)
 * [add-org](add-org/README.md)
 * [add-space](add-space/README.md)
+* [add-asg](add-asg/README.md)
 * [delete-org](delete-org/README.md)
 * [delete-space](delete-space/README.md)
 * [generate-concourse-pipeline](generate-concourse-pipeline/README.md)
