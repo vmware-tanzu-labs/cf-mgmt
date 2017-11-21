@@ -66,11 +66,14 @@ var _ = Describe("given SecurityGroupManager", func() {
 		Context("CreateApplicationSecurityGroups()", func() {
 
 			It("should create 1 asg", func() {
-				bytes, e := ioutil.ReadFile("./fixtures/asg-config/asgs/test-asg.json")
+				test_asg_bytes, e := ioutil.ReadFile("./fixtures/asg-config/asgs/test-asg.json")
+				Expect(e).Should(BeNil())
+				dns_bytes, e := ioutil.ReadFile("./fixtures/asg-config/asgs/dns.json")
 				Expect(e).Should(BeNil())
 				sgs := make(map[string]string)
 				mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
-				mockCloudController.EXPECT().CreateSecurityGroup("test-asg", string(bytes)).Return("SGGUID", nil)
+				mockCloudController.EXPECT().CreateSecurityGroup("test-asg", string(test_asg_bytes)).Return("SGGUID", nil)
+				mockCloudController.EXPECT().CreateSecurityGroup("dns", string(dns_bytes)).Return("SGGUID", nil)
 				err := securityManager.CreateApplicationSecurityGroups()
 				Expect(err).Should(BeNil())
 			})

@@ -28,7 +28,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 				m := config.NewManager("./fixtures/asg-defaults")
 				cfgs, err := m.GetASGConfigs()
 				Ω(err).ShouldNot(HaveOccurred())
-				Ω(cfgs).Should(HaveLen(1))
+				Ω(cfgs).Should(HaveLen(2))
 
 				cfg := cfgs[0]
 				Expect(cfg.Rules).Should(BeEquivalentTo("[{\"protocol\": \"icmp\",\"destination\": \"0.0.0.0/0\"}]\n"))
@@ -38,19 +38,18 @@ var _ = Describe("CF-Mgmt Config", func() {
 				m := config.NewManager("./fixtures/asg-defaults")
 				cfgs, err := m.GetASGConfigs()
 				Ω(err).ShouldNot(HaveOccurred())
-				Ω(cfgs).Should(HaveLen(1))
+				Ω(cfgs).Should(HaveLen(2))
 
-				cfg := cfgs[0]
-				Expect(cfg.Name).Should(BeEquivalentTo("test-asg"))
+				namedList := make([]string, len(cfgs))
+				for i, asg := range cfgs {
+					namedList[i] = asg.Name
+				}
+				Expect(namedList).Should(ConsistOf("dns", "test-asg"))
 
 			})
 
 			It("can optionally have a ASG name in the spaced config.", func() {
 				m := config.NewManager("./fixtures/asg-defaults")
-
-				// Get ASG Config
-				asgcfgs, err := m.GetASGConfigs()
-				Ω(err).ShouldNot(HaveOccurred())
 
 				// Get space config
 				cfgs, err := m.GetSpaceConfigs()
@@ -59,16 +58,6 @@ var _ = Describe("CF-Mgmt Config", func() {
 				cfg := cfgs[0]
 				Ω(cfg.Space).Should(BeEquivalentTo("space1"))
 				Expect(cfg.ASGs).Should(ConsistOf("test-asg"))
-				// We expect the ASGs to reference actually defined asgs
-
-				namedList := make([]string, len(asgcfgs))
-				for i, asg := range asgcfgs {
-					namedList[i] = asg.Name
-				}
-
-				for _, asg := range cfg.ASGs {
-					Expect([]string{asg}).Should(ConsistOf(namedList))
-				}
 
 			})
 

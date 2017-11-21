@@ -33,22 +33,22 @@ func (m *yamlManager) Orgs() (Orgs, error) {
 // GetASGConfigs reads all ASGs from the cf-mgmt configuration.
 func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 
-	files, err := FindFiles(m.ConfigDir+"/asgs/", ".json")
+	files, err := FindFiles(path.Join(m.ConfigDir, "asgs"), ".json")
 	if err != nil {
 		return nil, err
 	}
-	result := make([]ASGConfig, len(files))
-	for i, securityGroupFile := range files {
-
+	var result []ASGConfig
+	for _, securityGroupFile := range files {
 		lo.G.Debug("Loading security group contents", securityGroupFile)
 		bytes, err := ioutil.ReadFile(securityGroupFile)
 		if err != nil {
 			return nil, err
 		}
+		asgConfig := ASGConfig{}
 		lo.G.Debug("setting security group contents", string(bytes))
-		result[i].Rules = string(bytes)
-
-		result[i].Name = filepath.Base(strings.TrimRight(securityGroupFile, ".json"))
+		asgConfig.Rules = string(bytes)
+		asgConfig.Name = strings.Replace(filepath.Base(securityGroupFile), ".json", "", 1)
+		result = append(result, asgConfig)
 	}
 	return result, nil
 }
