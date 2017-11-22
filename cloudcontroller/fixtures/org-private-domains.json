@@ -31,6 +31,20 @@
         "owning_organization_url": "/v2/organizations/b37f9d43-f6c6-4129-b52e-661ddae02dcd",
         "shared_organizations_url": "/v2/private_domains/718a97e7-db8a-46a7-874a-187b6b2a6ff1/shared_organizations"
       }
+    },
+    {
+      "metadata": {
+        "guid": "f29112ca-de2e-4a8d-b343-161ba8cae556",
+        "url": "/v2/private_domains/f29112ca-de2e-4a8d-b343-161ba8cae556",
+        "created_at": "2016-06-08T16:41:35Z",
+        "updated_at": "2016-06-08T16:41:26Z"
+      },
+      "entity": {
+        "name": "domain-30.example.com",
+        "owning_organization_guid": "6b84e7fa-f90b-4f9d-b718-62ed03a2e478",
+        "owning_organization_url": "/v2/organizations/6b84e7fa-f90b-4f9d-b718-62ed03a2e478",
+        "shared_organizations_url": "/v2/private_domains/f29112ca-de2e-4a8d-b343-161ba8cae556/shared_organizations"
+      }
     }
   ]
 }

@@ -325,23 +325,36 @@ func (m *DefaultManager) ListAllPrivateDomains() (map[string]string, error) {
 	}
 	return privateDomainMap, nil
 }
+
 func (m *DefaultManager) ListOrgOwnedPrivateDomains(orgGUID string) (map[string]string, error) {
-	privateDomainResources := &PrivateDomainResources{}
-	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains", m.Host, orgGUID)
-	err := m.listResources(url, privateDomainResources, NewPrivateDomainResource)
+	orgOwnedPrivateDomainMap := make(map[string]string)
+	orgPrivateDomains, err := m.listOrgPrivateDomains(orgGUID)
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Info("Total private domains returned :", len(privateDomainResources.PrivateDomains))
-	privateDomainMap := make(map[string]string)
-	for _, privateDomain := range privateDomainResources.PrivateDomains {
+	for _, privateDomain := range orgPrivateDomains {
 		if orgGUID == privateDomain.Entity.OrgGUID {
-			privateDomainMap[privateDomain.Entity.Name] = privateDomain.MetaData.GUID
+			orgOwnedPrivateDomainMap[privateDomain.Entity.Name] = privateDomain.MetaData.GUID
 		}
 	}
-	return privateDomainMap, nil
+	return orgOwnedPrivateDomainMap, nil
 }
+
 func (m *DefaultManager) ListOrgSharedPrivateDomains(orgGUID string) (map[string]string, error) {
+	orgSharedPrivateDomainMap := make(map[string]string)
+	orgPrivateDomains, err := m.listOrgPrivateDomains(orgGUID)
+	if err != nil {
+		return nil, err
+	}
+	for _, privateDomain := range orgPrivateDomains {
+		if orgGUID != privateDomain.Entity.OrgGUID {
+			orgSharedPrivateDomainMap[privateDomain.Entity.Name] = privateDomain.MetaData.GUID
+		}
+	}
+	return orgSharedPrivateDomainMap, nil
+}
+
+func (m *DefaultManager) listOrgPrivateDomains(orgGUID string) ([]*PrivateDomain, error) {
 	privateDomainResources := &PrivateDomainResources{}
 	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains", m.Host, orgGUID)
 	err := m.listResources(url, privateDomainResources, NewPrivateDomainResource)
@@ -349,13 +362,7 @@ func (m *DefaultManager) ListOrgSharedPrivateDomains(orgGUID string) (map[string
 		return nil, err
 	}
 	lo.G.Info("Total private domains returned :", len(privateDomainResources.PrivateDomains))
-	privateDomainMap := make(map[string]string)
-	for _, privateDomain := range privateDomainResources.PrivateDomains {
-		if orgGUID != privateDomain.Entity.OrgGUID {
-			privateDomainMap[privateDomain.Entity.Name] = privateDomain.MetaData.GUID
-		}
-	}
-	return privateDomainMap, nil
+	return privateDomainResources.PrivateDomains, nil
 }
 
 func (m *DefaultManager) DeletePrivateDomain(guid string) error {
