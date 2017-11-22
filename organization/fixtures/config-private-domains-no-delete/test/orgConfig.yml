@@ -3,7 +3,6 @@ org-billingmanager-group: test_billing_managers
 private-domains: ["test.com", "test2.com"]
 shared-private-domains: ["test-shared.com", "test-shared2.com"]
 enable-remove-private-domains: true
-enable-remove-shared-private-domains: true
 org-manager-group:
 org-auditor-group:
 enable-org-quota: true

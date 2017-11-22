@@ -206,10 +206,10 @@ func (m *DefaultOrgManager) SharePrivateDomains() error {
 
 		privateDomainMap := make(map[string]string)
 		for _, privateDomain := range orgConfig.SharedPrivateDomains {
-			if privateDomainGUID, ok := allSharedPrivateDomains[privateDomain]; !ok {
+			if _, ok := allSharedPrivateDomains[privateDomain]; !ok {
 
 				lo.G.Infof("Sharing Private Domain %s for Org %s", privateDomain, orgConfig.Org)
-				err = m.CloudController.SharePrivateDomain(orgGUID, privateDomainGUID)
+				err = m.CloudController.SharePrivateDomain(orgGUID, privateDomain)
 				if err != nil {
 					return err
 				}

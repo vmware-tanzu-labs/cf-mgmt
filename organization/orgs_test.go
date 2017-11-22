@@ -457,12 +457,13 @@ var _ = Describe("given OrgManager", func() {
 		})
 		It("should create 2 private domains", func() {
 			allPrivateDomains := make(map[string]string)
-			orgPrivateDomains := make(map[string]string)
+			orgOwnedPrivateDomains := make(map[string]string)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
 			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test.com").Return(nil)
 			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test2.com").Return(nil)
-			mockCloudController.EXPECT().ListOrgOwnedPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
+			mockCloudController.EXPECT().ListOrgOwnedPrivateDomains("testOrgGUID").Return(orgOwnedPrivateDomains, nil)
+			mockCloudController.EXPECT().SharePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
 			err := orgManager.CreatePrivateDomains()
 			Ω(err).Should(BeNil())
 		})
@@ -476,6 +477,7 @@ var _ = Describe("given OrgManager", func() {
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
 			mockCloudController.EXPECT().ListOrgOwnedPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
+			mockCloudController.EXPECT().SharePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
 			err := orgManager.CreatePrivateDomains()
 			Ω(err).Should(BeNil())
 		})
@@ -496,6 +498,7 @@ var _ = Describe("given OrgManager", func() {
 			mockCloudController.EXPECT().ListOrgOwnedPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
 			mockCloudController.EXPECT().DeletePrivateDomain("test3.com.guid").Return(nil)
 			mockCloudController.EXPECT().DeletePrivateDomain("test4.com.guid").Return(nil)
+			mockCloudController.EXPECT().SharePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
 			err := orgManager.CreatePrivateDomains()
 			Ω(err).Should(BeNil())
 		})
@@ -504,9 +507,158 @@ var _ = Describe("given OrgManager", func() {
 			allPrivateDomains["test.com"] = "testOtherOrgGUID"
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
+			mockCloudController.EXPECT().SharePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
 			err := orgManager.CreatePrivateDomains()
 			Ω(err).Should(Not(BeNil()))
 		})
+	})
+
+	Context("SharePrivateDomainsDeleteEnabled", func() {
+		var orgs []*cloudcontroller.Org
+		BeforeEach(func() {
+			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains")
+
+			orgs = []*cloudcontroller.Org{
+				{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "testOrgGUID",
+					},
+				},
+				{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test-2",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "testOtherOrgGUID",
+					},
+				},
+			}
+		})
+		It("should share 2 private domains", func() {
+			orgSharedPrivateDomains := make(map[string]string)
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(2)
+			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test-shared.com").Return(nil)
+			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test-shared2.com").Return(nil)
+			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
+			err := orgManager.SharePrivateDomains()
+			Ω(err).Should(BeNil())
+		})
+		It("should share no private domains", func() {
+			orgSharedPrivateDomains := make(map[string]string)
+			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
+			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(2)
+			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
+			err := orgManager.SharePrivateDomains()
+			Ω(err).Should(BeNil())
+		})
+		It("should unshare 2 domains", func() {
+			orgSharedPrivateDomains := make(map[string]string)
+			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
+			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
+			orgSharedPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
+			orgSharedPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(2)
+			mockCloudController.EXPECT().RemoveSharedPrivateDomain("testOrgGUID", "test.shared3.com.guid").Return(nil)
+			mockCloudController.EXPECT().RemoveSharedPrivateDomain("testOrgGUID", "test.shared4.com.guid").Return(nil)
+			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
+			err := orgManager.SharePrivateDomains()
+			Ω(err).Should(BeNil())
+		})
+		It("should share 2 domains and unshare 2 domains", func() {
+			orgSharedPrivateDomains := make(map[string]string)
+			orgSharedPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
+			orgSharedPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(2)
+			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test-shared.com").Return(nil)
+			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test-shared2.com").Return(nil)
+			mockCloudController.EXPECT().RemoveSharedPrivateDomain("testOrgGUID", "test.shared3.com.guid").Return(nil)
+			mockCloudController.EXPECT().RemoveSharedPrivateDomain("testOrgGUID", "test.shared4.com.guid").Return(nil)
+			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
+			mockCloudController.EXPECT().DeletePrivateDomain(gomock.Any().String()).Times(0)
+			err := orgManager.SharePrivateDomains()
+			Ω(err).Should(BeNil())
+		})
+	})
+	Context("SharePrivateDomainsDeleteDisabled", func() {
+		var orgs []*cloudcontroller.Org
+		BeforeEach(func() {
+			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains-no-delete")
+
+			orgs = []*cloudcontroller.Org{
+				{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "testOrgGUID",
+					},
+				},
+				{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "test-2",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "testOtherOrgGUID",
+					},
+				},
+			}
+		})
+		It("should share 2 private domains", func() {
+			orgSharedPrivateDomains := make(map[string]string)
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(1)
+			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test-shared.com").Return(nil)
+			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test-shared2.com").Return(nil)
+			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
+			err := orgManager.SharePrivateDomains()
+			Ω(err).Should(BeNil())
+		})
+		It("should share no private domains", func() {
+			orgSharedPrivateDomains := make(map[string]string)
+			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
+			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(1)
+			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
+			err := orgManager.SharePrivateDomains()
+			Ω(err).Should(BeNil())
+		})
+		It("should NOT unshare 2 domains", func() {
+			orgSharedPrivateDomains := make(map[string]string)
+			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
+			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
+			orgSharedPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
+			orgSharedPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(1)
+			mockCloudController.EXPECT().RemoveSharedPrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
+			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
+			err := orgManager.SharePrivateDomains()
+			Ω(err).Should(BeNil())
+		})
+		It("should share 2 domains and NOT unshare 2 domains", func() {
+			orgSharedPrivateDomains := make(map[string]string)
+			orgSharedPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
+			orgSharedPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
+			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(1)
+			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test-shared.com").Return(nil)
+			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test-shared2.com").Return(nil)
+			mockCloudController.EXPECT().RemoveSharedPrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
+			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
+			mockCloudController.EXPECT().DeletePrivateDomain(gomock.Any().String()).Times(0)
+			err := orgManager.SharePrivateDomains()
+			Ω(err).Should(BeNil())
+		})
+
 	})
 
 })
