@@ -996,7 +996,7 @@ var _ = Describe("given CloudControllerManager", func() {
 		})
 	})
 
-	Context("ListAllOrgPrivateDomains()", func() {
+	Context("ListOrgOwnedPrivateDomains()", func() {
 
 		It("should be successful", func() {
 			bytes, err := ioutil.ReadFile("fixtures/org-private-domains.json")
@@ -1004,15 +1004,75 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			server.AppendHandlers(
 				CombineHandlers(
-					VerifyRequest("GET", "/v2/organizations/org_guid/private_domains"),
+					VerifyRequest("GET", "/v2/organizations/5afc3416-50ba-46db-ae2c-5e0c88cdac3f/private_domains"),
 					RespondWith(http.StatusOK, string(bytes)),
 				),
 			)
-			privateDomains, err := manager.ListOrgPrivateDomains("org_guid")
+			privateDomains, err := manager.ListOrgOwnedPrivateDomains("5afc3416-50ba-46db-ae2c-5e0c88cdac3f")
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(privateDomains).ShouldNot(BeNil())
 			Ω(privateDomains).Should(HaveLen(1))
 			Ω(privateDomains).Should(HaveKeyWithValue("domain-28.example.com", "ffcf939a-22ed-4ae5-9371-2e737bd1eb48"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should be successful-OrgA", func() {
+			bytes, err := ioutil.ReadFile("fixtures/org-private-domains-orgA.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/org--A/private_domains"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			privateDomains, err := manager.ListOrgOwnedPrivateDomains("org--A")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(privateDomains).ShouldNot(BeNil())
+			Ω(privateDomains).Should(HaveLen(3))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.A.example.com", "domain--A"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.B.example.com", "domain--B"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.C.example.com", "domain--C"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should be successful-orgB", func() {
+			bytes, err := ioutil.ReadFile("fixtures/org-private-domains-orgB.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/org--B/private_domains"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			privateDomains, err := manager.ListOrgOwnedPrivateDomains("org--B")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(privateDomains).ShouldNot(BeNil())
+			Ω(privateDomains).Should(HaveLen(3))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.D.example.com", "domain--D"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.E.example.com", "domain--E"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.F.example.com", "domain--F"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should be successful-orgC", func() {
+			bytes, err := ioutil.ReadFile("fixtures/org-private-domains-orgC.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/org--C/private_domains"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			privateDomains, err := manager.ListOrgOwnedPrivateDomains("org--C")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(privateDomains).ShouldNot(BeNil())
+			Ω(privateDomains).Should(HaveLen(3))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.G.example.com", "domain--G"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.H.example.com", "domain--H"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.I.example.com", "domain--I"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 
@@ -1023,11 +1083,105 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			_, err := manager.ListOrgPrivateDomains("org_guid")
+			_, err := manager.ListOrgOwnedPrivateDomains("org_guid")
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 	})
+
+	// new
+	Context("ListOrgSharedPrivateDomains()", func() {
+
+		It("should be successful", func() {
+			bytes, err := ioutil.ReadFile("fixtures/org-private-domains.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/5afc3416-50ba-46db-ae2c-5e0c88cdac3f/private_domains"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			privateDomains, err := manager.ListOrgSharedPrivateDomains("5afc3416-50ba-46db-ae2c-5e0c88cdac3f")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(privateDomains).ShouldNot(BeNil())
+			Ω(privateDomains).Should(HaveLen(2))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain-29.example.com", "718a97e7-db8a-46a7-874a-187b6b2a6ff1"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain-30.example.com", "f29112ca-de2e-4a8d-b343-161ba8cae556"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should be successful-orgA", func() {
+			bytes, err := ioutil.ReadFile("fixtures/org-private-domains-orgA.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/org--A/private_domains"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			privateDomains, err := manager.ListOrgSharedPrivateDomains("org--A")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(privateDomains).ShouldNot(BeNil())
+			Ω(privateDomains).Should(HaveLen(3))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.E.example.com", "domain--E"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.G.example.com", "domain--G"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.H.example.com", "domain--H"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should be successful-orgB", func() {
+			bytes, err := ioutil.ReadFile("fixtures/org-private-domains-orgB.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/org--B/private_domains"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			privateDomains, err := manager.ListOrgSharedPrivateDomains("org--B")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(privateDomains).ShouldNot(BeNil())
+			Ω(privateDomains).Should(HaveLen(1))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.B.example.com", "domain--B"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should be successful-orgC", func() {
+			bytes, err := ioutil.ReadFile("fixtures/org-private-domains-orgC.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/org--C/private_domains"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			privateDomains, err := manager.ListOrgSharedPrivateDomains("org--C")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(privateDomains).ShouldNot(BeNil())
+			Ω(privateDomains).Should(HaveLen(2))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.C.example.com", "domain--C"))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain.E.example.com", "domain--E"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/organizations/org_guid/private_domains"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			_, err := manager.ListOrgSharedPrivateDomains("org_guid")
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	// new
 
 	Context("DeletePrivateDomain()", func() {
 		It("should be successful", func() {
@@ -1080,6 +1234,56 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+	})
+
+	Context("SharePrivateDomain()", func() {
+		It("should be successful", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("PUT", "/v2/organizations/1234o/private_domains/1234d"),
+					RespondWithJSONEncoded(http.StatusCreated, ""),
+				),
+			)
+			err := manager.SharePrivateDomain("1234o", "1234d")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("PUT", "/v2/organizations/1234o/private_domains/1234d"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			err := manager.SharePrivateDomain("1234o", "1234d")
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Context("UnsharePrivateDomain()", func() {
+		It("should be successful", func() {
+			server.AppendHandlers(
+				CombineHandlers(),
+				VerifyRequest("DELETE", "/v2/organizations/1234o/private_domains/1234d"),
+				RespondWithJSONEncoded(http.StatusNoContent, ""),
+			)
+			err := manager.RemoveSharedPrivateDomain("1234o", "1234d")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+	It("should return an error", func() {
+		server.AppendHandlers(
+			CombineHandlers(
+				VerifyRequest("DELETE", "/v2/organizations/1234o/private_domains/1234d"),
+				RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+			),
+		)
+		err := manager.RemoveSharedPrivateDomain("1234o", "1234d")
+		Ω(err).Should(HaveOccurred())
+		Ω(server.ReceivedRequests()).Should(HaveLen(1))
 	})
 
 })

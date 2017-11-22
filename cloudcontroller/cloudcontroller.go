@@ -351,7 +351,36 @@ func (m *DefaultManager) ListAllPrivateDomains() (map[string]string, error) {
 	}
 	return privateDomainMap, nil
 }
-func (m *DefaultManager) ListOrgPrivateDomains(orgGUID string) (map[string]string, error) {
+
+func (m *DefaultManager) ListOrgOwnedPrivateDomains(orgGUID string) (map[string]string, error) {
+	orgOwnedPrivateDomainMap := make(map[string]string)
+	orgPrivateDomains, err := m.listOrgPrivateDomains(orgGUID)
+	if err != nil {
+		return nil, err
+	}
+	for _, privateDomain := range orgPrivateDomains {
+		if orgGUID == privateDomain.Entity.OrgGUID {
+			orgOwnedPrivateDomainMap[privateDomain.Entity.Name] = privateDomain.MetaData.GUID
+		}
+	}
+	return orgOwnedPrivateDomainMap, nil
+}
+
+func (m *DefaultManager) ListOrgSharedPrivateDomains(orgGUID string) (map[string]string, error) {
+	orgSharedPrivateDomainMap := make(map[string]string)
+	orgPrivateDomains, err := m.listOrgPrivateDomains(orgGUID)
+	if err != nil {
+		return nil, err
+	}
+	for _, privateDomain := range orgPrivateDomains {
+		if orgGUID != privateDomain.Entity.OrgGUID {
+			orgSharedPrivateDomainMap[privateDomain.Entity.Name] = privateDomain.MetaData.GUID
+		}
+	}
+	return orgSharedPrivateDomainMap, nil
+}
+
+func (m *DefaultManager) listOrgPrivateDomains(orgGUID string) ([]*PrivateDomain, error) {
 	privateDomainResources := &PrivateDomainResources{}
 	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains", m.Host, orgGUID)
 	err := m.listResources(url, privateDomainResources, NewPrivateDomainResource)
@@ -359,12 +388,9 @@ func (m *DefaultManager) ListOrgPrivateDomains(orgGUID string) (map[string]strin
 		return nil, err
 	}
 	lo.G.Info("Total private domains returned :", len(privateDomainResources.PrivateDomains))
-	privateDomainMap := make(map[string]string)
-	for _, privateDomain := range privateDomainResources.PrivateDomains {
-		privateDomainMap[privateDomain.Entity.Name] = privateDomain.MetaData.GUID
-	}
-	return privateDomainMap, nil
+	return privateDomainResources.PrivateDomains, nil
 }
+
 func (m *DefaultManager) DeletePrivateDomain(guid string) error {
 	url := fmt.Sprintf("%s/v2/private_domains/%s?async=false", m.Host, guid)
 	return m.HTTP.Delete(url, m.Token)
@@ -374,4 +400,13 @@ func (m *DefaultManager) CreatePrivateDomain(orgGUID, privateDomain string) erro
 	sendString := fmt.Sprintf(`{"name":"%s", "owning_organization_guid":"%s"}`, privateDomain, orgGUID)
 	_, err := m.HTTP.Post(url, m.Token, sendString)
 	return err
+}
+func (m *DefaultManager) SharePrivateDomain(sharedOrgGUID, privateDomainGUID string) error {
+	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains/%s", m.Host, sharedOrgGUID, privateDomainGUID)
+	err := m.HTTP.Put(url, m.Token, "")
+	return err
+}
+func (m *DefaultManager) RemoveSharedPrivateDomain(sharedOrgGUID, privateDomainGUID string) error {
+	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains/%s", m.Host, sharedOrgGUID, privateDomainGUID)
+	return m.HTTP.Delete(url, m.Token)
 }

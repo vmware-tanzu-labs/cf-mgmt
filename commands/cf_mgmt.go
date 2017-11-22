@@ -24,6 +24,7 @@ type CfMgmtCommand struct {
 	UpdateSpaceUsersCommand          UpdateSpaceUsersCommand          `command:"update-space-users" description:"update space user roles"`
 	CreateSpaceSecurityGroupsCommand CreateSpaceSecurityGroupsCommand `command:"update-space-security-groups" description:"updates space specific security groups"`
 	IsolationSegmentsCommand         IsolationSegmentsCommand         `command:"isolation-segments" description:"assigns isolations segments to orgs and spaces"`
+	SharePrivateDomainsCommand       SharePrivateDomainsCommand       `command:"share-org-private-domains" description:"shares an existing private domain with the specified org"`
 }
 
 var CfMgmt CfMgmtCommand

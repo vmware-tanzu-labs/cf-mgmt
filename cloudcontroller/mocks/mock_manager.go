@@ -294,17 +294,30 @@ func (mr *MockManagerMockRecorder) ListAllSpaceQuotasForOrg(arg0 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllSpaceQuotasForOrg", reflect.TypeOf((*MockManager)(nil).ListAllSpaceQuotasForOrg), arg0)
 }
 
-// ListOrgPrivateDomains mocks base method
-func (m *MockManager) ListOrgPrivateDomains(arg0 string) (map[string]string, error) {
-	ret := m.ctrl.Call(m, "ListOrgPrivateDomains", arg0)
+// ListOrgOwnedPrivateDomains mocks base method
+func (m *MockManager) ListOrgOwnedPrivateDomains(arg0 string) (map[string]string, error) {
+	ret := m.ctrl.Call(m, "ListOrgOwnedPrivateDomains", arg0)
 	ret0, _ := ret[0].(map[string]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListOrgPrivateDomains indicates an expected call of ListOrgPrivateDomains
-func (mr *MockManagerMockRecorder) ListOrgPrivateDomains(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrgPrivateDomains", reflect.TypeOf((*MockManager)(nil).ListOrgPrivateDomains), arg0)
+// ListOrgOwnedPrivateDomains indicates an expected call of ListOrgOwnedPrivateDomains
+func (mr *MockManagerMockRecorder) ListOrgOwnedPrivateDomains(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrgOwnedPrivateDomains", reflect.TypeOf((*MockManager)(nil).ListOrgOwnedPrivateDomains), arg0)
+}
+
+// ListOrgSharedPrivateDomains mocks base method
+func (m *MockManager) ListOrgSharedPrivateDomains(arg0 string) (map[string]string, error) {
+	ret := m.ctrl.Call(m, "ListOrgSharedPrivateDomains", arg0)
+	ret0, _ := ret[0].(map[string]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListOrgSharedPrivateDomains indicates an expected call of ListOrgSharedPrivateDomains
+func (mr *MockManagerMockRecorder) ListOrgSharedPrivateDomains(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrgSharedPrivateDomains", reflect.TypeOf((*MockManager)(nil).ListOrgSharedPrivateDomains), arg0)
 }
 
 // ListOrgs mocks base method
@@ -382,6 +395,30 @@ func (m *MockManager) RemoveCFUser(arg0, arg1, arg2, arg3 string) error {
 // RemoveCFUser indicates an expected call of RemoveCFUser
 func (mr *MockManagerMockRecorder) RemoveCFUser(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveCFUser", reflect.TypeOf((*MockManager)(nil).RemoveCFUser), arg0, arg1, arg2, arg3)
+}
+
+// RemoveSharedPrivateDomain mocks base method
+func (m *MockManager) RemoveSharedPrivateDomain(arg0, arg1 string) error {
+	ret := m.ctrl.Call(m, "RemoveSharedPrivateDomain", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveSharedPrivateDomain indicates an expected call of RemoveSharedPrivateDomain
+func (mr *MockManagerMockRecorder) RemoveSharedPrivateDomain(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveSharedPrivateDomain", reflect.TypeOf((*MockManager)(nil).RemoveSharedPrivateDomain), arg0, arg1)
+}
+
+// SharePrivateDomain mocks base method
+func (m *MockManager) SharePrivateDomain(arg0, arg1 string) error {
+	ret := m.ctrl.Call(m, "SharePrivateDomain", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SharePrivateDomain indicates an expected call of SharePrivateDomain
+func (mr *MockManagerMockRecorder) SharePrivateDomain(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SharePrivateDomain", reflect.TypeOf((*MockManager)(nil).SharePrivateDomain), arg0, arg1)
 }
 
 // UpdateQuota mocks base method

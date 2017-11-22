@@ -12,6 +12,7 @@ type AddOrgToConfigurationCommand struct {
 	BaseConfigCommand
 	OrgName                 string      `long:"org" description:"Org name" required:"true"`
 	PrivateDomains          []string    `long:"private-domain" description:"Private Domain(s) to add, specify multiple times"`
+	SharedPrivateDomains    []string    `long:"shared-private-domain" description:"Shared Private Domain(s) to add, specify multiple times"`
 	DefaultIsolationSegment string      `long:"default-isolation-segment" description:"Default isolation segment for org" `
 	Quota                   OrgQuota    `group:"quota"`
 	BillingManager          UserRoleAdd `group:"billing-manager" namespace:"billing-manager"`
@@ -34,8 +35,10 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 	}
 	orgConfig.RemoveUsers = true
 	orgConfig.RemovePrivateDomains = true
-
 	orgConfig.PrivateDomains = addToSlice(orgConfig.PrivateDomains, c.PrivateDomains, &errorString)
+
+	orgConfig.RemoveSharedPrivateDomains = true
+	orgConfig.SharedPrivateDomains = addToSlice(orgConfig.SharedPrivateDomains, c.SharedPrivateDomains, &errorString)
 
 	updateOrgQuotaConfig(orgConfig, c.Quota, &errorString)
 	c.updateUsers(orgConfig, &errorString)
