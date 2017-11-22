@@ -95,6 +95,17 @@ func (m *DefaultManager) ListSecurityGroups() (map[string]string, error) {
 	return securityGroups, nil
 }
 
+//GetSecurityGroupRules - returns a array of rules based on sgGUID
+func (m *DefaultManager) GetSecurityGroupRules(sgGUID string) ([]byte, error) {
+	url := fmt.Sprintf("%s/v2/security_groups/%s", m.Host, sgGUID)
+	sgRule := &SecurityGroupRule{}
+	err := m.HTTP.Get(url, m.Token, sgRule)
+	if err != nil {
+		return nil, err
+	}
+	return json.MarshalIndent(sgRule.Entity.Rules, "", "\t")
+}
+
 func (m *DefaultManager) UpdateSecurityGroup(sgGUID, sgName, contents string) error {
 	url := fmt.Sprintf("%s/v2/security_groups/%s", m.Host, sgGUID)
 	sendString := fmt.Sprintf(`{"name":"%s","rules":%s}`, sgName, contents)
@@ -114,6 +125,21 @@ func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (string, e
 		return "", err
 	}
 	return sgResource.MetaData.GUID, nil
+}
+
+func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) ([]string, error) {
+	url := fmt.Sprintf("%s/v2/spaces/%s/security_groups", m.Host, spaceGUID)
+	sgResources := &SecurityGroupResources{}
+	err := m.listResources(url, sgResources, NewSecurityGroupResources)
+	if err != nil {
+		return nil, err
+	}
+	lo.G.Info("Total security groups returned :", len(sgResources.SecurityGroups))
+	names := []string{}
+	for _, sg := range sgResources.SecurityGroups {
+		names = append(names, sg.Entity.Name)
+	}
+	return names, nil
 }
 
 func (m *DefaultManager) AssignSecurityGroupToSpace(spaceGUID, sgGUID string) error {

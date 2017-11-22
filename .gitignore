@@ -4,8 +4,9 @@ main
 .DS_Store
 .wercker
 brownbag
-cf-mgmt*
+cf-mgmt-linux
 *.iml
 compiled-output
 prepare-output
 vars.yml
+foo

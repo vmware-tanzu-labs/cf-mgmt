@@ -1,6 +1,7 @@
 package export_test
 
 import (
+	"io/ioutil"
 	"os"
 
 	"github.com/golang/mock/gomock"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/pivotalservices/cf-mgmt/uaac"
 	uaacmock "github.com/pivotalservices/cf-mgmt/uaac/mocks"
-	"github.com/pivotalservices/cf-mgmt/utils"
 )
 
 func cloudControllerOrgUserMock(mockController *ccmock.MockManager, entityGUID string, mangers, billingManagers, auditors map[string]string) {
@@ -41,6 +41,7 @@ var _ = Describe("Export manager", func() {
 		mockController *ccmock.MockManager
 		mockUaac       *uaacmock.MockManager
 		exportManager  Manager
+		configManager  config.Manager
 		excludedOrgs   map[string]string
 		excludedSpaces map[string]string
 	)
@@ -50,6 +51,7 @@ var _ = Describe("Export manager", func() {
 		mockController = ccmock.NewMockManager(ctrl)
 		mockUaac = uaacmock.NewMockManager(ctrl)
 		exportManager = NewExportManager("test/config", mockUaac, mockController)
+		configManager = config.NewManager("test/config")
 		excludedOrgs = make(map[string]string)
 		excludedSpaces = make(map[string]string)
 	})
@@ -77,16 +79,21 @@ var _ = Describe("Export manager", func() {
 			spaces := make([]*cc.Space, 0)
 			spaces = append(spaces, space)
 
+			securityGroups := make(map[string]string, 0)
+
 			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
+			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return([]string{"foo", "bar"}, nil)
 			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
 			cloudControllerSpaceUserMock(mockController, spaceId, map[string]string{}, map[string]string{"user1": "1", "user2": "2"}, map[string]string{})
 
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 			Ω(err).Should(BeNil())
 			orgDetails := &config.OrgConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
+
+			orgDetails, err = configManager.GetOrgConfig("org1")
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
 			Ω(len(orgDetails.Manager.Users)).Should(BeEquivalentTo(1))
@@ -96,11 +103,11 @@ var _ = Describe("Export manager", func() {
 			Ω(len(orgDetails.BillingManager.Users)).Should(BeEquivalentTo(0))
 			Ω(len(orgDetails.Auditor.Users)).Should(BeEquivalentTo(0))
 
-			spaceDetails := &config.SpaceConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/dev/spaceConfig.yml", spaceDetails)
+			spaceDetails, err := configManager.GetSpaceConfig("org1", "dev")
 			Ω(err).Should(BeNil())
 			Ω(spaceDetails.Org).Should(Equal("org1"))
 			Ω(spaceDetails.Space).Should(Equal("dev"))
+			Ω(spaceDetails.ASGs).Should(ConsistOf("foo", "bar"))
 
 			Ω(len(spaceDetails.Developer.Users)).Should(BeEquivalentTo(1))
 			Ω(spaceDetails.Developer.Users[0]).Should(Equal("user2"))
@@ -126,9 +133,12 @@ var _ = Describe("Export manager", func() {
 			spaces := make([]*cc.Space, 0)
 			spaces = append(spaces, space)
 
+			securityGroups := make(map[string]string, 0)
 			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
+			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return([]string{}, nil)
 			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
 			cloudControllerSpaceUserMock(mockController, spaceId, map[string]string{}, map[string]string{"user1": "1", "user2": "2"}, map[string]string{})
 
@@ -141,21 +151,129 @@ var _ = Describe("Export manager", func() {
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 
 			Ω(err).Should(BeNil())
-			orgDetails := &config.OrgConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
+			orgDetails, err := configManager.GetOrgConfig("org1")
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
 			Ω(orgDetails.MemoryLimit).Should(Equal(2))
 			Ω(orgDetails.InstanceMemoryLimit).Should(Equal(5))
 
-			spaceDetails := &config.SpaceConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/dev/spaceConfig.yml", spaceDetails)
+			spaceDetails, err := configManager.GetSpaceConfig("org1", "dev")
 			Ω(err).Should(BeNil())
 			Ω(spaceDetails.Org).Should(Equal("org1"))
 			Ω(spaceDetails.Space).Should(Equal("dev"))
 			Ω(spaceDetails.MemoryLimit).Should(Equal(1))
 			Ω(spaceDetails.InstanceMemoryLimit).Should(Equal(6))
 			Ω(spaceDetails.AllowSSH).Should(BeTrue())
+		})
+
+		It("Exports Space security group definition", func() {
+			sgRules := `[
+  {
+    "protocol": "udp",
+    "ports": "8080",
+    "destination": "198.41.191.47/1"
+  },
+  {
+    "protocol": "tcp",
+    "ports": "8080",
+    "destination": "198.41.191.47/1"
+  }
+]`
+			orgId := "org1-1234"
+			spaceId := "dev-1234"
+			userIDToUserMap := make(map[string]uaac.User, 0)
+			orgs := make([]*cc.Org, 0)
+			user1 := uaac.User{ID: "1", Origin: "ldap", UserName: "user1"}
+			userIDToUserMap["user1"] = user1
+			org1 := &cc.Org{Entity: cc.OrgEntity{Name: "org1"}, MetaData: cc.OrgMetaData{GUID: orgId}}
+			space := &cc.Space{Entity: cc.SpaceEntity{Name: "dev", AllowSSH: true}, MetaData: cc.SpaceMetaData{GUID: spaceId}}
+			orgs = append(orgs, org1)
+			spaces := make([]*cc.Space, 0)
+			spaces = append(spaces, space)
+
+			securityGroups := make(map[string]string, 0)
+			securityGroups["org1-dev"] = "sgGUID"
+
+			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
+			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
+			mockController.EXPECT().GetSecurityGroupRules("sgGUID").Return([]byte(sgRules), nil)
+			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return([]string{}, nil)
+			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
+			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
+			cloudControllerSpaceUserMock(mockController, spaceId, map[string]string{}, map[string]string{"user1": "1", "user2": "2"}, map[string]string{})
+
+			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
+
+			Ω(err).Should(BeNil())
+			orgDetails, err := configManager.GetOrgConfig("org1")
+			Ω(err).Should(BeNil())
+			Ω(orgDetails.Org).Should(Equal("org1"))
+
+			spaceDetails, err := configManager.GetSpaceConfig("org1", "dev")
+			Ω(err).Should(BeNil())
+			Ω(spaceDetails.Org).Should(Equal("org1"))
+			Ω(spaceDetails.Space).Should(Equal("dev"))
+			Ω(spaceDetails.AllowSSH).Should(BeTrue())
+
+			data, err := ioutil.ReadFile("test/config/org1/dev/security-group.json")
+			Ω(err).Should(BeNil())
+			Ω(data).Should(MatchJSON(sgRules))
+		})
+
+		It("Exports global security group definition", func() {
+			sgRules := `[
+  {
+    "protocol": "udp",
+    "ports": "8080",
+    "destination": "198.41.191.47/1"
+  },
+  {
+    "protocol": "tcp",
+    "ports": "8080",
+    "destination": "198.41.191.47/1"
+  }
+]`
+			orgId := "org1-1234"
+			spaceId := "dev-1234"
+			userIDToUserMap := make(map[string]uaac.User, 0)
+			orgs := make([]*cc.Org, 0)
+			user1 := uaac.User{ID: "1", Origin: "ldap", UserName: "user1"}
+			userIDToUserMap["user1"] = user1
+			org1 := &cc.Org{Entity: cc.OrgEntity{Name: "org1"}, MetaData: cc.OrgMetaData{GUID: orgId}}
+			space := &cc.Space{Entity: cc.SpaceEntity{Name: "dev", AllowSSH: true}, MetaData: cc.SpaceMetaData{GUID: spaceId}}
+			orgs = append(orgs, org1)
+			spaces := make([]*cc.Space, 0)
+			spaces = append(spaces, space)
+
+			securityGroups := make(map[string]string, 0)
+			securityGroups["test-asg"] = "sgGUID"
+
+			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
+			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
+			mockController.EXPECT().GetSecurityGroupRules("sgGUID").Return([]byte(sgRules), nil)
+			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return([]string{}, nil)
+			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
+			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
+			cloudControllerSpaceUserMock(mockController, spaceId, map[string]string{}, map[string]string{"user1": "1", "user2": "2"}, map[string]string{})
+
+			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
+
+			Ω(err).Should(BeNil())
+			orgDetails, err := configManager.GetOrgConfig("org1")
+			Ω(err).Should(BeNil())
+			Ω(orgDetails.Org).Should(Equal("org1"))
+
+			spaceDetails, err := configManager.GetSpaceConfig("org1", "dev")
+			Ω(err).Should(BeNil())
+			Ω(spaceDetails.Org).Should(Equal("org1"))
+			Ω(spaceDetails.Space).Should(Equal("dev"))
+			Ω(spaceDetails.AllowSSH).Should(BeTrue())
+
+			data, err := ioutil.ReadFile("test/config/asgs/test-asg.json")
+			Ω(err).Should(BeNil())
+			Ω(data).Should(MatchJSON(sgRules))
 		})
 
 		It("Skips excluded orgs from export", func() {
@@ -173,8 +291,11 @@ var _ = Describe("Export manager", func() {
 			orgs = append(orgs, org1)
 			orgs = append(orgs, org2)
 
+			securityGroups := make(map[string]string, 0)
+
 			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId1).Return([]*cc.Space{}, nil)
 			cloudControllerOrgUserMock(mockController, orgId1, map[string]string{}, map[string]string{}, map[string]string{})
 			excludedOrgs = map[string]string{orgId2: orgId2}
@@ -182,12 +303,11 @@ var _ = Describe("Export manager", func() {
 			err := exportManager.ExportConfig(excludedOrgs, excludedSpaces)
 
 			Ω(err).Should(BeNil())
-			orgDetails := &config.OrgConfig{}
-			err = utils.NewDefaultManager().LoadFile("test/config/org1/orgConfig.yml", orgDetails)
+			orgDetails, err := configManager.GetOrgConfig("org1")
 			Ω(err).Should(BeNil())
 			Ω(orgDetails.Org).Should(Equal("org1"))
 
-			err = utils.NewDefaultManager().LoadFile("test/config/org2/orgConfig.yml", orgDetails)
+			_, err = configManager.GetOrgConfig("org2")
 			Ω(err).Should(Not(BeNil()))
 
 		})

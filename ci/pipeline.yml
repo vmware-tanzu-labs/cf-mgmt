@@ -13,6 +13,7 @@ resources:
     uri: git@github.com:pivotalservices/cf-mgmt.git
     branch: master
     private_key: {{git-ssh-key}}
+    ignore_paths: ["README.md","docs/*"]
 
 - name: draft-cfmgmt-resource
   type: github-release
@@ -55,6 +56,9 @@ jobs:
         - compiled-output/cf-mgmt-linux
         - compiled-output/cf-mgmt-osx
         - compiled-output/cf-mgmt.exe
+        - compiled-output/cf-mgmt-config-linux
+        - compiled-output/cf-mgmt-config-osx
+        - compiled-output/cf-mgmt-config.exe
 - name: deploy
   plan:
     - aggregate:

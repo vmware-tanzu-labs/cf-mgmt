@@ -16,7 +16,7 @@ var _ = Describe("cf-mgmt cli", func() {
 			err     error
 		)
 		BeforeEach(func() {
-			outPath, err = Build("github.com/pivotalservices/cf-mgmt")
+			outPath, err = Build("github.com/pivotalservices/cf-mgmt/cmd/cf-mgmt")
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 		AfterEach(func() {
@@ -65,7 +65,7 @@ var _ = Describe("cf-mgmt cli", func() {
 			err     error
 		)
 		BeforeEach(func() {
-			outPath, err = Build("github.com/pivotalservices/cf-mgmt")
+			outPath, err = Build("github.com/pivotalservices/cf-mgmt/cmd/cf-mgmt")
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 		AfterEach(func() {

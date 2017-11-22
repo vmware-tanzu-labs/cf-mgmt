@@ -26,9 +26,13 @@ mkdir -p ${WORKING_DIR}
 cp -R ${SOURCE_DIR}/* ${WORKING_DIR}/.
 cd ${WORKING_DIR}
 glide install
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${OUTPUT_DIR}/cf-mgmt-linux -ldflags "-X main.VERSION=${DRAFT_VERSION}"
-GOOS=darwin GOARCH=amd64 go build -o ${OUTPUT_DIR}/cf-mgmt-osx -ldflags "-X main.VERSION=${DRAFT_VERSION}"
-GOOS=windows GOARCH=amd64 go build -o ${OUTPUT_DIR}/cf-mgmt.exe -ldflags "-X main.VERSION=${DRAFT_VERSION}"
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${OUTPUT_DIR}/cf-mgmt-linux -ldflags "-X github.com/pivotalservices/cf-mgmt/configcommands.VERSION=${DRAFT_VERSION}" cmd/cf-mgmt/main.go
+GOOS=darwin GOARCH=amd64 go build -o ${OUTPUT_DIR}/cf-mgmt-osx -ldflags "-X github.com/pivotalservices/cf-mgmt/configcommands.VERSION=${DRAFT_VERSION}" cmd/cf-mgmt/main.go
+GOOS=windows GOARCH=amd64 go build -o ${OUTPUT_DIR}/cf-mgmt.exe -ldflags "-X github.com/pivotalservices/cf-mgmt/configcommands.VERSION=${DRAFT_VERSION}" cmd/cf-mgmt/main.go
+
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${OUTPUT_DIR}/cf-mgmt-config-linux -ldflags "-X github.com/pivotalservices/cf-mgmt/configcommands.VERSION=${DRAFT_VERSION}" cmd/cf-mgmt-config/main.go
+GOOS=darwin GOARCH=amd64 go build -o ${OUTPUT_DIR}/cf-mgmt-config-osx -ldflags "-X github.com/pivotalservices/cf-mgmt/configcommands.VERSION=${DRAFT_VERSION}" cmd/cf-mgmt-config/main.go
+GOOS=windows GOARCH=amd64 go build -o ${OUTPUT_DIR}/cf-mgmt-config.exe -ldflags "-X github.com/pivotalservices/cf-mgmt/configcommands.VERSION=${DRAFT_VERSION}" cmd/cf-mgmt-config/main.go
 
 echo ${DRAFT_VERSION} > ${OUTPUT_DIR}/name
 echo ${DRAFT_VERSION} > ${OUTPUT_DIR}/tag

@@ -5,9 +5,10 @@
 package mock_cloudcontroller
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	cloudcontroller "github.com/pivotalservices/cf-mgmt/cloudcontroller"
-	reflect "reflect"
 )
 
 // MockManager is a mock of Manager interface
@@ -241,6 +242,19 @@ func (mr *MockManagerMockRecorder) GetCFUsers(arg0, arg1, arg2 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCFUsers", reflect.TypeOf((*MockManager)(nil).GetCFUsers), arg0, arg1, arg2)
 }
 
+// GetSecurityGroupRules mocks base method
+func (m *MockManager) GetSecurityGroupRules(arg0 string) ([]byte, error) {
+	ret := m.ctrl.Call(m, "GetSecurityGroupRules", arg0)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSecurityGroupRules indicates an expected call of GetSecurityGroupRules
+func (mr *MockManagerMockRecorder) GetSecurityGroupRules(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecurityGroupRules", reflect.TypeOf((*MockManager)(nil).GetSecurityGroupRules), arg0)
+}
+
 // ListAllOrgQuotas mocks base method
 func (m *MockManager) ListAllOrgQuotas() (map[string]string, error) {
 	ret := m.ctrl.Call(m, "ListAllOrgQuotas")
@@ -330,6 +344,19 @@ func (m *MockManager) ListSecurityGroups() (map[string]string, error) {
 // ListSecurityGroups indicates an expected call of ListSecurityGroups
 func (mr *MockManagerMockRecorder) ListSecurityGroups() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListSecurityGroups))
+}
+
+// ListSpaceSecurityGroups mocks base method
+func (m *MockManager) ListSpaceSecurityGroups(arg0 string) ([]string, error) {
+	ret := m.ctrl.Call(m, "ListSpaceSecurityGroups", arg0)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSpaceSecurityGroups indicates an expected call of ListSpaceSecurityGroups
+func (mr *MockManagerMockRecorder) ListSpaceSecurityGroups(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSpaceSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListSpaceSecurityGroups), arg0)
 }
 
 // ListSpaces mocks base method

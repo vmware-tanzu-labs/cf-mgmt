@@ -6,6 +6,7 @@ type Manager interface {
 	CreateSpace(spaceName, orgGUID string) error
 	DeleteSpace(spaceGUID string) error
 	ListSpaces(orgGUID string) ([]*Space, error)
+	ListSpaceSecurityGroups(spaceGUID string) ([]string, error)
 	AddUserToSpaceRole(userName, role, spaceGUID string) error
 	UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 
@@ -13,6 +14,7 @@ type Manager interface {
 	ListSecurityGroups() (map[string]string, error)
 	CreateSecurityGroup(sgName, contents string) (string, error)
 	UpdateSecurityGroup(sgGUID, sgName, contents string) error
+	GetSecurityGroupRules(sgGUID string) ([]byte, error)
 
 	CreateSpaceQuota(quota SpaceQuotaEntity) (string, error)
 	UpdateSpaceQuota(quotaGUID string, quota SpaceQuotaEntity) error
@@ -139,6 +141,10 @@ type SecurityGroup struct {
 	Entity   SecurityGroupEntity   `json:"entity"`
 }
 
+type SecurityGroupRule struct {
+	Entity SecurityGroupRuleEntity `json:"entity"`
+}
+
 //SecurityGroupMetaData -
 type SecurityGroupMetaData struct {
 	GUID string `json:"guid"`
@@ -147,6 +153,23 @@ type SecurityGroupMetaData struct {
 //SecurityGroupEntity -
 type SecurityGroupEntity struct {
 	Name string `json:"name"`
+}
+
+//SecurityGroupRuleEntity -
+type SecurityGroupRuleEntity struct {
+	Name  string `json:"name"`
+	Rules []Rule `json:"rules"`
+}
+
+//Rule -
+type Rule struct {
+	Protocol    string `json:"protocol,omitempty"`
+	Ports       string `json:"ports,omitempty"`
+	Destination string `json:"destination,omitempty"`
+	Type        int    `json:"type,omitempty"`
+	Code        int    `json:"code,omitempty"`
+	Log         bool   `json:"log,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 //Quotas -
