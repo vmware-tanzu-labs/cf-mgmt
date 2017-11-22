@@ -184,10 +184,13 @@ func (m *DefaultOrgManager) CreatePrivateDomains() error {
 func (m *DefaultOrgManager) SharePrivateDomains() error {
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
-		lo.G.Error(err)
 		return err
 	}
 
+	privateDomains, err := m.CloudController.ListAllPrivateDomains()
+	if err != nil {
+		return err
+	}
 	orgs, err := m.CloudController.ListOrgs()
 	if err != nil {
 		return err
@@ -205,11 +208,14 @@ func (m *DefaultOrgManager) SharePrivateDomains() error {
 		privateDomainMap := make(map[string]string)
 		for _, privateDomain := range orgConfig.SharedPrivateDomains {
 			if _, ok := allSharedPrivateDomains[privateDomain]; !ok {
-
-				lo.G.Infof("Sharing Private Domain %s for Org %s", privateDomain, orgConfig.Org)
-				err = m.CloudController.SharePrivateDomain(orgGUID, privateDomain)
-				if err != nil {
-					return err
+				if privateDomainGUID, ok := privateDomains[privateDomain]; ok {
+					lo.G.Infof("Sharing Private Domain %s for Org %s", privateDomain, orgConfig.Org)
+					err = m.CloudController.SharePrivateDomain(orgGUID, privateDomainGUID)
+					if err != nil {
+						return err
+					}
+				} else {
+					return fmt.Errorf("Private Domain [%s] is not defined", privateDomain)
 				}
 			}
 			privateDomainMap[privateDomain] = privateDomain

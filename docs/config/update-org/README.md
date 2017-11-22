@@ -15,14 +15,17 @@ Help Options:
   -h, --help                                           Show this help message
 
 [update-org command options]
-  --config-dir=                                Name of the config directory (default: config) [$CONFIG_DIR]
-  --org=                                       Org name
-  --private-domain=                            Private Domain(s) to add, specify multiple times
-  --private-domain-to-remove=                  Private Domain(s) to remove, specify multiple times
-  --enable-remove-private-domains=[true|false] Enable removing private domains
-  --default-isolation-segment=                 Default isolation segment for org
-  --clear-default-isolation-segment            Sets the default isolation segment to blank
-  --enable-remove-users=[true|false]           Enable removing users from the org
+  --config-dir=                                       Name of the config directory (default: config) [$CONFIG_DIR]
+  --org=                                              Org name
+  --private-domain=                                   Private Domain(s) to add, specify multiple times
+  --private-domain-to-remove=                         Private Domain(s) to remove, specify multiple times
+  --enable-remove-private-domains=[true|false]        Enable removing private domains
+  --shared-private-domain=                            Shared Private Domain(s) to add, specify multiple times
+  --shared-private-domain-to-remove=                  Shared Private Domain(s) to remove, specify multiple times
+  --enable-remove-shared-private-domains=[true|false] Enable removing shared private domains
+  --default-isolation-segment=                        Default isolation segment for org
+  --clear-default-isolation-segment                   Sets the default isolation segment to blank
+  --enable-remove-users=[true|false]                  Enable removing users from the org
 
 quota:
   --enable-org-quota=[true|false]              Enable the Org Quota in the config

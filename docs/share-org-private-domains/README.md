@@ -1,21 +1,21 @@
 &larr; [back to Commands](../README.md)
 
-# `cf-mgmt create-org-private-domains`
+# `cf-mgmt share-org-private-domains`
 
-`create-org-private-domains` command will:
-- creates private domain(s) for a given org based on `private-domains` configured in orgConfig.yml
-- Will delete any private domain(s) not in `private-domains` for a given org if `enable-remove-private-domains` is set to true
+`share-org-private-domains` command will:
+- shares private domain(s) for a given org based on `shared-private-domains` configured in orgConfig.yml
+- Will remove (unshare) any shared private domain(s) not in `shared-private-domains` for a given org if `enable-remove-shared-private-domains` is set to true
 
 ## Command Usage
 
 ```
 Usage:
-  main [OPTIONS] create-org-private-domains [create-org-private-domains-OPTIONS]
+  main [OPTIONS] share-org-private-domains [share-org-private-domains-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message
 
-[create-org-private-domains command options]
+[share-org-private-domains command options]
   --config-dir=    Name of the config directory (default: config) [$CONFIG_DIR]
   --system-domain= system domain [$SYSTEM_DOMAIN]
   --user-id=       user id that has privileges to create/update/delete users, orgs and spaces [$USER_ID]

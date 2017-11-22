@@ -104,6 +104,86 @@ var _ = Describe("given update orgs config command", func() {
 			Expect(err.Error()).Should(ContainSubstring("--enable-remove-private-domains must be an boolean instead of [asdfasf]"))
 			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(0))
 		})
+
+		It("should succeed when updating shared private domains", func() {
+			configuration.SharedPrivateDomains = []string{"foo.com", "bar.io"}
+			mockConfig.GetOrgConfigReturns(&config.OrgConfig{
+				Org: orgName,
+			}, nil)
+			mockConfig.SaveOrgConfigReturns(nil)
+			err := configuration.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(1))
+			Expect(mockConfig.SaveOrgConfigArgsForCall(0)).To(BeEquivalentTo(&config.OrgConfig{
+				Org:                     orgName,
+				RemovePrivateDomains:    false,
+				SharedPrivateDomains:    []string{"foo.com", "bar.io"},
+				EnableOrgQuota:          false,
+				PaidServicePlansAllowed: false,
+			}))
+		})
+
+		It("should succeed when deleting shared private domains", func() {
+			configuration.SharedPrivateDomainsToRemove = []string{"foo.com"}
+			mockConfig.GetOrgConfigReturns(&config.OrgConfig{
+				Org:                  orgName,
+				SharedPrivateDomains: []string{"foo.com", "bar.io"},
+			}, nil)
+			mockConfig.SaveOrgConfigReturns(nil)
+			err := configuration.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(1))
+			Expect(mockConfig.SaveOrgConfigArgsForCall(0)).To(BeEquivalentTo(&config.OrgConfig{
+				Org:                     orgName,
+				RemovePrivateDomains:    false,
+				SharedPrivateDomains:    []string{"bar.io"},
+				EnableOrgQuota:          false,
+				PaidServicePlansAllowed: false,
+			}))
+		})
+
+		It("should enable remove of shared private domains", func() {
+			configuration.EnableRemoveSharedPrivateDomains = "true"
+			mockConfig.GetOrgConfigReturns(&config.OrgConfig{
+				Org: orgName,
+				RemoveSharedPrivateDomains: false,
+			}, nil)
+			mockConfig.SaveOrgConfigReturns(nil)
+			err := configuration.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(1))
+			Expect(mockConfig.SaveOrgConfigArgsForCall(0)).To(BeEquivalentTo(&config.OrgConfig{
+				Org: orgName,
+				RemoveSharedPrivateDomains: true,
+			}))
+		})
+
+		It("should disable remove of private domains", func() {
+			configuration.EnableRemoveSharedPrivateDomains = "false"
+			mockConfig.GetOrgConfigReturns(&config.OrgConfig{
+				Org: orgName,
+				RemoveSharedPrivateDomains: true,
+			}, nil)
+			mockConfig.SaveOrgConfigReturns(nil)
+			err := configuration.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(1))
+			Expect(mockConfig.SaveOrgConfigArgsForCall(0)).To(BeEquivalentTo(&config.OrgConfig{
+				Org: orgName,
+				RemoveSharedPrivateDomains: false,
+			}))
+		})
+		It("should fail when enable is not a valid boolean", func() {
+			configuration.EnableRemoveSharedPrivateDomains = "asdfasf"
+			mockConfig.GetOrgConfigReturns(&config.OrgConfig{
+				Org: orgName,
+				RemoveSharedPrivateDomains: true,
+			}, nil)
+			err := configuration.Execute(nil)
+			Expect(err).Should(HaveOccurred())
+			Expect(err.Error()).Should(ContainSubstring("enable-remove-shared-private-domains must be an boolean instead of [asdfasf]"))
+			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(0))
+		})
 	})
 	Context("Updating Quotas", func() {
 		It("should succeed", func() {

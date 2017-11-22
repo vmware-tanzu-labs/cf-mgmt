@@ -17,6 +17,7 @@ Help Options:
   --config-dir=                             Name of the config directory (default: config) [$CONFIG_DIR]
   --org=                                    Org name
   --private-domain=                         Private Domain(s) to add, specify multiple times
+  --shared-private-domain=                  Shared Private Domain(s) to add, specify multiple times
   --default-isolation-segment=              Default isolation segment for org
 
 quota:
