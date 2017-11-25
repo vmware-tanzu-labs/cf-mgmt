@@ -132,7 +132,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 
 			spaceSGName := fmt.Sprintf("%s-%s", orgName, spaceName)
 			if spaceSGNames, err := im.CloudController.ListSpaceSecurityGroups(orgSpace.MetaData.GUID); err == nil {
-				for _, securityGroupName := range spaceSGNames {
+				for securityGroupName, _ := range spaceSGNames {
 					lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
 					if securityGroupName != spaceSGName {
 						spaceConfig.ASGs = append(spaceConfig.ASGs, securityGroupName)

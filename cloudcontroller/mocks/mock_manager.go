@@ -347,9 +347,9 @@ func (mr *MockManagerMockRecorder) ListSecurityGroups() *gomock.Call {
 }
 
 // ListSpaceSecurityGroups mocks base method
-func (m *MockManager) ListSpaceSecurityGroups(arg0 string) ([]string, error) {
+func (m *MockManager) ListSpaceSecurityGroups(arg0 string) (map[string]string, error) {
 	ret := m.ctrl.Call(m, "ListSpaceSecurityGroups", arg0)
-	ret0, _ := ret[0].([]string)
+	ret0, _ := ret[0].(map[string]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

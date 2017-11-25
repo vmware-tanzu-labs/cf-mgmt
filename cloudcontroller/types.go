@@ -6,7 +6,7 @@ type Manager interface {
 	CreateSpace(spaceName, orgGUID string) error
 	DeleteSpace(spaceGUID string) error
 	ListSpaces(orgGUID string) ([]*Space, error)
-	ListSpaceSecurityGroups(spaceGUID string) ([]string, error)
+	ListSpaceSecurityGroups(spaceGUID string) (map[string]string, error)
 	AddUserToSpaceRole(userName, role, spaceGUID string) error
 	UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 

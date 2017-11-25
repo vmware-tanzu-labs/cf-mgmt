@@ -131,7 +131,7 @@ func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (string, e
 	return sgResource.MetaData.GUID, nil
 }
 
-func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) ([]string, error) {
+func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) (map[string]string, error) {
 	url := fmt.Sprintf("%s/v2/spaces/%s/security_groups", m.Host, spaceGUID)
 	sgResources := &SecurityGroupResources{}
 	err := m.listResources(url, sgResources, NewSecurityGroupResources)
@@ -139,9 +139,9 @@ func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) ([]string, er
 		return nil, err
 	}
 	lo.G.Info("Total security groups returned :", len(sgResources.SecurityGroups))
-	names := []string{}
+	names := make(map[string]string)
 	for _, sg := range sgResources.SecurityGroups {
-		names = append(names, sg.Entity.Name)
+		names[sg.Entity.Name] = sg.MetaData.GUID
 	}
 	return names, nil
 }

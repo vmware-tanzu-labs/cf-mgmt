@@ -85,7 +85,10 @@ var _ = Describe("Export manager", func() {
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
-			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return([]string{"foo", "bar"}, nil)
+			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return(map[string]string{
+				"foo": "foo-guid",
+				"bar": "bar-guid",
+			}, nil)
 			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
 			cloudControllerSpaceUserMock(mockController, spaceId, map[string]string{}, map[string]string{"user1": "1", "user2": "2"}, map[string]string{})
 
@@ -138,7 +141,7 @@ var _ = Describe("Export manager", func() {
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
-			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return([]string{}, nil)
+			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return(map[string]string{}, nil)
 			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
 			cloudControllerSpaceUserMock(mockController, spaceId, map[string]string{}, map[string]string{"user1": "1", "user2": "2"}, map[string]string{})
 
@@ -198,7 +201,7 @@ var _ = Describe("Export manager", func() {
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().GetSecurityGroupRules("sgGUID").Return([]byte(sgRules), nil)
-			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return([]string{}, nil)
+			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return(map[string]string{}, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
 			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
 			cloudControllerSpaceUserMock(mockController, spaceId, map[string]string{}, map[string]string{"user1": "1", "user2": "2"}, map[string]string{})
@@ -253,7 +256,7 @@ var _ = Describe("Export manager", func() {
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().GetSecurityGroupRules("sgGUID").Return([]byte(sgRules), nil)
-			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return([]string{}, nil)
+			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return(map[string]string{}, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
 			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
 			cloudControllerSpaceUserMock(mockController, spaceId, map[string]string{}, map[string]string{"user1": "1", "user2": "2"}, map[string]string{})
