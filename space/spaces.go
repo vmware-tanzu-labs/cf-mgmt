@@ -59,13 +59,13 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 			continue
 		}
 		sgName := fmt.Sprintf("%s-%s", input.Org, input.Space)
+		var sgGUID string
 		if sgInfo, ok := sgs[sgName]; ok {
 			lo.G.Debug("Updating security group", sgName)
 			if err := m.CloudController.UpdateSecurityGroup(sgInfo.GUID, sgName, input.SecurityGroupContents); err != nil {
 				return err
 			}
-			lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
-			m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgInfo.GUID)
+			sgGUID = sgInfo.GUID
 		} else {
 			lo.G.Debug("Creating security group", sgName)
 			targetSGGUID, err := m.CloudController.CreateSecurityGroup(sgName, input.SecurityGroupContents)
@@ -73,9 +73,10 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 			if err != nil {
 				return err
 			}
-			lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
-			m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, targetSGGUID)
+			sgGUID = targetSGGUID
 		}
+		lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
+		m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgGUID)
 	}
 	return nil
 }
