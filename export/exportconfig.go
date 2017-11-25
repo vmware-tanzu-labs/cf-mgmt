@@ -142,9 +142,9 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 
 			configMgr.AddSpaceToConfig(spaceConfig)
 
-			if sgGUID, ok := securityGroups[spaceSGName]; ok {
+			if sgInfo, ok := securityGroups[spaceSGName]; ok {
 				delete(securityGroups, spaceSGName)
-				if rules, err := im.CloudController.GetSecurityGroupRules(sgGUID); err == nil {
+				if rules, err := im.CloudController.GetSecurityGroupRules(sgInfo.GUID); err == nil {
 					configMgr.AddSecurityGroupToSpace(orgName, spaceName, rules)
 				}
 			}
@@ -152,9 +152,9 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		}
 	}
 
-	for sgName, sgGUID := range securityGroups {
+	for sgName, sgInfo := range securityGroups {
 		lo.G.Infof("Adding security group %s", sgName)
-		if rules, err := im.CloudController.GetSecurityGroupRules(sgGUID); err == nil {
+		if rules, err := im.CloudController.GetSecurityGroupRules(sgInfo.GUID); err == nil {
 			lo.G.Infof("Adding rules for %s", sgName)
 			configMgr.AddSecurityGroup(sgName, rules)
 		} else {

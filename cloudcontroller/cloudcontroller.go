@@ -80,8 +80,8 @@ func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
-func (m *DefaultManager) ListSecurityGroups() (map[string]string, error) {
-	securityGroups := make(map[string]string)
+func (m *DefaultManager) ListSecurityGroups() (map[string]SecurityGroupInfo, error) {
+	securityGroups := make(map[string]SecurityGroupInfo)
 	url := fmt.Sprintf("%s/v2/security_groups", m.Host)
 	sgResources := &SecurityGroupResources{}
 	err := m.listResources(url, sgResources, NewSecurityGroupResources)
@@ -90,7 +90,11 @@ func (m *DefaultManager) ListSecurityGroups() (map[string]string, error) {
 	}
 	lo.G.Info("Total security groups returned :", len(sgResources.SecurityGroups))
 	for _, sg := range sgResources.SecurityGroups {
-		securityGroups[sg.Entity.Name] = sg.MetaData.GUID
+		bytes, _ := json.Marshal(sg.Entity.Rules)
+		securityGroups[sg.Entity.Name] = SecurityGroupInfo{
+			GUID:  sg.MetaData.GUID,
+			Rules: string(bytes),
+		}
 	}
 	return securityGroups, nil
 }

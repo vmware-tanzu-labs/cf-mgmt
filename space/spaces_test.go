@@ -226,17 +226,26 @@ var _ = Describe("given SpaceManager", func() {
 						GUID: "space1GUID",
 					},
 				},
+				{
+					Entity: cloudcontroller.SpaceEntity{
+						Name: "space2",
+					},
+					MetaData: cloudcontroller.SpaceMetaData{
+						GUID: "space2GUID",
+					},
+				},
 			}
-			sgs := make(map[string]string)
-			sgs["test-asg"] = "SGGZZUID"
-			sgs["test-space1"] = "SGGUID"
+			sgs := make(map[string]cloudcontroller.SecurityGroupInfo)
+			sgs["test-asg"] = cloudcontroller.SecurityGroupInfo{GUID: "SGGZZUID"}
+			sgs["test-space1"] = cloudcontroller.SecurityGroupInfo{GUID: "SGGUID"}
 
-			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
-			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
+			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil).Times(2)
+			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil).Times(2)
 			mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
 			mockCloudController.EXPECT().UpdateSecurityGroup("SGGUID", "test-space1", string(bytes)).Return(nil)
 			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space1GUID", "SGGUID").Return(nil)
 			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space1GUID", "SGGZZUID").Return(nil)
+
 			err := spaceManager.CreateApplicationSecurityGroups("./fixtures/config")
 			Ω(err).Should(BeNil())
 		})
@@ -253,13 +262,23 @@ var _ = Describe("given SpaceManager", func() {
 						GUID: "space1GUID",
 					},
 				},
+				{
+					Entity: cloudcontroller.SpaceEntity{
+						Name: "space2",
+					},
+					MetaData: cloudcontroller.SpaceMetaData{
+						GUID: "space2GUID",
+					},
+				},
 			}
-			sgs := make(map[string]string)
-			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
-			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
+			sgs := make(map[string]cloudcontroller.SecurityGroupInfo)
+			sgs["foo"] = cloudcontroller.SecurityGroupInfo{GUID: "SG-FOO-GUID"}
+			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil).Times(2)
+			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil).Times(2)
 			mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
 			mockCloudController.EXPECT().CreateSecurityGroup("test-space1", string(bytes)).Return("SGGUID", nil)
 			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space1GUID", "SGGUID").Return(nil)
+			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space2GUID", "SG-FOO-GUID").Return(nil)
 			err := spaceManager.CreateApplicationSecurityGroups("./fixtures/config")
 			Ω(err).Should(BeNil())
 		})
@@ -276,15 +295,26 @@ var _ = Describe("given SpaceManager", func() {
 						GUID: "space1GUID",
 					},
 				},
+				{
+					Entity: cloudcontroller.SpaceEntity{
+						Name: "space2",
+					},
+					MetaData: cloudcontroller.SpaceMetaData{
+						GUID: "space2GUID",
+					},
+				},
 			}
-			sgs := make(map[string]string)
-			sgs["test-space1"] = "SGGUID"
-			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
-			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
+			sgs := make(map[string]cloudcontroller.SecurityGroupInfo)
+			sgs["test-space1"] = cloudcontroller.SecurityGroupInfo{GUID: "SGGUID"}
+			sgs["foo"] = cloudcontroller.SecurityGroupInfo{GUID: "SG-FOO-GUID"}
 			mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
+			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil).Times(2)
+			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil).Times(2)
 			mockCloudController.EXPECT().UpdateSecurityGroup("SGGUID", "test-space1", string(bytes)).Return(nil)
 			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space1GUID", "SGGUID").Return(nil)
+			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space2GUID", "SG-FOO-GUID").Return(nil)
 			err := spaceManager.CreateApplicationSecurityGroups("./fixtures/config")
+
 			Ω(err).Should(BeNil())
 		})
 	})

@@ -21,29 +21,34 @@ func NewManager(sysDomain, token string, cfg config.Reader) Manager {
 
 //CreateApplicationSecurityGroups -
 func (m *DefaultSecurityGroupManager) CreateApplicationSecurityGroups() error {
-
 	sgs, err := m.CloudController.ListSecurityGroups()
 	if err != nil {
-		return fmt.Errorf("Could not list security groups")
+		return err
 	}
-
 	securityGroupConfigs, err := m.Cfg.GetASGConfigs()
-
+	if err != nil {
+		return err
+	}
 	for _, input := range securityGroupConfigs {
 		sgName := input.Name
 
 		// For every named security group
 		// Check if it's a new group or Update
-		if sgGUID, ok := sgs[sgName]; ok {
-			lo.G.Info("Updating security group", sgName)
-			if err := m.CloudController.UpdateSecurityGroup(sgGUID, sgName, input.Rules); err != nil {
-				continue
+		if sgInfo, ok := sgs[sgName]; ok {
+			match, err := DoesJsonMatch(sgInfo.Rules, input.Rules)
+			if err != nil {
+				return err
+			}
+			if !match {
+				lo.G.Info("Updating security group", sgName)
+				if err := m.CloudController.UpdateSecurityGroup(sgInfo.GUID, sgName, input.Rules); err != nil {
+					return err
+				}
 			}
 		} else {
 			lo.G.Info("Creating security group", sgName)
-			_, err := m.CloudController.CreateSecurityGroup(sgName, input.Rules)
-			if err != nil {
-				continue
+			if _, err := m.CloudController.CreateSecurityGroup(sgName, input.Rules); err != nil {
+				return err
 			}
 		}
 	}

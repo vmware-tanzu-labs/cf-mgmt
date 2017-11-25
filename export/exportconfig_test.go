@@ -79,7 +79,7 @@ var _ = Describe("Export manager", func() {
 			spaces := make([]*cc.Space, 0)
 			spaces = append(spaces, space)
 
-			securityGroups := make(map[string]string, 0)
+			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 
 			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
@@ -133,7 +133,7 @@ var _ = Describe("Export manager", func() {
 			spaces := make([]*cc.Space, 0)
 			spaces = append(spaces, space)
 
-			securityGroups := make(map[string]string, 0)
+			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
@@ -191,8 +191,8 @@ var _ = Describe("Export manager", func() {
 			spaces := make([]*cc.Space, 0)
 			spaces = append(spaces, space)
 
-			securityGroups := make(map[string]string, 0)
-			securityGroups["org1-dev"] = "sgGUID"
+			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
+			securityGroups["org1-dev"] = cc.SecurityGroupInfo{GUID: "sgGUID"}
 
 			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
@@ -246,8 +246,8 @@ var _ = Describe("Export manager", func() {
 			spaces := make([]*cc.Space, 0)
 			spaces = append(spaces, space)
 
-			securityGroups := make(map[string]string, 0)
-			securityGroups["test-asg"] = "sgGUID"
+			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
+			securityGroups["test-asg"] = cc.SecurityGroupInfo{GUID: "sgGUID"}
 
 			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
@@ -291,7 +291,7 @@ var _ = Describe("Export manager", func() {
 			orgs = append(orgs, org1)
 			orgs = append(orgs, org2)
 
-			securityGroups := make(map[string]string, 0)
+			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 
 			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)

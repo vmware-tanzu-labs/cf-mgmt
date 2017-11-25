@@ -32,49 +32,49 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 	if err != nil {
 		return err
 	}
+	sgs, err := m.CloudController.ListSecurityGroups()
+	if err != nil {
+		return err
+	}
 
 	for _, input := range spaceConfigs {
-		if !input.EnableSecurityGroup {
-			continue
-		}
 		space, err := m.FindSpace(input.Org, input.Space)
 		if err != nil {
-			continue
-		}
-		sgName := fmt.Sprintf("%s-%s", input.Org, input.Space)
-		sgs, err := m.CloudController.ListSecurityGroups()
-		if err != nil {
-			continue
-		}
-		if sgGUID, ok := sgs[sgName]; ok {
-			lo.G.Info("Updating security group", sgName)
-			if err := m.CloudController.UpdateSecurityGroup(sgGUID, sgName, input.SecurityGroupContents); err != nil {
-				continue
-			}
-			lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
-			m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgGUID)
-		} else {
-			lo.G.Info("Creating security group", sgName)
-			targetSGGUID, err := m.CloudController.CreateSecurityGroup(sgName, input.SecurityGroupContents)
-			if err != nil {
-				continue
-			}
-			lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
-			m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, targetSGGUID)
+			return err
 		}
 
 		// iterate through and assign named security groups to the space - ensuring that they are up to date is
 		// done elsewhere.
-
 		for _, securityGroupName := range input.ASGs {
-			lo.G.Info("Security Group name: " + securityGroupName)
-			if sgGUID, ok := sgs[securityGroupName]; ok {
+			lo.G.Debug("Security Group name: " + securityGroupName)
+			if sgInfo, ok := sgs[securityGroupName]; ok {
 				lo.G.Info("Binding NAMED security group", securityGroupName, "to space", space.Entity.Name)
-				m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgGUID)
+				m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgInfo.GUID)
 			} else {
 				return fmt.Errorf("Security group [%s] does not exist", securityGroupName)
 			}
+		}
 
+		if !input.EnableSecurityGroup {
+			continue
+		}
+		sgName := fmt.Sprintf("%s-%s", input.Org, input.Space)
+		if sgInfo, ok := sgs[sgName]; ok {
+			lo.G.Debug("Updating security group", sgName)
+			if err := m.CloudController.UpdateSecurityGroup(sgInfo.GUID, sgName, input.SecurityGroupContents); err != nil {
+				return err
+			}
+			lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
+			m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgInfo.GUID)
+		} else {
+			lo.G.Debug("Creating security group", sgName)
+			targetSGGUID, err := m.CloudController.CreateSecurityGroup(sgName, input.SecurityGroupContents)
+			sgs[sgName] = cloudcontroller.SecurityGroupInfo{GUID: targetSGGUID, Rules: input.SecurityGroupContents}
+			if err != nil {
+				return err
+			}
+			lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
+			m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, targetSGGUID)
 		}
 	}
 	return nil
