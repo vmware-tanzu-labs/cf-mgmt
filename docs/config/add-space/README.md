@@ -18,6 +18,7 @@ Help Options:
   --org=                                    Org name
   --space=                                  Space name
   --allow-ssh=[true|false]                  Enable the Space Quota in the config
+  --enable-security-group=[true|false]      Enable space level security group definitions
   --isolation-segment=                      Isolation segment assigned to space
   --named-asg=                              Named asg(s) to assign to space, specify multiple times
 

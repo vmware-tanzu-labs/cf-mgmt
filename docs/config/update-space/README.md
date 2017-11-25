@@ -19,6 +19,7 @@ Help Options:
   --org=                                    Org name
   --space=                                  Space name
   --allow-ssh=[true|false]                  Enable the Space Quota in the config
+  --enable-security-group=[true|false]      Enable space level security group definitions
   --enable-remove-users=[true|false]        Enable removing users from the space
   --isolation-segment=                      Isolation segment assigned to space
   --clear-isolation-segment                 Sets the isolation segment to blank

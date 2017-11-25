@@ -3,7 +3,7 @@
 # `cf-mgmt update-space-security-groups`
 
 `update-space-security-groups` command will:
-- creates/updates application security groups for a given space defined in security-group.json
+- creates/updates application security groups for a given space defined in security-group.json when `enable-security-group: true`
 - assign named security groups specified in `named-security-groups: []`
 
 ## Command Usage

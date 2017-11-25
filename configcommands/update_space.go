@@ -14,6 +14,7 @@ type UpdateSpaceConfigurationCommand struct {
 	SpaceName             string     `long:"space" description:"Space name" required:"true"`
 	AllowSSH              string     `long:"allow-ssh" description:"Enable the Space Quota in the config" choice:"true" choice:"false"`
 	EnableRemoveUsers     string     `long:"enable-remove-users" description:"Enable removing users from the space" choice:"true" choice:"false"`
+	EnableSecurityGroup   string     `long:"enable-security-group" description:"Enable space level security group definitions" choice:"true" choice:"false"`
 	IsoSegment            string     `long:"isolation-segment" description:"Isolation segment assigned to space"`
 	ClearIsolationSegment bool       `long:"clear-isolation-segment" description:"Sets the isolation segment to blank"`
 	ASGs                  []string   `long:"named-asg" description:"Named asg(s) to assign to space, specify multiple times"`
@@ -40,6 +41,7 @@ func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 
 	convertToBool("allow-ssh", &spaceConfig.AllowSSH, c.AllowSSH, &errorString)
 	convertToBool("enable-remove-users", &spaceConfig.RemoveUsers, c.EnableRemoveUsers, &errorString)
+	convertToBool("enable-security-group", &spaceConfig.EnableSecurityGroup, c.EnableSecurityGroup, &errorString)
 	if c.IsoSegment != "" {
 		spaceConfig.IsoSegment = c.IsoSegment
 	}
