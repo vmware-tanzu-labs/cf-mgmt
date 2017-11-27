@@ -24,10 +24,12 @@ type AddSpaceToConfigurationCommand struct {
 
 //Execute - adds a named space to the configuration
 func (c *AddSpaceToConfigurationCommand) Execute([]string) error {
+	c.initConfig()
 	spaceConfig := &config.SpaceConfig{
 		Org:   c.OrgName,
 		Space: c.SpaceName,
 	}
+
 	asgConfigs, err := c.ConfigManager.GetASGConfigs()
 	if err != nil {
 		return err
