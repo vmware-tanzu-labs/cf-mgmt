@@ -308,9 +308,13 @@ var _ = Describe("given CloudControllerManager", func() {
 				),
 			)
 			ruleNames, err := manager.ListSpaceSecurityGroups("space-guid")
+			keys := make([]string, 0, len(ruleNames))
+			for k := range ruleNames {
+				keys = append(keys, k)
+			}
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(ruleNames).Should(HaveLen(3))
-			Ω(ruleNames).Should(ConsistOf("public_networks", "dns", "all_pcfdev"))
+			Ω(keys).Should(ConsistOf("public_networks", "dns", "all_pcfdev"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 		It("should return an error", func() {
