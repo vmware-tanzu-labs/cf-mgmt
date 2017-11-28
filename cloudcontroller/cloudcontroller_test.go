@@ -980,10 +980,10 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(privateDomains).ShouldNot(BeNil())
 			Ω(privateDomains).Should(HaveLen(4))
-			Ω(privateDomains).Should(HaveKeyWithValue("vcap.me", "4cf3bc47-eccd-4662-9322-7833c3bdcded"))
-			Ω(privateDomains).Should(HaveKeyWithValue("domain-61.example.com", "c262280e-0ccc-4e13-918a-6852f2d1e3a0"))
-			Ω(privateDomains).Should(HaveKeyWithValue("domain-62.example.com", "68f69961-f751-4b52-907c-4469009fdf74"))
-			Ω(privateDomains).Should(HaveKeyWithValue("domain-63.example.com", "8d8ed1ba-f7f3-48f1-8d9a-2dfaad91335b"))
+			Ω(privateDomains).Should(HaveKeyWithValue("vcap.me", PrivateDomainInfo{OrgGUID: "4cf3bc47-eccd-4662-9322-7833c3bdcded", PrivateDomainGUID: "b2a35f0c-d5ad-4a59-bea7-461711d96b0d"}))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain-61.example.com", PrivateDomainInfo{OrgGUID: "c262280e-0ccc-4e13-918a-6852f2d1e3a0", PrivateDomainGUID: "28db6393-cc6f-4318-a63c-f4009e8842bc"}))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain-62.example.com", PrivateDomainInfo{OrgGUID: "68f69961-f751-4b52-907c-4469009fdf74", PrivateDomainGUID: "a16ffec7-5fab-4447-861e-c38da6548c6d"}))
+			Ω(privateDomains).Should(HaveKeyWithValue("domain-63.example.com", PrivateDomainInfo{OrgGUID: "8d8ed1ba-f7f3-48f1-8d9a-2dfaad91335b", PrivateDomainGUID: "4168cdaf-1586-41a6-9e5f-d8c715c332f5"}))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 
@@ -1213,6 +1213,7 @@ var _ = Describe("given CloudControllerManager", func() {
 	})
 
 	Context("CreatePrivateDomain()", func() {
+		responseBytes, _ := ioutil.ReadFile("fixtures/create-private-domain-result.json")
 
 		It("should be successful", func() {
 			bodyBytes := []byte(`{"name":"test.com","owning_organization_guid":"5678-1234"}`)
@@ -1220,11 +1221,12 @@ var _ = Describe("given CloudControllerManager", func() {
 				CombineHandlers(
 					VerifyRequest("POST", "/v2/private_domains"),
 					VerifyBody(bodyBytes),
-					RespondWithJSONEncoded(http.StatusOK, ""),
+					RespondWith(http.StatusCreated, string(responseBytes)),
 				),
 			)
-			err := manager.CreatePrivateDomain(orgGUID, "test.com")
+			guid, err := manager.CreatePrivateDomain(orgGUID, "test.com")
 			Ω(err).ShouldNot(HaveOccurred())
+			Ω(guid).Should(BeEquivalentTo("b98aeca1-22b9-49f9-8428-3ace9ea2ba11"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 		It("should return an error", func() {
@@ -1234,7 +1236,7 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			err := manager.CreatePrivateDomain(orgGUID, "test.com")
+			_, err := manager.CreatePrivateDomain(orgGUID, "test.com")
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})

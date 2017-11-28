@@ -40,11 +40,11 @@ type Manager interface {
 	//Returns a specific quota definition for either an org or space
 	QuotaDef(quotaDefGUID string, entityType string) (*Quota, error)
 
-	ListAllPrivateDomains() (map[string]string, error)
+	ListAllPrivateDomains() (map[string]PrivateDomainInfo, error)
 	ListOrgOwnedPrivateDomains(orgGUID string) (map[string]string, error)
 	ListOrgSharedPrivateDomains(orgGUID string) (map[string]string, error)
 	DeletePrivateDomain(guid string) error
-	CreatePrivateDomain(orgGUID, privateDomain string) error
+	CreatePrivateDomain(orgGUID, privateDomain string) (string, error)
 	SharePrivateDomain(sharedOrgGUID, privateDomainGUID string) error
 	RemoveSharedPrivateDomain(sharedOrgGUID, privateDomainGUID string) error
 }
@@ -65,6 +65,11 @@ type PrivateDomainResources struct {
 type PrivateDomain struct {
 	MetaData PrivateDomainMetaData `json:"metadata"`
 	Entity   PrivateDomainEntity   `json:"entity"`
+}
+
+type PrivateDomainInfo struct {
+	OrgGUID           string
+	PrivateDomainGUID string
 }
 
 //PrivateDomainMetaData -

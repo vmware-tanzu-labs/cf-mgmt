@@ -119,10 +119,11 @@ func (mr *MockManagerMockRecorder) CreateOrg(arg0 interface{}) *gomock.Call {
 }
 
 // CreatePrivateDomain mocks base method
-func (m *MockManager) CreatePrivateDomain(arg0, arg1 string) error {
+func (m *MockManager) CreatePrivateDomain(arg0, arg1 string) (string, error) {
 	ret := m.ctrl.Call(m, "CreatePrivateDomain", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CreatePrivateDomain indicates an expected call of CreatePrivateDomain
@@ -269,9 +270,9 @@ func (mr *MockManagerMockRecorder) ListAllOrgQuotas() *gomock.Call {
 }
 
 // ListAllPrivateDomains mocks base method
-func (m *MockManager) ListAllPrivateDomains() (map[string]string, error) {
+func (m *MockManager) ListAllPrivateDomains() (map[string]cloudcontroller.PrivateDomainInfo, error) {
 	ret := m.ctrl.Call(m, "ListAllPrivateDomains")
-	ret0, _ := ret[0].(map[string]string)
+	ret0, _ := ret[0].(map[string]cloudcontroller.PrivateDomainInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -139,9 +139,9 @@ func (m *DefaultOrgManager) CreatePrivateDomains() error {
 		}
 		privateDomainMap := make(map[string]string)
 		for _, privateDomain := range orgConfig.PrivateDomains {
-			if existingOrgGUID, ok := allPrivateDomains[privateDomain]; ok {
-				if orgGUID != existingOrgGUID {
-					existingOrgName, _ := m.getOrgName(orgs, existingOrgGUID)
+			if existingPrivateDomain, ok := allPrivateDomains[privateDomain]; ok {
+				if orgGUID != existingPrivateDomain.OrgGUID {
+					existingOrgName, _ := m.getOrgName(orgs, existingPrivateDomain.OrgGUID)
 					msg := fmt.Sprintf("Private Domain %s already exists in org [%s]", privateDomain, existingOrgName)
 					lo.G.Error(msg)
 					return fmt.Errorf(msg)
@@ -149,11 +149,11 @@ func (m *DefaultOrgManager) CreatePrivateDomains() error {
 				lo.G.Infof("Private Domain %s already exists for Org %s", privateDomain, orgConfig.Org)
 			} else {
 				lo.G.Infof("Creating Private Domain %s for Org %s", privateDomain, orgConfig.Org)
-				err = m.CloudController.CreatePrivateDomain(orgGUID, privateDomain)
+				privateDomainGUID, err := m.CloudController.CreatePrivateDomain(orgGUID, privateDomain)
 				if err != nil {
 					return err
 				}
-				allPrivateDomains[privateDomain] = orgGUID
+				allPrivateDomains[privateDomain] = cloudcontroller.PrivateDomainInfo{OrgGUID: orgGUID, PrivateDomainGUID: privateDomainGUID}
 			}
 			privateDomainMap[privateDomain] = privateDomain
 		}
@@ -210,7 +210,7 @@ func (m *DefaultOrgManager) SharePrivateDomains() error {
 			if _, ok := allSharedPrivateDomains[privateDomain]; !ok {
 				if privateDomainGUID, ok := privateDomains[privateDomain]; ok {
 					lo.G.Infof("Sharing Private Domain %s for Org %s", privateDomain, orgConfig.Org)
-					err = m.CloudController.SharePrivateDomain(orgGUID, privateDomainGUID)
+					err = m.CloudController.SharePrivateDomain(orgGUID, privateDomainGUID.PrivateDomainGUID)
 					if err != nil {
 						return err
 					}

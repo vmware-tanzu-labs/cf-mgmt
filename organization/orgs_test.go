@@ -454,21 +454,21 @@ var _ = Describe("given OrgManager", func() {
 			}
 		})
 		It("should create 2 private domains", func() {
-			allPrivateDomains := make(map[string]string)
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
 			orgOwnedPrivateDomains := make(map[string]string)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
-			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test.com").Return(nil)
-			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test2.com").Return(nil)
+			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test.com").Return("test.com.guid", nil)
+			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test2.com").Return("test2.com.guid", nil)
 			mockCloudController.EXPECT().ListOrgOwnedPrivateDomains("testOrgGUID").Return(orgOwnedPrivateDomains, nil)
 			mockCloudController.EXPECT().SharePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
 			err := orgManager.CreatePrivateDomains()
 			Ω(err).Should(BeNil())
 		})
 		It("should create no private domains", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test.com"] = "testOrgGUID"
-			allPrivateDomains["test2.com"] = "testOrgGUID"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test.com"] = cloudcontroller.PrivateDomainInfo{OrgGUID: "testOrgGUID"}
+			allPrivateDomains["test2.com"] = cloudcontroller.PrivateDomainInfo{OrgGUID: "testOrgGUID"}
 			orgPrivateDomains := make(map[string]string)
 			orgPrivateDomains["test.com"] = "test.com.guid"
 			orgPrivateDomains["test2.com"] = "test2.com.guid"
@@ -481,9 +481,9 @@ var _ = Describe("given OrgManager", func() {
 		})
 
 		It("should create 2 private domains and delete 2 domains", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test3.com"] = "testOrgGUID"
-			allPrivateDomains["test4.com"] = "testOrgGUID"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test3.com"] = cloudcontroller.PrivateDomainInfo{OrgGUID: "testOrgGUID"}
+			allPrivateDomains["test4.com"] = cloudcontroller.PrivateDomainInfo{OrgGUID: "testOrgGUID"}
 			orgPrivateDomains := make(map[string]string)
 			orgPrivateDomains["test.com"] = "test.com.guid"
 			orgPrivateDomains["test2.com"] = "test2.com.guid"
@@ -491,8 +491,8 @@ var _ = Describe("given OrgManager", func() {
 			orgPrivateDomains["test4.com"] = "test4.com.guid"
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
-			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test.com").Return(nil)
-			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test2.com").Return(nil)
+			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test.com").Return("test.com.guid", nil)
+			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test2.com").Return("test2.com.guid", nil)
 			mockCloudController.EXPECT().ListOrgOwnedPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
 			mockCloudController.EXPECT().DeletePrivateDomain("test3.com.guid").Return(nil)
 			mockCloudController.EXPECT().DeletePrivateDomain("test4.com.guid").Return(nil)
@@ -501,8 +501,8 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).Should(BeNil())
 		})
 		It("should error as private domain exists in other org", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test.com"] = "testOtherOrgGUID"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test.com"] = cloudcontroller.PrivateDomainInfo{OrgGUID: "testOtherOrgGUID"}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
 			mockCloudController.EXPECT().SharePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
@@ -536,7 +536,7 @@ var _ = Describe("given OrgManager", func() {
 			}
 		})
 		It("should error when private domain doesn't exist", func() {
-			allPrivateDomains := make(map[string]string)
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
 			orgSharedPrivateDomains := make(map[string]string)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
@@ -546,9 +546,9 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err.Error()).Should(BeEquivalentTo("Private Domain [test-shared.com] is not defined"))
 		})
 		It("should share 2 private domains", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test-shared.com"] = "test-shared.comGUID"
-			allPrivateDomains["test-shared2.com"] = "test-shared2.comGUID"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test-shared.comGUID"}
+			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test-shared2.comGUID"}
 			orgSharedPrivateDomains := make(map[string]string)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
@@ -560,9 +560,9 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).Should(BeNil())
 		})
 		It("should share no private domains", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test-shared.com"] = "test-shared.comGUID"
-			allPrivateDomains["test-shared2.com"] = "test-shared2.comGUID"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test-shared.comGUID"}
+			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test-shared2.comGUID"}
 			orgSharedPrivateDomains := make(map[string]string)
 			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
 			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
@@ -574,9 +574,9 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).Should(BeNil())
 		})
 		It("should unshare 2 domains", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test-shared.com"] = "test.shared.com.guid"
-			allPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
+			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
 			orgSharedPrivateDomains := make(map[string]string)
 			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
 			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
@@ -592,11 +592,11 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).Should(BeNil())
 		})
 		It("should share 2 domains and unshare 2 domains", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test-shared.com"] = "test.shared.com.guid"
-			allPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
-			allPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
-			allPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
+			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
+			allPrivateDomains["test-shared3.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared3.com.guid"}
+			allPrivateDomains["test-shared4.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared4.com.guid"}
 			orgSharedPrivateDomains := make(map[string]string)
 			orgSharedPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
 			orgSharedPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
@@ -638,11 +638,11 @@ var _ = Describe("given OrgManager", func() {
 			}
 		})
 		It("should share 2 private domains", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test-shared.com"] = "test.shared.com.guid"
-			allPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
-			allPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
-			allPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
+			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
+			allPrivateDomains["test-shared3.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared3.com.guid"}
+			allPrivateDomains["test-shared4.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared4.com.guid"}
 			orgSharedPrivateDomains := make(map[string]string)
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
@@ -654,11 +654,11 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).Should(BeNil())
 		})
 		It("should share no private domains", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test-shared.com"] = "test.shared.com.guid"
-			allPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
-			allPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
-			allPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
+			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
+			allPrivateDomains["test-shared3.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared3.com.guid"}
+			allPrivateDomains["test-shared4.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared4.com.guid"}
 			orgSharedPrivateDomains := make(map[string]string)
 			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
 			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
@@ -670,11 +670,11 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).Should(BeNil())
 		})
 		It("should NOT unshare 2 domains", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test-shared.com"] = "test.shared.com.guid"
-			allPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
-			allPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
-			allPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
+			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
+			allPrivateDomains["test-shared3.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared3.com.guid"}
+			allPrivateDomains["test-shared4.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared4.com.guid"}
 			orgSharedPrivateDomains := make(map[string]string)
 			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
 			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
@@ -689,11 +689,11 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).Should(BeNil())
 		})
 		It("should share 2 domains and NOT unshare 2 domains", func() {
-			allPrivateDomains := make(map[string]string)
-			allPrivateDomains["test-shared.com"] = "test.shared.com.guid"
-			allPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
-			allPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
-			allPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
+			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
+			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
+			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
+			allPrivateDomains["test-shared3.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared3.com.guid"}
+			allPrivateDomains["test-shared4.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared4.com.guid"}
 
 			orgSharedPrivateDomains := make(map[string]string)
 			orgSharedPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
