@@ -5,10 +5,11 @@
 package mock_ldap
 
 import (
+	reflect "reflect"
+
+	ldap0 "github.com/go-ldap/ldap"
 	gomock "github.com/golang/mock/gomock"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap"
-	ldap0 "github.com/go-ldap/ldap"
-	reflect "reflect"
 )
 
 // MockManager is a mock of Manager interface
@@ -48,16 +49,16 @@ func (mr *MockManagerMockRecorder) GetConfig(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // GetLdapUser mocks base method
-func (m *MockManager) GetLdapUser(arg0 *ldap.Config, arg1, arg2 string) (*ldap.User, error) {
-	ret := m.ctrl.Call(m, "GetLdapUser", arg0, arg1, arg2)
+func (m *MockManager) GetLdapUser(arg0 *ldap.Config, arg1 string) (*ldap.User, error) {
+	ret := m.ctrl.Call(m, "GetLdapUser", arg0, arg1)
 	ret0, _ := ret[0].(*ldap.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetLdapUser indicates an expected call of GetLdapUser
-func (mr *MockManagerMockRecorder) GetLdapUser(arg0, arg1, arg2 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLdapUser", reflect.TypeOf((*MockManager)(nil).GetLdapUser), arg0, arg1, arg2)
+func (mr *MockManagerMockRecorder) GetLdapUser(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLdapUser", reflect.TypeOf((*MockManager)(nil).GetLdapUser), arg0, arg1)
 }
 
 // GetUser mocks base method

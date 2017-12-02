@@ -14,23 +14,6 @@ import (
 var _ = Describe("Ldap", func() {
 	var ldapManager Manager
 	var config *Config
-	Describe("loading configuration", func() {
-		Context("when there is valid ldap.yml", func() {
-			It("then it should return a config", func() {
-				config, err := NewManager().GetConfig("./fixtures/config", "test")
-				Ω(err).Should(BeNil())
-				Ω(config).ShouldNot(BeNil())
-				Ω(config.Enabled).Should(BeTrue())
-			})
-		})
-		Context("when there is invalid ldap.yml", func() {
-			It("then it should return a config", func() {
-				config, err := NewManager().GetConfig("./fixtures/blah", "test")
-				Ω(err).Should(HaveOccurred())
-				Ω(config).Should(BeNil())
-			})
-		})
-	})
 	Describe("given a ldap manager", func() {
 		BeforeEach(func() {
 			var host string
@@ -55,46 +38,25 @@ var _ = Describe("Ldap", func() {
 				LdapPort:          port,
 			}
 		})
-		Context("when ldap is unreachable", func() {
-			BeforeEach(func() { config.LdapHost = "unreachable-host" })
-			It("then GetUserIDs should return an error", func() {
-				_, err := ldapManager.GetUserIDs(config, "space_developers")
-				Ω(err).ShouldNot(BeNil())
-			})
-			It("then GetUserIDs should return an error", func() {
-				_, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org", "ou=users,dc=pivotal,dc=org")
-				Ω(err).ShouldNot(BeNil())
-			})
-		})
-		Context("when bad password", func() {
-			BeforeEach(func() { config.BindPassword = "foo" })
-			It("then LdapConnection should return an error", func() {
-				_, err := ldapManager.LdapConnection(config)
-				Ω(err).ShouldNot(BeNil())
-			})
-		})
-		Context("when bind user id has spaces", func() {
-			BeforeEach(func() {
-				config.BindDN = "cn=bind_account,ou=something with spaces,dc=pivotal,dc=org"
-				config.BindPassword = "password"
-			})
-			It("then LdapConnection should not return an error", func() {
-				_, err := ldapManager.LdapConnection(config)
-				Ω(err).Should(BeNil())
-			})
-		})
 		Context("when cn with special characters", func() {
 			It("then it should return 1 Entry", func() {
-				entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org", "ou=users,dc=pivotal,dc=org")
+				entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
+				Ω(err).Should(BeNil())
+				Ω(entry).ShouldNot(BeNil())
+			})
+		})
+		Context("when cn has a period", func() {
+			It("then it should return 1 Entry", func() {
+				entry, err := ldapManager.GetLdapUser(config, "cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org")
 				Ω(err).Should(BeNil())
 				Ω(entry).ShouldNot(BeNil())
 			})
 		})
 		Context("when called with a valid group", func() {
-			It("then it should return 4 users", func() {
+			It("then it should return 5 users", func() {
 				users, err := ldapManager.GetUserIDs(config, "space_developers")
 				Ω(err).Should(BeNil())
-				Ω(len(users) > 3).Should(BeTrue())
+				Ω(len(users)).Should(Equal(5))
 			})
 		})
 		Context("when called with a valid group with special characters", func() {
@@ -142,7 +104,7 @@ var _ = Describe("Ldap", func() {
 			})
 			Context("when cn with special characters", func() {
 				It("then it should return 1 Entry", func() {
-					entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org", "ou=users,dc=pivotal,dc=org")
+					entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
 					Ω(err).Should(BeNil())
 					Ω(entry).ShouldNot(BeNil())
 				})
@@ -161,7 +123,7 @@ var _ = Describe("Ldap", func() {
 		Context("GetLdapUser()", func() {
 			It("then it should return 1 user", func() {
 				data, _ := ioutil.ReadFile("./fixtures/user1.txt")
-				user, err := ldapManager.GetLdapUser(config, string(data), "ou=users,dc=pivotal,dc=org")
+				user, err := ldapManager.GetLdapUser(config, string(data))
 				Ω(err).Should(BeNil())
 				Ω(user).ShouldNot(BeNil())
 				Ω(user.UserID).Should(Equal("cwashburn2"))

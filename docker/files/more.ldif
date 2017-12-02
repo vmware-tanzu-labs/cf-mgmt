@@ -34,6 +34,15 @@ userpassword: password
 homephone: 555-111-2222
 mail: cwashburn+cfmt2@testdomain.com
 
+dn: cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org
+objectclass: inetOrgPerson
+cn: Caleb A. Washburn
+sn: Washburn
+uid: cwashburn3
+userpassword: password
+homephone: 555-111-2222
+mail: cwashburn+cfmt3@testdomain.com
+
 dn: cn=special\, (char) - username,ou=users,dc=pivotal,dc=org
 objectclass: inetOrgPerson
 cn: special, (char) - username
@@ -51,6 +60,7 @@ member: cn=cwashburn,ou=users,dc=pivotal,dc=org
 member: cn=cwashburn1,ou=users,dc=pivotal,dc=org
 member: cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org
 member: cn=special\, (char) - username,ou=users,dc=pivotal,dc=org
+member: cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org
 
 dn: cn=special (char) group\,name,ou=groups,dc=pivotal,dc=org
 objectClass: groupOfNames

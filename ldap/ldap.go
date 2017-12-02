@@ -103,8 +103,7 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) ([]User, e
 
 	var users []User
 	for _, userDN := range userDNList {
-		lo.G.Debug("Getting details about user: ", userDN)
-		user, err := m.getLdapUser(ldapConnection, userDN, config)
+		user, err := m.GetLdapUser(config, userDN)
 		if err != nil {
 			return nil, err
 		}
@@ -117,21 +116,7 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) ([]User, e
 	return users, nil
 }
 
-func (m *DefaultManager) GetLdapUser(config *Config, userDN, userSearchBase string) (*User, error) {
-	ldapConnection, err := m.LdapConnection(config)
-	if err != nil {
-		return nil, err
-	}
-	defer ldapConnection.Close()
-	user, err := m.getLdapUser(ldapConnection, userDN, config)
-	if err != nil {
-		lo.G.Info("User not found :", user)
-		return nil, err
-	}
-	return user, nil
-}
-
-func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN string, config *Config) (*User, error) {
+func (m *DefaultManager) GetLdapUser(config *Config, userDN string) (*User, error) {
 	lo.G.Debug("User DN:", userDN)
 	indexes := userRegexp.FindStringIndex(strings.ToUpper(userDN))
 	if len(indexes) == 0 {
@@ -141,34 +126,9 @@ func (m *DefaultManager) getLdapUser(ldapConnection *l.Conn, userDN string, conf
 	userCNTemp := m.UnescapeFilterValue(userDN[:index])
 	lo.G.Debug("CN unescaped:", userCNTemp)
 	userCN := l.EscapeFilter(strings.Replace(userCNTemp, "\\", "", -1))
-	//userCN := l.EscapeFilter(unEscapeLDAPValue(userDN[:index]))
 	lo.G.Debug("CN escaped:", userCN)
 	filter := m.getUserFilterWithDN(config, userCN)
-	lo.G.Debug("Searching for user:", filter)
-	search := l.NewSearchRequest(
-		config.UserSearchBase,
-		l.ScopeWholeSubtree,
-		l.NeverDerefAliases,
-		0,
-		0,
-		false,
-		filter,
-		attributes,
-		nil)
-
-	sr, err := ldapConnection.Search(search)
-	if err != nil {
-		lo.G.Error(err)
-	}
-	if (len(sr.Entries)) == 1 {
-		userEntry := sr.Entries[0]
-		return &User{
-			UserDN: userEntry.DN,
-			UserID: userEntry.GetAttributeValue(config.UserNameAttribute),
-			Email:  userEntry.GetAttributeValue(config.UserMailAttribute),
-		}, nil
-	}
-	return nil, nil
+	return m.searchUser(filter, config)
 }
 
 func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearchBase string) (*l.Entry, error) {
@@ -188,22 +148,28 @@ func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearch
 		lo.G.Error(err)
 		return nil, err
 	}
-	if len(sr.Entries) != 1 {
+	if len(sr.Entries) == 0 {
 		return nil, fmt.Errorf("group not found: %s", groupName)
+	}
+	if len(sr.Entries) > 1 {
+		return nil, fmt.Errorf("multiple groups found for: %s", groupName)
 	}
 	return sr.Entries[0], nil
 }
 
 func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
+	filter := m.getUserFilter(config, userID)
+	return m.searchUser(filter, config)
+}
+
+func (m *DefaultManager) searchUser(filter string, config *Config) (*User, error) {
+	lo.G.Debug("Searching for user:", filter)
+	lo.G.Debug("Using user search base:", config.UserSearchBase)
 	ldapConnection, err := m.LdapConnection(config)
 	if err != nil {
 		return nil, err
 	}
 	defer ldapConnection.Close()
-	filter := m.getUserFilter(config, userID)
-	lo.G.Debug("Searching for user:", filter)
-	lo.G.Debug("Using user search base:", config.UserSearchBase)
-
 	search := l.NewSearchRequest(
 		config.UserSearchBase,
 		l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
@@ -217,16 +183,16 @@ func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 		return nil, err
 	}
 
-	lo.G.Infof("Found %d number of entries for filter %s", len(sr.Entries), filter)
 	if (len(sr.Entries)) == 1 {
 		entry := sr.Entries[0]
 		user := &User{
 			UserDN: entry.DN,
-			UserID: userID,
+			UserID: entry.GetAttributeValue(config.UserNameAttribute),
 			Email:  entry.GetAttributeValue(config.UserMailAttribute),
 		}
 		return user, nil
 	}
+	lo.G.Infof("Found %d number of entries for filter %s", len(sr.Entries), filter)
 	return nil, nil
 }
 
@@ -243,7 +209,6 @@ func (m *DefaultManager) EscapeFilterValue(filter string) string {
 	return string(repl)
 }
 func (m *DefaultManager) UnescapeFilterValue(filter string) string {
-
 	repl := unescapeFilterRegex.ReplaceAllFunc(
 		[]byte(filter),
 		func(match []byte) []byte {

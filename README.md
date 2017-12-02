@@ -51,7 +51,7 @@ The LDAP tests require an LDAP server, which can be started with Docker:
 ```
 docker pull cwashburn/ldap
 docker run -d -p 389:389 --name ldap -t cwashburn/ldap
-RUN_INTEGRATION_TESTS=true go test ./ldap/...
+RUN_LDAP_TESTS=true go test ./ldap/...
 ```
 
 The remaining integration tests require [PCF Dev](https://pivotal.io/pcf-dev)

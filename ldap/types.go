@@ -9,7 +9,7 @@ type Manager interface {
 	GetUserIDs(config *Config, groupName string) (users []User, err error)
 	GetUser(config *Config, userID string) (*User, error)
 	GetConfig(configDir, ldapBindPassword string) (*Config, error)
-	GetLdapUser(config *Config, userDN, userSearchBase string) (*User, error)
+	GetLdapUser(config *Config, userDN string) (*User, error)
 	LdapConnection(config *Config) (*l.Conn, error)
 }
 
