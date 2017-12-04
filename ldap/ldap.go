@@ -125,10 +125,11 @@ func (m *DefaultManager) GetLdapUser(config *Config, userDN string) (*User, erro
 	index := indexes[0]
 	userCNTemp := m.UnescapeFilterValue(userDN[:index])
 	lo.G.Debug("CN unescaped:", userCNTemp)
+
 	userCN := l.EscapeFilter(strings.Replace(userCNTemp, "\\", "", -1))
 	lo.G.Debug("CN escaped:", userCN)
 	filter := m.getUserFilterWithDN(config, userCN)
-	return m.searchUser(filter, config)
+	return m.searchUser(filter, userDN[index+1:], config)
 }
 
 func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearchBase string) (*l.Entry, error) {
@@ -159,19 +160,19 @@ func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearch
 
 func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 	filter := m.getUserFilter(config, userID)
-	return m.searchUser(filter, config)
+	return m.searchUser(filter, config.UserSearchBase, config)
 }
 
-func (m *DefaultManager) searchUser(filter string, config *Config) (*User, error) {
+func (m *DefaultManager) searchUser(filter, searchBase string, config *Config) (*User, error) {
 	lo.G.Debug("Searching for user:", filter)
-	lo.G.Debug("Using user search base:", config.UserSearchBase)
+	lo.G.Debug("Using user search base:", searchBase)
 	ldapConnection, err := m.LdapConnection(config)
 	if err != nil {
 		return nil, err
 	}
 	defer ldapConnection.Close()
 	search := l.NewSearchRequest(
-		config.UserSearchBase,
+		searchBase,
 		l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
 		filter,
 		attributes,

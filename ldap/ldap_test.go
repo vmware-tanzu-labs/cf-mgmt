@@ -29,7 +29,7 @@ var _ = Describe("Ldap", func() {
 			config = &Config{
 				BindDN:            "cn=admin,dc=pivotal,dc=org",
 				BindPassword:      "password",
-				UserSearchBase:    "ou=users,dc=pivotal,dc=org",
+				UserSearchBase:    "dc=pivotal,dc=org",
 				UserNameAttribute: "uid",
 				UserMailAttribute: "mail",
 				GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
@@ -92,7 +92,7 @@ var _ = Describe("Ldap", func() {
 				config = &Config{
 					BindDN:            "cn=admin,dc=pivotal,dc=org",
 					BindPassword:      "password",
-					UserSearchBase:    "ou=users,dc=pivotal,dc=org",
+					UserSearchBase:    "dc=pivotal,dc=org",
 					UserNameAttribute: "uid",
 					UserMailAttribute: "mail",
 					GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
