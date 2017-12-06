@@ -129,7 +129,7 @@ func (m *DefaultManager) GetLdapUser(config *Config, userDN string) (*User, erro
 	userCN := l.EscapeFilter(strings.Replace(userCNTemp, "\\", "", -1))
 	lo.G.Debug("CN escaped:", userCN)
 	filter := m.getUserFilterWithDN(config, userCN)
-	return m.searchUser(filter, userDN[index+1:], config)
+	return m.searchUser(filter, userDN[index+1:], "", config)
 }
 
 func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearchBase string) (*l.Entry, error) {
@@ -160,10 +160,10 @@ func (m *DefaultManager) getGroup(ldapConnection *l.Conn, groupName, groupSearch
 
 func (m *DefaultManager) GetUser(config *Config, userID string) (*User, error) {
 	filter := m.getUserFilter(config, userID)
-	return m.searchUser(filter, config.UserSearchBase, config)
+	return m.searchUser(filter, config.UserSearchBase, userID, config)
 }
 
-func (m *DefaultManager) searchUser(filter, searchBase string, config *Config) (*User, error) {
+func (m *DefaultManager) searchUser(filter, searchBase, userID string, config *Config) (*User, error) {
 	lo.G.Debug("Searching for user:", filter)
 	lo.G.Debug("Using user search base:", searchBase)
 	ldapConnection, err := m.LdapConnection(config)
@@ -188,13 +188,16 @@ func (m *DefaultManager) searchUser(filter, searchBase string, config *Config) (
 		entry := sr.Entries[0]
 		user := &User{
 			UserDN: entry.DN,
-			UserID: entry.GetAttributeValue(config.UserNameAttribute),
 			Email:  entry.GetAttributeValue(config.UserMailAttribute),
+		}
+		if userID != "" {
+			user.UserID = userID
+		} else {
+			user.UserID = entry.GetAttributeValue(config.UserNameAttribute)
 		}
 		return user, nil
 	}
-	lo.G.Infof("Found %d number of entries for filter %s", len(sr.Entries), filter)
-	return nil, nil
+	return nil, fmt.Errorf("Found %d number of entries for filter %s", len(sr.Entries), filter)
 }
 
 func (m *DefaultManager) EscapeFilterValue(filter string) string {
