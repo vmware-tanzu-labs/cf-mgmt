@@ -10,3 +10,4 @@ compiled-output
 prepare-output
 vars.yml
 foo
+concourse-outputs

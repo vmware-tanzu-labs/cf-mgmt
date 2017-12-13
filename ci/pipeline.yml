@@ -70,3 +70,5 @@ jobs:
     - put: docker-registry
       params:
         build: prepare-output
+        tag_as_latest: true
+        tag: prepare-output/version
