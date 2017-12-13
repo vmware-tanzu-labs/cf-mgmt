@@ -38,7 +38,7 @@ var _ = BeforeSuite(func() {
 	_, err := cf("login", "--skip-ssl-validation", "-a", "https://api."+systemDomain, "-u", userId, "-p", password)
 	Expect(err).ShouldNot(HaveOccurred())
 
-	outPath, err = Build("github.com/pivotalservices/cf-mgmt")
+	outPath, err = Build("github.com/pivotalservices/cf-mgmt/cmd/cf-mgmt")
 	Expect(err).ShouldNot(HaveOccurred())
 })
 
@@ -131,7 +131,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				Expect(bytes.Contains(spaces, []byte("No spaces found"))).Should(BeTrue())
 			})
 
-			It("should complete successfully without password", func() {
+			FIt("should complete successfully without password", func() {
 				orgs, err := cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(orgs, []byte("test1"))).ShouldNot(BeTrue())
@@ -192,7 +192,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				Expect(bytes.Contains(spaces, []byte("No spaces found"))).Should(BeTrue())
 
 				By("updating isolation segments")
-				updateIsoSegmentsCommand := exec.Command(outPath, "update-iso-segments",
+				updateIsoSegmentsCommand := exec.Command(outPath, "isolation-segments",
 					"--config-dir", configDir,
 					"--system-domain", systemDomain,
 					"--user-id", "cf-mgmt",

@@ -18,8 +18,8 @@ type Segment struct {
 }
 
 // NewUpdater creates an updater that runs against the specified CF endpoint.
-func NewUpdater(cfmgmtVersion, systemDomain, uaaToken string, cfg config.Manager) (*Updater, error) {
-	ccClient, err := ccv3Client(cfmgmtVersion, fmt.Sprintf("https://api.%s", systemDomain), uaaToken)
+func NewUpdater(cfmgmtVersion, systemDomain, uaaToken, clientID, clientSecret string, cfg config.Manager) (*Updater, error) {
+	ccClient, err := ccv3Client(cfmgmtVersion, fmt.Sprintf("https://api.%s", systemDomain), uaaToken, clientID, clientSecret)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create cloud controller API client: %v", err)
 	}

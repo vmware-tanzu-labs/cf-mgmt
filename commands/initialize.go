@@ -71,7 +71,7 @@ func InitializeManagers(baseCommand BaseCFConfigCommand) (*CFMgmt, error) {
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(cfMgmt.SystemDomain, cfToken, cfg)
 
 	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
-	if isoSegmentUpdater, err := isosegment.NewUpdater(configcommands.VERSION, cfMgmt.SystemDomain, cfToken, cfg); err == nil {
+	if isoSegmentUpdater, err := isosegment.NewUpdater(configcommands.VERSION, cfMgmt.SystemDomain, cfToken, baseCommand.UserID, baseCommand.ClientSecret, cfg); err == nil {
 		cfMgmt.IsolationSegmentUpdater = isoSegmentUpdater
 	} else {
 		return nil, err
