@@ -5,11 +5,10 @@
 package mock_ldap
 
 import (
-	reflect "reflect"
-
-	ldap0 "github.com/go-ldap/ldap"
 	gomock "github.com/golang/mock/gomock"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap"
+	ldap0 "github.com/go-ldap/ldap"
+	reflect "reflect"
 )
 
 // MockManager is a mock of Manager interface

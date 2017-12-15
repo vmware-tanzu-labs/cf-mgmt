@@ -5,10 +5,9 @@
 package mock_cloudcontroller
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	cloudcontroller "github.com/pivotalservices/cf-mgmt/cloudcontroller"
+	reflect "reflect"
 )
 
 // MockManager is a mock of Manager interface

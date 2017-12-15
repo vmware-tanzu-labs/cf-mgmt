@@ -107,7 +107,7 @@ func filesCfMgmtYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "files/cf-mgmt.yml", size: 198, mode: os.FileMode(420), modTime: time.Unix(1510432475, 0)}
+	info := bindataFileInfo{name: "files/cf-mgmt.yml", size: 198, mode: os.FileMode(420), modTime: time.Unix(1512503607, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -127,7 +127,7 @@ func filesPipelineYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "files/pipeline.yml", size: 5807, mode: os.FileMode(420), modTime: time.Unix(1511384693, 0)}
+	info := bindataFileInfo{name: "files/pipeline.yml", size: 5807, mode: os.FileMode(420), modTime: time.Unix(1511384796, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
