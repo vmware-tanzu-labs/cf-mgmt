@@ -3,10 +3,11 @@ package config
 
 // DefaultProtectedOrgs lists the organizations that are considered protected
 // and should never be deleted by cf-mgmt.
-var DefaultProtectedOrgs = map[string]bool{
-	"system":                  true,
-	"p-spring-cloud-services": true,
-	"splunk-nozzle-org":       true,
+var DefaultProtectedOrgs = []string{
+	"system",
+	"p-spring-cloud-services",
+	"splunk-nozzle-org",
+	"redis-test-ORG*",
 }
 
 // Manager can read and write the cf-mgmt configuration.

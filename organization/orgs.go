@@ -2,6 +2,7 @@ package organization
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -278,10 +279,7 @@ func (m *DefaultOrgManager) DeleteOrgs(peekDeletion bool) error {
 	for _, orgName := range orgsConfig.Orgs {
 		configuredOrgs[orgName] = true
 	}
-	protectedOrgs := config.DefaultProtectedOrgs
-	for _, orgName := range orgsConfig.ProtectedOrgs {
-		protectedOrgs[orgName] = true
-	}
+	protectedOrgs := append(config.DefaultProtectedOrgs, orgsConfig.ProtectedOrgs...)
 
 	orgs, err := m.CloudController.ListOrgs()
 	if err != nil {
@@ -291,10 +289,10 @@ func (m *DefaultOrgManager) DeleteOrgs(peekDeletion bool) error {
 	orgsToDelete := make([]*cloudcontroller.Org, 0)
 	for _, org := range orgs {
 		if _, exists := configuredOrgs[org.Entity.Name]; !exists {
-			if _, protected := protectedOrgs[org.Entity.Name]; !protected {
+			if shouldDeleteOrg(org.Entity.Name, protectedOrgs) {
 				orgsToDelete = append(orgsToDelete, org)
 			} else {
-				lo.G.Debugf("Protected org [%s] - will not be deleted", org.Entity.Name)
+				lo.G.Infof("Protected org [%s] - will not be deleted", org.Entity.Name)
 			}
 		}
 	}
@@ -313,6 +311,16 @@ func (m *DefaultOrgManager) DeleteOrgs(peekDeletion bool) error {
 	}
 
 	return nil
+}
+
+func shouldDeleteOrg(orgName string, protectedOrgs []string) bool {
+	for _, protectedOrgName := range protectedOrgs {
+		match, _ := regexp.MatchString(protectedOrgName, orgName)
+		if match {
+			return false
+		}
+	}
+	return true
 }
 
 func doesOrgExist(orgName string, orgs []*cloudcontroller.Org) bool {

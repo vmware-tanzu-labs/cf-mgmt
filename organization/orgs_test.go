@@ -194,6 +194,14 @@ var _ = Describe("given OrgManager", func() {
 						GUID: "test2-guid",
 					},
 				},
+				&cloudcontroller.Org{
+					Entity: cloudcontroller.OrgEntity{
+						Name: "redis-test-ORG-1-2017_10_04-20h06m33.481s",
+					},
+					MetaData: cloudcontroller.OrgMetaData{
+						GUID: "redis-guid",
+					},
+				},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().DeleteOrg("test2-guid").Return(nil)

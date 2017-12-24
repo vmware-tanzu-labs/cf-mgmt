@@ -2,3 +2,5 @@ orgs:
 - test
 enable-delete-orgs: true
 protected_orgs:
+- foo
+- redis-test-ORG*
