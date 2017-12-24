@@ -60,22 +60,22 @@ func (m *DefaultOrgManager) CreateQuotas() error {
 			AppInstanceLimit:        input.AppInstanceLimit,
 		}
 		if quotaGUID, ok := quotas[quotaName]; ok {
-			lo.G.Info("Updating quota", quotaName)
+			lo.G.Debug("Updating quota", quotaName)
 
 			if err = m.CloudController.UpdateQuota(quotaGUID, quota); err != nil {
 				return err
 			}
-			lo.G.Info("Assigning", quotaName, "to", org.Entity.Name)
+			lo.G.Debug("Assigning", quotaName, "to", org.Entity.Name)
 			if err = m.CloudController.AssignQuotaToOrg(org.MetaData.GUID, quotaGUID); err != nil {
 				return err
 			}
 		} else {
-			lo.G.Info("Creating quota", quotaName)
+			lo.G.Debug("Creating quota", quotaName)
 			targetQuotaGUID, err := m.CloudController.CreateQuota(quota)
 			if err != nil {
 				return err
 			}
-			lo.G.Info("Assigning", quotaName, "to", org.Entity.Name)
+			lo.G.Debug("Assigning", quotaName, "to", org.Entity.Name)
 			if err := m.CloudController.AssignQuotaToOrg(org.MetaData.GUID, targetQuotaGUID); err != nil {
 				return err
 			}
@@ -106,7 +106,7 @@ func (m *DefaultOrgManager) CreateOrgs() error {
 
 	for _, org := range desiredOrgs {
 		if doesOrgExist(org.Org, currentOrgs) {
-			lo.G.Infof("[%s] org already exists", org.Org)
+			lo.G.Debugf("[%s] org already exists", org.Org)
 			continue
 		}
 		lo.G.Infof("Creating [%s] org", org.Org)
@@ -146,7 +146,7 @@ func (m *DefaultOrgManager) CreatePrivateDomains() error {
 					lo.G.Error(msg)
 					return fmt.Errorf(msg)
 				}
-				lo.G.Infof("Private Domain %s already exists for Org %s", privateDomain, orgConfig.Org)
+				lo.G.Debugf("Private Domain %s already exists for Org %s", privateDomain, orgConfig.Org)
 			} else {
 				lo.G.Infof("Creating Private Domain %s for Org %s", privateDomain, orgConfig.Org)
 				privateDomainGUID, err := m.CloudController.CreatePrivateDomain(orgGUID, privateDomain)
@@ -159,7 +159,7 @@ func (m *DefaultOrgManager) CreatePrivateDomains() error {
 		}
 
 		if orgConfig.RemovePrivateDomains {
-			lo.G.Infof("Looking for private domains to remove for org [%s]", orgConfig.Org)
+			lo.G.Debugf("Looking for private domains to remove for org [%s]", orgConfig.Org)
 			orgPrivateDomains, err := m.CloudController.ListOrgOwnedPrivateDomains(orgGUID)
 			if err != nil {
 				return err
@@ -174,7 +174,7 @@ func (m *DefaultOrgManager) CreatePrivateDomains() error {
 				}
 			}
 		} else {
-			lo.G.Infof("Private domains will not be removed for org [%s], must set enable-remove-private-domains: true in orgConfig.yml", orgConfig.Org)
+			lo.G.Debugf("Private domains will not be removed for org [%s], must set enable-remove-private-domains: true in orgConfig.yml", orgConfig.Org)
 		}
 	}
 
@@ -222,7 +222,7 @@ func (m *DefaultOrgManager) SharePrivateDomains() error {
 		}
 
 		if orgConfig.RemoveSharedPrivateDomains {
-			lo.G.Infof("Looking for shared private domains to remove for org [%s]", orgConfig.Org)
+			lo.G.Debugf("Looking for shared private domains to remove for org [%s]", orgConfig.Org)
 			orgSharedPrivateDomains, err := m.CloudController.ListOrgSharedPrivateDomains(orgGUID)
 			if err != nil {
 				return err
@@ -237,7 +237,7 @@ func (m *DefaultOrgManager) SharePrivateDomains() error {
 				}
 			}
 		} else {
-			lo.G.Infof("Shared private domains will not be removed for org [%s], must set enable-remove-shared-private-domains: true in orgConfig.yml", orgConfig.Org)
+			lo.G.Debugf("Shared private domains will not be removed for org [%s], must set enable-remove-shared-private-domains: true in orgConfig.yml", orgConfig.Org)
 		}
 	}
 
@@ -270,7 +270,7 @@ func (m *DefaultOrgManager) DeleteOrgs(peekDeletion bool) error {
 	}
 
 	if !orgsConfig.EnableDeleteOrgs {
-		lo.G.Info("Org deletion is not enabled.  Set enable-delete-orgs: true")
+		lo.G.Debug("Org deletion is not enabled.  Set enable-delete-orgs: true")
 		return nil
 	}
 
@@ -294,18 +294,18 @@ func (m *DefaultOrgManager) DeleteOrgs(peekDeletion bool) error {
 			if _, protected := protectedOrgs[org.Entity.Name]; !protected {
 				orgsToDelete = append(orgsToDelete, org)
 			} else {
-				lo.G.Info(fmt.Sprintf("Protected org [%s] - will not be deleted", org.Entity.Name))
+				lo.G.Debugf("Protected org [%s] - will not be deleted", org.Entity.Name)
 			}
 		}
 	}
 
 	if peekDeletion {
 		for _, org := range orgsToDelete {
-			lo.G.Info(fmt.Sprintf("Peek - Would Delete [%s] org", org.Entity.Name))
+			lo.G.Infof("Peek - Would Delete [%s] org", org.Entity.Name)
 		}
 	} else {
 		for _, org := range orgsToDelete {
-			lo.G.Info(fmt.Sprintf("Deleting [%s] org", org.Entity.Name))
+			lo.G.Infof("Deleting [%s] org", org.Entity.Name)
 			if err := m.CloudController.DeleteOrg(org.MetaData.GUID); err != nil {
 				return err
 			}

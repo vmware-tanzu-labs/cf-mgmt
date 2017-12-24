@@ -21,7 +21,7 @@ func NewManager(systemDomain, uuacToken string) (mgr Manager) {
 func (m *DefaultUAACManager) CreateExternalUser(userName, userEmail, externalID, origin string) error {
 	if userName == "" || userEmail == "" || externalID == "" {
 		msg := fmt.Sprintf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID)
-		lo.G.Info(msg)
+		lo.G.Error(msg)
 		return errors.New(msg)
 	}
 	url := fmt.Sprintf("%s/Users", m.Host)
@@ -61,13 +61,13 @@ func (m *DefaultUAACManager) UsersByID() (userIDMap map[string]User, err error) 
 
 //TODO Anwar - Make this API use pagination
 func getUsers(host string, uaacToken string) (userList *UserList, err error) {
-	lo.G.Info("Getting users from Cloud Foundry")
+	lo.G.Debug("Getting users from Cloud Foundry")
 	url := fmt.Sprintf("%s/Users?count=5000", host)
 	userList = new(UserList)
 	if err := http.NewManager().Get(url, uaacToken, userList); err != nil {
 		return nil, fmt.Errorf("couldn't retrieve users: %v", err)
 	}
-	lo.G.Infof("Found %d users in the CF instance", len(userList.Users))
+	lo.G.Debugf("Found %d users in the CF instance", len(userList.Users))
 	return userList, nil
 }
 

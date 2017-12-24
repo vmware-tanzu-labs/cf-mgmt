@@ -129,9 +129,36 @@ var _ = Describe("cf-mgmt cli", func() {
 				spaces, err = cf("spaces")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(spaces, []byte("No spaces found"))).Should(BeTrue())
+
+				By("updating isolation segments")
+				updateIsoSegmentsCommand := exec.Command(outPath, "isolation-segments",
+					"--config-dir", configDir,
+					"--system-domain", systemDomain,
+					"--user-id", userId,
+					"--password", password,
+					"--client-secret", clientSecret)
+				session, err = Start(updateIsoSegmentsCommand, GinkgoWriter, GinkgoWriter)
+				Expect(err).ShouldNot(HaveOccurred())
+				Eventually(session).Should(Exit(0))
+
+				is, err := cf("isolation-segments")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(bytes.Contains(is, []byte("test1-iso-segment"))).Should(BeTrue())
+				Expect(bytes.Contains(is, []byte("test2-iso-segment"))).Should(BeTrue())
+
+				// test1-iso-segment should be default for org test1, space dev
+				cf("target", "-o", "test1")
+				spaceInfo, err := cf("space", "dev")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(bytes.Contains(spaceInfo, []byte("test1-iso-segment"))).Should(BeTrue())
+
+				// test2-iso-segment should be default for all of org test2
+				orgInfo, err := cf("org", "test2")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(bytes.Contains(orgInfo, []byte("test2-iso-segment"))).Should(BeTrue())
 			})
 
-			FIt("should complete successfully without password", func() {
+			It("should complete successfully without password", func() {
 				orgs, err := cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(orgs, []byte("test1"))).ShouldNot(BeTrue())

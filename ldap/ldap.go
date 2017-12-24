@@ -91,13 +91,13 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) ([]User, e
 
 	groupEntry, err := m.getGroup(ldapConnection, groupName, config.GroupSearchBase)
 	if err != nil || groupEntry == nil {
-		lo.G.Info("group not found:", groupName)
+		lo.G.Errorf("group not found: %s", groupName)
 		return nil, err
 	}
 
 	userDNList := groupEntry.GetAttributeValues(config.GroupAttribute)
 	if len(userDNList) == 0 {
-		lo.G.Info("No users found under group:", config.GroupAttribute)
+		lo.G.Warningf("No users found under group: %s", config.GroupAttribute)
 		return nil, nil
 	}
 
@@ -110,7 +110,7 @@ func (m *DefaultManager) GetUserIDs(config *Config, groupName string) ([]User, e
 		if user != nil {
 			users = append(users, *user)
 		} else {
-			lo.G.Infof("User entry: %s not found", userDN)
+			lo.G.Warningf("User entry: %s not found", userDN)
 		}
 	}
 	return users, nil

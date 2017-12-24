@@ -48,7 +48,7 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 		for _, securityGroupName := range input.ASGs {
 			lo.G.Debug("Security Group name: " + securityGroupName)
 			if sgInfo, ok := sgs[securityGroupName]; ok {
-				lo.G.Info("Binding NAMED security group", securityGroupName, "to space", space.Entity.Name)
+				lo.G.Infof("Binding NAMED security group %s to space %s", securityGroupName, space.Entity.Name)
 				m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgInfo.GUID)
 			} else {
 				return fmt.Errorf("Security group [%s] does not exist", securityGroupName)
@@ -75,7 +75,7 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 			}
 			sgGUID = targetSGGUID
 		}
-		lo.G.Info("Binding security group", sgName, "to space", space.Entity.Name)
+		lo.G.Infof("Binding security group %s to space %s", sgName, space.Entity.Name)
 		m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgGUID)
 	}
 	return nil
@@ -117,19 +117,19 @@ func (m *DefaultSpaceManager) CreateQuotas(configDir string) error {
 			},
 		}
 		if quotaGUID, ok := quotas[quotaName]; ok {
-			lo.G.Info("Updating quota", quotaName)
+			lo.G.Debug("Updating quota", quotaName)
 			if err := m.CloudController.UpdateSpaceQuota(quotaGUID, quota); err != nil {
 				continue
 			}
-			lo.G.Info("Assigning", quotaName, "to", space.Entity.Name)
+			lo.G.Infof("Assigning %s to %s", quotaName, space.Entity.Name)
 			m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, quotaGUID)
 		} else {
-			lo.G.Info("Creating quota", quotaName)
+			lo.G.Debug("Creating quota", quotaName)
 			targetQuotaGUID, err := m.CloudController.CreateSpaceQuota(quota)
 			if err != nil {
 				continue
 			}
-			lo.G.Info("Assigning", quotaName, "to", space.Entity.Name)
+			lo.G.Infof("Assigning %s to %s", quotaName, space.Entity.Name)
 			m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, targetQuotaGUID)
 		}
 	}
@@ -147,7 +147,7 @@ func (m *DefaultSpaceManager) UpdateSpaces(configDir string) error {
 		if err != nil {
 			continue
 		}
-		lo.G.Info("Processing space", space.Entity.Name)
+		lo.G.Debug("Processing space", space.Entity.Name)
 		if input.AllowSSH != space.Entity.AllowSSH {
 			if err := m.CloudController.UpdateSpaceSSH(input.AllowSSH, space.MetaData.GUID); err != nil {
 				return err
@@ -277,7 +277,7 @@ func (m *DefaultSpaceManager) CreateSpaces(configDir, ldapBindPassword string) e
 		}
 		for _, spaceName := range input.Spaces {
 			if m.doesSpaceExist(spaces, spaceName) {
-				lo.G.Infof("[%s] space already exists", spaceName)
+				lo.G.Debugf("[%s] space already exists", spaceName)
 				continue
 			}
 			lo.G.Infof("Creating [%s] space in [%s] org", spaceName, input.Org)
@@ -340,7 +340,7 @@ func (m *DefaultSpaceManager) DeleteSpaces(configDir string, peekDeletion bool) 
 	for _, input := range configSpaceList {
 
 		if !input.EnableDeleteSpaces {
-			lo.G.Info(fmt.Sprintf("Space deletion is not enabled for %s.  Set enable-delete-spaces: true in spaces.yml", input.Org))
+			lo.G.Debugf("Space deletion is not enabled for %s.  Set enable-delete-spaces: true in spaces.yml", input.Org)
 			continue //Skip all orgs that have not opted-in
 		}
 
@@ -367,11 +367,11 @@ func (m *DefaultSpaceManager) DeleteSpaces(configDir string, peekDeletion bool) 
 
 		if peekDeletion {
 			for _, space := range spacesToDelete {
-				lo.G.Info(fmt.Sprintf("Peek - Would Delete [%s] space in org %s", space.Entity.Name, input.Org))
+				lo.G.Infof("Peek - Would Delete [%s] space in org %s", space.Entity.Name, input.Org)
 			}
 		} else {
 			for _, space := range spacesToDelete {
-				lo.G.Info(fmt.Sprintf("Deleting [%s] space in org %s", space.Entity.Name, input.Org))
+				lo.G.Infof("Deleting [%s] space in org %s", space.Entity.Name, input.Org)
 				if err := m.CloudController.DeleteSpace(space.MetaData.GUID); err != nil {
 					return err
 				}

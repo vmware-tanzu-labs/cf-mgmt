@@ -32,7 +32,7 @@ func (m *DefaultManager) ListSpaces(orgGUID string) ([]*Space, error) {
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Info("Total spaces returned :", len(spaceResources.Spaces))
+	lo.G.Debug("Total spaces returned :", len(spaceResources.Spaces))
 	return spaceResources.Spaces, nil
 
 }
@@ -88,7 +88,7 @@ func (m *DefaultManager) ListSecurityGroups() (map[string]SecurityGroupInfo, err
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Info("Total security groups returned :", len(sgResources.SecurityGroups))
+	lo.G.Debug("Total security groups returned :", len(sgResources.SecurityGroups))
 	for _, sg := range sgResources.SecurityGroups {
 		bytes, _ := json.Marshal(sg.Entity.Rules)
 		securityGroups[sg.Entity.Name] = SecurityGroupInfo{
@@ -138,7 +138,7 @@ func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) (map[string]s
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Info("Total security groups returned :", len(sgResources.SecurityGroups))
+	lo.G.Debug("Total security groups returned :", len(sgResources.SecurityGroups))
 	names := make(map[string]string)
 	for _, sg := range sgResources.SecurityGroups {
 		names[sg.Entity.Name] = sg.MetaData.GUID
@@ -193,7 +193,7 @@ func (m *DefaultManager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]st
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Info("Total space quotas returned :", len(quotaResources.Quotas))
+	lo.G.Debug("Total space quotas returned :", len(quotaResources.Quotas))
 	for _, quota := range quotaResources.Quotas {
 		quotas[quota.Entity.Name] = quota.MetaData.GUID
 	}
@@ -240,7 +240,7 @@ func (m *DefaultManager) ListOrgs() ([]*Org, error) {
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Info("Total orgs returned :", len(orgs.Orgs))
+	lo.G.Debug("Total orgs returned :", len(orgs.Orgs))
 	return orgs.Orgs, nil
 }
 
@@ -258,7 +258,7 @@ func (m *DefaultManager) ListAllOrgQuotas() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Info("Total org quotas returned :", len(quotaResources.Quotas))
+	lo.G.Debug("Total org quotas returned :", len(quotaResources.Quotas))
 	for _, quota := range quotaResources.Quotas {
 		quotas[quota.Entity.Name] = quota.MetaData.GUID
 	}
@@ -308,7 +308,7 @@ func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[st
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Info("Total users returned :", len(users.Users))
+	lo.G.Debug("Total users returned :", len(users.Users))
 
 	for _, user := range users.Users {
 		userMap[strings.ToLower(user.Entity.UserName)] = user.MetaData.GUID
@@ -348,7 +348,7 @@ func (m *DefaultManager) ListAllPrivateDomains() (map[string]PrivateDomainInfo, 
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Info("Total private domains returned :", len(privateDomainResources.PrivateDomains))
+	lo.G.Debug("Total private domains returned :", len(privateDomainResources.PrivateDomains))
 	privateDomainMap := make(map[string]PrivateDomainInfo)
 	for _, privateDomain := range privateDomainResources.PrivateDomains {
 		privateDomainMap[privateDomain.Entity.Name] = PrivateDomainInfo{
@@ -394,7 +394,7 @@ func (m *DefaultManager) listOrgPrivateDomains(orgGUID string) ([]*PrivateDomain
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Info("Total private domains returned :", len(privateDomainResources.PrivateDomains))
+	lo.G.Debug("Total private domains returned :", len(privateDomainResources.PrivateDomains))
 	return privateDomainResources.PrivateDomains, nil
 }
 
