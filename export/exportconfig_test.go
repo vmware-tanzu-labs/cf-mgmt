@@ -12,8 +12,8 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	. "github.com/pivotalservices/cf-mgmt/export"
 
-	"github.com/pivotalservices/cf-mgmt/uaac"
-	uaacmock "github.com/pivotalservices/cf-mgmt/uaac/mocks"
+	"github.com/pivotalservices/cf-mgmt/uaa"
+	uaamock "github.com/pivotalservices/cf-mgmt/uaa/mocks"
 )
 
 func cloudControllerOrgUserMock(mockController *ccmock.MockManager, entityGUID string, mangers, billingManagers, auditors map[string]string) {
@@ -32,14 +32,14 @@ var _ = Describe("Export manager", func() {
 	Describe("Create new manager", func() {
 		It("should return new manager", func() {
 			ctrl := gomock.NewController(test)
-			manager := NewExportManager("config", uaacmock.NewMockManager(ctrl), ccmock.NewMockManager(ctrl))
+			manager := NewExportManager("config", uaamock.NewMockManager(ctrl), ccmock.NewMockManager(ctrl))
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})
 	var (
 		ctrl           *gomock.Controller
 		mockController *ccmock.MockManager
-		mockUaac       *uaacmock.MockManager
+		mockUaa        *uaamock.MockManager
 		exportManager  Manager
 		configManager  config.Manager
 		excludedOrgs   map[string]string
@@ -49,8 +49,8 @@ var _ = Describe("Export manager", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(test)
 		mockController = ccmock.NewMockManager(ctrl)
-		mockUaac = uaacmock.NewMockManager(ctrl)
-		exportManager = NewExportManager("test/config", mockUaac, mockController)
+		mockUaa = uaamock.NewMockManager(ctrl)
+		exportManager = NewExportManager("test/config", mockUaa, mockController)
 		configManager = config.NewManager("test/config")
 		excludedOrgs = make(map[string]string)
 		excludedSpaces = make(map[string]string)
@@ -66,10 +66,10 @@ var _ = Describe("Export manager", func() {
 
 			orgId := "org1-1234"
 			spaceId := "dev-1234"
-			userIDToUserMap := make(map[string]uaac.User, 0)
+			userIDToUserMap := make(map[string]uaa.User, 0)
 			orgs := make([]*cc.Org, 0)
-			user1 := uaac.User{ID: "1", Origin: "ldap", UserName: "user1"}
-			user2 := uaac.User{ID: "2", Origin: "uaa", UserName: "user2"}
+			user1 := uaa.User{ID: "1", Origin: "ldap", UserName: "user1"}
+			user2 := uaa.User{ID: "2", Origin: "uaa", UserName: "user2"}
 			userIDToUserMap["user1"] = user1
 			userIDToUserMap["user2"] = user2
 
@@ -81,7 +81,7 @@ var _ = Describe("Export manager", func() {
 
 			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 
-			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
+			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
@@ -124,9 +124,9 @@ var _ = Describe("Export manager", func() {
 
 			orgId := "org1-1234"
 			spaceId := "dev-1234"
-			userIDToUserMap := make(map[string]uaac.User, 0)
+			userIDToUserMap := make(map[string]uaa.User, 0)
 			orgs := make([]*cc.Org, 0)
-			user1 := uaac.User{ID: "1", Origin: "ldap", UserName: "user1"}
+			user1 := uaa.User{ID: "1", Origin: "ldap", UserName: "user1"}
 			userIDToUserMap["user1"] = user1
 			orgQuotaGUID := "54gdgf45454"
 			spaceQuotaGUID := "75gdgf45454"
@@ -137,7 +137,7 @@ var _ = Describe("Export manager", func() {
 			spaces = append(spaces, space)
 
 			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
-			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
+			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
@@ -184,9 +184,9 @@ var _ = Describe("Export manager", func() {
 ]`
 			orgId := "org1-1234"
 			spaceId := "dev-1234"
-			userIDToUserMap := make(map[string]uaac.User, 0)
+			userIDToUserMap := make(map[string]uaa.User, 0)
 			orgs := make([]*cc.Org, 0)
-			user1 := uaac.User{ID: "1", Origin: "ldap", UserName: "user1"}
+			user1 := uaa.User{ID: "1", Origin: "ldap", UserName: "user1"}
 			userIDToUserMap["user1"] = user1
 			org1 := &cc.Org{Entity: cc.OrgEntity{Name: "org1"}, MetaData: cc.OrgMetaData{GUID: orgId}}
 			space := &cc.Space{Entity: cc.SpaceEntity{Name: "dev", AllowSSH: true}, MetaData: cc.SpaceMetaData{GUID: spaceId}}
@@ -197,7 +197,7 @@ var _ = Describe("Export manager", func() {
 			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 			securityGroups["org1-dev"] = cc.SecurityGroupInfo{GUID: "sgGUID"}
 
-			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
+			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().GetSecurityGroupRules("sgGUID").Return([]byte(sgRules), nil)
@@ -239,9 +239,9 @@ var _ = Describe("Export manager", func() {
 ]`
 			orgId := "org1-1234"
 			spaceId := "dev-1234"
-			userIDToUserMap := make(map[string]uaac.User, 0)
+			userIDToUserMap := make(map[string]uaa.User, 0)
 			orgs := make([]*cc.Org, 0)
-			user1 := uaac.User{ID: "1", Origin: "ldap", UserName: "user1"}
+			user1 := uaa.User{ID: "1", Origin: "ldap", UserName: "user1"}
 			userIDToUserMap["user1"] = user1
 			org1 := &cc.Org{Entity: cc.OrgEntity{Name: "org1"}, MetaData: cc.OrgMetaData{GUID: orgId}}
 			space := &cc.Space{Entity: cc.SpaceEntity{Name: "dev", AllowSSH: true}, MetaData: cc.SpaceMetaData{GUID: spaceId}}
@@ -252,7 +252,7 @@ var _ = Describe("Export manager", func() {
 			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 			securityGroups["test-asg"] = cc.SecurityGroupInfo{GUID: "sgGUID"}
 
-			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
+			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().GetSecurityGroupRules("sgGUID").Return([]byte(sgRules), nil)
@@ -283,9 +283,9 @@ var _ = Describe("Export manager", func() {
 
 			orgId1 := "org1"
 			orgId2 := "org2"
-			userIDToUserMap := make(map[string]uaac.User, 0)
+			userIDToUserMap := make(map[string]uaa.User, 0)
 			orgs := make([]*cc.Org, 0)
-			user1 := uaac.User{ID: "1", Origin: "ldap", UserName: "user1"}
+			user1 := uaa.User{ID: "1", Origin: "ldap", UserName: "user1"}
 			userIDToUserMap["user1"] = user1
 
 			org1 := &cc.Org{Entity: cc.OrgEntity{Name: "org1"}, MetaData: cc.OrgMetaData{GUID: orgId1}}
@@ -296,7 +296,7 @@ var _ = Describe("Export manager", func() {
 
 			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 
-			mockUaac.EXPECT().UsersByID().Return(userIDToUserMap, nil)
+			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId1).Return([]*cc.Space{}, nil)

@@ -15,22 +15,15 @@ import (
 	o "github.com/pivotalservices/cf-mgmt/organization/mocks"
 	. "github.com/pivotalservices/cf-mgmt/space"
 	s "github.com/pivotalservices/cf-mgmt/space/mocks"
-	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
+	uaa "github.com/pivotalservices/cf-mgmt/uaa/mocks"
 )
 
 var _ = Describe("given SpaceManager", func() {
-	Describe("create new manager", func() {
-		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/space-defaults"))
-			Ω(manager).ShouldNot(BeNil())
-		})
-	})
-
 	var (
 		ctrl                *gomock.Controller
 		mockCloudController *cc.MockManager
 		mockLdap            *ldap.MockManager
-		mockUaac            *uaac.MockManager
+		mockuaa             *uaa.MockManager
 		mockOrgMgr          *o.MockManager
 		mockUserMgr         *s.MockUserMgr
 		spaceManager        DefaultSpaceManager
@@ -40,14 +33,14 @@ var _ = Describe("given SpaceManager", func() {
 		ctrl = gomock.NewController(test)
 		mockCloudController = cc.NewMockManager(ctrl)
 		mockLdap = ldap.NewMockManager(ctrl)
-		mockUaac = uaac.NewMockManager(ctrl)
+		mockuaa = uaa.NewMockManager(ctrl)
 		mockOrgMgr = o.NewMockManager(ctrl)
 		mockUserMgr = s.NewMockUserMgr(ctrl)
 
 		spaceManager = DefaultSpaceManager{
 			Cfg:             config.NewManager("./fixtures/config"),
 			CloudController: mockCloudController,
-			UAACMgr:         mockUaac,
+			UAAMgr:          mockuaa,
 			LdapMgr:         mockLdap,
 			OrgMgr:          mockOrgMgr,
 			UserMgr:         mockUserMgr,
@@ -154,16 +147,16 @@ var _ = Describe("given SpaceManager", func() {
 				},
 			},
 			}
-			uaacUsers := make(map[string]string)
-			uaacUsers["cwashburn"] = "cwashburn"
+			uaaUsers := make(map[string]string)
+			uaaUsers["cwashburn"] = "cwashburn"
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return([]*cloudcontroller.Space{}, nil)
 			mockLdap.EXPECT().GetConfig("./fixtures/default_config", "test_pwd").Return(ldapCfg, nil)
 			mockCloudController.EXPECT().CreateSpace("space1", "testOrgGUID").Return(nil)
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
-			mockUaac.EXPECT().ListUsers().Return(uaacUsers, nil)
+			mockuaa.EXPECT().ListUsers().Return(uaaUsers, nil)
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
-			mockUserMgr.EXPECT().UpdateSpaceUsers(ldapCfg, uaacUsers,
+			mockUserMgr.EXPECT().UpdateSpaceUsers(ldapCfg, uaaUsers,
 				UpdateUsersInput{
 					SpaceName:      "space1",
 					SpaceGUID:      "space1GUID",
@@ -174,7 +167,7 @@ var _ = Describe("given SpaceManager", func() {
 					LdapUsers:      []string{"cwashburndefault1"},
 					Users:          []string{"cwashburndefault1@testdomain.com"},
 				}).Return(nil)
-			mockUserMgr.EXPECT().UpdateSpaceUsers(ldapCfg, uaacUsers,
+			mockUserMgr.EXPECT().UpdateSpaceUsers(ldapCfg, uaaUsers,
 				UpdateUsersInput{
 					SpaceName:      "space1",
 					SpaceGUID:      "space1GUID",
@@ -185,7 +178,7 @@ var _ = Describe("given SpaceManager", func() {
 					LdapUsers:      []string{"cwashburndefault1"},
 					Users:          []string{"cwashburndefault1@testdomain.com"},
 				}).Return(nil)
-			mockUserMgr.EXPECT().UpdateSpaceUsers(ldapCfg, uaacUsers,
+			mockUserMgr.EXPECT().UpdateSpaceUsers(ldapCfg, uaaUsers,
 				UpdateUsersInput{
 					SpaceName:      "space1",
 					SpaceGUID:      "space1GUID",
@@ -208,7 +201,7 @@ var _ = Describe("given SpaceManager", func() {
 			spaceManager = DefaultSpaceManager{
 				Cfg:             config.NewManager("./fixtures/asg-config"),
 				CloudController: mockCloudController,
-				UAACMgr:         mockUaac,
+				UAAMgr:          mockuaa,
 				LdapMgr:         mockLdap,
 				OrgMgr:          mockOrgMgr,
 				UserMgr:         mockUserMgr,

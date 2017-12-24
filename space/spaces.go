@@ -7,22 +7,20 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
-	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
 //NewManager -
-func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
-	cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token)
+func NewManager(cloudController cloudcontroller.Manager, uaaMgr uaa.Manager, orgMgr organization.Manager, cfg config.Reader) Manager {
 	ldapMgr := ldap.NewManager()
-	uaacMgr := uaac.NewManager(sysDomain, uaacToken)
 	return &DefaultSpaceManager{
 		Cfg:             cfg,
-		UAACMgr:         uaacMgr,
+		UAAMgr:          uaaMgr,
 		CloudController: cloudController,
-		OrgMgr:          organization.NewManager(sysDomain, token, uaacToken, cfg),
+		OrgMgr:          orgMgr,
 		LdapMgr:         ldapMgr,
-		UserMgr:         NewUserManager(cloudController, ldapMgr, uaacMgr),
+		UserMgr:         NewUserManager(cloudController, ldapMgr, uaaMgr),
 	}
 }
 
@@ -165,7 +163,7 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 		return err
 	}
 
-	uaacUsers, err := m.UAACMgr.ListUsers()
+	uaaUsers, err := m.UAAMgr.ListUsers()
 	if err != nil {
 		lo.G.Error(err)
 		return err
@@ -178,7 +176,7 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 	}
 
 	for _, input := range spaceConfigs {
-		if err := m.updateSpaceUsers(config, &input, uaacUsers); err != nil {
+		if err := m.updateSpaceUsers(config, &input, uaaUsers); err != nil {
 			return err
 		}
 	}
@@ -186,12 +184,12 @@ func (m *DefaultSpaceManager) UpdateSpaceUsers(configDir, ldapBindPassword strin
 	return nil
 }
 
-func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *config.SpaceConfig, uaacUsers map[string]string) error {
+func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *config.SpaceConfig, uaaUsers map[string]string) error {
 	space, err := m.FindSpace(input.Org, input.Space)
 	if err != nil {
 		return err
 	}
-	if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers, UpdateUsersInput{
+	if err = m.UserMgr.UpdateSpaceUsers(config, uaaUsers, UpdateUsersInput{
 		SpaceName:      space.Entity.Name,
 		SpaceGUID:      space.MetaData.GUID,
 		OrgName:        input.Org,
@@ -206,7 +204,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *confi
 		return err
 	}
 
-	if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers,
+	if err = m.UserMgr.UpdateSpaceUsers(config, uaaUsers,
 		UpdateUsersInput{
 			SpaceName:      space.Entity.Name,
 			SpaceGUID:      space.MetaData.GUID,
@@ -221,7 +219,7 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *confi
 		}); err != nil {
 		return err
 	}
-	if err = m.UserMgr.UpdateSpaceUsers(config, uaacUsers,
+	if err = m.UserMgr.UpdateSpaceUsers(config, uaaUsers,
 		UpdateUsersInput{
 			SpaceName:      space.Entity.Name,
 			SpaceGUID:      space.MetaData.GUID,
@@ -312,7 +310,7 @@ func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgN
 		}
 	}
 
-	uaacUsers, err := m.UAACMgr.ListUsers()
+	uaaUsers, err := m.UAAMgr.ListUsers()
 	if err != nil {
 		lo.G.Error(err)
 		return err
@@ -320,7 +318,7 @@ func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgN
 
 	defaults.Org = orgName
 	defaults.Space = spaceName
-	return m.updateSpaceUsers(ldapCfg, defaults, uaacUsers)
+	return m.updateSpaceUsers(ldapCfg, defaults, uaaUsers)
 }
 
 func (m *DefaultSpaceManager) doesSpaceExist(spaces []*cloudcontroller.Space, spaceName string) bool {

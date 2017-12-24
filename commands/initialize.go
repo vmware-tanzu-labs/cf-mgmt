@@ -11,7 +11,6 @@ import (
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
-	"github.com/pivotalservices/cf-mgmt/uaac"
 	"github.com/xchapter7x/lo"
 )
 
@@ -23,7 +22,6 @@ type CFMgmt struct {
 	ConfigDirectory         string
 	UaacToken               string
 	SystemDomain            string
-	UAACManager             uaac.Manager
 	CloudController         cloudcontroller.Manager
 	SecurityGroupManager    securitygroup.Manager
 	IsolationSegmentUpdater *isosegment.Updater
@@ -35,7 +33,10 @@ type Initialize struct {
 }
 
 func InitializeManagers(baseCommand BaseCFConfigCommand) (*CFMgmt, error) {
+	return InitializePeekManagers(baseCommand, false)
+}
 
+func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt, error) {
 	if baseCommand.SystemDomain == "" ||
 		baseCommand.UserID == "" ||
 		baseCommand.ClientSecret == "" {
@@ -48,17 +49,17 @@ func InitializeManagers(baseCommand BaseCFConfigCommand) (*CFMgmt, error) {
 	cfMgmt := &CFMgmt{}
 	cfMgmt.ConfigDirectory = baseCommand.ConfigDirectory
 	cfMgmt.SystemDomain = baseCommand.SystemDomain
-	cfMgmt.UAAManager = uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, baseCommand.UserID)
+	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
 
-	if uaacToken, err = cfMgmt.UAAManager.GetUAACToken(baseCommand.ClientSecret); err != nil {
+	if uaacToken, err = uaa.GetUAACToken(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.ClientSecret); err != nil {
 		return nil, err
 	}
 	cfMgmt.UaacToken = uaacToken
-	cfMgmt.UAACManager = uaac.NewManager(cfMgmt.SystemDomain, uaacToken)
+	cfMgmt.UAAManager = uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, uaacToken)
 
 	if baseCommand.Password != "" {
 		lo.G.Warning("Password parameter is deprecated, create uaa client and client-secret instead")
-		if cfToken, err = cfMgmt.UAAManager.GetCFToken(baseCommand.Password); err != nil {
+		if cfToken, err = uaa.GetCFToken(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.Password); err != nil {
 			return nil, err
 		}
 		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken)
@@ -66,11 +67,9 @@ func InitializeManagers(baseCommand BaseCFConfigCommand) (*CFMgmt, error) {
 		cfToken = uaacToken
 		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), uaacToken)
 	}
-	cfMgmt.OrgManager = organization.NewManager(cfMgmt.SystemDomain, cfToken, uaacToken, cfg)
-	cfMgmt.SpaceManager = space.NewManager(cfMgmt.SystemDomain, cfToken, uaacToken, cfg)
-	cfMgmt.SecurityGroupManager = securitygroup.NewManager(cfMgmt.SystemDomain, cfToken, cfg)
-
-	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
+	cfMgmt.OrgManager = organization.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfg)
+	cfMgmt.SpaceManager = space.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfMgmt.OrgManager, cfg)
+	cfMgmt.SecurityGroupManager = securitygroup.NewManager(cfMgmt.CloudController, cfg)
 	if isoSegmentUpdater, err := isosegment.NewUpdater(configcommands.VERSION, cfMgmt.SystemDomain, cfToken, baseCommand.UserID, baseCommand.ClientSecret, cfg); err == nil {
 		cfMgmt.IsolationSegmentUpdater = isoSegmentUpdater
 	} else {

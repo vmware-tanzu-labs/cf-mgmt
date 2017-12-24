@@ -2,7 +2,7 @@ package export
 
 import (
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
-	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/uaa"
 )
 
 //LDAP Represents constant for value ldap
@@ -19,6 +19,6 @@ type Manager interface {
 //DefaultImportManager  -
 type DefaultImportManager struct {
 	ConfigDir       string
-	UAACMgr         uaac.Manager
+	UAAMgr          uaa.Manager
 	CloudController cloudcontroller.Manager
 }

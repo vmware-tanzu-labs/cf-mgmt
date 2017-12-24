@@ -7,20 +7,18 @@ import (
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
-	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(sysDomain, token, uaacToken string, cfg config.Reader) Manager {
-	cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token)
+func NewManager(cloudController cloudcontroller.Manager, uaaMgr uaa.Manager, cfg config.Reader) Manager {
 	ldapMgr := ldap.NewManager()
-	uaacMgr := uaac.NewManager(sysDomain, uaacToken)
-	UserMgr := NewUserManager(cloudController, ldapMgr, uaacMgr)
+	UserMgr := NewUserManager(cloudController, ldapMgr, uaaMgr)
 
 	return &DefaultOrgManager{
 		Cfg:             cfg,
 		CloudController: cloudController,
-		UAACMgr:         uaacMgr,
+		UAAMgr:          uaaMgr,
 		LdapMgr:         ldapMgr,
 		UserMgr:         UserMgr,
 	}
@@ -354,7 +352,7 @@ func (m *DefaultOrgManager) UpdateOrgUsers(configDir, ldapBindPassword string) e
 		return err
 	}
 
-	uaacUsers, err := m.UAACMgr.ListUsers()
+	uaacUsers, err := m.UAAMgr.ListUsers()
 	if err != nil {
 		lo.G.Error(err)
 		return err

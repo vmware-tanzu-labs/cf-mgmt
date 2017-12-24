@@ -11,22 +11,15 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap/mocks"
 	. "github.com/pivotalservices/cf-mgmt/organization"
-	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
+	uaa "github.com/pivotalservices/cf-mgmt/uaa/mocks"
 )
 
 var _ = Describe("given OrgManager", func() {
-	Describe("create new manager", func() {
-		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/config"))
-			Ω(manager).ShouldNot(BeNil())
-		})
-	})
-
 	var (
 		ctrl                *gomock.Controller
 		mockCloudController *cc.MockManager
 		mockLdap            *ldap.MockManager
-		mockUaac            *uaac.MockManager
+		mockUaa             *uaa.MockManager
 		orgManager          DefaultOrgManager
 	)
 
@@ -34,11 +27,11 @@ var _ = Describe("given OrgManager", func() {
 		ctrl = gomock.NewController(test)
 		mockCloudController = cc.NewMockManager(ctrl)
 		mockLdap = ldap.NewMockManager(ctrl)
-		mockUaac = uaac.NewMockManager(ctrl)
+		mockUaa = uaa.NewMockManager(ctrl)
 		orgManager = DefaultOrgManager{
 			Cfg:             config.NewManager("./fixtures/config"),
 			CloudController: mockCloudController,
-			UAACMgr:         mockUaac,
+			UAAMgr:          mockUaa,
 			LdapMgr:         mockLdap,
 		}
 	})

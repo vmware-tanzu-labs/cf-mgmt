@@ -13,22 +13,15 @@ import (
 	o "github.com/pivotalservices/cf-mgmt/organization/mocks"
 	. "github.com/pivotalservices/cf-mgmt/securitygroup"
 	s "github.com/pivotalservices/cf-mgmt/space/mocks"
-	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
+	uaa "github.com/pivotalservices/cf-mgmt/uaa/mocks"
 )
 
 var _ = Describe("given SecurityGroupManager", func() {
-	Describe("create new manager", func() {
-		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", config.NewManager("./fixtures/asg-config"))
-			Ω(manager).ShouldNot(BeNil())
-		})
-	})
-
 	var (
 		ctrl                *gomock.Controller
 		mockCloudController *cc.MockManager
 		mockLdap            *ldap.MockManager
-		mockUaac            *uaac.MockManager
+		mockUaa             *uaa.MockManager
 		mockOrgMgr          *o.MockManager
 		mockUserMgr         *s.MockUserMgr
 		securityManager     DefaultSecurityGroupManager
@@ -38,7 +31,7 @@ var _ = Describe("given SecurityGroupManager", func() {
 		ctrl = gomock.NewController(test)
 		mockCloudController = cc.NewMockManager(ctrl)
 		mockLdap = ldap.NewMockManager(ctrl)
-		mockUaac = uaac.NewMockManager(ctrl)
+		mockUaa = uaa.NewMockManager(ctrl)
 		mockOrgMgr = o.NewMockManager(ctrl)
 		mockUserMgr = s.NewMockUserMgr(ctrl)
 
@@ -53,13 +46,6 @@ var _ = Describe("given SecurityGroupManager", func() {
 	})
 
 	var _ = Describe("given SecurityGroupManager", func() {
-		Describe("create new manager", func() {
-			It("should return new manager", func() {
-				manager := NewManager("test.com", "token", config.NewManager("./fixtures/asg-config"))
-				Ω(manager).ShouldNot(BeNil())
-			})
-		})
-
 		AfterEach(func() {
 			ctrl.Finish()
 		})

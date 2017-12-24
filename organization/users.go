@@ -6,7 +6,7 @@ import (
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/ldap"
-	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
@@ -19,11 +19,11 @@ type UserMgr interface {
 func NewUserManager(
 	cloudController cloudcontroller.Manager,
 	ldapMgr ldap.Manager,
-	uaacMgr uaac.Manager) UserMgr {
+	uaaMgr uaa.Manager) UserMgr {
 	return &UserManager{
 		cloudController: cloudController,
 		LdapMgr:         ldapMgr,
-		UAACMgr:         uaacMgr,
+		UAAMgr:          uaaMgr,
 	}
 }
 
@@ -31,7 +31,7 @@ func NewUserManager(
 type UserManager struct {
 	cloudController cloudcontroller.Manager
 	LdapMgr         ldap.Manager
-	UAACMgr         uaac.Manager
+	UAAMgr          uaa.Manager
 }
 
 // UpdateUsersInput -
@@ -85,7 +85,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 		lowerUserEmail := strings.ToLower(userEmail)
 		if _, userExists := uaacUsers[lowerUserEmail]; !userExists {
 			lo.G.Info("User", userEmail, "doesn't exist in cloud foundry, so creating user")
-			if err = m.UAACMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
+			if err = m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
 				lo.G.Error("Unable to create user", userEmail)
 				return err
 			} else {
@@ -138,7 +138,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 	if _, ok := orgUsers[userID]; !ok {
 		if _, userExists := uaacUsers[userID]; !userExists {
 			lo.G.Info("User", userID, "doesn't exist in cloud foundry, so creating user")
-			if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
+			if err := m.UAAMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
 				lo.G.Error("Unable to create user", userID)
 			} else {
 				uaacUsers[userID] = userID

@@ -1,17 +1,13 @@
 package securitygroup
 
 import (
-	"fmt"
-
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/xchapter7x/lo"
 )
 
 //NewManager -
-func NewManager(sysDomain, token string, cfg config.Reader) Manager {
-	cloudController := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", sysDomain), token)
-
+func NewManager(cloudController cloudcontroller.Manager, cfg config.Reader) Manager {
 	return &DefaultSecurityGroupManager{
 		Cfg:             cfg,
 		CloudController: cloudController,

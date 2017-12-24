@@ -5,22 +5,14 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller/mocks"
-	"github.com/pivotalservices/cf-mgmt/config"
 	l "github.com/pivotalservices/cf-mgmt/ldap"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap/mocks"
 
 	. "github.com/pivotalservices/cf-mgmt/space"
-	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
+	uaac "github.com/pivotalservices/cf-mgmt/uaa/mocks"
 )
 
 var _ = Describe("given SpaceManager", func() {
-	Describe("create new manager", func() {
-		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("."))
-			Ω(manager).ShouldNot(BeNil())
-		})
-	})
-
 	var (
 		ctrl                *gomock.Controller
 		mockCloudController *cc.MockManager

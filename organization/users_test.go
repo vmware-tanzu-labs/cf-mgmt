@@ -5,27 +5,19 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller/mocks"
-	"github.com/pivotalservices/cf-mgmt/config"
 	l "github.com/pivotalservices/cf-mgmt/ldap"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap/mocks"
 
 	. "github.com/pivotalservices/cf-mgmt/organization"
-	uaac "github.com/pivotalservices/cf-mgmt/uaac/mocks"
+	uaa "github.com/pivotalservices/cf-mgmt/uaa/mocks"
 )
 
 var _ = Describe("given UserManager", func() {
-	Describe("create new manager", func() {
-		It("should return new manager", func() {
-			manager := NewManager("test.com", "token", "uaacToken", config.NewManager("./fixtures/config"))
-			Ω(manager).ShouldNot(BeNil())
-		})
-	})
-
 	var (
 		ctrl                *gomock.Controller
 		mockCloudController *cc.MockManager
 		mockLdap            *ldap.MockManager
-		mockUaac            *uaac.MockManager
+		mockUaa             *uaa.MockManager
 		userManager         UserMgr
 	)
 
@@ -33,8 +25,8 @@ var _ = Describe("given UserManager", func() {
 		ctrl = gomock.NewController(test)
 		mockCloudController = cc.NewMockManager(ctrl)
 		mockLdap = ldap.NewMockManager(ctrl)
-		mockUaac = uaac.NewMockManager(ctrl)
-		userManager = NewUserManager(mockCloudController, mockLdap, mockUaac)
+		mockUaa = uaa.NewMockManager(ctrl)
+		userManager = NewUserManager(mockCloudController, mockLdap, mockUaa)
 	})
 
 	AfterEach(func() {
@@ -64,7 +56,7 @@ var _ = Describe("given UserManager", func() {
 			mockCloudController.EXPECT().GetCFUsers("my-org-guid", "organizations", "my-role").Return(orgUsers, nil)
 			mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
 
-			mockUaac.EXPECT().CreateExternalUser("user-id", "user@test.com", "user-dn", "ldap").Return(nil)
+			mockUaa.EXPECT().CreateExternalUser("user-id", "user@test.com", "user-dn", "ldap").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("user-id", "my-org-guid").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrgRole("user-id", "my-role", "my-org-guid").Return(nil)
 
@@ -165,11 +157,11 @@ var _ = Describe("given UserManager", func() {
 				Email:  "user2@test.com",
 			}, nil)
 
-			mockUaac.EXPECT().CreateExternalUser("user-1-id", "user1@test.com", "user-1-dn", "ldap").Return(nil)
+			mockUaa.EXPECT().CreateExternalUser("user-1-id", "user1@test.com", "user-1-dn", "ldap").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("user-1-id", "my-org-guid").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrgRole("user-1-id", "my-role", "my-org-guid").Return(nil)
 
-			mockUaac.EXPECT().CreateExternalUser("user-2-id", "user2@test.com", "user-2-dn", "ldap").Return(nil)
+			mockUaa.EXPECT().CreateExternalUser("user-2-id", "user2@test.com", "user-2-dn", "ldap").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrg("user-2-id", "my-org-guid").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrgRole("user-2-id", "my-role", "my-org-guid").Return(nil)
 
@@ -375,7 +367,7 @@ var _ = Describe("given UserManager", func() {
 			}
 
 			mockCloudController.EXPECT().GetCFUsers("org-guid", "organizations", "org-role-name").Return(orgUsers, nil)
-			mockUaac.EXPECT().CreateExternalUser("test@test.com", "test@test.com", "test@test.com", "https://saml.example.com").Return(nil)
+			mockUaa.EXPECT().CreateExternalUser("test@test.com", "test@test.com", "test@test.com", "https://saml.example.com").Return(nil)
 
 			mockCloudController.EXPECT().AddUserToOrg("test@test.com", "org-guid").Return(nil)
 			mockCloudController.EXPECT().AddUserToOrgRole("test@test.com", "org-role-name", "org-guid").Return(nil)

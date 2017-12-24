@@ -5,7 +5,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
-	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/uaa"
 )
 
 const SPACES = "spaces"
@@ -30,7 +30,7 @@ type DefaultSpaceManager struct {
 	FilePattern     string
 	FilePaths       []string
 	CloudController cloudcontroller.Manager
-	UAACMgr         uaac.Manager
+	UAAMgr          uaa.Manager
 	OrgMgr          organization.Manager
 	LdapMgr         ldap.Manager
 	UserMgr         UserMgr

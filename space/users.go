@@ -6,31 +6,31 @@ import (
 
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/ldap"
-	"github.com/pivotalservices/cf-mgmt/uaac"
+	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
 // UserMgr - interface type encapsulating Update space users behavior
 type UserMgr interface {
-	UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error
+	UpdateSpaceUsers(config *ldap.Config, uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error
 }
 
 // NewUserManager -
 func NewUserManager(
 	cloudController cloudcontroller.Manager,
 	ldapMgr ldap.Manager,
-	uaacMgr uaac.Manager) UserMgr {
+	uaaMgr uaa.Manager) UserMgr {
 	return &UserManager{
 		cloudController: cloudController,
 		LdapMgr:         ldapMgr,
-		UAACMgr:         uaacMgr,
+		uaaMgr:          uaaMgr,
 	}
 }
 
 type UserManager struct {
 	cloudController cloudcontroller.Manager
 	LdapMgr         ldap.Manager
-	UAACMgr         uaac.Manager
+	uaaMgr          uaa.Manager
 }
 
 // UpdateSpaceUserInput
@@ -45,7 +45,7 @@ type UpdateUsersInput struct {
 }
 
 //UpdateSpaceUsers Update space users
-func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error {
 	spaceUsers, err := m.cloudController.GetCFUsers(updateUsersInput.SpaceGUID, SPACES, updateUsersInput.Role)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 		}
 		lo.G.Debugf("LdapUsers: %v", ldapUsers)
 		for _, user := range ldapUsers {
-			err = m.updateLdapUser(config, updateUsersInput.SpaceGUID, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName, updateUsersInput.SpaceName, uaacUsers, user, spaceUsers)
+			err = m.updateLdapUser(config, updateUsersInput.SpaceGUID, updateUsersInput.OrgGUID, updateUsersInput.Role, updateUsersInput.OrgName, updateUsersInput.SpaceName, uaaUsers, user, spaceUsers)
 			if err != nil {
 				return err
 			}
@@ -70,7 +70,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 	}
 	for _, userID := range updateUsersInput.Users {
 		lowerUserID := strings.ToLower(userID)
-		if _, userExists := uaacUsers[lowerUserID]; !userExists {
+		if _, userExists := uaaUsers[lowerUserID]; !userExists {
 			return fmt.Errorf("user %s doesn't exist in cloud foundry, so must add internal user first", lowerUserID)
 		}
 		if _, ok := spaceUsers[lowerUserID]; !ok {
@@ -85,13 +85,13 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 
 	for _, userEmail := range updateUsersInput.SamlUsers {
 		lowerUserEmail := strings.ToLower(userEmail)
-		if _, userExists := uaacUsers[lowerUserEmail]; !userExists {
+		if _, userExists := uaaUsers[lowerUserEmail]; !userExists {
 			lo.G.Debug("User", userEmail, "doesn't exist in cloud foundry, so creating user")
-			if err = m.UAACMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
+			if err = m.uaaMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
 				lo.G.Error("Unable to create user", userEmail)
 				return err
 			} else {
-				uaacUsers[userEmail] = userEmail
+				uaaUsers[userEmail] = userEmail
 			}
 		}
 		if _, ok := spaceUsers[lowerUserEmail]; !ok {
@@ -123,7 +123,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaacUsers map[string
 }
 
 func (m *UserManager) updateLdapUser(config *ldap.Config, spaceGUID, orgGUID string,
-	role string, orgName, spaceName string, uaacUsers map[string]string,
+	role string, orgName, spaceName string, uaaUsers map[string]string,
 	user ldap.User, spaceUsers map[string]string) error {
 
 	userID := user.UserID
@@ -140,12 +140,12 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, spaceGUID, orgGUID str
 
 	if _, ok := spaceUsers[userID]; !ok {
 		lo.G.Debugf("User[%s] not found in: %v", userID, spaceUsers)
-		if _, userExists := uaacUsers[userID]; !userExists {
+		if _, userExists := uaaUsers[userID]; !userExists {
 			lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
-			if err := m.UAACMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
+			if err := m.uaaMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
 				lo.G.Error("Unable to create user", userID)
 			} else {
-				uaacUsers[userID] = userID
+				uaaUsers[userID] = userID
 				if err := m.addUserToOrgAndRole(userID, orgGUID, spaceGUID, role, orgName, spaceName); err != nil {
 					return err
 				}
