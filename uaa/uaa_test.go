@@ -1,12 +1,14 @@
 package uaa_test
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/ghttp"
+	http2 "github.com/pivotalservices/cf-mgmt/http"
 	. "github.com/pivotalservices/cf-mgmt/uaa"
 )
 
@@ -43,6 +45,7 @@ var _ = Describe("given uaa manager", func() {
 		manager = DefaultUAAManager{
 			Host:  server.URL(),
 			Token: controlToken,
+			Http:  http2.NewManager(),
 		}
 	})
 
@@ -116,32 +119,46 @@ var _ = Describe("given uaa manager", func() {
 	})
 	Context("ListUsers()", func() {
 		It("should return list of users", func() {
-			userList := UserList{
-				Users: []User{
-					{ID: "ID1", UserName: "Test1"},
-					{ID: "ID2", UserName: "Test2"},
-				},
-			}
+			page1, _ := ioutil.ReadFile("fixtures/user-list-page1.json")
+			page2, _ := ioutil.ReadFile("fixtures/user-list-page2.json")
+			page3, _ := ioutil.ReadFile("fixtures/user-list-page3.json")
 			server.AppendHandlers(
 				CombineHandlers(
-					VerifyRequest("GET", "/Users"),
+					VerifyRequest("GET", "/Users", "count=5000"),
 					VerifyHeader(http.Header{
 						"Authorization": []string{"BEARER basdfasdfd"},
 					}),
-					RespondWithJSONEncoded(http.StatusOK, userList),
+					RespondWith(http.StatusOK, string(page1)),
+				),
+				CombineHandlers(
+					VerifyRequest("GET", "/Users", "count=5000&startIndex=4"),
+					VerifyHeader(http.Header{
+						"Authorization": []string{"BEARER basdfasdfd"},
+					}),
+					RespondWith(http.StatusOK, string(page2)),
+				),
+				CombineHandlers(
+					VerifyRequest("GET", "/Users", "count=5000&startIndex=7"),
+					VerifyHeader(http.Header{
+						"Authorization": []string{"BEARER basdfasdfd"},
+					}),
+					RespondWith(http.StatusOK, string(page3)),
 				),
 			)
 			users, err := manager.ListUsers()
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(len(users)).Should(Equal(2))
-			Ω(users["test1"]).Should(Equal("ID1"))
-			Ω(users["test2"]).Should(Equal("ID2"))
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			keys := make([]string, 0, len(users))
+			for k := range users {
+				keys = append(keys, k)
+			}
+			Ω(len(users)).Should(Equal(8))
+			Ω(keys).Should(ConsistOf("foo4", "admin", "user", "cwashburn", "foo", "foo1", "foo2", "foo3"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(3))
 		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
-					VerifyRequest("GET", "/Users"),
+					VerifyRequest("GET", "/Users", "count=5000"),
 					VerifyHeader(http.Header{
 						"Authorization": []string{"BEARER basdfasdfd"},
 					}),

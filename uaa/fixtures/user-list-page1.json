@@ -1,0 +1,388 @@
+{
+  "resources": [
+    {
+      "id": "e5cd1b96-0e00-4b85-b83f-b0e983995781",
+      "meta": {
+        "version": 1,
+        "created": "2017-11-03T22:55:12.000Z",
+        "lastModified": "2017-12-24T21:50:01.000Z"
+      },
+      "userName": "admin",
+      "name": {
+        "familyName": "",
+        "givenName": ""
+      },
+      "emails": [
+        {
+          "value": "admin",
+          "primary": false
+        }
+      ],
+      "groups": [
+        {
+          "value": "23f6fccf-52ad-41a7-8e08-3682c922e3fe",
+          "display": "notification_preferences.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "f9f254ad-cb50-4e3f-80e4-8df6136b92be",
+          "display": "profile",
+          "type": "DIRECT"
+        },
+        {
+          "value": "a84137f1-3967-4ea8-9242-d746a79bf1a6",
+          "display": "uaa.offline_token",
+          "type": "DIRECT"
+        },
+        {
+          "value": "5483fd39-70cc-4158-98ac-8e50e703b34a",
+          "display": "uaa.user",
+          "type": "DIRECT"
+        },
+        {
+          "value": "9cb7d5e4-dc07-4657-b254-1e7ece1c0b32",
+          "display": "user_attributes",
+          "type": "DIRECT"
+        },
+        {
+          "value": "8d5dcc89-270d-4203-a89e-15134af04e95",
+          "display": "cloud_controller.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "adb33556-ea91-490a-b87c-d43289946473",
+          "display": "network.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "a4ac328f-2eaf-4ae9-ae4e-6719416f4b2c",
+          "display": "cloud_controller_service_permissions.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "2db0d5b6-123c-4d0a-bc7e-374cf8651a2e",
+          "display": "clients.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "585fca5b-2de5-4c6d-b861-ac405bf2192e",
+          "display": "approvals.me",
+          "type": "DIRECT"
+        },
+        {
+          "value": "1c624006-5a3f-4287-9271-f1821c0f7295",
+          "display": "openid",
+          "type": "DIRECT"
+        },
+        {
+          "value": "785e2699-15cd-4962-9b69-4c58b634f33f",
+          "display": "network.admin",
+          "type": "DIRECT"
+        },
+        {
+          "value": "7556101a-5144-4ac8-bdd9-6ed37be4c912",
+          "display": "routing.router_groups.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "cb283c0f-fd0d-49c1-81a8-6ab7c9c1616e",
+          "display": "oauth.approvals",
+          "type": "DIRECT"
+        },
+        {
+          "value": "c082b2f8-2a96-4888-88a9-2d0d78ec50fc",
+          "display": "scim.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "c2fefc65-b9c6-4a91-9ed5-4f763a74fd64",
+          "display": "routing.router_groups.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "303bafbc-5e57-40ca-9d82-077833b74262",
+          "display": "cloud_controller.admin",
+          "type": "DIRECT"
+        },
+        {
+          "value": "4ac6919d-3578-4a56-9548-67afdc8a0891",
+          "display": "cloud_controller.user",
+          "type": "DIRECT"
+        },
+        {
+          "value": "90d61fb1-8823-4898-b5f8-3724d68f7b84",
+          "display": "roles",
+          "type": "DIRECT"
+        },
+        {
+          "value": "d59e817a-50ca-470a-9deb-f6ffe83c2916",
+          "display": "scim.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "3b83bcad-098f-4967-8c98-48bfceb154fd",
+          "display": "clients.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "7667c057-f63b-4820-a43e-5f36cab12159",
+          "display": "password.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "8e9b0cff-32c4-45dc-ad7c-08089db93e07",
+          "display": "notification_preferences.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "3c0dbcc1-22ad-464c-b7cc-2e7c4cdcc24b",
+          "display": "doppler.firehose",
+          "type": "DIRECT"
+        },
+        {
+          "value": "9ee52bdc-72c4-42f2-b1e5-307ab94dc2f6",
+          "display": "cloud_controller.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "aceea0e5-fb53-4f72-bda8-f4f573d9ddaf",
+          "display": "scim.me",
+          "type": "DIRECT"
+        }
+      ],
+      "approvals": [
+
+      ],
+      "active": true,
+      "verified": true,
+      "origin": "uaa",
+      "zoneId": "uaa",
+      "passwordLastModified": "2017-11-03T22:55:12.000Z",
+      "previousLogonTime": 1514152612013,
+      "lastLogonTime": 1514153705162,
+      "schemas": [
+        "urn:scim:schemas:core:1.0"
+      ]
+    },
+    {
+      "id": "a184daf4-330e-485a-a0e6-66c1418a83bb",
+      "meta": {
+        "version": 0,
+        "created": "2017-11-03T23:02:20.000Z",
+        "lastModified": "2017-11-03T23:02:20.000Z"
+      },
+      "userName": "user",
+      "name": {
+        "familyName": "user",
+        "givenName": "user"
+      },
+      "emails": [
+        {
+          "value": "user",
+          "primary": false
+        }
+      ],
+      "groups": [
+        {
+          "value": "1c624006-5a3f-4287-9271-f1821c0f7295",
+          "display": "openid",
+          "type": "DIRECT"
+        },
+        {
+          "value": "cb283c0f-fd0d-49c1-81a8-6ab7c9c1616e",
+          "display": "oauth.approvals",
+          "type": "DIRECT"
+        },
+        {
+          "value": "23f6fccf-52ad-41a7-8e08-3682c922e3fe",
+          "display": "notification_preferences.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "f9f254ad-cb50-4e3f-80e4-8df6136b92be",
+          "display": "profile",
+          "type": "DIRECT"
+        },
+        {
+          "value": "a84137f1-3967-4ea8-9242-d746a79bf1a6",
+          "display": "uaa.offline_token",
+          "type": "DIRECT"
+        },
+        {
+          "value": "5483fd39-70cc-4158-98ac-8e50e703b34a",
+          "display": "uaa.user",
+          "type": "DIRECT"
+        },
+        {
+          "value": "9cb7d5e4-dc07-4657-b254-1e7ece1c0b32",
+          "display": "user_attributes",
+          "type": "DIRECT"
+        },
+        {
+          "value": "90d61fb1-8823-4898-b5f8-3724d68f7b84",
+          "display": "roles",
+          "type": "DIRECT"
+        },
+        {
+          "value": "8d5dcc89-270d-4203-a89e-15134af04e95",
+          "display": "cloud_controller.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "a4ac328f-2eaf-4ae9-ae4e-6719416f4b2c",
+          "display": "cloud_controller_service_permissions.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "8e9b0cff-32c4-45dc-ad7c-08089db93e07",
+          "display": "notification_preferences.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "7667c057-f63b-4820-a43e-5f36cab12159",
+          "display": "password.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "585fca5b-2de5-4c6d-b861-ac405bf2192e",
+          "display": "approvals.me",
+          "type": "DIRECT"
+        },
+        {
+          "value": "9ee52bdc-72c4-42f2-b1e5-307ab94dc2f6",
+          "display": "cloud_controller.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "aceea0e5-fb53-4f72-bda8-f4f573d9ddaf",
+          "display": "scim.me",
+          "type": "DIRECT"
+        }
+      ],
+      "approvals": [
+
+      ],
+      "active": true,
+      "verified": true,
+      "origin": "uaa",
+      "zoneId": "uaa",
+      "passwordLastModified": "2017-11-03T23:02:20.000Z",
+      "schemas": [
+        "urn:scim:schemas:core:1.0"
+      ]
+    },
+    {
+      "id": "319bacdf-9f46-4bc6-9f03-f3268cedfbf2",
+      "meta": {
+        "version": 0,
+        "created": "2017-11-03T23:07:56.000Z",
+        "lastModified": "2017-11-03T23:07:56.000Z"
+      },
+      "userName": "cwashburn",
+      "name": {
+        "familyName": "cwashburn",
+        "givenName": "cwashburn"
+      },
+      "emails": [
+        {
+          "value": "cwashburn",
+          "primary": false
+        }
+      ],
+      "groups": [
+        {
+          "value": "1c624006-5a3f-4287-9271-f1821c0f7295",
+          "display": "openid",
+          "type": "DIRECT"
+        },
+        {
+          "value": "cb283c0f-fd0d-49c1-81a8-6ab7c9c1616e",
+          "display": "oauth.approvals",
+          "type": "DIRECT"
+        },
+        {
+          "value": "23f6fccf-52ad-41a7-8e08-3682c922e3fe",
+          "display": "notification_preferences.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "f9f254ad-cb50-4e3f-80e4-8df6136b92be",
+          "display": "profile",
+          "type": "DIRECT"
+        },
+        {
+          "value": "a84137f1-3967-4ea8-9242-d746a79bf1a6",
+          "display": "uaa.offline_token",
+          "type": "DIRECT"
+        },
+        {
+          "value": "5483fd39-70cc-4158-98ac-8e50e703b34a",
+          "display": "uaa.user",
+          "type": "DIRECT"
+        },
+        {
+          "value": "9cb7d5e4-dc07-4657-b254-1e7ece1c0b32",
+          "display": "user_attributes",
+          "type": "DIRECT"
+        },
+        {
+          "value": "90d61fb1-8823-4898-b5f8-3724d68f7b84",
+          "display": "roles",
+          "type": "DIRECT"
+        },
+        {
+          "value": "8d5dcc89-270d-4203-a89e-15134af04e95",
+          "display": "cloud_controller.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "a4ac328f-2eaf-4ae9-ae4e-6719416f4b2c",
+          "display": "cloud_controller_service_permissions.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "8e9b0cff-32c4-45dc-ad7c-08089db93e07",
+          "display": "notification_preferences.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "7667c057-f63b-4820-a43e-5f36cab12159",
+          "display": "password.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "585fca5b-2de5-4c6d-b861-ac405bf2192e",
+          "display": "approvals.me",
+          "type": "DIRECT"
+        },
+        {
+          "value": "9ee52bdc-72c4-42f2-b1e5-307ab94dc2f6",
+          "display": "cloud_controller.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "aceea0e5-fb53-4f72-bda8-f4f573d9ddaf",
+          "display": "scim.me",
+          "type": "DIRECT"
+        }
+      ],
+      "approvals": [
+
+      ],
+      "active": true,
+      "verified": true,
+      "origin": "uaa",
+      "zoneId": "uaa",
+      "passwordLastModified": "2017-11-03T23:07:56.000Z",
+      "schemas": [
+        "urn:scim:schemas:core:1.0"
+      ]
+    }
+  ],
+  "startIndex": 1,
+  "itemsPerPage": 3,
+  "totalResults": 8,
+  "schemas": [
+    "urn:scim:schemas:core:1.0"
+  ]
+}

@@ -28,7 +28,10 @@ type Manager interface {
 
 //UserList -
 type UserList struct {
-	Users []User `json:"resources"`
+	Users        []User `json:"resources"`
+	StartIndex   int    `json:"startIndex"`
+	ItemsPerPage int    `json:"itemsPerPage"`
+	TotalResults int    `json:"totalResults"`
 }
 
 //User -
@@ -47,6 +50,12 @@ type Token struct {
 type DefaultUAAManager struct {
 	Host  string
 	Token string
+	Http  http2.Manager
+}
+
+type Pagination interface {
+	GetNextURL(url string) string
+	AddInstances(Pagination)
 }
 
 //NewDefaultUAAManager -
@@ -54,6 +63,7 @@ func NewDefaultUAAManager(sysDomain, token string) Manager {
 	return &DefaultUAAManager{
 		Host:  fmt.Sprintf("https://uaa.%s", sysDomain),
 		Token: token,
+		Http:  http2.NewManager(),
 	}
 }
 
@@ -126,7 +136,7 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 	}
 	url := fmt.Sprintf("%s/Users", m.Host)
 	payload := fmt.Sprintf(`{"userName":"%s","emails":[{"value":"%s"}],"origin":"%s","externalId":"%s"}`, userName, userEmail, origin, strings.Replace(externalID, "\\,", ",", 1))
-	if _, err := http2.NewManager().Post(url, m.Token, payload); err != nil {
+	if _, err := m.Http.Post(url, m.Token, payload); err != nil {
 		return err
 	}
 	lo.G.Info("successfully added user", userName)
@@ -136,7 +146,7 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 //ListUsers - Returns a map containing username as key and user guid as value
 func (m *DefaultUAAManager) ListUsers() (map[string]string, error) {
 	userIDMap := make(map[string]string)
-	usersList, err := getUsers(m.Host, m.Token)
+	usersList, err := m.getUsers()
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +159,7 @@ func (m *DefaultUAAManager) ListUsers() (map[string]string, error) {
 // UsersByID returns a map of Users keyed by ID.
 func (m *DefaultUAAManager) UsersByID() (userIDMap map[string]User, err error) {
 	userIDMap = make(map[string]User)
-	userList, err := getUsers(m.Host, m.Token)
+	userList, err := m.getUsers()
 	if err != nil {
 		return nil, err
 	}
@@ -160,13 +170,37 @@ func (m *DefaultUAAManager) UsersByID() (userIDMap map[string]User, err error) {
 }
 
 //TODO Anwar - Make this API use pagination
-func getUsers(host string, uaacToken string) (userList *UserList, err error) {
+func (m *DefaultUAAManager) getUsers() (*UserList, error) {
 	lo.G.Debug("Getting users from Cloud Foundry")
-	url := fmt.Sprintf("%s/Users?count=5000", host)
-	userList = new(UserList)
-	if err := http2.NewManager().Get(url, uaacToken, userList); err != nil {
-		return nil, fmt.Errorf("couldn't retrieve users: %v", err)
+	url := fmt.Sprintf("%s/Users?count=5000", m.Host)
+	userList := &UserList{}
+	err := m.listResources(url, userList, NewUserListResources)
+	if err != nil {
+		return nil, err
 	}
 	lo.G.Debugf("Found %d users in the CF instance", len(userList.Users))
 	return userList, nil
+}
+
+func (m *DefaultUAAManager) listResources(url string, target Pagination, createInstance func() Pagination) error {
+	var err = m.Http.Get(url, m.Token, target)
+	if err != nil {
+		return err
+	}
+	if target.GetNextURL(url) == "" {
+		return nil
+	}
+
+	nextURL := target.GetNextURL(url)
+	for nextURL != "" {
+		lo.G.Debugf("NextURL: %s", nextURL)
+		tempTarget := createInstance()
+		err = m.Http.Get(nextURL, m.Token, tempTarget)
+		if err != nil {
+			return err
+		}
+		target.AddInstances(tempTarget)
+		nextURL = tempTarget.GetNextURL(url)
+	}
+	return nil
 }

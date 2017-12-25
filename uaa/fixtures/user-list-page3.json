@@ -1,0 +1,224 @@
+{
+  "resources": [
+    {
+      "id": "2d2f3db9-faeb-4ac3-99cc-8e9069553af4",
+      "meta": {
+        "version": 0,
+        "created": "2017-12-24T22:15:39.000Z",
+        "lastModified": "2017-12-24T22:15:39.000Z"
+      },
+      "userName": "foo3",
+      "name": {
+        "familyName": "foo3",
+        "givenName": "foo3"
+      },
+      "emails": [
+        {
+          "value": "foo3",
+          "primary": false
+        }
+      ],
+      "groups": [
+        {
+          "value": "1c624006-5a3f-4287-9271-f1821c0f7295",
+          "display": "openid",
+          "type": "DIRECT"
+        },
+        {
+          "value": "cb283c0f-fd0d-49c1-81a8-6ab7c9c1616e",
+          "display": "oauth.approvals",
+          "type": "DIRECT"
+        },
+        {
+          "value": "23f6fccf-52ad-41a7-8e08-3682c922e3fe",
+          "display": "notification_preferences.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "f9f254ad-cb50-4e3f-80e4-8df6136b92be",
+          "display": "profile",
+          "type": "DIRECT"
+        },
+        {
+          "value": "a84137f1-3967-4ea8-9242-d746a79bf1a6",
+          "display": "uaa.offline_token",
+          "type": "DIRECT"
+        },
+        {
+          "value": "5483fd39-70cc-4158-98ac-8e50e703b34a",
+          "display": "uaa.user",
+          "type": "DIRECT"
+        },
+        {
+          "value": "9cb7d5e4-dc07-4657-b254-1e7ece1c0b32",
+          "display": "user_attributes",
+          "type": "DIRECT"
+        },
+        {
+          "value": "90d61fb1-8823-4898-b5f8-3724d68f7b84",
+          "display": "roles",
+          "type": "DIRECT"
+        },
+        {
+          "value": "8d5dcc89-270d-4203-a89e-15134af04e95",
+          "display": "cloud_controller.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "a4ac328f-2eaf-4ae9-ae4e-6719416f4b2c",
+          "display": "cloud_controller_service_permissions.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "8e9b0cff-32c4-45dc-ad7c-08089db93e07",
+          "display": "notification_preferences.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "7667c057-f63b-4820-a43e-5f36cab12159",
+          "display": "password.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "585fca5b-2de5-4c6d-b861-ac405bf2192e",
+          "display": "approvals.me",
+          "type": "DIRECT"
+        },
+        {
+          "value": "9ee52bdc-72c4-42f2-b1e5-307ab94dc2f6",
+          "display": "cloud_controller.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "aceea0e5-fb53-4f72-bda8-f4f573d9ddaf",
+          "display": "scim.me",
+          "type": "DIRECT"
+        }
+      ],
+      "approvals": [
+
+      ],
+      "active": true,
+      "verified": true,
+      "origin": "uaa",
+      "zoneId": "uaa",
+      "passwordLastModified": "2017-12-24T22:15:39.000Z",
+      "schemas": [
+        "urn:scim:schemas:core:1.0"
+      ]
+    },
+    {
+      "id": "85f2ddca-2c55-4f2f-8497-16897b8bf2a5",
+      "meta": {
+        "version": 0,
+        "created": "2017-12-24T22:15:45.000Z",
+        "lastModified": "2017-12-24T22:15:45.000Z"
+      },
+      "userName": "foo4",
+      "name": {
+        "familyName": "foo4",
+        "givenName": "foo4"
+      },
+      "emails": [
+        {
+          "value": "foo4",
+          "primary": false
+        }
+      ],
+      "groups": [
+        {
+          "value": "1c624006-5a3f-4287-9271-f1821c0f7295",
+          "display": "openid",
+          "type": "DIRECT"
+        },
+        {
+          "value": "cb283c0f-fd0d-49c1-81a8-6ab7c9c1616e",
+          "display": "oauth.approvals",
+          "type": "DIRECT"
+        },
+        {
+          "value": "23f6fccf-52ad-41a7-8e08-3682c922e3fe",
+          "display": "notification_preferences.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "f9f254ad-cb50-4e3f-80e4-8df6136b92be",
+          "display": "profile",
+          "type": "DIRECT"
+        },
+        {
+          "value": "a84137f1-3967-4ea8-9242-d746a79bf1a6",
+          "display": "uaa.offline_token",
+          "type": "DIRECT"
+        },
+        {
+          "value": "5483fd39-70cc-4158-98ac-8e50e703b34a",
+          "display": "uaa.user",
+          "type": "DIRECT"
+        },
+        {
+          "value": "9cb7d5e4-dc07-4657-b254-1e7ece1c0b32",
+          "display": "user_attributes",
+          "type": "DIRECT"
+        },
+        {
+          "value": "90d61fb1-8823-4898-b5f8-3724d68f7b84",
+          "display": "roles",
+          "type": "DIRECT"
+        },
+        {
+          "value": "8d5dcc89-270d-4203-a89e-15134af04e95",
+          "display": "cloud_controller.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "a4ac328f-2eaf-4ae9-ae4e-6719416f4b2c",
+          "display": "cloud_controller_service_permissions.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "8e9b0cff-32c4-45dc-ad7c-08089db93e07",
+          "display": "notification_preferences.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "7667c057-f63b-4820-a43e-5f36cab12159",
+          "display": "password.write",
+          "type": "DIRECT"
+        },
+        {
+          "value": "585fca5b-2de5-4c6d-b861-ac405bf2192e",
+          "display": "approvals.me",
+          "type": "DIRECT"
+        },
+        {
+          "value": "9ee52bdc-72c4-42f2-b1e5-307ab94dc2f6",
+          "display": "cloud_controller.read",
+          "type": "DIRECT"
+        },
+        {
+          "value": "aceea0e5-fb53-4f72-bda8-f4f573d9ddaf",
+          "display": "scim.me",
+          "type": "DIRECT"
+        }
+      ],
+      "approvals": [
+
+      ],
+      "active": true,
+      "verified": true,
+      "origin": "uaa",
+      "zoneId": "uaa",
+      "passwordLastModified": "2017-12-24T22:15:45.000Z",
+      "schemas": [
+        "urn:scim:schemas:core:1.0"
+      ]
+    }
+  ],
+  "startIndex": 7,
+  "itemsPerPage": 3,
+  "totalResults": 8,
+  "schemas": [
+    "urn:scim:schemas:core:1.0"
+  ]
+}
