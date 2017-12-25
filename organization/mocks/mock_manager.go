@@ -5,9 +5,10 @@
 package mock_organization
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	cloudcontroller "github.com/pivotalservices/cf-mgmt/cloudcontroller"
-	reflect "reflect"
 )
 
 // MockManager is a mock of Manager interface
@@ -70,15 +71,15 @@ func (mr *MockManagerMockRecorder) CreateQuotas() *gomock.Call {
 }
 
 // DeleteOrgs mocks base method
-func (m *MockManager) DeleteOrgs(arg0 bool) error {
-	ret := m.ctrl.Call(m, "DeleteOrgs", arg0)
+func (m *MockManager) DeleteOrgs() error {
+	ret := m.ctrl.Call(m, "DeleteOrgs")
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteOrgs indicates an expected call of DeleteOrgs
-func (mr *MockManagerMockRecorder) DeleteOrgs(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrgs", reflect.TypeOf((*MockManager)(nil).DeleteOrgs), arg0)
+func (mr *MockManagerMockRecorder) DeleteOrgs() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrgs", reflect.TypeOf((*MockManager)(nil).DeleteOrgs))
 }
 
 // FindOrg mocks base method

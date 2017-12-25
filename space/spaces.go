@@ -330,7 +330,7 @@ func (m *DefaultSpaceManager) doesSpaceExist(spaces []*cloudcontroller.Space, sp
 	return false
 }
 
-func (m *DefaultSpaceManager) DeleteSpaces(configDir string, peekDeletion bool) error {
+func (m *DefaultSpaceManager) DeleteSpaces(configDir string) error {
 	configSpaceList, err := m.Cfg.Spaces()
 	if err != nil {
 		return err
@@ -363,18 +363,13 @@ func (m *DefaultSpaceManager) DeleteSpaces(configDir string, peekDeletion bool) 
 			}
 		}
 
-		if peekDeletion {
-			for _, space := range spacesToDelete {
-				lo.G.Infof("Peek - Would Delete [%s] space in org %s", space.Entity.Name, input.Org)
-			}
-		} else {
-			for _, space := range spacesToDelete {
-				lo.G.Infof("Deleting [%s] space in org %s", space.Entity.Name, input.Org)
-				if err := m.CloudController.DeleteSpace(space.MetaData.GUID); err != nil {
-					return err
-				}
+		for _, space := range spacesToDelete {
+			lo.G.Infof("Deleting [%s] space in org %s", space.Entity.Name, input.Org)
+			if err := m.CloudController.DeleteSpace(space.MetaData.GUID); err != nil {
+				return err
 			}
 		}
+
 	}
 
 	return nil

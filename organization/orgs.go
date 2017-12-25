@@ -262,7 +262,7 @@ func (m *DefaultOrgManager) getOrgGUID(orgs []*cloudcontroller.Org, orgName stri
 }
 
 //DeleteOrgs -
-func (m *DefaultOrgManager) DeleteOrgs(peekDeletion bool) error {
+func (m *DefaultOrgManager) DeleteOrgs() error {
 	orgsConfig, err := m.Cfg.Orgs()
 	if err != nil {
 		return err
@@ -295,16 +295,10 @@ func (m *DefaultOrgManager) DeleteOrgs(peekDeletion bool) error {
 		}
 	}
 
-	if peekDeletion {
-		for _, org := range orgsToDelete {
-			lo.G.Infof("Peek - Would Delete [%s] org", org.Entity.Name)
-		}
-	} else {
-		for _, org := range orgsToDelete {
-			lo.G.Infof("Deleting [%s] org", org.Entity.Name)
-			if err := m.CloudController.DeleteOrg(org.MetaData.GUID); err != nil {
-				return err
-			}
+	for _, org := range orgsToDelete {
+		lo.G.Infof("Deleting [%s] org", org.Entity.Name)
+		if err := m.CloudController.DeleteOrg(org.MetaData.GUID); err != nil {
+			return err
 		}
 	}
 

@@ -537,46 +537,7 @@ var _ = Describe("given SpaceManager", func() {
 			}, nil)
 			mockCloudController.EXPECT().ListSpaces("test2-org-guid").Return(spaces, nil)
 			mockCloudController.EXPECT().DeleteSpace("space3-guid").Return(nil)
-			Ω(spaceManager.DeleteSpaces("./fixtures/config-delete", false)).Should(Succeed())
-		})
-
-		It("should just peek", func() {
-			spaces := []*cloudcontroller.Space{
-				&cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space1",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1-guid",
-					},
-				},
-				&cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space2",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space2-guid",
-					},
-				},
-				&cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space3",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space3-guid",
-					},
-				},
-			}
-			mockOrgMgr.EXPECT().FindOrg("test2").Return(&cloudcontroller.Org{
-				Entity: cloudcontroller.OrgEntity{
-					Name: "test",
-				},
-				MetaData: cloudcontroller.OrgMetaData{
-					GUID: "test2-org-guid",
-				},
-			}, nil)
-			mockCloudController.EXPECT().ListSpaces("test2-org-guid").Return(spaces, nil)
-			Ω(spaceManager.DeleteSpaces("./fixtures/config-delete", true)).Should(Succeed())
+			Ω(spaceManager.DeleteSpaces("./fixtures/config-delete")).Should(Succeed())
 		})
 	})
 })

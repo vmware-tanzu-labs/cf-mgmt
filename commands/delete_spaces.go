@@ -9,8 +9,8 @@ type DeleteSpacesCommand struct {
 func (c *DeleteSpacesCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
-	if cfMgmt, err = InitializeManagers(c.BaseCFConfigCommand); err == nil {
-		err = cfMgmt.SpaceManager.DeleteSpaces(c.ConfigDirectory, c.Peek)
+	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
+		err = cfMgmt.SpaceManager.DeleteSpaces(c.ConfigDirectory)
 	}
 	return err
 }

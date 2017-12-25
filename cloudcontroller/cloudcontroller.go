@@ -10,10 +10,11 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(host, token string) Manager {
+func NewManager(host, token string, peek bool) Manager {
 	return &DefaultManager{
 		Host:  host,
 		Token: token,
+		Peek:  peek,
 		HTTP:  http.NewManager(),
 	}
 }
@@ -61,6 +62,10 @@ func (m *DefaultManager) listResources(url string, target Pagination, createInst
 }
 
 func (m *DefaultManager) AddUserToSpaceRole(userName, role, spaceGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: adding %s to role %s for spaceGUID %s", userName, role, spaceGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/spaces/%s/%s", m.Host, spaceGUID, role)
 	sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
 	err := m.HTTP.Put(url, m.Token, sendString)
@@ -68,6 +73,10 @@ func (m *DefaultManager) AddUserToSpaceRole(userName, role, spaceGUID string) er
 }
 
 func (m *DefaultManager) AddUserToOrg(userName, orgGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: adding %s to orgGUID %s", userName, orgGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/organizations/%s/users", m.Host, orgGUID)
 	sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
 	err := m.HTTP.Put(url, m.Token, sendString)
@@ -75,6 +84,10 @@ func (m *DefaultManager) AddUserToOrg(userName, orgGUID string) error {
 }
 
 func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: setting sshAllowed to %v for spaceGUID %s", sshAllowed, spaceGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/spaces/%s", m.Host, spaceGUID)
 	sendString := fmt.Sprintf(`{"allow_ssh":%t}`, sshAllowed)
 	return m.HTTP.Put(url, m.Token, sendString)
@@ -111,12 +124,20 @@ func (m *DefaultManager) GetSecurityGroupRules(sgGUID string) ([]byte, error) {
 }
 
 func (m *DefaultManager) UpdateSecurityGroup(sgGUID, sgName, contents string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: updating securityGroup %s with guid %s with contents %s", sgName, sgGUID, contents)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/security_groups/%s", m.Host, sgGUID)
 	sendString := fmt.Sprintf(`{"name":"%s","rules":%s}`, sgName, contents)
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
 func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (string, error) {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: creating securityGroup %s with contents %s", sgName, contents)
+		return "dry-run-security-group-guid", nil
+	}
 	url := fmt.Sprintf("%s/v2/security_groups", m.Host)
 	sendString := fmt.Sprintf(`{"name":"%s","rules":%s}`, sgName, contents)
 	body, err := m.HTTP.Post(url, m.Token, sendString)
@@ -147,18 +168,30 @@ func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) (map[string]s
 }
 
 func (m *DefaultManager) AssignSecurityGroupToSpace(spaceGUID, sgGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: assigning sgGUID %s to spaceGUID %s", sgGUID, spaceGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/security_groups/%s/spaces/%s", m.Host, sgGUID, spaceGUID)
 	err := m.HTTP.Put(url, m.Token, "")
 	return err
 }
 
 func (m *DefaultManager) AssignQuotaToSpace(spaceGUID, quotaGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: assigning quotaGUID %s to spaceGUID %s", quotaGUID, spaceGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/space_quota_definitions/%s/spaces/%s", m.Host, quotaGUID, spaceGUID)
 	err := m.HTTP.Put(url, m.Token, "")
 	return err
 }
 
 func (m *DefaultManager) CreateSpaceQuota(quota SpaceQuotaEntity) (string, error) {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: creating quota %+v", quota)
+		return "dry-run-space-quota-guid", nil
+	}
 	url := fmt.Sprintf("%s/v2/space_quota_definitions", m.Host)
 	sendString, err := json.Marshal(quota)
 	if err != nil {
@@ -177,6 +210,10 @@ func (m *DefaultManager) CreateSpaceQuota(quota SpaceQuotaEntity) (string, error
 }
 
 func (m *DefaultManager) UpdateSpaceQuota(quotaGUID string, quota SpaceQuotaEntity) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: update quota %s with %+v", quotaGUID, quota)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/space_quota_definitions/%s", m.Host, quotaGUID)
 	sendString, err := json.Marshal(quota)
 	if err != nil {
@@ -201,6 +238,10 @@ func (m *DefaultManager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]st
 }
 
 func (m *DefaultManager) CreateOrg(orgName string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: create org %s", orgName)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/organizations", m.Host)
 	sendString := fmt.Sprintf(`{"name":"%s"}`, orgName)
 	_, err := m.HTTP.Post(url, m.Token, sendString)
@@ -208,6 +249,10 @@ func (m *DefaultManager) CreateOrg(orgName string) error {
 }
 
 func (m *DefaultManager) DeleteOrg(orgGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: delete org with GUID %s", orgGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/organizations/%s?recursive=true", m.Host, orgGUID)
 	return m.HTTP.Delete(url, m.Token)
 }
@@ -219,6 +264,10 @@ func (m *DefaultManager) DeleteOrgByName(orgName string) error {
 	}
 	for _, org := range orgs {
 		if org.Entity.Name == orgName {
+			if m.Peek {
+				lo.G.Infof("[dry-run]: delete org %s", orgName)
+				return nil
+			}
 			url := fmt.Sprintf("%s/v2/organizations/%s?recursive=true", m.Host, org.MetaData.GUID)
 			return m.HTTP.Delete(url, m.Token)
 		}
@@ -228,6 +277,10 @@ func (m *DefaultManager) DeleteOrgByName(orgName string) error {
 
 //DeleteSpace - deletes a space based on GUID
 func (m *DefaultManager) DeleteSpace(spaceGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: delete space with GUID %s", spaceGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/spaces/%s?recursive=true", m.Host, spaceGUID)
 	return m.HTTP.Delete(url, m.Token)
 }
@@ -245,6 +298,10 @@ func (m *DefaultManager) ListOrgs() ([]*Org, error) {
 }
 
 func (m *DefaultManager) AddUserToOrgRole(userName, role, orgGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: Add User %s to role %s for org GUID %s", userName, role, orgGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/organizations/%s/%s", m.Host, orgGUID, role)
 	sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
 	return m.HTTP.Put(url, m.Token, sendString)
@@ -266,6 +323,10 @@ func (m *DefaultManager) ListAllOrgQuotas() (map[string]string, error) {
 }
 
 func (m *DefaultManager) CreateQuota(quota QuotaEntity) (string, error) {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: create quota %+v", quota)
+		return "dry-run-quota-guid", nil
+	}
 	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
 	sendString, err := json.Marshal(quota)
 	if err != nil {
@@ -284,7 +345,10 @@ func (m *DefaultManager) CreateQuota(quota QuotaEntity) (string, error) {
 }
 
 func (m *DefaultManager) UpdateQuota(quotaGUID string, quota QuotaEntity) error {
-
+	if m.Peek {
+		lo.G.Infof("[dry-run]: update quota %+v with GUID %s", quota, quotaGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/quota_definitions/%s", m.Host, quotaGUID)
 	sendString, err := json.Marshal(quota)
 	if err != nil {
@@ -294,6 +358,10 @@ func (m *DefaultManager) UpdateQuota(quotaGUID string, quota QuotaEntity) error 
 }
 
 func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: assign quota GUID %s to org GUID %s", quotaGUID, orgGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/organizations/%s", m.Host, orgGUID)
 	sendString := fmt.Sprintf(`{"quota_definition_guid":"%s"}`, quotaGUID)
 	return m.HTTP.Put(url, m.Token, sendString)
@@ -318,6 +386,10 @@ func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[st
 
 //RemoveCFUser - Un assigns a given from the given user for a given org and space
 func (m *DefaultManager) RemoveCFUser(entityGUID, entityType, userGUID, role string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: removing user GUID %s from GUID %s for type %s with role %s", userGUID, entityGUID, entityType, role)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/%s/%s/%s/%s", m.Host, entityType, entityGUID, role, userGUID)
 	return m.HTTP.Delete(url, m.Token)
 }
@@ -399,10 +471,18 @@ func (m *DefaultManager) listOrgPrivateDomains(orgGUID string) ([]*PrivateDomain
 }
 
 func (m *DefaultManager) DeletePrivateDomain(guid string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: Delete private domain %s", guid)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/private_domains/%s?async=false", m.Host, guid)
 	return m.HTTP.Delete(url, m.Token)
 }
 func (m *DefaultManager) CreatePrivateDomain(orgGUID, privateDomain string) (string, error) {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: create private domain %s for org GUID %s", privateDomain, orgGUID)
+		return "dry-run-private-domain-guid", nil
+	}
 	url := fmt.Sprintf("%s/v2/private_domains", m.Host)
 	sendString := fmt.Sprintf(`{"name":"%s", "owning_organization_guid":"%s"}`, privateDomain, orgGUID)
 	body, err := m.HTTP.Post(url, m.Token, sendString)
@@ -417,11 +497,19 @@ func (m *DefaultManager) CreatePrivateDomain(orgGUID, privateDomain string) (str
 	return privateDomainResource.MetaData.GUID, nil
 }
 func (m *DefaultManager) SharePrivateDomain(sharedOrgGUID, privateDomainGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: Share private domain %s for org GUID %s", privateDomainGUID, sharedOrgGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains/%s", m.Host, sharedOrgGUID, privateDomainGUID)
 	err := m.HTTP.Put(url, m.Token, "")
 	return err
 }
 func (m *DefaultManager) RemoveSharedPrivateDomain(sharedOrgGUID, privateDomainGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: remove share private domain %s for org GUID %s", privateDomainGUID, sharedOrgGUID)
+		return nil
+	}
 	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains/%s", m.Host, sharedOrgGUID, privateDomainGUID)
 	return m.HTTP.Delete(url, m.Token)
 }

@@ -55,17 +55,17 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 		return nil, err
 	}
 	cfMgmt.UaacToken = uaacToken
-	cfMgmt.UAAManager = uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, uaacToken)
+	cfMgmt.UAAManager = uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, uaacToken, peek)
 
 	if baseCommand.Password != "" {
 		lo.G.Warning("Password parameter is deprecated, create uaa client and client-secret instead")
 		if cfToken, err = uaa.GetCFToken(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.Password); err != nil {
 			return nil, err
 		}
-		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken)
+		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken, peek)
 	} else {
 		cfToken = uaacToken
-		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), uaacToken)
+		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), uaacToken, peek)
 	}
 	cfMgmt.OrgManager = organization.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfg)
 	cfMgmt.SpaceManager = space.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfMgmt.OrgManager, cfg)

@@ -15,7 +15,7 @@ import (
 var _ = Describe("given uaa manager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewDefaultUAAManager("test.com", "token")
+			manager := NewDefaultUAAManager("test.com", "token", false)
 			Ω(manager).ShouldNot(BeNil())
 			uaaManager, ok := manager.(*DefaultUAAManager)
 			Ω(ok).Should(BeTrue())
@@ -189,6 +189,16 @@ var _ = Describe("given uaa manager", func() {
 			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should peek", func() {
+			userName := "user"
+			userEmail := "email"
+			externalID := "userDN"
+			manager.Peek = true
+			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
 		})
 		It("should not invoke post", func() {
 			server.AppendHandlers(

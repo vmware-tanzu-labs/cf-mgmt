@@ -21,5 +21,5 @@ type BaseLDAPCommand struct {
 
 //BasePeekCommand - base command for non read-only operations
 type BasePeekCommand struct {
-	Peek bool `long:"peek" env:"PEEK"  description:"Preview entities to delete without deleting them."`
+	Peek bool `long:"peek" env:"PEEK"  description:"Preview entities to change without modifying"`
 }

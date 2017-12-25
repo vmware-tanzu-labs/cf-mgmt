@@ -2,13 +2,14 @@ package commands
 
 type UpdateSpaceQuotasCommand struct {
 	BaseCFConfigCommand
+	BasePeekCommand
 }
 
 //Execute - updates space quotas
 func (c *UpdateSpaceQuotasCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
-	if cfMgmt, err = InitializeManagers(c.BaseCFConfigCommand); err == nil {
+	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
 		err = cfMgmt.SpaceManager.CreateQuotas(c.ConfigDirectory)
 	}
 	return err

@@ -53,6 +53,7 @@ type DefaultManager struct {
 	Host  string
 	Token string
 	HTTP  http.Manager
+	Peek  bool
 }
 
 //PrivateDomainResources -

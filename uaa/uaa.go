@@ -51,6 +51,7 @@ type DefaultUAAManager struct {
 	Host  string
 	Token string
 	Http  http2.Manager
+	Peek  bool
 }
 
 type Pagination interface {
@@ -59,11 +60,12 @@ type Pagination interface {
 }
 
 //NewDefaultUAAManager -
-func NewDefaultUAAManager(sysDomain, token string) Manager {
+func NewDefaultUAAManager(sysDomain, token string, peek bool) Manager {
 	return &DefaultUAAManager{
 		Host:  fmt.Sprintf("https://uaa.%s", sysDomain),
 		Token: token,
 		Http:  http2.NewManager(),
+		Peek:  peek,
 	}
 }
 
@@ -134,12 +136,16 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 		msg := fmt.Sprintf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID)
 		return errors.New(msg)
 	}
+	if m.Peek {
+		lo.G.Infof("[dry-run]: successfully added user [%s]", userName)
+		return nil
+	}
 	url := fmt.Sprintf("%s/Users", m.Host)
 	payload := fmt.Sprintf(`{"userName":"%s","emails":[{"value":"%s"}],"origin":"%s","externalId":"%s"}`, userName, userEmail, origin, strings.Replace(externalID, "\\,", ",", 1))
 	if _, err := m.Http.Post(url, m.Token, payload); err != nil {
 		return err
 	}
-	lo.G.Info("successfully added user", userName)
+	lo.G.Infof("successfully added user [%s]", userName)
 	return nil
 }
 

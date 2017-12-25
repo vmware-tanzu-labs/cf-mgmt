@@ -8,7 +8,7 @@
 ## Command Usage
 
 ```
-sage:
+Usage:
   main [OPTIONS] update-org-quotas [update-org-quotas-OPTIONS]
 
 Help Options:
@@ -21,4 +21,5 @@ Help Options:
   --password=      password for user account [optional if client secret is provided] [$PASSWORD]
   --client-secret= secret for user account that has sufficient privileges to create/update/delete users,
                    orgs and spaces] [$CLIENT_SECRET]
+  --peek           Preview entities to change without modifying. [$PEEK]
 ```

@@ -21,7 +21,7 @@ type Manager interface {
 	UpdateSpaceUsers(configDir, ldapBindPassword string) error
 	CreateQuotas(configDir string) error
 	CreateApplicationSecurityGroups(configDir string) error
-	DeleteSpaces(configFile string, peekDeletion bool) (err error)
+	DeleteSpaces(configFile string) (err error)
 }
 
 //DefaultSpaceManager -

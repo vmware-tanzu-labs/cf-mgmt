@@ -250,7 +250,7 @@ var _ = Describe("cf-mgmt cli", func() {
 			It("should export config with > 50 spaces", func() {
 				cfToken, err := uaa.GetCFToken(systemDomain, userId, password)
 				Expect(err).ShouldNot(HaveOccurred())
-				ccManager := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken)
+				ccManager := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken, false)
 				ccManager.CreateOrg("test1")
 				orgs, _ := ccManager.ListOrgs()
 				for _, org := range orgs {
@@ -275,7 +275,7 @@ var _ = Describe("cf-mgmt cli", func() {
 
 			It("should export config with > 50 spaces without a password", func() {
 				cfToken, err := uaa.GetCFToken(systemDomain, userId, password)
-				ccManager := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken)
+				ccManager := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken, false)
 
 				ccManager.CreateOrg("test1")
 				orgs, _ := ccManager.ListOrgs()

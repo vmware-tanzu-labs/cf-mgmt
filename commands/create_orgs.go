@@ -2,13 +2,14 @@ package commands
 
 type CreateOrgsCommand struct {
 	BaseCFConfigCommand
+	BasePeekCommand
 }
 
 //Execute - creates organizations
 func (c *CreateOrgsCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
-	if cfMgmt, err = InitializeManagers(c.BaseCFConfigCommand); err == nil {
+	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
 		err = cfMgmt.OrgManager.CreateOrgs()
 	}
 	return err

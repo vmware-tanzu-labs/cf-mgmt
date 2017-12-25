@@ -23,5 +23,5 @@ Help Options:
   --password=      password for user account [optional if client secret is provided] [$PASSWORD]
   --client-secret= secret for user account that has sufficient privileges to create/update/delete users,
                    orgs and spaces] [$CLIENT_SECRET]
-  --peek           Preview entities to delete without deleting them. [$PEEK]
+  --peek           Preview entities to change without modifying. [$PEEK]
 ```

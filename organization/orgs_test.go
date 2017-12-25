@@ -198,38 +198,7 @@ var _ = Describe("given OrgManager", func() {
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().DeleteOrg("test2-guid").Return(nil)
-			err := orgManager.DeleteOrgs(false)
-			Ω(err).Should(BeNil())
-		})
-		It("should just peek", func() {
-			orgs := []*cloudcontroller.Org{
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "system",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "system-guid",
-					},
-				},
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "test-guid",
-					},
-				},
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test2",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "test2-guid",
-					},
-				},
-			}
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			err := orgManager.DeleteOrgs(true)
+			err := orgManager.DeleteOrgs()
 			Ω(err).Should(BeNil())
 		})
 	})

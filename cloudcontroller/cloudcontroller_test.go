@@ -14,7 +14,7 @@ import (
 var _ = Describe("given CloudControllerManager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewManager("https://api.test.com", "token")
+			manager := NewManager("https://api.test.com", "token", false)
 			Ω(manager).ShouldNot(BeNil())
 			cloudControllerManager := manager.(*DefaultManager)
 			Ω(cloudControllerManager.Host).Should(Equal("https://api.test.com"))
@@ -66,6 +66,12 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+		It("should peek add user to space role", func() {
+			manager.Peek = true
+			err := manager.AddUserToSpaceRole(userName, "SpaceDeveloper", spaceGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -93,6 +99,13 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.AddUserToOrg(userName, orgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -119,6 +132,12 @@ var _ = Describe("given CloudControllerManager", func() {
 			err := manager.UpdateSpaceSSH(true, spaceGUID)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.UpdateSpaceSSH(true, spaceGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
 		})
 		It("should return an error", func() {
 			server.AppendHandlers(
@@ -349,6 +368,14 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+		It("should peek", func() {
+			manager.Peek = true
+			contentbytes, err := ioutil.ReadFile("fixtures/asg.json")
+			Ω(err).ShouldNot(HaveOccurred())
+			err = manager.UpdateSecurityGroup(sgGUID, "test", string(contentbytes))
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -384,6 +411,15 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(guid).Should(Equal("601d30e6-f16f-4c3d-88ab-723f7c51184a"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+		It("should peek", func() {
+			manager.Peek = true
+			contentbytes, err := ioutil.ReadFile("fixtures/asg.json")
+			Ω(err).ShouldNot(HaveOccurred())
+			guid, err := manager.CreateSecurityGroup("test", string(contentbytes))
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(guid).Should(Equal("dry-run-security-group-guid"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -411,6 +447,13 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.AssignSecurityGroupToSpace(spaceGUID, sgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -437,6 +480,13 @@ var _ = Describe("given CloudControllerManager", func() {
 			err := manager.AssignQuotaToSpace(spaceGUID, quotaGUID)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.AssignQuotaToSpace(spaceGUID, quotaGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
 		})
 		It("should return an error", func() {
 			server.AppendHandlers(
@@ -498,6 +548,29 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(guid).Should(Equal("601d30e6-f16f-4c3d-88ab-723f7c51184a"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+
+		It("should peek", func() {
+			manager.Peek = true
+			spaceQuota := SpaceQuotaEntity{
+				OrgGUID: orgGUID,
+				QuotaEntity: QuotaEntity{
+					Name:                    "name",
+					MemoryLimit:             1,
+					InstanceMemoryLimit:     2,
+					TotalRoutes:             3,
+					TotalServices:           4,
+					TotalPrivateDomains:     5,
+					TotalReservedRoutePorts: 6,
+					TotalServiceKeys:        7,
+					AppInstanceLimit:        8,
+					PaidServicePlansAllowed: false,
+				},
+			}
+			guid, err := manager.CreateSpaceQuota(spaceQuota)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(guid).Should(Equal("dry-run-space-quota-guid"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -557,6 +630,27 @@ var _ = Describe("given CloudControllerManager", func() {
 			err := manager.UpdateSpaceQuota(quotaGUID, spaceQuota)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should peek", func() {
+			manager.Peek = true
+			spaceQuota := SpaceQuotaEntity{
+				OrgGUID: orgGUID,
+				QuotaEntity: QuotaEntity{
+					Name:                    "name",
+					MemoryLimit:             1,
+					InstanceMemoryLimit:     2,
+					TotalRoutes:             3,
+					TotalServices:           4,
+					TotalPrivateDomains:     5,
+					TotalReservedRoutePorts: 6,
+					TotalServiceKeys:        7,
+					AppInstanceLimit:        8,
+					PaidServicePlansAllowed: false,
+				},
+			}
+			err := manager.UpdateSpaceQuota(quotaGUID, spaceQuota)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
 		})
 		It("should return an error", func() {
 			server.AppendHandlers(
@@ -620,6 +714,12 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.CreateOrg("test")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -645,6 +745,12 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.DeleteOrg("22d428d0-014a-473b-87b2-131367a31248")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -669,6 +775,12 @@ var _ = Describe("given CloudControllerManager", func() {
 			err := manager.DeleteSpace("some-guid-for-a-space")
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.DeleteSpace("some-guid-for-a-space")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
 		})
 		It("should return an error", func() {
 			server.AppendHandlers(
@@ -754,6 +866,13 @@ var _ = Describe("given CloudControllerManager", func() {
 			err := manager.AddUserToOrgRole(userName, "OrgManager", orgGUID)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.AddUserToOrgRole(userName, "OrgManager", orgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
 		})
 		It("should return an error", func() {
 			server.AppendHandlers(
@@ -842,6 +961,25 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(guid).Should(Equal("601d30e6-f16f-4c3d-88ab-723f7c51184a"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+		It("should peek", func() {
+			manager.Peek = true
+			quota := QuotaEntity{
+				Name:                    "name",
+				MemoryLimit:             1,
+				InstanceMemoryLimit:     2,
+				TotalRoutes:             3,
+				TotalServices:           4,
+				TotalPrivateDomains:     5,
+				TotalReservedRoutePorts: 6,
+				TotalServiceKeys:        7,
+				AppInstanceLimit:        8,
+				PaidServicePlansAllowed: false,
+			}
+			guid, err := manager.CreateQuota(quota)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(guid).Should(Equal("dry-run-quota-guid"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -896,6 +1034,25 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+		It("should peek", func() {
+			manager.Peek = true
+
+			quota := QuotaEntity{
+				Name:                    "name",
+				MemoryLimit:             1,
+				InstanceMemoryLimit:     2,
+				TotalRoutes:             3,
+				TotalServices:           4,
+				TotalPrivateDomains:     5,
+				TotalReservedRoutePorts: 6,
+				TotalServiceKeys:        7,
+				AppInstanceLimit:        8,
+				PaidServicePlansAllowed: false,
+			}
+			err := manager.UpdateQuota(quotaGUID, quota)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -923,6 +1080,12 @@ var _ = Describe("given CloudControllerManager", func() {
 			err := manager.AssignQuotaToOrg(orgGUID, quotaGUID)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.AssignQuotaToOrg(orgGUID, quotaGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
 		})
 		It("should return an error", func() {
 			server.AppendHandlers(
@@ -1199,6 +1362,12 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.DeletePrivateDomain("22d428d0-014a-473b-87b2-131367a31248")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -1229,6 +1398,13 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(guid).Should(BeEquivalentTo("b98aeca1-22b9-49f9-8428-3ace9ea2ba11"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+		It("should peek", func() {
+			manager.Peek = true
+			guid, err := manager.CreatePrivateDomain(orgGUID, "test.com")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(guid).Should(BeEquivalentTo("dry-run-private-domain-guid"))
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -1255,6 +1431,13 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 
 		})
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.SharePrivateDomain("1234o", "1234d")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+
+		})
 		It("should return an error", func() {
 			server.AppendHandlers(
 				CombineHandlers(
@@ -1279,17 +1462,24 @@ var _ = Describe("given CloudControllerManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
-	})
-	It("should return an error", func() {
-		server.AppendHandlers(
-			CombineHandlers(
-				VerifyRequest("DELETE", "/v2/organizations/1234o/private_domains/1234d"),
-				RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
-			),
-		)
-		err := manager.RemoveSharedPrivateDomain("1234o", "1234d")
-		Ω(err).Should(HaveOccurred())
-		Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.RemoveSharedPrivateDomain("1234o", "1234d")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
+
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("DELETE", "/v2/organizations/1234o/private_domains/1234d"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			err := manager.RemoveSharedPrivateDomain("1234o", "1234d")
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
 	})
 
 })

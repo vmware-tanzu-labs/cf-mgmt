@@ -13,7 +13,7 @@ type Manager interface {
 	CreateOrgs() error
 	CreatePrivateDomains() error
 	SharePrivateDomains() error
-	DeleteOrgs(peekDeletion bool) error
+	DeleteOrgs() error
 	UpdateOrgUsers(configDir, ldapBindPassword string) error
 	CreateQuotas() error
 	GetOrgGUID(orgName string) (string, error)
