@@ -197,7 +197,8 @@ func (m *DefaultManager) searchUser(filter, searchBase, userID string, config *C
 		}
 		return user, nil
 	}
-	return nil, fmt.Errorf("Found %d number of entries for filter %s", len(sr.Entries), filter)
+	lo.G.Errorf("Found %d number of entries for filter %s", len(sr.Entries), filter)
+	return nil, nil
 }
 
 func (m *DefaultManager) EscapeFilterValue(filter string) string {
