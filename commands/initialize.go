@@ -50,8 +50,8 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	cfMgmt.ConfigDirectory = baseCommand.ConfigDirectory
 	cfMgmt.SystemDomain = baseCommand.SystemDomain
 	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
-
-	if uaacToken, err = uaa.GetUAACToken(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.ClientSecret); err != nil {
+	uaaHost := fmt.Sprintf("https://uaa.%s", cfMgmt.SystemDomain)
+	if uaacToken, err = uaa.GetUAACToken(uaaHost, baseCommand.UserID, baseCommand.ClientSecret); err != nil {
 		return nil, err
 	}
 	cfMgmt.UaacToken = uaacToken
@@ -59,7 +59,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 
 	if baseCommand.Password != "" {
 		lo.G.Warning("Password parameter is deprecated, create uaa client and client-secret instead")
-		if cfToken, err = uaa.GetCFToken(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.Password); err != nil {
+		if cfToken, err = uaa.GetCFToken(uaaHost, baseCommand.UserID, baseCommand.Password); err != nil {
 			return nil, err
 		}
 		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken, peek)
