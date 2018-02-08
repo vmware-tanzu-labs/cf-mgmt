@@ -81,8 +81,12 @@ func (m *yamlManager) GetOrgConfigs() ([]OrgConfig, error) {
 	return result, nil
 }
 
-func (m *yamlManager) spaceList(path string) ([]Spaces, error) {
-	files, err := FindFiles(path, "spaces.yml")
+func (m *yamlManager) SaveOrgSpaces(spaces *Spaces) error {
+	return WriteFile(filepath.Join(m.ConfigDir, spaces.Org, "spaces.yml"), spaces)
+}
+
+func (m *yamlManager) Spaces() ([]Spaces, error) {
+	files, err := FindFiles(m.ConfigDir, "spaces.yml")
 	if err != nil {
 		return nil, err
 	}
@@ -98,16 +102,15 @@ func (m *yamlManager) spaceList(path string) ([]Spaces, error) {
 	}
 	return spaceList, nil
 }
-func (m *yamlManager) Spaces() ([]Spaces, error) {
-	return m.spaceList(m.ConfigDir)
-}
 func (m *yamlManager) OrgSpaces(orgName string) (*Spaces, error) {
-	spaceList, err := m.spaceList(path.Join(m.ConfigDir, orgName))
+	spaceList, err := m.Spaces()
 	if err != nil {
 		return nil, err
 	}
-	if len(spaceList) == 1 {
-		return &spaceList[0], nil
+	for _, space := range spaceList {
+		if space.Org == orgName {
+			return &space, nil
+		}
 	}
 	return nil, fmt.Errorf("No spaces found for org [%s]", orgName)
 }
@@ -240,7 +243,7 @@ func (m *yamlManager) DeleteSpaceConfig(orgName, spaceName string) error {
 			}
 		}
 		spaces.Spaces = spaceList
-		if err := m.saveSpaceList(*spaces); err != nil {
+		if err := m.SaveOrgSpaces(spaces); err != nil {
 			return err
 		}
 		os.RemoveAll(path.Join(m.ConfigDir, orgName, spaceName))
@@ -289,14 +292,10 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 		return err
 	}
 	m.SaveOrgConfig(orgConfig)
-	return m.saveSpaceList(Spaces{
+	return m.SaveOrgSpaces(&Spaces{
 		Org:                orgName,
 		EnableDeleteSpaces: true,
 	})
-}
-
-func (m *yamlManager) saveSpaceList(spaces Spaces) error {
-	return WriteFile(filepath.Join(m.ConfigDir, spaces.Org, "spaces.yml"), spaces)
 }
 
 // AddSpaceToConfig adds a space to the cf-mgmt configuration, so long as a

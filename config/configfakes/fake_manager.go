@@ -57,6 +57,14 @@ type FakeManager struct {
 	deleteConfigIfExistsReturns     struct {
 		result1 error
 	}
+	SaveOrgSpacesStub        func(spaces *config.Spaces) error
+	saveOrgSpacesMutex       sync.RWMutex
+	saveOrgSpacesArgsForCall []struct {
+		spaces *config.Spaces
+	}
+	saveOrgSpacesReturns struct {
+		result1 error
+	}
 	SaveSpaceConfigStub        func(spaceConfig *config.SpaceConfig) error
 	saveSpaceConfigMutex       sync.RWMutex
 	saveSpaceConfigArgsForCall []struct {
@@ -370,6 +378,39 @@ func (fake *FakeManager) DeleteConfigIfExistsCallCount() int {
 func (fake *FakeManager) DeleteConfigIfExistsReturns(result1 error) {
 	fake.DeleteConfigIfExistsStub = nil
 	fake.deleteConfigIfExistsReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) SaveOrgSpaces(spaces *config.Spaces) error {
+	fake.saveOrgSpacesMutex.Lock()
+	fake.saveOrgSpacesArgsForCall = append(fake.saveOrgSpacesArgsForCall, struct {
+		spaces *config.Spaces
+	}{spaces})
+	fake.recordInvocation("SaveOrgSpaces", []interface{}{spaces})
+	fake.saveOrgSpacesMutex.Unlock()
+	if fake.SaveOrgSpacesStub != nil {
+		return fake.SaveOrgSpacesStub(spaces)
+	} else {
+		return fake.saveOrgSpacesReturns.result1
+	}
+}
+
+func (fake *FakeManager) SaveOrgSpacesCallCount() int {
+	fake.saveOrgSpacesMutex.RLock()
+	defer fake.saveOrgSpacesMutex.RUnlock()
+	return len(fake.saveOrgSpacesArgsForCall)
+}
+
+func (fake *FakeManager) SaveOrgSpacesArgsForCall(i int) *config.Spaces {
+	fake.saveOrgSpacesMutex.RLock()
+	defer fake.saveOrgSpacesMutex.RUnlock()
+	return fake.saveOrgSpacesArgsForCall[i].spaces
+}
+
+func (fake *FakeManager) SaveOrgSpacesReturns(result1 error) {
+	fake.SaveOrgSpacesStub = nil
+	fake.saveOrgSpacesReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -807,6 +848,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.createConfigIfNotExistsMutex.RUnlock()
 	fake.deleteConfigIfExistsMutex.RLock()
 	defer fake.deleteConfigIfExistsMutex.RUnlock()
+	fake.saveOrgSpacesMutex.RLock()
+	defer fake.saveOrgSpacesMutex.RUnlock()
 	fake.saveSpaceConfigMutex.RLock()
 	defer fake.saveSpaceConfigMutex.RUnlock()
 	fake.saveOrgConfigMutex.RLock()

@@ -25,6 +25,7 @@ type Updater interface {
 	CreateConfigIfNotExists(uaaOrigin string) error
 	DeleteConfigIfExists() error
 
+	SaveOrgSpaces(spaces *Spaces) error
 	SaveSpaceConfig(spaceConfig *SpaceConfig) error
 	SaveOrgConfig(orgConfig *OrgConfig) error
 

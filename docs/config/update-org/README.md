@@ -23,6 +23,7 @@ Help Options:
   --shared-private-domain=                            Shared Private Domain(s) to add, specify multiple times
   --shared-private-domain-to-remove=                  Shared Private Domain(s) to remove, specify multiple times
   --enable-remove-shared-private-domains=[true|false] Enable removing shared private domains
+  --enable-remove-spaces=[true|false]                 Enable removing spaces
   --default-isolation-segment=                        Default isolation segment for org
   --clear-default-isolation-segment                   Sets the default isolation segment to blank
   --enable-remove-users=[true|false]                  Enable removing users from the org

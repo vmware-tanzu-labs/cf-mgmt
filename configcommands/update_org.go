@@ -17,6 +17,7 @@ type UpdateOrgConfigurationCommand struct {
 	SharedPrivateDomains             []string `long:"shared-private-domain" description:"Shared Private Domain(s) to add, specify multiple times"`
 	SharedPrivateDomainsToRemove     []string `long:"shared-private-domain-to-remove" description:"Shared Private Domain(s) to remove, specify multiple times"`
 	EnableRemoveSharedPrivateDomains string   `long:"enable-remove-shared-private-domains" description:"Enable removing shared private domains" choice:"true" choice:"false"`
+	EnableRemoveSpaces               string   `long:"enable-remove-spaces" description:"Enable removing spaces" choice:"true" choice:"false"`
 	DefaultIsolationSegment          string   `long:"default-isolation-segment" description:"Default isolation segment for org" `
 	ClearDefaultIsolationSegment     bool     `long:"clear-default-isolation-segment" description:"Sets the default isolation segment to blank"`
 	EnableRemoveUsers                string   `long:"enable-remove-users" description:"Enable removing users from the org" choice:"true" choice:"false"`
@@ -33,8 +34,14 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
+
+	orgSpaces, err := c.ConfigManager.OrgSpaces(c.OrgName)
+	if err != nil {
+		return err
+	}
 	errorString := ""
 
+	convertToBool("enable-remove-spaces", &orgSpaces.EnableDeleteSpaces, c.EnableRemoveSpaces, &errorString)
 	if c.DefaultIsolationSegment != "" {
 		orgConfig.DefaultIsoSegment = c.DefaultIsolationSegment
 	}
@@ -58,6 +65,11 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 	if err := c.ConfigManager.SaveOrgConfig(orgConfig); err != nil {
 		return err
 	}
+
+	if err := c.ConfigManager.SaveOrgSpaces(orgSpaces); err != nil {
+		return err
+	}
+
 	fmt.Println(fmt.Sprintf("The org [%s] has been updated", c.OrgName))
 	return nil
 }
