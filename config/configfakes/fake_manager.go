@@ -98,11 +98,19 @@ type FakeManager struct {
 	deleteSpaceConfigReturns struct {
 		result1 error
 	}
-	OrgsStub        func() (config.Orgs, error)
+	SaveOrgsStub        func(*config.Orgs) error
+	saveOrgsMutex       sync.RWMutex
+	saveOrgsArgsForCall []struct {
+		arg1 *config.Orgs
+	}
+	saveOrgsReturns struct {
+		result1 error
+	}
+	OrgsStub        func() (*config.Orgs, error)
 	orgsMutex       sync.RWMutex
 	orgsArgsForCall []struct{}
 	orgsReturns     struct {
-		result1 config.Orgs
+		result1 *config.Orgs
 		result2 error
 	}
 	OrgSpacesStub        func(orgName string) (*config.Spaces, error)
@@ -548,7 +556,40 @@ func (fake *FakeManager) DeleteSpaceConfigReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) Orgs() (config.Orgs, error) {
+func (fake *FakeManager) SaveOrgs(arg1 *config.Orgs) error {
+	fake.saveOrgsMutex.Lock()
+	fake.saveOrgsArgsForCall = append(fake.saveOrgsArgsForCall, struct {
+		arg1 *config.Orgs
+	}{arg1})
+	fake.recordInvocation("SaveOrgs", []interface{}{arg1})
+	fake.saveOrgsMutex.Unlock()
+	if fake.SaveOrgsStub != nil {
+		return fake.SaveOrgsStub(arg1)
+	} else {
+		return fake.saveOrgsReturns.result1
+	}
+}
+
+func (fake *FakeManager) SaveOrgsCallCount() int {
+	fake.saveOrgsMutex.RLock()
+	defer fake.saveOrgsMutex.RUnlock()
+	return len(fake.saveOrgsArgsForCall)
+}
+
+func (fake *FakeManager) SaveOrgsArgsForCall(i int) *config.Orgs {
+	fake.saveOrgsMutex.RLock()
+	defer fake.saveOrgsMutex.RUnlock()
+	return fake.saveOrgsArgsForCall[i].arg1
+}
+
+func (fake *FakeManager) SaveOrgsReturns(result1 error) {
+	fake.SaveOrgsStub = nil
+	fake.saveOrgsReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) Orgs() (*config.Orgs, error) {
 	fake.orgsMutex.Lock()
 	fake.orgsArgsForCall = append(fake.orgsArgsForCall, struct{}{})
 	fake.recordInvocation("Orgs", []interface{}{})
@@ -566,10 +607,10 @@ func (fake *FakeManager) OrgsCallCount() int {
 	return len(fake.orgsArgsForCall)
 }
 
-func (fake *FakeManager) OrgsReturns(result1 config.Orgs, result2 error) {
+func (fake *FakeManager) OrgsReturns(result1 *config.Orgs, result2 error) {
 	fake.OrgsStub = nil
 	fake.orgsReturns = struct {
-		result1 config.Orgs
+		result1 *config.Orgs
 		result2 error
 	}{result1, result2}
 }
@@ -858,6 +899,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.deleteOrgConfigMutex.RUnlock()
 	fake.deleteSpaceConfigMutex.RLock()
 	defer fake.deleteSpaceConfigMutex.RUnlock()
+	fake.saveOrgsMutex.RLock()
+	defer fake.saveOrgsMutex.RUnlock()
 	fake.orgsMutex.RLock()
 	defer fake.orgsMutex.RUnlock()
 	fake.orgSpacesMutex.RLock()

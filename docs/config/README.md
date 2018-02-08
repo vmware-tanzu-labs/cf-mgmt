@@ -7,6 +7,7 @@
 * [delete-space](delete-space/README.md)
 * [generate-concourse-pipeline](generate-concourse-pipeline/README.md)
 * [update-org](update-org/README.md)
+* [update-orgs](update-orgs/README.md)
 * [update-space](update-space/README.md)
 * [version ](version/README.md)
 

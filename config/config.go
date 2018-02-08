@@ -31,11 +31,13 @@ type Updater interface {
 
 	DeleteOrgConfig(orgName string) error
 	DeleteSpaceConfig(orgName, spaceName string) error
+
+	SaveOrgs(*Orgs) error
 }
 
 // Reader is used to read the cf-mgmt configuration.
 type Reader interface {
-	Orgs() (Orgs, error)
+	Orgs() (*Orgs, error)
 	OrgSpaces(orgName string) (*Spaces, error)
 	Spaces() ([]Spaces, error)
 	GetOrgConfigs() ([]OrgConfig, error)

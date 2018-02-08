@@ -20,12 +20,12 @@ type yamlManager struct {
 }
 
 // Orgs reads the config for all orgs.
-func (m *yamlManager) Orgs() (Orgs, error) {
+func (m *yamlManager) Orgs() (*Orgs, error) {
 	configFile := filepath.Join(m.ConfigDir, "orgs.yml")
 	lo.G.Debug("Processing org file", configFile)
-	input := Orgs{}
+	input := &Orgs{}
 	if err := LoadFile(configFile, &input); err != nil {
-		return Orgs{}, err
+		return nil, err
 	}
 	return input, nil
 }
@@ -222,7 +222,7 @@ func (m *yamlManager) DeleteOrgConfig(orgName string) error {
 			}
 		}
 		orgs.Orgs = orgList
-		if err := m.saveOrgList(orgs); err != nil {
+		if err := m.SaveOrgs(orgs); err != nil {
 			return err
 		}
 		os.RemoveAll(path.Join(m.ConfigDir, orgName))
@@ -264,7 +264,7 @@ func (m *yamlManager) GetSpaceDefaults() (*SpaceConfig, error) {
 	return &result, err
 }
 
-func (m *yamlManager) saveOrgList(orgs Orgs) error {
+func (m *yamlManager) SaveOrgs(orgs *Orgs) error {
 	if err := WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), orgs); err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	}
 	lo.G.Infof("Adding org: %s ", orgName)
 	orgList.Orgs = append(orgList.Orgs, orgName)
-	if err = m.saveOrgList(orgList); err != nil {
+	if err = m.SaveOrgs(orgList); err != nil {
 		return err
 	}
 	m.SaveOrgConfig(orgConfig)
