@@ -303,6 +303,89 @@ var _ = Describe("CF-Mgmt Config", func() {
 				})
 			})
 
+			Context("AddOrgConfig", func() {
+				var tempDir string
+				var err error
+				var configManager config.Manager
+				BeforeEach(func() {
+					tempDir, err = ioutil.TempDir("", "cf-mgmt")
+					Ω(err).ShouldNot(HaveOccurred())
+					configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
+					configManager.CreateConfigIfNotExists("ldap")
+				})
+				AfterEach(func() {
+					os.RemoveAll(tempDir)
+				})
+				It("should succeed adding an org that doesn't exist", func() {
+					err := configManager.AddOrgToConfig(&config.OrgConfig{
+						Org: "foo",
+					})
+					Ω(err).ShouldNot(HaveOccurred())
+					orgs, err := configManager.Orgs()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(orgs.Orgs).Should(ConsistOf("foo"))
+					_, err = configManager.GetOrgConfig("foo")
+					Ω(err).Should(Not(HaveOccurred()))
+				})
+				It("should fail adding an org with different case", func() {
+					err := configManager.AddOrgToConfig(&config.OrgConfig{
+						Org: "foo",
+					})
+					Ω(err).ShouldNot(HaveOccurred())
+					err = configManager.AddOrgToConfig(&config.OrgConfig{
+						Org: "Foo",
+					})
+					Ω(err).Should(HaveOccurred())
+					orgs, err := configManager.Orgs()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(len(orgs.Orgs)).Should(BeEquivalentTo(1))
+				})
+			})
+
+			Context("AddSpaceConfig", func() {
+				var tempDir string
+				var err error
+				var configManager config.Manager
+				BeforeEach(func() {
+					tempDir, err = ioutil.TempDir("", "cf-mgmt")
+					Ω(err).ShouldNot(HaveOccurred())
+					configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
+					configManager.CreateConfigIfNotExists("ldap")
+					err := configManager.AddOrgToConfig(&config.OrgConfig{
+						Org: "foo",
+					})
+					Ω(err).ShouldNot(HaveOccurred())
+				})
+				AfterEach(func() {
+					os.RemoveAll(tempDir)
+				})
+				It("should succeed adding an space that doesn't exist", func() {
+					err := configManager.AddSpaceToConfig(&config.SpaceConfig{
+						Org:   "foo",
+						Space: "bar",
+					})
+					Ω(err).ShouldNot(HaveOccurred())
+					spaces, err := configManager.GetSpaceConfigs()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(spaces[0].Space).Should(BeEquivalentTo("bar"))
+				})
+				It("should fail adding an space with different case", func() {
+					err := configManager.AddSpaceToConfig(&config.SpaceConfig{
+						Org:   "foo",
+						Space: "bar",
+					})
+					Ω(err).ShouldNot(HaveOccurred())
+					err = configManager.AddSpaceToConfig(&config.SpaceConfig{
+						Org:   "foo",
+						Space: "Bar",
+					})
+					Ω(err).Should(HaveOccurred())
+					spaces, err := configManager.GetSpaceConfigs()
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(spaces[0].Space).Should(BeEquivalentTo("bar"))
+				})
+			})
+
 			Context("failure cases", func() {
 				It("should return an error when no security.json file is provided", func() {
 					m := config.NewManager("./fixtures/no-security-json")

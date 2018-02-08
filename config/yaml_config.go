@@ -283,8 +283,7 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	}
 
 	if orgList.Contains(orgName) {
-		lo.G.Infof("%s already added to config", orgName)
-		return nil
+		return fmt.Errorf("org [%s] already added to config -> %v", orgName, orgList.Orgs)
 	}
 	lo.G.Infof("Adding org: %s ", orgName)
 	orgList.Orgs = append(orgList.Orgs, orgName)
@@ -310,8 +309,7 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 		return err
 	}
 	if spaceList.Contains(spaceName) {
-		lo.G.Infof("%s already added to config", spaceName)
-		return nil
+		return fmt.Errorf("space [%s] already added to config -> [%v]", spaceName, spaceList.Spaces)
 	}
 	lo.G.Infof("Adding space: %s ", spaceName)
 	spaceList.Spaces = append(spaceList.Spaces, spaceName)

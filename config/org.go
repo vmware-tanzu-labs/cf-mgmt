@@ -1,5 +1,7 @@
 package config
 
+import "strings"
+
 // OrgConfig describes configuration for an org.
 type OrgConfig struct {
 	Org                        string   `yaml:"org"`
@@ -36,8 +38,9 @@ type Orgs struct {
 
 // Contains determines whether an org is present in a list of orgs.
 func (o *Orgs) Contains(orgName string) bool {
+	orgNameUpper := strings.ToUpper(orgName)
 	for _, org := range o.Orgs {
-		if org == orgName {
+		if strings.ToUpper(org) == orgNameUpper {
 			return true
 		}
 	}

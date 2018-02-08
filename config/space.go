@@ -1,5 +1,9 @@
 package config
 
+import (
+	"strings"
+)
+
 // Spaces describes cf-mgmt config for all spaces.
 type Spaces struct {
 	Org                string   `yaml:"org"`
@@ -37,8 +41,9 @@ type SpaceConfig struct {
 
 // Contains determines whether a space is present in a list of spaces.
 func (s *Spaces) Contains(spaceName string) bool {
+	spaceNameToUpper := strings.ToUpper(spaceName)
 	for _, v := range s.Spaces {
-		if v == spaceName {
+		if strings.ToUpper(v) == spaceNameToUpper {
 			return true
 		}
 	}
