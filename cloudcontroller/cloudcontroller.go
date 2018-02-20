@@ -93,7 +93,21 @@ func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 	return m.HTTP.Put(url, m.Token, sendString)
 }
 
-func (m *DefaultManager) ListSecurityGroups() (map[string]SecurityGroupInfo, error) {
+func (m *DefaultManager) ListNonDefaultSecurityGroups() (map[string]SecurityGroupInfo, error) {
+	securityGroups := make(map[string]SecurityGroupInfo)
+	groupMap, err := m.listSecurityGroups()
+	if err != nil {
+		return nil, err
+	}
+	for key, groupMap := range groupMap {
+		if groupMap.DefaultRunning == false && groupMap.DefaultStaging == false {
+			securityGroups[key] = groupMap
+		}
+	}
+	return securityGroups, nil
+}
+
+func (m *DefaultManager) listSecurityGroups() (map[string]SecurityGroupInfo, error) {
 	securityGroups := make(map[string]SecurityGroupInfo)
 	url := fmt.Sprintf("%s/v2/security_groups", m.Host)
 	sgResources := &SecurityGroupResources{}
@@ -105,8 +119,10 @@ func (m *DefaultManager) ListSecurityGroups() (map[string]SecurityGroupInfo, err
 	for _, sg := range sgResources.SecurityGroups {
 		bytes, _ := json.Marshal(sg.Entity.Rules)
 		securityGroups[sg.Entity.Name] = SecurityGroupInfo{
-			GUID:  sg.MetaData.GUID,
-			Rules: string(bytes),
+			GUID:           sg.MetaData.GUID,
+			Rules:          string(bytes),
+			DefaultRunning: sg.Entity.DefaultRunning,
+			DefaultStaging: sg.Entity.DefaultStaging,
 		}
 	}
 	return securityGroups, nil
@@ -162,7 +178,9 @@ func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) (map[string]s
 	lo.G.Debug("Total security groups returned :", len(sgResources.SecurityGroups))
 	names := make(map[string]string)
 	for _, sg := range sgResources.SecurityGroups {
-		names[sg.Entity.Name] = sg.MetaData.GUID
+		if sg.Entity.DefaultRunning == false && sg.Entity.DefaultStaging == false {
+			names[sg.Entity.Name] = sg.MetaData.GUID
+		}
 	}
 	return names, nil
 }

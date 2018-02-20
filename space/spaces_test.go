@@ -234,7 +234,7 @@ var _ = Describe("given SpaceManager", func() {
 
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil).Times(2)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil).Times(2)
-			mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
+			mockCloudController.EXPECT().ListNonDefaultSecurityGroups().Return(sgs, nil)
 			mockCloudController.EXPECT().UpdateSecurityGroup("SGGUID", "test-space1", string(bytes)).Return(nil)
 			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space1GUID", "SGGUID").Return(nil)
 			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space1GUID", "SGGZZUID").Return(nil)
@@ -268,7 +268,7 @@ var _ = Describe("given SpaceManager", func() {
 			sgs["foo"] = cloudcontroller.SecurityGroupInfo{GUID: "SG-FOO-GUID"}
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil).Times(2)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil).Times(2)
-			mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
+			mockCloudController.EXPECT().ListNonDefaultSecurityGroups().Return(sgs, nil)
 			mockCloudController.EXPECT().CreateSecurityGroup("test-space1", string(bytes)).Return("SGGUID", nil)
 			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space1GUID", "SGGUID").Return(nil)
 			mockCloudController.EXPECT().AssignSecurityGroupToSpace("space2GUID", "SG-FOO-GUID").Return(nil)
@@ -300,7 +300,7 @@ var _ = Describe("given SpaceManager", func() {
 			sgs := make(map[string]cloudcontroller.SecurityGroupInfo)
 			sgs["test-space1"] = cloudcontroller.SecurityGroupInfo{GUID: "SGGUID"}
 			sgs["foo"] = cloudcontroller.SecurityGroupInfo{GUID: "SG-FOO-GUID"}
-			mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
+			mockCloudController.EXPECT().ListNonDefaultSecurityGroups().Return(sgs, nil)
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil).Times(2)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil).Times(2)
 			mockCloudController.EXPECT().UpdateSecurityGroup("SGGUID", "test-space1", string(bytes)).Return(nil)

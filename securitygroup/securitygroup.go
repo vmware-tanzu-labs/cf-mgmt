@@ -17,7 +17,7 @@ func NewManager(cloudController cloudcontroller.Manager, cfg config.Reader) Mana
 
 //CreateApplicationSecurityGroups -
 func (m *DefaultSecurityGroupManager) CreateApplicationSecurityGroups() error {
-	sgs, err := m.CloudController.ListSecurityGroups()
+	sgs, err := m.CloudController.ListNonDefaultSecurityGroups()
 	if err != nil {
 		return err
 	}

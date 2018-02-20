@@ -40,7 +40,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		return err
 	}
 
-	securityGroups, err := im.CloudController.ListSecurityGroups()
+	securityGroups, err := im.CloudController.ListNonDefaultSecurityGroups()
 	if err != nil {
 		lo.G.Errorf("Unable to retrieve security groups. Error : %s", err)
 		return err

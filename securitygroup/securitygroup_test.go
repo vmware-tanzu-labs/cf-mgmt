@@ -58,7 +58,7 @@ var _ = Describe("given SecurityGroupManager", func() {
 				dns_bytes, e := ioutil.ReadFile("./fixtures/asg-config/asgs/dns.json")
 				Expect(e).Should(BeNil())
 				sgs := make(map[string]cloudcontroller.SecurityGroupInfo)
-				mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
+				mockCloudController.EXPECT().ListNonDefaultSecurityGroups().Return(sgs, nil)
 				mockCloudController.EXPECT().CreateSecurityGroup("test-asg", string(test_asg_bytes)).Return("SGGUID", nil)
 				mockCloudController.EXPECT().CreateSecurityGroup("dns", string(dns_bytes)).Return("SGGUID", nil)
 				err := securityManager.CreateApplicationSecurityGroups()
@@ -72,7 +72,7 @@ var _ = Describe("given SecurityGroupManager", func() {
 				Expect(e).Should(BeNil())
 				sgs := make(map[string]cloudcontroller.SecurityGroupInfo)
 				sgs["test-asg"] = cloudcontroller.SecurityGroupInfo{GUID: "test-asg-guid", Rules: "[]"}
-				mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
+				mockCloudController.EXPECT().ListNonDefaultSecurityGroups().Return(sgs, nil)
 				mockCloudController.EXPECT().UpdateSecurityGroup("test-asg-guid", "test-asg", string(test_asg_bytes)).Return(nil)
 				mockCloudController.EXPECT().CreateSecurityGroup("dns", string(dns_bytes)).Return("SGGUID", nil)
 				err := securityManager.CreateApplicationSecurityGroups()
@@ -86,7 +86,7 @@ var _ = Describe("given SecurityGroupManager", func() {
 				Expect(e).Should(BeNil())
 				sgs := make(map[string]cloudcontroller.SecurityGroupInfo)
 				sgs["test-asg"] = cloudcontroller.SecurityGroupInfo{GUID: "test-asg-guid", Rules: string(test_asg_bytes)}
-				mockCloudController.EXPECT().ListSecurityGroups().Return(sgs, nil)
+				mockCloudController.EXPECT().ListNonDefaultSecurityGroups().Return(sgs, nil)
 				mockCloudController.EXPECT().CreateSecurityGroup("dns", string(dns_bytes)).Return("SGGUID", nil)
 				err := securityManager.CreateApplicationSecurityGroups()
 				Expect(err).Should(BeNil())

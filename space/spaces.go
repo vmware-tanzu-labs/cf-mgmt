@@ -30,7 +30,7 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 	if err != nil {
 		return err
 	}
-	sgs, err := m.CloudController.ListSecurityGroups()
+	sgs, err := m.CloudController.ListNonDefaultSecurityGroups()
 	if err != nil {
 		return err
 	}

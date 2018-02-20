@@ -5,9 +5,10 @@
 package mock_cloudcontroller
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	cloudcontroller "github.com/pivotalservices/cf-mgmt/cloudcontroller"
-	reflect "reflect"
 )
 
 // MockManager is a mock of Manager interface
@@ -294,6 +295,19 @@ func (mr *MockManagerMockRecorder) ListAllSpaceQuotasForOrg(arg0 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllSpaceQuotasForOrg", reflect.TypeOf((*MockManager)(nil).ListAllSpaceQuotasForOrg), arg0)
 }
 
+// ListNonDefaultSecurityGroups mocks base method
+func (m *MockManager) ListNonDefaultSecurityGroups() (map[string]cloudcontroller.SecurityGroupInfo, error) {
+	ret := m.ctrl.Call(m, "ListNonDefaultSecurityGroups")
+	ret0, _ := ret[0].(map[string]cloudcontroller.SecurityGroupInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListNonDefaultSecurityGroups indicates an expected call of ListNonDefaultSecurityGroups
+func (mr *MockManagerMockRecorder) ListNonDefaultSecurityGroups() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNonDefaultSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListNonDefaultSecurityGroups))
+}
+
 // ListOrgOwnedPrivateDomains mocks base method
 func (m *MockManager) ListOrgOwnedPrivateDomains(arg0 string) (map[string]string, error) {
 	ret := m.ctrl.Call(m, "ListOrgOwnedPrivateDomains", arg0)
@@ -331,19 +345,6 @@ func (m *MockManager) ListOrgs() ([]*cloudcontroller.Org, error) {
 // ListOrgs indicates an expected call of ListOrgs
 func (mr *MockManagerMockRecorder) ListOrgs() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrgs", reflect.TypeOf((*MockManager)(nil).ListOrgs))
-}
-
-// ListSecurityGroups mocks base method
-func (m *MockManager) ListSecurityGroups() (map[string]cloudcontroller.SecurityGroupInfo, error) {
-	ret := m.ctrl.Call(m, "ListSecurityGroups")
-	ret0, _ := ret[0].(map[string]cloudcontroller.SecurityGroupInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListSecurityGroups indicates an expected call of ListSecurityGroups
-func (mr *MockManagerMockRecorder) ListSecurityGroups() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListSecurityGroups))
 }
 
 // ListSpaceSecurityGroups mocks base method
