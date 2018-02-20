@@ -242,7 +242,7 @@ var _ = Describe("given CloudControllerManager", func() {
 		})
 	})
 
-	Context("ListSecurityGroups()", func() {
+	Context("ListNonDefaultSecurityGroups()", func() {
 
 		It("should be successful", func() {
 			bytes, err := ioutil.ReadFile("fixtures/security-groups.json")
@@ -254,10 +254,10 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWith(http.StatusOK, string(bytes)),
 				),
 			)
-			securityGroups, err := manager.ListSecurityGroups()
+			securityGroups, err := manager.ListNonDefaultSecurityGroups()
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(securityGroups).ShouldNot(BeNil())
-			Ω(securityGroups).Should(HaveLen(6))
+			Ω(securityGroups).Should(HaveLen(1))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 		It("should return an error", func() {
@@ -267,7 +267,7 @@ var _ = Describe("given CloudControllerManager", func() {
 					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
 				),
 			)
-			_, err := manager.ListSecurityGroups()
+			_, err := manager.ListNonDefaultSecurityGroups()
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -332,8 +332,8 @@ var _ = Describe("given CloudControllerManager", func() {
 				keys = append(keys, k)
 			}
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(ruleNames).Should(HaveLen(3))
-			Ω(keys).Should(ConsistOf("public_networks", "dns", "all_pcfdev"))
+			Ω(ruleNames).Should(HaveLen(1))
+			Ω(keys).Should(ConsistOf("test"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 		It("should return an error", func() {

@@ -11,7 +11,7 @@ type Manager interface {
 	UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 
 	AssignSecurityGroupToSpace(spaceGUID, sgGUID string) error
-	ListSecurityGroups() (map[string]SecurityGroupInfo, error)
+	ListNonDefaultSecurityGroups() (map[string]SecurityGroupInfo, error)
 	CreateSecurityGroup(sgName, contents string) (string, error)
 	UpdateSecurityGroup(sgGUID, sgName, contents string) error
 	GetSecurityGroupRules(sgGUID string) ([]byte, error)
@@ -158,14 +158,18 @@ type SecurityGroupMetaData struct {
 
 //SecurityGroupEntity -
 type SecurityGroupEntity struct {
-	Name  string      `json:"name"`
-	Rules interface{} `json:"rules"`
+	Name           string      `json:"name"`
+	Rules          interface{} `json:"rules"`
+	DefaultStaging bool        `json:"staging_default"`
+	DefaultRunning bool        `json:"running_default"`
 }
 
 //SecurityGroupInfo -
 type SecurityGroupInfo struct {
-	GUID  string
-	Rules string
+	GUID           string
+	Rules          string
+	DefaultStaging bool
+	DefaultRunning bool
 }
 
 //SecurityGroupRuleEntity -
