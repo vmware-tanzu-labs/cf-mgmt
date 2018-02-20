@@ -37,6 +37,21 @@ jobs:
       CLIENT_SECRET: {{client_secret}}
       CF_MGMT_COMMAND: create-security-groups
 
+- name: assign-default-security-groups
+  plan:
+  - get: config-repo
+    trigger: true
+    passed: [create-security-groups]
+  - task: assign-default-security-groups
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      CF_MGMT_COMMAND: assign-default-security-groups
+
 - name: delete-orgs
   plan:
   - get: config-repo

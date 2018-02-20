@@ -26,7 +26,7 @@ func (m *DefaultManager) Put(url, token, payload string) error {
 	if len(errs) > 0 {
 		return errs[0]
 	}
-	if res.StatusCode != http.StatusCreated {
+	if res.StatusCode != http.StatusCreated && res.StatusCode != http.StatusOK {
 		return fmt.Errorf("Status %d, body %s", res.StatusCode, body)
 	}
 

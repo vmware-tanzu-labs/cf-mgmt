@@ -1,15 +1,16 @@
 &larr; [back to Commands](../README.md)
 
-# `cf-mgmt create-security-groups`
+# `cf-mgmt assign-default-security-groups`
 
-`create-security-groups` command will:
-- create a named asg for any .json file in asgs folder in root of config directory.  These asgs will be named based on file name mysql.json will create an asg named mysql.
-- create a named asg for any .json file in default_asgs folder in root of config directory.  These asgs are meant to be for running and staging default asgs
+`assign-default-security-groups` command will:
+- assign running security groups for anything in `running-security-groups` within cf-mgmt.yml
+- assign staging security groups for anything in `staging-security-groups` within cf-mgmt.yml
+- unassign any security group assigned default running or default staging that is not in `running-security-groups` or `staging-security-groups` within cf-mgmt.yml if `enable-unassign-security-groups: true`
 
 ## Command Usage
 ```
 Usage:
-  main [OPTIONS] create-security-groups [create-security-groups-OPTIONS]
+  main [OPTIONS] assign-default-security-groups [assign-default-security-groups-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

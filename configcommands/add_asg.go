@@ -13,6 +13,7 @@ type AddASGToConfigurationCommand struct {
 	ASGName  string `long:"asg" description:"ASG name" required:"true"`
 	FilePath string `long:"path" description:"path to asg definition"`
 	Override bool   `long:"override" description:"override current definition"`
+	ASGType  string `long:"type" description:"Space asg or default asg" choice:"space" choice:"default" default:"space"`
 }
 
 //Execute - adds a named asg to the configuration
@@ -26,13 +27,25 @@ func (c *AddASGToConfigurationCommand) Execute([]string) error {
 	}
 
 	if !c.Override {
-		asgConfigs, err := c.ConfigManager.GetASGConfigs()
-		if err != nil {
-			return err
-		}
-		for _, asgConfig := range asgConfigs {
-			if c.ASGName == asgConfig.Name {
-				return errors.New(fmt.Sprintf("asg [%s] already exists if wanting to update use --override flag", c.ASGName))
+		if c.ASGType == "space" {
+			asgConfigs, err := c.ConfigManager.GetASGConfigs()
+			if err != nil {
+				return err
+			}
+			for _, asgConfig := range asgConfigs {
+				if c.ASGName == asgConfig.Name {
+					return errors.New(fmt.Sprintf("asg [%s] already exists if wanting to update use --override flag", c.ASGName))
+				}
+			}
+		} else {
+			asgConfigs, err := c.ConfigManager.GetDefaultASGConfigs()
+			if err != nil {
+				return err
+			}
+			for _, asgConfig := range asgConfigs {
+				if c.ASGName == asgConfig.Name {
+					return errors.New(fmt.Sprintf("asg [%s] already exists if wanting to update use --override flag", c.ASGName))
+				}
 			}
 		}
 	}
@@ -45,8 +58,14 @@ func (c *AddASGToConfigurationCommand) Execute([]string) error {
 		}
 		securityGroupsBytes = bytes
 	}
-	if err := config.NewManager(c.ConfigDirectory).AddSecurityGroup(c.ASGName, securityGroupsBytes); err != nil {
-		return err
+	if c.ASGType == "space" {
+		if err := config.NewManager(c.ConfigDirectory).AddSecurityGroup(c.ASGName, securityGroupsBytes); err != nil {
+			return err
+		}
+	} else {
+		if err := config.NewManager(c.ConfigDirectory).AddDefaultSecurityGroup(c.ASGName, securityGroupsBytes); err != nil {
+			return err
+		}
 	}
 	fmt.Println(fmt.Sprintf("The asg [%s] has been updated", c.ASGName))
 	return nil

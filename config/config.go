@@ -22,6 +22,7 @@ type Updater interface {
 	AddSpaceToConfig(spaceConfig *SpaceConfig) error
 	AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error
 	AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error
+	AddDefaultSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error
 	CreateConfigIfNotExists(uaaOrigin string) error
 	DeleteConfigIfExists() error
 
@@ -33,6 +34,7 @@ type Updater interface {
 	DeleteSpaceConfig(orgName, spaceName string) error
 
 	SaveOrgs(*Orgs) error
+	SaveGlobalConfig(*GlobalConfig) error
 }
 
 // Reader is used to read the cf-mgmt configuration.
@@ -43,7 +45,8 @@ type Reader interface {
 	GetOrgConfigs() ([]OrgConfig, error)
 	GetSpaceConfigs() ([]SpaceConfig, error)
 	GetASGConfigs() ([]ASGConfig, error)
-	GetGlobalConfig() (GlobalConfig, error)
+	GetDefaultASGConfigs() ([]ASGConfig, error)
+	GetGlobalConfig() (*GlobalConfig, error)
 	GetSpaceDefaults() (*SpaceConfig, error)
 	GetOrgConfig(orgName string) (*OrgConfig, error)
 	GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, error)

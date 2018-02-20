@@ -18,4 +18,6 @@ Help Options:
           --asg=        ASG name
           --path=       path to asg definition
           --override    override current definition
+          --type=[space|default] Space asg or default asg (default: space)
+
 ```

@@ -5,10 +5,9 @@
 package mock_cloudcontroller
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	cloudcontroller "github.com/pivotalservices/cf-mgmt/cloudcontroller"
+	reflect "reflect"
 )
 
 // MockManager is a mock of Manager interface
@@ -94,6 +93,18 @@ func (mr *MockManagerMockRecorder) AssignQuotaToSpace(arg0, arg1 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignQuotaToSpace", reflect.TypeOf((*MockManager)(nil).AssignQuotaToSpace), arg0, arg1)
 }
 
+// AssignRunningSecurityGroup mocks base method
+func (m *MockManager) AssignRunningSecurityGroup(arg0 string) error {
+	ret := m.ctrl.Call(m, "AssignRunningSecurityGroup", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AssignRunningSecurityGroup indicates an expected call of AssignRunningSecurityGroup
+func (mr *MockManagerMockRecorder) AssignRunningSecurityGroup(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignRunningSecurityGroup", reflect.TypeOf((*MockManager)(nil).AssignRunningSecurityGroup), arg0)
+}
+
 // AssignSecurityGroupToSpace mocks base method
 func (m *MockManager) AssignSecurityGroupToSpace(arg0, arg1 string) error {
 	ret := m.ctrl.Call(m, "AssignSecurityGroupToSpace", arg0, arg1)
@@ -104,6 +115,18 @@ func (m *MockManager) AssignSecurityGroupToSpace(arg0, arg1 string) error {
 // AssignSecurityGroupToSpace indicates an expected call of AssignSecurityGroupToSpace
 func (mr *MockManagerMockRecorder) AssignSecurityGroupToSpace(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignSecurityGroupToSpace", reflect.TypeOf((*MockManager)(nil).AssignSecurityGroupToSpace), arg0, arg1)
+}
+
+// AssignStagingSecurityGroup mocks base method
+func (m *MockManager) AssignStagingSecurityGroup(arg0 string) error {
+	ret := m.ctrl.Call(m, "AssignStagingSecurityGroup", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AssignStagingSecurityGroup indicates an expected call of AssignStagingSecurityGroup
+func (mr *MockManagerMockRecorder) AssignStagingSecurityGroup(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignStagingSecurityGroup", reflect.TypeOf((*MockManager)(nil).AssignStagingSecurityGroup), arg0)
 }
 
 // CreateOrg mocks base method
@@ -295,6 +318,19 @@ func (mr *MockManagerMockRecorder) ListAllSpaceQuotasForOrg(arg0 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllSpaceQuotasForOrg", reflect.TypeOf((*MockManager)(nil).ListAllSpaceQuotasForOrg), arg0)
 }
 
+// ListDefaultSecurityGroups mocks base method
+func (m *MockManager) ListDefaultSecurityGroups() (map[string]cloudcontroller.SecurityGroupInfo, error) {
+	ret := m.ctrl.Call(m, "ListDefaultSecurityGroups")
+	ret0, _ := ret[0].(map[string]cloudcontroller.SecurityGroupInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListDefaultSecurityGroups indicates an expected call of ListDefaultSecurityGroups
+func (mr *MockManagerMockRecorder) ListDefaultSecurityGroups() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDefaultSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListDefaultSecurityGroups))
+}
+
 // ListNonDefaultSecurityGroups mocks base method
 func (m *MockManager) ListNonDefaultSecurityGroups() (map[string]cloudcontroller.SecurityGroupInfo, error) {
 	ret := m.ctrl.Call(m, "ListNonDefaultSecurityGroups")
@@ -345,6 +381,19 @@ func (m *MockManager) ListOrgs() ([]*cloudcontroller.Org, error) {
 // ListOrgs indicates an expected call of ListOrgs
 func (mr *MockManagerMockRecorder) ListOrgs() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrgs", reflect.TypeOf((*MockManager)(nil).ListOrgs))
+}
+
+// ListSecurityGroups mocks base method
+func (m *MockManager) ListSecurityGroups() (map[string]cloudcontroller.SecurityGroupInfo, error) {
+	ret := m.ctrl.Call(m, "ListSecurityGroups")
+	ret0, _ := ret[0].(map[string]cloudcontroller.SecurityGroupInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSecurityGroups indicates an expected call of ListSecurityGroups
+func (mr *MockManagerMockRecorder) ListSecurityGroups() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListSecurityGroups))
 }
 
 // ListSpaceSecurityGroups mocks base method
@@ -420,6 +469,30 @@ func (m *MockManager) SharePrivateDomain(arg0, arg1 string) error {
 // SharePrivateDomain indicates an expected call of SharePrivateDomain
 func (mr *MockManagerMockRecorder) SharePrivateDomain(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SharePrivateDomain", reflect.TypeOf((*MockManager)(nil).SharePrivateDomain), arg0, arg1)
+}
+
+// UnassignRunningSecurityGroup mocks base method
+func (m *MockManager) UnassignRunningSecurityGroup(arg0 string) error {
+	ret := m.ctrl.Call(m, "UnassignRunningSecurityGroup", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnassignRunningSecurityGroup indicates an expected call of UnassignRunningSecurityGroup
+func (mr *MockManagerMockRecorder) UnassignRunningSecurityGroup(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnassignRunningSecurityGroup", reflect.TypeOf((*MockManager)(nil).UnassignRunningSecurityGroup), arg0)
+}
+
+// UnassignStagingSecurityGroup mocks base method
+func (m *MockManager) UnassignStagingSecurityGroup(arg0 string) error {
+	ret := m.ctrl.Call(m, "UnassignStagingSecurityGroup", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnassignStagingSecurityGroup indicates an expected call of UnassignStagingSecurityGroup
+func (mr *MockManagerMockRecorder) UnassignStagingSecurityGroup(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnassignStagingSecurityGroup", reflect.TypeOf((*MockManager)(nil).UnassignStagingSecurityGroup), arg0)
 }
 
 // UpdateQuota mocks base method

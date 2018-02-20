@@ -95,7 +95,7 @@ func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 
 func (m *DefaultManager) ListNonDefaultSecurityGroups() (map[string]SecurityGroupInfo, error) {
 	securityGroups := make(map[string]SecurityGroupInfo)
-	groupMap, err := m.listSecurityGroups()
+	groupMap, err := m.ListSecurityGroups()
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,20 @@ func (m *DefaultManager) ListNonDefaultSecurityGroups() (map[string]SecurityGrou
 	return securityGroups, nil
 }
 
-func (m *DefaultManager) listSecurityGroups() (map[string]SecurityGroupInfo, error) {
+func (m *DefaultManager) ListDefaultSecurityGroups() (map[string]SecurityGroupInfo, error) {
+	securityGroups := make(map[string]SecurityGroupInfo)
+	groupMap, err := m.ListSecurityGroups()
+	if err != nil {
+		return nil, err
+	}
+	for key, groupMap := range groupMap {
+		if groupMap.DefaultRunning == true || groupMap.DefaultStaging == true {
+			securityGroups[key] = groupMap
+		}
+	}
+	return securityGroups, nil
+}
+func (m *DefaultManager) ListSecurityGroups() (map[string]SecurityGroupInfo, error) {
 	securityGroups := make(map[string]SecurityGroupInfo)
 	url := fmt.Sprintf("%s/v2/security_groups", m.Host)
 	sgResources := &SecurityGroupResources{}
@@ -183,6 +196,43 @@ func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) (map[string]s
 		}
 	}
 	return names, nil
+}
+
+func (m *DefaultManager) AssignRunningSecurityGroup(sgGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: assigning sgGUID %s as running security group", sgGUID)
+		return nil
+	}
+	url := fmt.Sprintf("%s/v2/config/running_security_groups/%s", m.Host, sgGUID)
+	err := m.HTTP.Put(url, m.Token, "")
+	return err
+}
+func (m *DefaultManager) AssignStagingSecurityGroup(sgGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: assigning sgGUID %s as staging security group", sgGUID)
+		return nil
+	}
+	url := fmt.Sprintf("%s/v2/config/staging_security_groups/%s", m.Host, sgGUID)
+	err := m.HTTP.Put(url, m.Token, "")
+	return err
+}
+func (m *DefaultManager) UnassignRunningSecurityGroup(sgGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: unassinging sgGUID %s as running security group", sgGUID)
+		return nil
+	}
+	url := fmt.Sprintf("%s/v2/config/running_security_groups/%s", m.Host, sgGUID)
+	err := m.HTTP.Delete(url, m.Token)
+	return err
+}
+func (m *DefaultManager) UnassignStagingSecurityGroup(sgGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: unassigning sgGUID %s as staging security group", sgGUID)
+		return nil
+	}
+	url := fmt.Sprintf("%s/v2/config/staging_security_groups/%s", m.Host, sgGUID)
+	err := m.HTTP.Delete(url, m.Token)
+	return err
 }
 
 func (m *DefaultManager) AssignSecurityGroupToSpace(spaceGUID, sgGUID string) error {

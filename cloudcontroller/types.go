@@ -10,8 +10,15 @@ type Manager interface {
 	AddUserToSpaceRole(userName, role, spaceGUID string) error
 	UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 
+	AssignRunningSecurityGroup(sgGUID string) error
+	AssignStagingSecurityGroup(sgGUID string) error
+	UnassignRunningSecurityGroup(sgGUID string) error
+	UnassignStagingSecurityGroup(sgGUID string) error
+
 	AssignSecurityGroupToSpace(spaceGUID, sgGUID string) error
 	ListNonDefaultSecurityGroups() (map[string]SecurityGroupInfo, error)
+	ListDefaultSecurityGroups() (map[string]SecurityGroupInfo, error)
+	ListSecurityGroups() (map[string]SecurityGroupInfo, error)
 	CreateSecurityGroup(sgName, contents string) (string, error)
 	UpdateSecurityGroup(sgGUID, sgName, contents string) error
 	GetSecurityGroupRules(sgGUID string) ([]byte, error)

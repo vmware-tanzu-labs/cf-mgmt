@@ -46,6 +46,12 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		return err
 	}
 
+	defaultSecurityGroups, err := im.CloudController.ListDefaultSecurityGroups()
+	if err != nil {
+		lo.G.Errorf("Unable to retrieve security groups. Error : %s", err)
+		return err
+	}
+
 	configMgr := config.NewManager(im.ConfigDir)
 	lo.G.Info("Trying to delete existing config directory")
 	//Delete existing config directory
@@ -68,6 +74,12 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	if err != nil {
 		return err
 	}
+
+	globalConfig, err := configMgr.GetGlobalConfig()
+	if err != nil {
+		return err
+	}
+
 	lo.G.Debugf("Orgs to process: %s", orgs)
 
 	for _, org := range orgs {
@@ -161,7 +173,24 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			lo.G.Error(err)
 		}
 	}
-	return nil
+
+	for sgName, sgInfo := range defaultSecurityGroups {
+		lo.G.Infof("Adding default security group %s", sgName)
+		if sgInfo.DefaultRunning {
+			globalConfig.RunningSecurityGroups = append(globalConfig.RunningSecurityGroups, sgName)
+		}
+		if sgInfo.DefaultStaging {
+			globalConfig.StagingSecurityGroups = append(globalConfig.StagingSecurityGroups, sgName)
+		}
+		if rules, err := im.CloudController.GetSecurityGroupRules(sgInfo.GUID); err == nil {
+			lo.G.Infof("Adding rules for %s", sgName)
+			configMgr.AddDefaultSecurityGroup(sgName, rules)
+		} else {
+			lo.G.Error(err)
+		}
+	}
+
+	return configMgr.SaveGlobalConfig(globalConfig)
 }
 
 func quotaDefinition(controller cc.Manager, quotaDefinitionGUID, entityType string) cc.QuotaEntity {

@@ -43,6 +43,15 @@ type FakeManager struct {
 	addSecurityGroupReturns struct {
 		result1 error
 	}
+	AddDefaultSecurityGroupStub        func(securityGroupName string, securityGroupDefinition []byte) error
+	addDefaultSecurityGroupMutex       sync.RWMutex
+	addDefaultSecurityGroupArgsForCall []struct {
+		securityGroupName       string
+		securityGroupDefinition []byte
+	}
+	addDefaultSecurityGroupReturns struct {
+		result1 error
+	}
 	CreateConfigIfNotExistsStub        func(uaaOrigin string) error
 	createConfigIfNotExistsMutex       sync.RWMutex
 	createConfigIfNotExistsArgsForCall []struct {
@@ -106,6 +115,14 @@ type FakeManager struct {
 	saveOrgsReturns struct {
 		result1 error
 	}
+	SaveGlobalConfigStub        func(*config.GlobalConfig) error
+	saveGlobalConfigMutex       sync.RWMutex
+	saveGlobalConfigArgsForCall []struct {
+		arg1 *config.GlobalConfig
+	}
+	saveGlobalConfigReturns struct {
+		result1 error
+	}
 	OrgsStub        func() (*config.Orgs, error)
 	orgsMutex       sync.RWMutex
 	orgsArgsForCall []struct{}
@@ -150,11 +167,18 @@ type FakeManager struct {
 		result1 []config.ASGConfig
 		result2 error
 	}
-	GetGlobalConfigStub        func() (config.GlobalConfig, error)
+	GetDefaultASGConfigsStub        func() ([]config.ASGConfig, error)
+	getDefaultASGConfigsMutex       sync.RWMutex
+	getDefaultASGConfigsArgsForCall []struct{}
+	getDefaultASGConfigsReturns     struct {
+		result1 []config.ASGConfig
+		result2 error
+	}
+	GetGlobalConfigStub        func() (*config.GlobalConfig, error)
 	getGlobalConfigMutex       sync.RWMutex
 	getGlobalConfigArgsForCall []struct{}
 	getGlobalConfigReturns     struct {
-		result1 config.GlobalConfig
+		result1 *config.GlobalConfig
 		result2 error
 	}
 	GetSpaceDefaultsStub        func() (*config.SpaceConfig, error)
@@ -328,6 +352,45 @@ func (fake *FakeManager) AddSecurityGroupArgsForCall(i int) (string, []byte) {
 func (fake *FakeManager) AddSecurityGroupReturns(result1 error) {
 	fake.AddSecurityGroupStub = nil
 	fake.addSecurityGroupReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) AddDefaultSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error {
+	var securityGroupDefinitionCopy []byte
+	if securityGroupDefinition != nil {
+		securityGroupDefinitionCopy = make([]byte, len(securityGroupDefinition))
+		copy(securityGroupDefinitionCopy, securityGroupDefinition)
+	}
+	fake.addDefaultSecurityGroupMutex.Lock()
+	fake.addDefaultSecurityGroupArgsForCall = append(fake.addDefaultSecurityGroupArgsForCall, struct {
+		securityGroupName       string
+		securityGroupDefinition []byte
+	}{securityGroupName, securityGroupDefinitionCopy})
+	fake.recordInvocation("AddDefaultSecurityGroup", []interface{}{securityGroupName, securityGroupDefinitionCopy})
+	fake.addDefaultSecurityGroupMutex.Unlock()
+	if fake.AddDefaultSecurityGroupStub != nil {
+		return fake.AddDefaultSecurityGroupStub(securityGroupName, securityGroupDefinition)
+	} else {
+		return fake.addDefaultSecurityGroupReturns.result1
+	}
+}
+
+func (fake *FakeManager) AddDefaultSecurityGroupCallCount() int {
+	fake.addDefaultSecurityGroupMutex.RLock()
+	defer fake.addDefaultSecurityGroupMutex.RUnlock()
+	return len(fake.addDefaultSecurityGroupArgsForCall)
+}
+
+func (fake *FakeManager) AddDefaultSecurityGroupArgsForCall(i int) (string, []byte) {
+	fake.addDefaultSecurityGroupMutex.RLock()
+	defer fake.addDefaultSecurityGroupMutex.RUnlock()
+	return fake.addDefaultSecurityGroupArgsForCall[i].securityGroupName, fake.addDefaultSecurityGroupArgsForCall[i].securityGroupDefinition
+}
+
+func (fake *FakeManager) AddDefaultSecurityGroupReturns(result1 error) {
+	fake.AddDefaultSecurityGroupStub = nil
+	fake.addDefaultSecurityGroupReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -589,6 +652,39 @@ func (fake *FakeManager) SaveOrgsReturns(result1 error) {
 	}{result1}
 }
 
+func (fake *FakeManager) SaveGlobalConfig(arg1 *config.GlobalConfig) error {
+	fake.saveGlobalConfigMutex.Lock()
+	fake.saveGlobalConfigArgsForCall = append(fake.saveGlobalConfigArgsForCall, struct {
+		arg1 *config.GlobalConfig
+	}{arg1})
+	fake.recordInvocation("SaveGlobalConfig", []interface{}{arg1})
+	fake.saveGlobalConfigMutex.Unlock()
+	if fake.SaveGlobalConfigStub != nil {
+		return fake.SaveGlobalConfigStub(arg1)
+	} else {
+		return fake.saveGlobalConfigReturns.result1
+	}
+}
+
+func (fake *FakeManager) SaveGlobalConfigCallCount() int {
+	fake.saveGlobalConfigMutex.RLock()
+	defer fake.saveGlobalConfigMutex.RUnlock()
+	return len(fake.saveGlobalConfigArgsForCall)
+}
+
+func (fake *FakeManager) SaveGlobalConfigArgsForCall(i int) *config.GlobalConfig {
+	fake.saveGlobalConfigMutex.RLock()
+	defer fake.saveGlobalConfigMutex.RUnlock()
+	return fake.saveGlobalConfigArgsForCall[i].arg1
+}
+
+func (fake *FakeManager) SaveGlobalConfigReturns(result1 error) {
+	fake.SaveGlobalConfigStub = nil
+	fake.saveGlobalConfigReturns = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeManager) Orgs() (*config.Orgs, error) {
 	fake.orgsMutex.Lock()
 	fake.orgsArgsForCall = append(fake.orgsArgsForCall, struct{}{})
@@ -753,7 +849,33 @@ func (fake *FakeManager) GetASGConfigsReturns(result1 []config.ASGConfig, result
 	}{result1, result2}
 }
 
-func (fake *FakeManager) GetGlobalConfig() (config.GlobalConfig, error) {
+func (fake *FakeManager) GetDefaultASGConfigs() ([]config.ASGConfig, error) {
+	fake.getDefaultASGConfigsMutex.Lock()
+	fake.getDefaultASGConfigsArgsForCall = append(fake.getDefaultASGConfigsArgsForCall, struct{}{})
+	fake.recordInvocation("GetDefaultASGConfigs", []interface{}{})
+	fake.getDefaultASGConfigsMutex.Unlock()
+	if fake.GetDefaultASGConfigsStub != nil {
+		return fake.GetDefaultASGConfigsStub()
+	} else {
+		return fake.getDefaultASGConfigsReturns.result1, fake.getDefaultASGConfigsReturns.result2
+	}
+}
+
+func (fake *FakeManager) GetDefaultASGConfigsCallCount() int {
+	fake.getDefaultASGConfigsMutex.RLock()
+	defer fake.getDefaultASGConfigsMutex.RUnlock()
+	return len(fake.getDefaultASGConfigsArgsForCall)
+}
+
+func (fake *FakeManager) GetDefaultASGConfigsReturns(result1 []config.ASGConfig, result2 error) {
+	fake.GetDefaultASGConfigsStub = nil
+	fake.getDefaultASGConfigsReturns = struct {
+		result1 []config.ASGConfig
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) GetGlobalConfig() (*config.GlobalConfig, error) {
 	fake.getGlobalConfigMutex.Lock()
 	fake.getGlobalConfigArgsForCall = append(fake.getGlobalConfigArgsForCall, struct{}{})
 	fake.recordInvocation("GetGlobalConfig", []interface{}{})
@@ -771,10 +893,10 @@ func (fake *FakeManager) GetGlobalConfigCallCount() int {
 	return len(fake.getGlobalConfigArgsForCall)
 }
 
-func (fake *FakeManager) GetGlobalConfigReturns(result1 config.GlobalConfig, result2 error) {
+func (fake *FakeManager) GetGlobalConfigReturns(result1 *config.GlobalConfig, result2 error) {
 	fake.GetGlobalConfigStub = nil
 	fake.getGlobalConfigReturns = struct {
-		result1 config.GlobalConfig
+		result1 *config.GlobalConfig
 		result2 error
 	}{result1, result2}
 }
@@ -885,6 +1007,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.addSecurityGroupToSpaceMutex.RUnlock()
 	fake.addSecurityGroupMutex.RLock()
 	defer fake.addSecurityGroupMutex.RUnlock()
+	fake.addDefaultSecurityGroupMutex.RLock()
+	defer fake.addDefaultSecurityGroupMutex.RUnlock()
 	fake.createConfigIfNotExistsMutex.RLock()
 	defer fake.createConfigIfNotExistsMutex.RUnlock()
 	fake.deleteConfigIfExistsMutex.RLock()
@@ -901,6 +1025,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.deleteSpaceConfigMutex.RUnlock()
 	fake.saveOrgsMutex.RLock()
 	defer fake.saveOrgsMutex.RUnlock()
+	fake.saveGlobalConfigMutex.RLock()
+	defer fake.saveGlobalConfigMutex.RUnlock()
 	fake.orgsMutex.RLock()
 	defer fake.orgsMutex.RUnlock()
 	fake.orgSpacesMutex.RLock()
@@ -913,6 +1039,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.getSpaceConfigsMutex.RUnlock()
 	fake.getASGConfigsMutex.RLock()
 	defer fake.getASGConfigsMutex.RUnlock()
+	fake.getDefaultASGConfigsMutex.RLock()
+	defer fake.getDefaultASGConfigsMutex.RUnlock()
 	fake.getGlobalConfigMutex.RLock()
 	defer fake.getGlobalConfigMutex.RUnlock()
 	fake.getSpaceDefaultsMutex.RLock()

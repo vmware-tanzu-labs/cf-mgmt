@@ -30,6 +30,27 @@ func (m *yamlManager) Orgs() (*Orgs, error) {
 	return input, nil
 }
 
+func (m *yamlManager) GetDefaultASGConfigs() ([]ASGConfig, error) {
+	files, err := FindFiles(path.Join(m.ConfigDir, "default_asgs"), ".json")
+	if err != nil {
+		return nil, err
+	}
+	var result []ASGConfig
+	for _, securityGroupFile := range files {
+		lo.G.Debug("Loading security group contents", securityGroupFile)
+		bytes, err := ioutil.ReadFile(securityGroupFile)
+		if err != nil {
+			return nil, err
+		}
+		asgConfig := ASGConfig{}
+		lo.G.Debug("setting security group contents", string(bytes))
+		asgConfig.Rules = string(bytes)
+		asgConfig.Name = strings.Replace(filepath.Base(securityGroupFile), ".json", "", 1)
+		result = append(result, asgConfig)
+	}
+	return result, nil
+}
+
 // GetASGConfigs reads all ASGs from the cf-mgmt configuration.
 func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 
@@ -54,10 +75,10 @@ func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 }
 
 // GetIsolationSegmentConfig reads isolation segment config
-func (m *yamlManager) GetGlobalConfig() (GlobalConfig, error) {
+func (m *yamlManager) GetGlobalConfig() (*GlobalConfig, error) {
 	globalConfig := &GlobalConfig{}
 	LoadFile(path.Join(m.ConfigDir, "cf-mgmt.yml"), globalConfig)
-	return *globalConfig, nil
+	return globalConfig, nil
 }
 
 // GetOrgConfigs reads all orgs from the cf-mgmt configuration.
@@ -337,6 +358,12 @@ func (m *yamlManager) AddSecurityGroup(securityGroupName string, securityGroupDe
 	return WriteFileBytes(fmt.Sprintf("%s/asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)
 }
 
+//AddDefaultSecurityGroup - adds security group json to org/space location
+func (m *yamlManager) AddDefaultSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error {
+	lo.G.Infof("Writing out bytes for security group %s", securityGroupName)
+	return WriteFileBytes(fmt.Sprintf("%s/default_asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)
+}
+
 // CreateConfigIfNotExists initializes a new configuration directory.
 // If the specified configuration directory already exists, it is left unmodified.
 func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
@@ -357,7 +384,14 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	}
 	lo.G.Infof("ASG directory %s created", asgDir)
 
-	if err := WriteFile(fmt.Sprintf("%s/cf-mgmt.yml", m.ConfigDir), &GlobalConfig{}); err != nil {
+	asgDir = path.Join(m.ConfigDir, "default_asgs")
+	if err := os.MkdirAll(asgDir, 0755); err != nil {
+		lo.G.Errorf("Error creating config directory %s. Error : %s", asgDir, err)
+		return fmt.Errorf("cannot create directory %s: %v", asgDir, err)
+	}
+	lo.G.Infof("ASG directory %s created", asgDir)
+
+	if err := m.SaveGlobalConfig(&GlobalConfig{}); err != nil {
 		return err
 	}
 	if err := WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin}); err != nil {
@@ -378,6 +412,10 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 		return err
 	}
 	return nil
+}
+
+func (m *yamlManager) SaveGlobalConfig(globalConfig *GlobalConfig) error {
+	return WriteFile(fmt.Sprintf("%s/cf-mgmt.yml", m.ConfigDir), globalConfig)
 }
 
 // DeleteConfigIfExists deletes config directory if it exists.

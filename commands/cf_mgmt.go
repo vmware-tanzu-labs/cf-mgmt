@@ -13,6 +13,7 @@ type CfMgmtCommand struct {
 	ExportConfigurationCommand       ExportConfigurationCommand       `command:"export-config" description:"Exports org and space configurations from an existing Cloud Foundry instance. [Warning: This operation will delete existing config folder]"`
 	CreateOrgsCommand                CreateOrgsCommand                `command:"create-orgs" description:"creates organizations for each orgConfig.yml"`
 	CreateSecurityGroupsCommand      CreateSecurityGroupsCommand      `command:"create-security-groups" description:"creates named security groups that can be assigned to spaces"`
+	AssignDefaultSecurityGroups      AssignDefaultSecurityGroups      `command:"assign-default-security-groups" description:"assigns security groups to default running or default staging"`
 	CreatePrivateDomainsCommand      CreatePrivateDomainsCommand      `command:"create-org-private-domains" description:"creates private domains for an org"`
 	DeleteOrgsCommand                DeleteOrgsCommand                `command:"delete-orgs" description:"deletes orgs not in the configuration"`
 	UpdateOrgQuotasCommand           UpdateOrgQuotasCommand           `command:"update-org-quotas" description:"updates org quotas"`

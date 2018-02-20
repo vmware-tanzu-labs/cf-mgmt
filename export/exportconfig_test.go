@@ -80,10 +80,12 @@ var _ = Describe("Export manager", func() {
 			spaces = append(spaces, space)
 
 			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
+			defaultSecurityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 
 			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListNonDefaultSecurityGroups().Return(securityGroups, nil)
+			mockController.EXPECT().ListDefaultSecurityGroups().Return(defaultSecurityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
 			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return(map[string]string{
 				"foo": "foo-guid",
@@ -137,9 +139,11 @@ var _ = Describe("Export manager", func() {
 			spaces = append(spaces, space)
 
 			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
+			defaultSecurityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListNonDefaultSecurityGroups().Return(securityGroups, nil)
+			mockController.EXPECT().ListDefaultSecurityGroups().Return(defaultSecurityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
 			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return(map[string]string{}, nil)
 			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
@@ -197,10 +201,15 @@ var _ = Describe("Export manager", func() {
 			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 			securityGroups["org1-dev"] = cc.SecurityGroupInfo{GUID: "sgGUID"}
 
+			defaultSecurityGroups := make(map[string]cc.SecurityGroupInfo, 0)
+			defaultSecurityGroups["default"] = cc.SecurityGroupInfo{GUID: "sg-default-GUID"}
+
 			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListNonDefaultSecurityGroups().Return(securityGroups, nil)
+			mockController.EXPECT().ListDefaultSecurityGroups().Return(defaultSecurityGroups, nil)
 			mockController.EXPECT().GetSecurityGroupRules("sgGUID").Return([]byte(sgRules), nil)
+			mockController.EXPECT().GetSecurityGroupRules("sg-default-GUID").Return([]byte(sgRules), nil)
 			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return(map[string]string{}, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
 			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
@@ -252,10 +261,15 @@ var _ = Describe("Export manager", func() {
 			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 			securityGroups["test-asg"] = cc.SecurityGroupInfo{GUID: "sgGUID"}
 
+			defaultSecurityGroups := make(map[string]cc.SecurityGroupInfo, 0)
+			defaultSecurityGroups["test-default-asg"] = cc.SecurityGroupInfo{GUID: "sg-default-GUID"}
+
 			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListNonDefaultSecurityGroups().Return(securityGroups, nil)
+			mockController.EXPECT().ListDefaultSecurityGroups().Return(defaultSecurityGroups, nil)
 			mockController.EXPECT().GetSecurityGroupRules("sgGUID").Return([]byte(sgRules), nil)
+			mockController.EXPECT().GetSecurityGroupRules("sg-default-GUID").Return([]byte(sgRules), nil)
 			mockController.EXPECT().ListSpaceSecurityGroups(spaceId).Return(map[string]string{}, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
 			cloudControllerOrgUserMock(mockController, orgId, map[string]string{"user1": "1", "user2": "2"}, map[string]string{}, map[string]string{})
@@ -295,10 +309,12 @@ var _ = Describe("Export manager", func() {
 			orgs = append(orgs, org2)
 
 			securityGroups := make(map[string]cc.SecurityGroupInfo, 0)
+			defaultSecurityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 
 			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockController.EXPECT().ListNonDefaultSecurityGroups().Return(securityGroups, nil)
+			mockController.EXPECT().ListDefaultSecurityGroups().Return(defaultSecurityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId1).Return([]*cc.Space{}, nil)
 			cloudControllerOrgUserMock(mockController, orgId1, map[string]string{}, map[string]string{}, map[string]string{})
 			excludedOrgs = map[string]string{orgId2: orgId2}

@@ -41,4 +41,5 @@ type DefaultSecurityGroupManager struct {
 
 type Manager interface {
 	CreateApplicationSecurityGroups() error
+	AssignDefaultSecurityGroups() error
 }

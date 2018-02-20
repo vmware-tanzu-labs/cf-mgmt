@@ -30,7 +30,7 @@ func NewUpdater(cfmgmtVersion, systemDomain, uaaToken, clientID, clientSecret st
 		segments: make(map[string]string),
 	}
 
-	var globalCfg config.GlobalConfig
+	var globalCfg *config.GlobalConfig
 	if globalCfg, err = cfg.GetGlobalConfig(); err != nil {
 		return nil, err
 	}

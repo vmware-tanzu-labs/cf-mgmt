@@ -242,6 +242,36 @@ var _ = Describe("given CloudControllerManager", func() {
 		})
 	})
 
+	Context("ListSecurityGroups()", func() {
+
+		It("should be successful", func() {
+			bytes, err := ioutil.ReadFile("fixtures/security-groups.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/security_groups"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			securityGroups, err := manager.ListSecurityGroups()
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(securityGroups).ShouldNot(BeNil())
+			Ω(securityGroups).Should(HaveLen(7))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/security_groups"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			_, err := manager.ListSecurityGroups()
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
 	Context("ListNonDefaultSecurityGroups()", func() {
 
 		It("should be successful", func() {
@@ -268,6 +298,37 @@ var _ = Describe("given CloudControllerManager", func() {
 				),
 			)
 			_, err := manager.ListNonDefaultSecurityGroups()
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Context("ListDefaultSecurityGroups()", func() {
+
+		It("should be successful", func() {
+			bytes, err := ioutil.ReadFile("fixtures/security-groups.json")
+
+			Ω(err).ShouldNot(HaveOccurred())
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/security_groups"),
+					RespondWith(http.StatusOK, string(bytes)),
+				),
+			)
+			securityGroups, err := manager.ListDefaultSecurityGroups()
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(securityGroups).ShouldNot(BeNil())
+			Ω(securityGroups).Should(HaveLen(6))
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("GET", "/v2/security_groups"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			_, err := manager.ListDefaultSecurityGroups()
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -462,6 +523,142 @@ var _ = Describe("given CloudControllerManager", func() {
 				),
 			)
 			err := manager.AssignSecurityGroupToSpace(spaceGUID, sgGUID)
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Context("AssignSecurityGroupToRunning()", func() {
+
+		It("should be successful", func() {
+
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("PUT", "/v2/config/running_security_groups/SG-1234"),
+					RespondWithJSONEncoded(http.StatusOK, ""),
+				),
+			)
+			err := manager.AssignRunningSecurityGroup(sgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.AssignRunningSecurityGroup(sgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("PUT", "/v2/config/running_security_groups/SG-1234"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			err := manager.AssignRunningSecurityGroup(sgGUID)
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Context("UnassignSecurityGroupToRunning()", func() {
+
+		It("should be successful", func() {
+
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("DELETE", "/v2/config/running_security_groups/SG-1234"),
+					RespondWithJSONEncoded(http.StatusNoContent, ""),
+				),
+			)
+			err := manager.UnassignRunningSecurityGroup(sgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.UnassignRunningSecurityGroup(sgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("DELETE", "/v2/config/running_security_groups/SG-1234"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			err := manager.UnassignRunningSecurityGroup(sgGUID)
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Context("AssignSecurityGroupToStaging()", func() {
+
+		It("should be successful", func() {
+
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("PUT", "/v2/config/staging_security_groups/SG-1234"),
+					RespondWithJSONEncoded(http.StatusOK, ""),
+				),
+			)
+			err := manager.AssignStagingSecurityGroup(sgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.AssignStagingSecurityGroup(sgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("PUT", "/v2/config/staging_security_groups/SG-1234"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			err := manager.AssignStagingSecurityGroup(sgGUID)
+			Ω(err).Should(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Context("UnassignSecurityGroupToStaging()", func() {
+
+		It("should be successful", func() {
+
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("DELETE", "/v2/config/staging_security_groups/SG-1234"),
+					RespondWithJSONEncoded(http.StatusNoContent, ""),
+				),
+			)
+			err := manager.UnassignStagingSecurityGroup(sgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("should peek", func() {
+			manager.Peek = true
+			err := manager.UnassignStagingSecurityGroup(sgGUID)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(0))
+		})
+		It("should return an error", func() {
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyRequest("DELETE", "/v2/config/staging_security_groups/SG-1234"),
+					RespondWithJSONEncoded(http.StatusServiceUnavailable, ""),
+				),
+			)
+			err := manager.UnassignStagingSecurityGroup(sgGUID)
 			Ω(err).Should(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
