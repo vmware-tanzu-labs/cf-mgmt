@@ -118,7 +118,22 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 					orgConfig.DefaultIsoSegment = isosegment.Name
 				}
 			}
+		}
 
+		privatedomains, err := im.CloudController.ListOrgSharedPrivateDomains(org.MetaData.GUID)
+		if err != nil {
+			return err
+		}
+		for privatedomain, _ := range privatedomains {
+			orgConfig.SharedPrivateDomains = append(orgConfig.SharedPrivateDomains, privatedomain)
+		}
+
+		privatedomains, err = im.CloudController.ListOrgOwnedPrivateDomains(org.MetaData.GUID)
+		if err != nil {
+			return err
+		}
+		for privatedomain, _ := range privatedomains {
+			orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, privatedomain)
 		}
 		configMgr.AddOrgToConfig(orgConfig)
 
