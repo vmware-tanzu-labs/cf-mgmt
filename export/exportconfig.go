@@ -52,6 +52,11 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		return err
 	}
 
+	isolationSegments, err := im.CloudController.ListIsolationSegments()
+	if err != nil {
+		lo.G.Errorf("Unable to retrieve isolation segments. Error : %s", err)
+		return err
+	}
 	configMgr := config.NewManager(im.ConfigDir)
 	lo.G.Info("Trying to delete existing config directory")
 	//Delete existing config directory
@@ -107,6 +112,14 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			orgConfig.TotalServiceKeys = quota.TotalServiceKeys
 			orgConfig.AppInstanceLimit = quota.AppInstanceLimit
 		}
+		if org.Entity.DefaultIsolationSegmentGUID != "" {
+			for _, isosegment := range isolationSegments {
+				if isosegment.GUID == org.Entity.DefaultIsolationSegmentGUID {
+					orgConfig.DefaultIsoSegment = isosegment.Name
+				}
+			}
+
+		}
 		configMgr.AddOrgToConfig(orgConfig)
 
 		lo.G.Infof("Done creating org %s", orgConfig.Org)
@@ -137,6 +150,15 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 				spaceConfig.TotalReservedRoutePorts = quota.TotalReservedRoutePorts
 				spaceConfig.TotalServiceKeys = quota.TotalServiceKeys
 				spaceConfig.AppInstanceLimit = quota.AppInstanceLimit
+			}
+
+			if orgSpace.Entity.IsolationSegmentGUID != "" {
+				for _, isosegment := range isolationSegments {
+					if isosegment.GUID == orgSpace.Entity.IsolationSegmentGUID {
+						spaceConfig.IsoSegment = isosegment.Name
+					}
+				}
+
 			}
 			if orgSpace.Entity.AllowSSH {
 				spaceConfig.AllowSSH = true

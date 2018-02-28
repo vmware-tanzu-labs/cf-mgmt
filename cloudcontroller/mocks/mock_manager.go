@@ -331,6 +331,19 @@ func (mr *MockManagerMockRecorder) ListDefaultSecurityGroups() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDefaultSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListDefaultSecurityGroups))
 }
 
+// ListIsolationSegments mocks base method
+func (m *MockManager) ListIsolationSegments() ([]*cloudcontroller.IsoSegment, error) {
+	ret := m.ctrl.Call(m, "ListIsolationSegments")
+	ret0, _ := ret[0].([]*cloudcontroller.IsoSegment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListIsolationSegments indicates an expected call of ListIsolationSegments
+func (mr *MockManagerMockRecorder) ListIsolationSegments() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListIsolationSegments", reflect.TypeOf((*MockManager)(nil).ListIsolationSegments))
+}
+
 // ListNonDefaultSecurityGroups mocks base method
 func (m *MockManager) ListNonDefaultSecurityGroups() (map[string]cloudcontroller.SecurityGroupInfo, error) {
 	ret := m.ctrl.Call(m, "ListNonDefaultSecurityGroups")

@@ -84,6 +84,7 @@ var _ = Describe("Export manager", func() {
 
 			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListIsolationSegments().Return([]*cc.IsoSegment{}, nil)
 			mockController.EXPECT().ListNonDefaultSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListDefaultSecurityGroups().Return(defaultSecurityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
@@ -142,6 +143,7 @@ var _ = Describe("Export manager", func() {
 			defaultSecurityGroups := make(map[string]cc.SecurityGroupInfo, 0)
 			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListIsolationSegments().Return([]*cc.IsoSegment{}, nil)
 			mockController.EXPECT().ListNonDefaultSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListDefaultSecurityGroups().Return(defaultSecurityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId).Return(spaces, nil)
@@ -206,6 +208,7 @@ var _ = Describe("Export manager", func() {
 
 			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListIsolationSegments().Return([]*cc.IsoSegment{}, nil)
 			mockController.EXPECT().ListNonDefaultSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListDefaultSecurityGroups().Return(defaultSecurityGroups, nil)
 			mockController.EXPECT().GetSecurityGroupRules("sgGUID").Return([]byte(sgRules), nil)
@@ -266,6 +269,7 @@ var _ = Describe("Export manager", func() {
 
 			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListIsolationSegments().Return([]*cc.IsoSegment{}, nil)
 			mockController.EXPECT().ListNonDefaultSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListDefaultSecurityGroups().Return(defaultSecurityGroups, nil)
 			mockController.EXPECT().GetSecurityGroupRules("sgGUID").Return([]byte(sgRules), nil)
@@ -313,6 +317,7 @@ var _ = Describe("Export manager", func() {
 
 			mockUaa.EXPECT().UsersByID().Return(userIDToUserMap, nil)
 			mockController.EXPECT().ListOrgs().Return(orgs, nil)
+			mockController.EXPECT().ListIsolationSegments().Return([]*cc.IsoSegment{}, nil)
 			mockController.EXPECT().ListNonDefaultSecurityGroups().Return(securityGroups, nil)
 			mockController.EXPECT().ListDefaultSecurityGroups().Return(defaultSecurityGroups, nil)
 			mockController.EXPECT().ListSpaces(orgId1).Return([]*cc.Space{}, nil)

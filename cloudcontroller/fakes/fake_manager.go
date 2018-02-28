@@ -220,6 +220,13 @@ type FakeManager struct {
 		result1 []*cloudcontroller.Org
 		result2 error
 	}
+	ListIsolationSegmentsStub        func() ([]*cloudcontroller.IsoSegment, error)
+	listIsolationSegmentsMutex       sync.RWMutex
+	listIsolationSegmentsArgsForCall []struct{}
+	listIsolationSegmentsReturns     struct {
+		result1 []*cloudcontroller.IsoSegment
+		result2 error
+	}
 	AddUserToOrgRoleStub        func(userName, role, orgGUID string) error
 	addUserToOrgRoleMutex       sync.RWMutex
 	addUserToOrgRoleArgsForCall []struct {
@@ -1183,6 +1190,32 @@ func (fake *FakeManager) ListOrgsReturns(result1 []*cloudcontroller.Org, result2
 	}{result1, result2}
 }
 
+func (fake *FakeManager) ListIsolationSegments() ([]*cloudcontroller.IsoSegment, error) {
+	fake.listIsolationSegmentsMutex.Lock()
+	fake.listIsolationSegmentsArgsForCall = append(fake.listIsolationSegmentsArgsForCall, struct{}{})
+	fake.recordInvocation("ListIsolationSegments", []interface{}{})
+	fake.listIsolationSegmentsMutex.Unlock()
+	if fake.ListIsolationSegmentsStub != nil {
+		return fake.ListIsolationSegmentsStub()
+	} else {
+		return fake.listIsolationSegmentsReturns.result1, fake.listIsolationSegmentsReturns.result2
+	}
+}
+
+func (fake *FakeManager) ListIsolationSegmentsCallCount() int {
+	fake.listIsolationSegmentsMutex.RLock()
+	defer fake.listIsolationSegmentsMutex.RUnlock()
+	return len(fake.listIsolationSegmentsArgsForCall)
+}
+
+func (fake *FakeManager) ListIsolationSegmentsReturns(result1 []*cloudcontroller.IsoSegment, result2 error) {
+	fake.ListIsolationSegmentsStub = nil
+	fake.listIsolationSegmentsReturns = struct {
+		result1 []*cloudcontroller.IsoSegment
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeManager) AddUserToOrgRole(userName string, role string, orgGUID string) error {
 	fake.addUserToOrgRoleMutex.Lock()
 	fake.addUserToOrgRoleArgsForCall = append(fake.addUserToOrgRoleArgsForCall, struct {
@@ -1770,6 +1803,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.deleteOrgByNameMutex.RUnlock()
 	fake.listOrgsMutex.RLock()
 	defer fake.listOrgsMutex.RUnlock()
+	fake.listIsolationSegmentsMutex.RLock()
+	defer fake.listIsolationSegmentsMutex.RUnlock()
 	fake.addUserToOrgRoleMutex.RLock()
 	defer fake.addUserToOrgRoleMutex.RUnlock()
 	fake.addUserToOrgMutex.RLock()

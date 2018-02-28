@@ -32,6 +32,7 @@ type Manager interface {
 	DeleteOrg(orgGUID string) error
 	DeleteOrgByName(orgName string) error
 	ListOrgs() ([]*Org, error)
+	ListIsolationSegments() ([]*IsoSegment, error)
 	AddUserToOrgRole(userName, role, orgGUID string) error
 	AddUserToOrg(userName, orgGUID string) error
 
@@ -114,10 +115,11 @@ type SpaceMetaData struct {
 
 //SpaceEntity -
 type SpaceEntity struct {
-	Name                string `json:"name"`
-	AllowSSH            bool   `json:"allow_ssh"`
-	OrgGUID             string `json:"organization_guid"`
-	QuotaDefinitionGUID string `json:"space_quota_definition_guid"`
+	Name                 string `json:"name"`
+	AllowSSH             bool   `json:"allow_ssh"`
+	OrgGUID              string `json:"organization_guid"`
+	QuotaDefinitionGUID  string `json:"space_quota_definition_guid"`
+	IsolationSegmentGUID string `json:"isolation_segment_guid"`
 }
 
 //Orgs -
@@ -134,12 +136,25 @@ type Org struct {
 
 //OrgEntity -
 type OrgEntity struct {
-	Name                string `json:"name"`
-	QuotaDefinitionGUID string `json:"quota_definition_guid"`
+	Name                        string `json:"name"`
+	QuotaDefinitionGUID         string `json:"quota_definition_guid"`
+	DefaultIsolationSegmentGUID string `json:"default_isolation_segment_guid"`
 }
 
 //OrgMetaData -
 type OrgMetaData struct {
+	GUID string `json:"guid"`
+}
+
+//IsoSegments -
+type IsoSegments struct {
+	NextURL     string        `json:"next_url"`
+	IsoSegments []*IsoSegment `json:"resources"`
+}
+
+//IsoSegment -
+type IsoSegment struct {
+	Name string `json:"name"`
 	GUID string `json:"guid"`
 }
 

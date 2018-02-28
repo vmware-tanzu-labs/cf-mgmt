@@ -365,6 +365,18 @@ func (m *DefaultManager) ListOrgs() ([]*Org, error) {
 	return orgs.Orgs, nil
 }
 
+//ListIsolationSegments : Returns all isolation segments
+func (m *DefaultManager) ListIsolationSegments() ([]*IsoSegment, error) {
+	url := fmt.Sprintf("%s/v3/isolation_segments", m.Host)
+	isoSegments := &IsoSegments{}
+	err := m.listResources(url, isoSegments, NewIsoSegmentResources)
+	if err != nil {
+		return nil, err
+	}
+	lo.G.Debug("Total isolation segments returned :", len(isoSegments.IsoSegments))
+	return isoSegments.IsoSegments, nil
+}
+
 func (m *DefaultManager) AddUserToOrgRole(userName, role, orgGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: Add User %s to role %s for org GUID %s", userName, role, orgGUID)

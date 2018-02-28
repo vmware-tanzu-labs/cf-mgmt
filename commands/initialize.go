@@ -50,6 +50,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	cfMgmt.ConfigDirectory = baseCommand.ConfigDirectory
 	cfMgmt.SystemDomain = baseCommand.SystemDomain
 	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
+
 	uaaHost := fmt.Sprintf("https://uaa.%s", cfMgmt.SystemDomain)
 	if uaacToken, err = uaa.GetUAACToken(uaaHost, baseCommand.UserID, baseCommand.ClientSecret); err != nil {
 		return nil, err
@@ -62,14 +63,25 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 		if cfToken, err = uaa.GetCFToken(uaaHost, baseCommand.UserID, baseCommand.Password); err != nil {
 			return nil, err
 		}
-		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken, peek)
 	} else {
 		cfToken = uaacToken
-		cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), uaacToken, peek)
 	}
+
+	cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken, peek)
+
+	/*c := &cfclient.Config{
+		ApiAddress:        fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
+		SkipSslValidation: true,
+		Token:             cfToken,
+		UserAgent:         fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION),
+	}
+
+	client, _ := cfclient.NewClient(c)*/
+
 	cfMgmt.OrgManager = organization.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfg)
 	cfMgmt.SpaceManager = space.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfMgmt.OrgManager, cfg)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(cfMgmt.CloudController, cfg)
+
 	if isoSegmentUpdater, err := isosegment.NewUpdater(configcommands.VERSION, cfMgmt.SystemDomain, cfToken, baseCommand.UserID, baseCommand.ClientSecret, cfg); err == nil {
 		cfMgmt.IsolationSegmentUpdater = isoSegmentUpdater
 	} else {
