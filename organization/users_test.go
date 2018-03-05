@@ -319,9 +319,9 @@ var _ = Describe("given UserManager", func() {
 			}
 
 			mockCloudController.EXPECT().GetCFUsers("my-org-guid", "organizations", "my-role").Return(orgUsers, nil)
-			mockCloudController.EXPECT().RemoveCFUser("my-org-guid", "organizations", "cwashburn", "my-role").Return(nil)
-			mockCloudController.EXPECT().RemoveCFUser("my-org-guid", "organizations", "cwashburn1", "my-role").Return(nil)
-			mockCloudController.EXPECT().RemoveCFUser("my-org-guid", "organizations", "cwashburn2", "my-role").Return(nil)
+			mockCloudController.EXPECT().RemoveCFUserByUserName("my-org-guid", "organizations", "cwashburn", "my-role").Return(nil)
+			mockCloudController.EXPECT().RemoveCFUserByUserName("my-org-guid", "organizations", "cwashburn1", "my-role").Return(nil)
+			mockCloudController.EXPECT().RemoveCFUserByUserName("my-org-guid", "organizations", "cwashburn2", "my-role").Return(nil)
 			err := userManager.UpdateOrgUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
 		})

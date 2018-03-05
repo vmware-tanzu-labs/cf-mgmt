@@ -4,61 +4,52 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/http"
 	"github.com/xchapter7x/lo"
+
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
-func NewManager(host, token string, peek bool) Manager {
-	return &DefaultManager{
-		Host:  host,
-		Token: token,
-		Peek:  peek,
-		HTTP:  http.NewManager(),
+func NewManager(host, token, version string, peek bool) (Manager, error) {
+	c := &cfclient.Config{
+		ApiAddress:        host,
+		SkipSslValidation: true,
+		Token:             token,
+		UserAgent:         fmt.Sprintf("cf-mgmt/%s", version),
 	}
-}
 
-func (m *DefaultManager) CreateSpace(spaceName, orgGUID string) error {
-	url := fmt.Sprintf("%s/v2/spaces", m.Host)
-	sendString := fmt.Sprintf(`{"name":"%s", "organization_guid":"%s"}`, spaceName, orgGUID)
-	_, err := m.HTTP.Post(url, m.Token, sendString)
-	return err
-}
-
-func (m *DefaultManager) ListSpaces(orgGUID string) ([]*Space, error) {
-	spaceResources := &SpaceResources{}
-	url := fmt.Sprintf("%s/v2/organizations/%s/spaces", m.Host, orgGUID)
-	err := m.listResources(url, spaceResources, NewSpaceResources)
+	client, err := cfclient.NewClient(c)
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debug("Total spaces returned :", len(spaceResources.Spaces))
-	return spaceResources.Spaces, nil
-
+	return &DefaultManager{
+		Client: *client,
+		Token:  token,
+		Peek:   peek,
+		HTTP:   http.NewManager(),
+	}, nil
 }
 
-func (m *DefaultManager) listResources(url string, target Pagination, createInstance func() Pagination) error {
-	var err = m.HTTP.Get(url, m.Token, target)
+func (m *DefaultManager) CreateSpace(spaceName, orgGUID string) error {
+	_, err := m.Client.CreateSpace(cfclient.SpaceRequest{
+		Name:             spaceName,
+		OrganizationGuid: orgGUID,
+	})
+	return err
+}
+
+func (m *DefaultManager) ListSpaces(orgGUID string) ([]cfclient.Space, error) {
+	spaces, err := m.Client.ListSpacesByQuery(url.Values{
+		"organization_guid": []string{orgGUID},
+	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if target.GetNextURL() == "" {
-		return nil
-	}
-	nextURL := target.GetNextURL()
-	for nextURL != "" {
-		lo.G.Debugf("NextURL: %s", nextURL)
-		tempTarget := createInstance()
-		url = fmt.Sprintf("%s%s", m.Host, nextURL)
-		err = m.HTTP.Get(url, m.Token, tempTarget)
-		if err != nil {
-			return err
-		}
-		target.AddInstances(tempTarget)
-		nextURL = tempTarget.GetNextURL()
-	}
-	return nil
+	return spaces, err
+
 }
 
 func (m *DefaultManager) AddUserToSpaceRole(userName, role, spaceGUID string) error {
@@ -66,10 +57,21 @@ func (m *DefaultManager) AddUserToSpaceRole(userName, role, spaceGUID string) er
 		lo.G.Infof("[dry-run]: adding %s to role %s for spaceGUID %s", userName, role, spaceGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/spaces/%s/%s", m.Host, spaceGUID, role)
-	sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
-	err := m.HTTP.Put(url, m.Token, sendString)
-	return err
+
+	roleLowerCase := strings.ToLower(role)
+	if roleLowerCase == "auditors" {
+		_, err := m.Client.AssociateSpaceAuditorByUsername(spaceGUID, userName)
+		return err
+	} else if roleLowerCase == "developers" {
+		_, err := m.Client.AssociateSpaceDeveloperByUsername(spaceGUID, userName)
+		return err
+	} else if roleLowerCase == "managers" {
+		_, err := m.Client.AssociateSpaceManagerByUsername(spaceGUID, userName)
+		return err
+	} else {
+		return fmt.Errorf("Role %s is not valid", role)
+	}
+	return nil
 }
 
 func (m *DefaultManager) AddUserToOrg(userName, orgGUID string) error {
@@ -77,9 +79,7 @@ func (m *DefaultManager) AddUserToOrg(userName, orgGUID string) error {
 		lo.G.Infof("[dry-run]: adding %s to orgGUID %s", userName, orgGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/organizations/%s/users", m.Host, orgGUID)
-	sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
-	err := m.HTTP.Put(url, m.Token, sendString)
+	_, err := m.Client.AssociateOrgUserByUsername(orgGUID, userName)
 	return err
 }
 
@@ -88,9 +88,16 @@ func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 		lo.G.Infof("[dry-run]: setting sshAllowed to %v for spaceGUID %s", sshAllowed, spaceGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/spaces/%s", m.Host, spaceGUID)
-	sendString := fmt.Sprintf(`{"allow_ssh":%t}`, sshAllowed)
-	return m.HTTP.Put(url, m.Token, sendString)
+	space, err := m.Client.GetSpaceByGuid(spaceGUID)
+	if err != nil {
+		return err
+	}
+	_, err = m.Client.UpdateSpace(spaceGUID, cfclient.SpaceRequest{
+		Name:             space.Name,
+		AllowSSH:         sshAllowed,
+		OrganizationGuid: space.OrganizationGuid,
+	})
+	return err
 }
 
 func (m *DefaultManager) ListNonDefaultSecurityGroups() (map[string]SecurityGroupInfo, error) {
@@ -122,20 +129,18 @@ func (m *DefaultManager) ListDefaultSecurityGroups() (map[string]SecurityGroupIn
 }
 func (m *DefaultManager) ListSecurityGroups() (map[string]SecurityGroupInfo, error) {
 	securityGroups := make(map[string]SecurityGroupInfo)
-	url := fmt.Sprintf("%s/v2/security_groups", m.Host)
-	sgResources := &SecurityGroupResources{}
-	err := m.listResources(url, sgResources, NewSecurityGroupResources)
+	secGroups, err := m.Client.ListSecGroups()
 	if err != nil {
-		return nil, err
+		return securityGroups, err
 	}
-	lo.G.Debug("Total security groups returned :", len(sgResources.SecurityGroups))
-	for _, sg := range sgResources.SecurityGroups {
-		bytes, _ := json.Marshal(sg.Entity.Rules)
-		securityGroups[sg.Entity.Name] = SecurityGroupInfo{
-			GUID:           sg.MetaData.GUID,
+	lo.G.Debug("Total security groups returned :", len(secGroups))
+	for _, sg := range secGroups {
+		bytes, _ := json.Marshal(sg.Rules)
+		securityGroups[sg.Name] = SecurityGroupInfo{
+			GUID:           sg.Guid,
 			Rules:          string(bytes),
-			DefaultRunning: sg.Entity.DefaultRunning,
-			DefaultStaging: sg.Entity.DefaultStaging,
+			DefaultRunning: sg.Running,
+			DefaultStaging: sg.Staging,
 		}
 	}
 	return securityGroups, nil
@@ -143,13 +148,11 @@ func (m *DefaultManager) ListSecurityGroups() (map[string]SecurityGroupInfo, err
 
 //GetSecurityGroupRules - returns a array of rules based on sgGUID
 func (m *DefaultManager) GetSecurityGroupRules(sgGUID string) ([]byte, error) {
-	url := fmt.Sprintf("%s/v2/security_groups/%s", m.Host, sgGUID)
-	sgRule := &SecurityGroupRule{}
-	err := m.HTTP.Get(url, m.Token, sgRule)
+	secGroup, err := m.Client.GetSecGroup(sgGUID)
 	if err != nil {
 		return nil, err
 	}
-	return json.MarshalIndent(sgRule.Entity.Rules, "", "\t")
+	return json.MarshalIndent(secGroup.Rules, "", "\t")
 }
 
 func (m *DefaultManager) UpdateSecurityGroup(sgGUID, sgName, contents string) error {
@@ -157,9 +160,13 @@ func (m *DefaultManager) UpdateSecurityGroup(sgGUID, sgName, contents string) er
 		lo.G.Infof("[dry-run]: updating securityGroup %s with guid %s with contents %s", sgName, sgGUID, contents)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/security_groups/%s", m.Host, sgGUID)
-	sendString := fmt.Sprintf(`{"name":"%s","rules":%s}`, sgName, contents)
-	return m.HTTP.Put(url, m.Token, sendString)
+	securityGroup := &cfclient.SecGroup{}
+	err := json.Unmarshal([]byte(contents), &securityGroup)
+	if err != nil {
+		return err
+	}
+	_, err = m.Client.UpdateSecGroup(sgGUID, sgName, securityGroup.Rules, nil)
+	return err
 }
 
 func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (string, error) {
@@ -167,32 +174,25 @@ func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (string, e
 		lo.G.Infof("[dry-run]: creating securityGroup %s with contents %s", sgName, contents)
 		return "dry-run-security-group-guid", nil
 	}
-	url := fmt.Sprintf("%s/v2/security_groups", m.Host)
-	sendString := fmt.Sprintf(`{"name":"%s","rules":%s}`, sgName, contents)
-	body, err := m.HTTP.Post(url, m.Token, sendString)
+	securityGroup := &cfclient.SecGroup{}
+	err := json.Unmarshal([]byte(contents), &securityGroup)
 	if err != nil {
 		return "", err
 	}
-	sgResource := &SecurityGroup{}
-	err = json.Unmarshal([]byte(body), &sgResource)
-	if err != nil {
-		return "", err
-	}
-	return sgResource.MetaData.GUID, nil
+	securityGroup, err = m.Client.CreateSecGroup(sgName, securityGroup.Rules, nil)
+	return securityGroup.Guid, err
 }
 
 func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) (map[string]string, error) {
-	url := fmt.Sprintf("%s/v2/spaces/%s/security_groups", m.Host, spaceGUID)
-	sgResources := &SecurityGroupResources{}
-	err := m.listResources(url, sgResources, NewSecurityGroupResources)
+	secGroups, err := m.Client.ListSpaceSecGroups(spaceGUID)
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debug("Total security groups returned :", len(sgResources.SecurityGroups))
+	lo.G.Debug("Total security groups returned :", len(secGroups))
 	names := make(map[string]string)
-	for _, sg := range sgResources.SecurityGroups {
-		if sg.Entity.DefaultRunning == false && sg.Entity.DefaultStaging == false {
-			names[sg.Entity.Name] = sg.MetaData.GUID
+	for _, sg := range secGroups {
+		if sg.Running == false && sg.Staging == false {
+			names[sg.Name] = sg.Guid
 		}
 	}
 	return names, nil
@@ -203,36 +203,28 @@ func (m *DefaultManager) AssignRunningSecurityGroup(sgGUID string) error {
 		lo.G.Infof("[dry-run]: assigning sgGUID %s as running security group", sgGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/config/running_security_groups/%s", m.Host, sgGUID)
-	err := m.HTTP.Put(url, m.Token, "")
-	return err
+	return m.Client.BindRunningSecGroup(sgGUID)
 }
 func (m *DefaultManager) AssignStagingSecurityGroup(sgGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: assigning sgGUID %s as staging security group", sgGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/config/staging_security_groups/%s", m.Host, sgGUID)
-	err := m.HTTP.Put(url, m.Token, "")
-	return err
+	return m.Client.BindStagingSecGroup(sgGUID)
 }
 func (m *DefaultManager) UnassignRunningSecurityGroup(sgGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: unassinging sgGUID %s as running security group", sgGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/config/running_security_groups/%s", m.Host, sgGUID)
-	err := m.HTTP.Delete(url, m.Token)
-	return err
+	return m.Client.UnbindRunningSecGroup(sgGUID)
 }
 func (m *DefaultManager) UnassignStagingSecurityGroup(sgGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: unassigning sgGUID %s as staging security group", sgGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/config/staging_security_groups/%s", m.Host, sgGUID)
-	err := m.HTTP.Delete(url, m.Token)
-	return err
+	return m.Client.UnbindStagingSecGroup(sgGUID)
 }
 
 func (m *DefaultManager) AssignSecurityGroupToSpace(spaceGUID, sgGUID string) error {
@@ -240,9 +232,7 @@ func (m *DefaultManager) AssignSecurityGroupToSpace(spaceGUID, sgGUID string) er
 		lo.G.Infof("[dry-run]: assigning sgGUID %s to spaceGUID %s", sgGUID, spaceGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/security_groups/%s/spaces/%s", m.Host, sgGUID, spaceGUID)
-	err := m.HTTP.Put(url, m.Token, "")
-	return err
+	return m.Client.BindSecGroup(sgGUID, spaceGUID)
 }
 
 func (m *DefaultManager) AssignQuotaToSpace(spaceGUID, quotaGUID string) error {
@@ -250,9 +240,7 @@ func (m *DefaultManager) AssignQuotaToSpace(spaceGUID, quotaGUID string) error {
 		lo.G.Infof("[dry-run]: assigning quotaGUID %s to spaceGUID %s", quotaGUID, spaceGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/space_quota_definitions/%s/spaces/%s", m.Host, quotaGUID, spaceGUID)
-	err := m.HTTP.Put(url, m.Token, "")
-	return err
+	return m.Client.AssignSpaceQuota(quotaGUID, spaceGUID)
 }
 
 func (m *DefaultManager) CreateSpaceQuota(quota SpaceQuotaEntity) (string, error) {
@@ -260,21 +248,22 @@ func (m *DefaultManager) CreateSpaceQuota(quota SpaceQuotaEntity) (string, error
 		lo.G.Infof("[dry-run]: creating quota %+v", quota)
 		return "dry-run-space-quota-guid", nil
 	}
-	url := fmt.Sprintf("%s/v2/space_quota_definitions", m.Host)
-	sendString, err := json.Marshal(quota)
+	spaceQuota, err := m.Client.CreateSpaceQuota(cfclient.SpaceQuotaRequest{
+		Name:                    quota.GetName(),
+		OrganizationGuid:        quota.OrgGUID,
+		NonBasicServicesAllowed: quota.IsPaidServicesAllowed(),
+		TotalServices:           quota.TotalServices,
+		TotalRoutes:             quota.TotalRoutes,
+		MemoryLimit:             quota.MemoryLimit,
+		InstanceMemoryLimit:     quota.InstanceMemoryLimit,
+		AppInstanceLimit:        quota.AppInstanceLimit,
+		TotalServiceKeys:        quota.TotalServiceKeys,
+		TotalReservedRoutePorts: quota.TotalReservedRoutePorts,
+	})
 	if err != nil {
 		return "", err
 	}
-
-	body, err := m.HTTP.Post(url, m.Token, string(sendString))
-	if err != nil {
-		return "", err
-	}
-	quotaResource := &Quota{}
-	if err = json.Unmarshal([]byte(body), &quotaResource); err != nil {
-		return "", err
-	}
-	return quotaResource.MetaData.GUID, nil
+	return spaceQuota.Guid, nil
 }
 
 func (m *DefaultManager) UpdateSpaceQuota(quotaGUID string, quota SpaceQuotaEntity) error {
@@ -282,25 +271,30 @@ func (m *DefaultManager) UpdateSpaceQuota(quotaGUID string, quota SpaceQuotaEnti
 		lo.G.Infof("[dry-run]: update quota %s with %+v", quotaGUID, quota)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/space_quota_definitions/%s", m.Host, quotaGUID)
-	sendString, err := json.Marshal(quota)
-	if err != nil {
-		return err
-	}
-	return m.HTTP.Put(url, m.Token, string(sendString))
+	_, err := m.Client.UpdateSpaceQuota(quotaGUID, cfclient.SpaceQuotaRequest{
+		Name:                    quota.GetName(),
+		OrganizationGuid:        quota.OrgGUID,
+		NonBasicServicesAllowed: quota.IsPaidServicesAllowed(),
+		TotalServices:           quota.TotalServices,
+		TotalRoutes:             quota.TotalRoutes,
+		MemoryLimit:             quota.MemoryLimit,
+		InstanceMemoryLimit:     quota.InstanceMemoryLimit,
+		AppInstanceLimit:        quota.AppInstanceLimit,
+		TotalServiceKeys:        quota.TotalServiceKeys,
+		TotalReservedRoutePorts: quota.TotalReservedRoutePorts,
+	})
+	return err
 }
 
 func (m *DefaultManager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]string, error) {
 	quotas := make(map[string]string)
-	url := fmt.Sprintf("%s/v2/organizations/%s/space_quota_definitions", m.Host, orgGUID)
-	quotaResources := &Quotas{}
-	err := m.listResources(url, quotaResources, NewQuotasResources)
+	spaceQuotas, err := m.Client.ListOrgSpaceQuotas(orgGUID)
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debug("Total space quotas returned :", len(quotaResources.Quotas))
-	for _, quota := range quotaResources.Quotas {
-		quotas[quota.Entity.Name] = quota.MetaData.GUID
+	lo.G.Debug("Total space quotas returned :", len(spaceQuotas))
+	for _, quota := range spaceQuotas {
+		quotas[quota.Name] = quota.Guid
 	}
 	return quotas, nil
 }
@@ -310,9 +304,9 @@ func (m *DefaultManager) CreateOrg(orgName string) error {
 		lo.G.Infof("[dry-run]: create org %s", orgName)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/organizations", m.Host)
-	sendString := fmt.Sprintf(`{"name":"%s"}`, orgName)
-	_, err := m.HTTP.Post(url, m.Token, sendString)
+	_, err := m.Client.CreateOrg(cfclient.OrgRequest{
+		Name: orgName,
+	})
 	return err
 }
 
@@ -321,8 +315,7 @@ func (m *DefaultManager) DeleteOrg(orgGUID string) error {
 		lo.G.Infof("[dry-run]: delete org with GUID %s", orgGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/organizations/%s?recursive=true", m.Host, orgGUID)
-	return m.HTTP.Delete(url, m.Token)
+	return m.Client.DeleteOrg(orgGUID, true, true)
 }
 
 func (m *DefaultManager) DeleteOrgByName(orgName string) error {
@@ -331,13 +324,12 @@ func (m *DefaultManager) DeleteOrgByName(orgName string) error {
 		return err
 	}
 	for _, org := range orgs {
-		if org.Entity.Name == orgName {
+		if org.Name == orgName {
 			if m.Peek {
 				lo.G.Infof("[dry-run]: delete org %s", orgName)
 				return nil
 			}
-			url := fmt.Sprintf("%s/v2/organizations/%s?recursive=true", m.Host, org.MetaData.GUID)
-			return m.HTTP.Delete(url, m.Token)
+			m.DeleteOrg(org.Guid)
 		}
 	}
 	return errors.New(fmt.Sprintf("org[%s] not found", orgName))
@@ -349,32 +341,27 @@ func (m *DefaultManager) DeleteSpace(spaceGUID string) error {
 		lo.G.Infof("[dry-run]: delete space with GUID %s", spaceGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/spaces/%s?recursive=true", m.Host, spaceGUID)
-	return m.HTTP.Delete(url, m.Token)
+	return m.Client.DeleteSpace(spaceGUID, true, true)
 }
 
 //ListOrgs : Returns all orgs in the given foundation
-func (m *DefaultManager) ListOrgs() ([]*Org, error) {
-	url := fmt.Sprintf("%s/v2/organizations?results-per-page=100", m.Host)
-	orgs := &Orgs{}
-	err := m.listResources(url, orgs, NewOrgResources)
+func (m *DefaultManager) ListOrgs() ([]cfclient.Org, error) {
+	orgs, err := m.Client.ListOrgs()
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debug("Total orgs returned :", len(orgs.Orgs))
-	return orgs.Orgs, nil
+	lo.G.Debug("Total orgs returned :", len(orgs))
+	return orgs, nil
 }
 
 //ListIsolationSegments : Returns all isolation segments
-func (m *DefaultManager) ListIsolationSegments() ([]*IsoSegment, error) {
-	url := fmt.Sprintf("%s/v3/isolation_segments", m.Host)
-	isoSegments := &IsoSegments{}
-	err := m.listResources(url, isoSegments, NewIsoSegmentResources)
+func (m *DefaultManager) ListIsolationSegments() ([]cfclient.IsolationSegment, error) {
+	isolationSegments, err := m.Client.ListIsolationSegments()
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debug("Total isolation segments returned :", len(isoSegments.IsoSegments))
-	return isoSegments.IsoSegments, nil
+	lo.G.Debug("Total isolation segments returned :", len(isolationSegments))
+	return isolationSegments, nil
 }
 
 func (m *DefaultManager) AddUserToOrgRole(userName, role, orgGUID string) error {
@@ -382,22 +369,31 @@ func (m *DefaultManager) AddUserToOrgRole(userName, role, orgGUID string) error 
 		lo.G.Infof("[dry-run]: Add User %s to role %s for org GUID %s", userName, role, orgGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/organizations/%s/%s", m.Host, orgGUID, role)
-	sendString := fmt.Sprintf(`{"username": "%s"}`, userName)
-	return m.HTTP.Put(url, m.Token, sendString)
+	roleToLower := strings.ToLower(role)
+	if roleToLower == "auditors" {
+		_, err := m.Client.AssociateOrgAuditorByUsername(orgGUID, userName)
+		return err
+	} else if roleToLower == "billing_managers" {
+		_, err := m.Client.AssociateOrgManagerByUsername(orgGUID, userName)
+		return err
+	} else if roleToLower == "managers" {
+		_, err := m.Client.AssociateOrgManagerByUsername(orgGUID, userName)
+		return err
+	} else {
+		return fmt.Errorf("Role %s is not valid", role)
+	}
+	return nil
 }
 
 func (m *DefaultManager) ListAllOrgQuotas() (map[string]string, error) {
 	quotas := make(map[string]string)
-	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
-	quotaResources := &Quotas{}
-	err := m.listResources(url, quotaResources, NewQuotasResources)
+	orgQutotas, err := m.Client.ListOrgQuotas()
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debug("Total org quotas returned :", len(quotaResources.Quotas))
-	for _, quota := range quotaResources.Quotas {
-		quotas[quota.Entity.Name] = quota.MetaData.GUID
+	lo.G.Debug("Total org quotas returned :", len(orgQutotas))
+	for _, quota := range orgQutotas {
+		quotas[quota.Name] = quota.Guid
 	}
 	return quotas, nil
 }
@@ -407,21 +403,23 @@ func (m *DefaultManager) CreateQuota(quota QuotaEntity) (string, error) {
 		lo.G.Infof("[dry-run]: create quota %+v", quota)
 		return "dry-run-quota-guid", nil
 	}
-	url := fmt.Sprintf("%s/v2/quota_definitions", m.Host)
-	sendString, err := json.Marshal(quota)
+
+	orgQuota, err := m.Client.CreateOrgQuota(cfclient.OrgQuotaRequest{
+		Name: quota.GetName(),
+		NonBasicServicesAllowed: quota.IsPaidServicesAllowed(),
+		TotalServices:           quota.TotalServices,
+		TotalRoutes:             quota.TotalRoutes,
+		TotalPrivateDomains:     quota.TotalPrivateDomains,
+		MemoryLimit:             quota.MemoryLimit,
+		InstanceMemoryLimit:     quota.InstanceMemoryLimit,
+		AppInstanceLimit:        quota.AppInstanceLimit,
+		TotalServiceKeys:        quota.TotalServiceKeys,
+		TotalReservedRoutePorts: quota.TotalReservedRoutePorts,
+	})
 	if err != nil {
 		return "", err
 	}
-	body, err := m.HTTP.Post(url, m.Token, string(sendString))
-	if err != nil {
-		return "", err
-	}
-	quotaResource := &Quota{}
-	err = json.Unmarshal([]byte(body), &quotaResource)
-	if err != nil {
-		return "", err
-	}
-	return quotaResource.MetaData.GUID, nil
+	return orgQuota.Guid, nil
 }
 
 func (m *DefaultManager) UpdateQuota(quotaGUID string, quota QuotaEntity) error {
@@ -429,12 +427,19 @@ func (m *DefaultManager) UpdateQuota(quotaGUID string, quota QuotaEntity) error 
 		lo.G.Infof("[dry-run]: update quota %+v with GUID %s", quota, quotaGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/quota_definitions/%s", m.Host, quotaGUID)
-	sendString, err := json.Marshal(quota)
-	if err != nil {
-		return err
-	}
-	return m.HTTP.Put(url, m.Token, string(sendString))
+	_, err := m.Client.UpdateOrgQuota(quotaGUID, cfclient.OrgQuotaRequest{
+		Name: quota.GetName(),
+		NonBasicServicesAllowed: quota.IsPaidServicesAllowed(),
+		TotalServices:           quota.TotalServices,
+		TotalRoutes:             quota.TotalRoutes,
+		TotalPrivateDomains:     quota.TotalPrivateDomains,
+		MemoryLimit:             quota.MemoryLimit,
+		InstanceMemoryLimit:     quota.InstanceMemoryLimit,
+		AppInstanceLimit:        quota.AppInstanceLimit,
+		TotalServiceKeys:        quota.TotalServiceKeys,
+		TotalReservedRoutePorts: quota.TotalReservedRoutePorts,
+	})
+	return err
 }
 
 func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {
@@ -442,70 +447,128 @@ func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {
 		lo.G.Infof("[dry-run]: assign quota GUID %s to org GUID %s", quotaGUID, orgGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/organizations/%s", m.Host, orgGUID)
-	sendString := fmt.Sprintf(`{"quota_definition_guid":"%s"}`, quotaGUID)
-	return m.HTTP.Put(url, m.Token, sendString)
+	org, err := m.Client.GetOrgByGuid(orgGUID)
+	if err != nil {
+		return err
+	}
+	_, err = m.Client.UpdateOrg(orgGUID, cfclient.OrgRequest{
+		Name:                org.Name,
+		QuotaDefinitionGuid: quotaGUID,
+	})
+	return err
 }
 
 //GetCFUsers Returns a list of space users who has a given role
 func (m *DefaultManager) GetCFUsers(entityGUID, entityType, role string) (map[string]string, error) {
 	userMap := make(map[string]string)
-	url := fmt.Sprintf("%s/v2/%s/%s/%s?results-per-page=100", m.Host, entityType, entityGUID, role)
-	users := &OrgSpaceUsers{}
-	err := m.listResources(url, users, NewOrgSpaceUsers)
-	if err != nil {
-		return nil, err
-	}
-	lo.G.Debug("Total users returned :", len(users.Users))
+	roleLowerCase := strings.ToLower(role)
+	entityTypeLowerCase := strings.ToLower(entityType)
 
-	for _, user := range users.Users {
-		userMap[strings.ToLower(user.Entity.UserName)] = user.MetaData.GUID
+	var users []cfclient.User
+	var err error
+	if entityTypeLowerCase == "spaces" {
+		if roleLowerCase == "auditors" {
+			users, err = m.Client.ListSpaceAuditors(entityGUID)
+			if err != nil {
+				return nil, err
+			}
+		} else if roleLowerCase == "developers" {
+			users, err = m.Client.ListSpaceDevelopers(entityGUID)
+			if err != nil {
+				return nil, err
+			}
+		} else if roleLowerCase == "managers" {
+			users, err = m.Client.ListSpaceManagers(entityGUID)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("Role %s is not valid", role)
+		}
+	} else if entityTypeLowerCase == "organizations" {
+		if roleLowerCase == "auditors" {
+			users, err = m.Client.ListOrgAuditors(entityGUID)
+			if err != nil {
+				return nil, err
+			}
+		} else if roleLowerCase == "billing_managers" {
+			users, err = m.Client.ListOrgBillingManagers(entityGUID)
+			if err != nil {
+				return nil, err
+			}
+		} else if roleLowerCase == "managers" {
+			users, err = m.Client.ListOrgManagers(entityGUID)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("Role %s is not valid", role)
+		}
+	} else {
+		return nil, fmt.Errorf("EntityType %s is not valid", entityType)
+	}
+
+	lo.G.Debug("Total users returned :", len(users))
+
+	for _, user := range users {
+		userMap[strings.ToLower(user.Username)] = user.Guid
 	}
 	return userMap, nil
 }
 
 //RemoveCFUser - Un assigns a given from the given user for a given org and space
-func (m *DefaultManager) RemoveCFUser(entityGUID, entityType, userGUID, role string) error {
+func (m *DefaultManager) RemoveCFUserByUserName(entityGUID, entityType, userName, role string) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user GUID %s from GUID %s for type %s with role %s", userGUID, entityGUID, entityType, role)
+		lo.G.Infof("[dry-run]: removing user %s from GUID %s for type %s with role %s", userName, entityGUID, entityType, role)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/%s/%s/%s/%s", m.Host, entityType, entityGUID, role, userGUID)
-	return m.HTTP.Delete(url, m.Token)
+	roleLowerCase := strings.ToLower(role)
+	entityTypeLowerCase := strings.ToLower(entityType)
+
+	if entityTypeLowerCase == "spaces" {
+		if roleLowerCase == "auditors" {
+			return m.Client.RemoveSpaceAuditorByUsername(entityGUID, userName)
+		} else if roleLowerCase == "developers" {
+			return m.Client.RemoveSpaceDeveloperByUsername(entityGUID, userName)
+		} else if roleLowerCase == "managers" {
+			return m.Client.RemoveSpaceManagerByUsername(entityGUID, userName)
+		} else {
+			return fmt.Errorf("Role %s is not valid", role)
+		}
+	} else if entityTypeLowerCase == "organizations" {
+		if roleLowerCase == "auditors" {
+			return m.Client.RemoveOrgAuditorByUsername(entityGUID, userName)
+		} else if roleLowerCase == "billing_managers" {
+			return m.Client.RemoveOrgBillingManagerByUsername(entityGUID, userName)
+		} else if roleLowerCase == "managers" {
+			return m.Client.RemoveOrgManagerByUsername(entityGUID, userName)
+		} else {
+			return fmt.Errorf("Role %s is not valid", role)
+		}
+	} else {
+		return fmt.Errorf("EntityType %s is not valid", entityType)
+	}
+	return nil
 }
 
-//QuotaDef Returns quota definition for a given Quota
-func (m *DefaultManager) QuotaDef(quotaDefGUID string, entityType string) (*Quota, error) {
-	var apiPath string
-	if "organizations" == entityType {
-		apiPath = "quota_definitions"
-	} else {
-		apiPath = "space_quota_definitions"
-	}
-	url := fmt.Sprintf("%s/v2/%s/%s", m.Host, apiPath, quotaDefGUID)
-	var err error
-	quotaResource := &Quota{}
-	if err = m.HTTP.Get(url, m.Token, quotaResource); err == nil {
-		lo.G.Debugf("Quota returned : %v", quotaResource.Entity)
-		return quotaResource, nil
-	}
-	lo.G.Errorf("Error from quota API call : %v", err)
-	return nil, err
+func (m *DefaultManager) OrgQuotaByName(name string) (cfclient.OrgQuota, error) {
+	return m.Client.GetOrgQuotaByName(name)
+}
+func (m *DefaultManager) SpaceQuotaByName(name string) (cfclient.SpaceQuota, error) {
+	return m.Client.GetSpaceQuotaByName(name)
 }
 
 func (m *DefaultManager) ListAllPrivateDomains() (map[string]PrivateDomainInfo, error) {
-	privateDomainResources := &PrivateDomainResources{}
-	url := fmt.Sprintf("%s/v2/private_domains", m.Host)
-	err := m.listResources(url, privateDomainResources, NewPrivateDomainResource)
+	domains, err := m.Client.ListDomains()
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debug("Total private domains returned :", len(privateDomainResources.PrivateDomains))
+	lo.G.Debug("Total private domains returned :", len(domains))
 	privateDomainMap := make(map[string]PrivateDomainInfo)
-	for _, privateDomain := range privateDomainResources.PrivateDomains {
-		privateDomainMap[privateDomain.Entity.Name] = PrivateDomainInfo{
-			OrgGUID:           privateDomain.Entity.OrgGUID,
-			PrivateDomainGUID: privateDomain.MetaData.GUID,
+	for _, privateDomain := range domains {
+		privateDomainMap[privateDomain.Name] = PrivateDomainInfo{
+			OrgGUID:           privateDomain.OwningOrganizationGuid,
+			PrivateDomainGUID: privateDomain.Guid,
 		}
 	}
 	return privateDomainMap, nil
@@ -518,8 +581,8 @@ func (m *DefaultManager) ListOrgOwnedPrivateDomains(orgGUID string) (map[string]
 		return nil, err
 	}
 	for _, privateDomain := range orgPrivateDomains {
-		if orgGUID == privateDomain.Entity.OrgGUID {
-			orgOwnedPrivateDomainMap[privateDomain.Entity.Name] = privateDomain.MetaData.GUID
+		if orgGUID == privateDomain.OwningOrganizationGuid {
+			orgOwnedPrivateDomainMap[privateDomain.Name] = privateDomain.Guid
 		}
 	}
 	return orgOwnedPrivateDomainMap, nil
@@ -532,22 +595,21 @@ func (m *DefaultManager) ListOrgSharedPrivateDomains(orgGUID string) (map[string
 		return nil, err
 	}
 	for _, privateDomain := range orgPrivateDomains {
-		if orgGUID != privateDomain.Entity.OrgGUID {
-			orgSharedPrivateDomainMap[privateDomain.Entity.Name] = privateDomain.MetaData.GUID
+		if orgGUID != privateDomain.OwningOrganizationGuid {
+			orgSharedPrivateDomainMap[privateDomain.Name] = privateDomain.Guid
 		}
 	}
 	return orgSharedPrivateDomainMap, nil
 }
 
-func (m *DefaultManager) listOrgPrivateDomains(orgGUID string) ([]*PrivateDomain, error) {
-	privateDomainResources := &PrivateDomainResources{}
-	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains", m.Host, orgGUID)
-	err := m.listResources(url, privateDomainResources, NewPrivateDomainResource)
+func (m *DefaultManager) listOrgPrivateDomains(orgGUID string) ([]cfclient.Domain, error) {
+	privateDomains, err := m.Client.ListOrgPrivateDomains(orgGUID)
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debug("Total private domains returned :", len(privateDomainResources.PrivateDomains))
-	return privateDomainResources.PrivateDomains, nil
+
+	lo.G.Debug("Total private domains returned :", len(privateDomains))
+	return privateDomains, nil
 }
 
 func (m *DefaultManager) DeletePrivateDomain(guid string) error {
@@ -555,34 +617,25 @@ func (m *DefaultManager) DeletePrivateDomain(guid string) error {
 		lo.G.Infof("[dry-run]: Delete private domain %s", guid)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/private_domains/%s?async=false", m.Host, guid)
-	return m.HTTP.Delete(url, m.Token)
+	return m.Client.DeleteDomain(guid)
 }
 func (m *DefaultManager) CreatePrivateDomain(orgGUID, privateDomain string) (string, error) {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: create private domain %s for org GUID %s", privateDomain, orgGUID)
 		return "dry-run-private-domain-guid", nil
 	}
-	url := fmt.Sprintf("%s/v2/private_domains", m.Host)
-	sendString := fmt.Sprintf(`{"name":"%s", "owning_organization_guid":"%s"}`, privateDomain, orgGUID)
-	body, err := m.HTTP.Post(url, m.Token, sendString)
+	domain, err := m.Client.CreateDomain(privateDomain, orgGUID)
 	if err != nil {
 		return "", err
 	}
-	privateDomainResource := &PrivateDomain{}
-	err = json.Unmarshal([]byte(body), &privateDomainResource)
-	if err != nil {
-		return "", err
-	}
-	return privateDomainResource.MetaData.GUID, nil
+	return domain.Guid, nil
 }
 func (m *DefaultManager) SharePrivateDomain(sharedOrgGUID, privateDomainGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: Share private domain %s for org GUID %s", privateDomainGUID, sharedOrgGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains/%s", m.Host, sharedOrgGUID, privateDomainGUID)
-	err := m.HTTP.Put(url, m.Token, "")
+	_, err := m.Client.ShareOrgPrivateDomain(sharedOrgGUID, privateDomainGUID)
 	return err
 }
 func (m *DefaultManager) RemoveSharedPrivateDomain(sharedOrgGUID, privateDomainGUID string) error {
@@ -590,6 +643,5 @@ func (m *DefaultManager) RemoveSharedPrivateDomain(sharedOrgGUID, privateDomainG
 		lo.G.Infof("[dry-run]: remove share private domain %s for org GUID %s", privateDomainGUID, sharedOrgGUID)
 		return nil
 	}
-	url := fmt.Sprintf("%s/v2/organizations/%s/private_domains/%s", m.Host, sharedOrgGUID, privateDomainGUID)
-	return m.HTTP.Delete(url, m.Token)
+	return m.Client.UnshareOrgPrivateDomain(sharedOrgGUID, privateDomainGUID)
 }

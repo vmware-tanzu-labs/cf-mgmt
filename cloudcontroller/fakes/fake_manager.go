@@ -4,6 +4,7 @@ package fakes
 import (
 	"sync"
 
+	go_cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 )
 
@@ -25,13 +26,13 @@ type FakeManager struct {
 	deleteSpaceReturns struct {
 		result1 error
 	}
-	ListSpacesStub        func(orgGUID string) ([]*cloudcontroller.Space, error)
+	ListSpacesStub        func(orgGUID string) ([]go_cfclient.Space, error)
 	listSpacesMutex       sync.RWMutex
 	listSpacesArgsForCall []struct {
 		orgGUID string
 	}
 	listSpacesReturns struct {
-		result1 []*cloudcontroller.Space
+		result1 []go_cfclient.Space
 		result2 error
 	}
 	ListSpaceSecurityGroupsStub        func(spaceGUID string) (map[string]string, error)
@@ -213,18 +214,18 @@ type FakeManager struct {
 	deleteOrgByNameReturns struct {
 		result1 error
 	}
-	ListOrgsStub        func() ([]*cloudcontroller.Org, error)
+	ListOrgsStub        func() ([]go_cfclient.Org, error)
 	listOrgsMutex       sync.RWMutex
 	listOrgsArgsForCall []struct{}
 	listOrgsReturns     struct {
-		result1 []*cloudcontroller.Org
+		result1 []go_cfclient.Org
 		result2 error
 	}
-	ListIsolationSegmentsStub        func() ([]*cloudcontroller.IsoSegment, error)
+	ListIsolationSegmentsStub        func() ([]go_cfclient.IsolationSegment, error)
 	listIsolationSegmentsMutex       sync.RWMutex
 	listIsolationSegmentsArgsForCall []struct{}
 	listIsolationSegmentsReturns     struct {
-		result1 []*cloudcontroller.IsoSegment
+		result1 []go_cfclient.IsolationSegment
 		result2 error
 	}
 	AddUserToOrgRoleStub        func(userName, role, orgGUID string) error
@@ -291,25 +292,33 @@ type FakeManager struct {
 		result1 map[string]string
 		result2 error
 	}
-	RemoveCFUserStub        func(entityGUID, entityType, userGUID, role string) error
-	removeCFUserMutex       sync.RWMutex
-	removeCFUserArgsForCall []struct {
+	RemoveCFUserByUserNameStub        func(entityGUID, entityType, userName, role string) error
+	removeCFUserByUserNameMutex       sync.RWMutex
+	removeCFUserByUserNameArgsForCall []struct {
 		entityGUID string
 		entityType string
-		userGUID   string
+		userName   string
 		role       string
 	}
-	removeCFUserReturns struct {
+	removeCFUserByUserNameReturns struct {
 		result1 error
 	}
-	QuotaDefStub        func(quotaDefGUID string, entityType string) (*cloudcontroller.Quota, error)
-	quotaDefMutex       sync.RWMutex
-	quotaDefArgsForCall []struct {
-		quotaDefGUID string
-		entityType   string
+	OrgQuotaByNameStub        func(name string) (go_cfclient.OrgQuota, error)
+	orgQuotaByNameMutex       sync.RWMutex
+	orgQuotaByNameArgsForCall []struct {
+		name string
 	}
-	quotaDefReturns struct {
-		result1 *cloudcontroller.Quota
+	orgQuotaByNameReturns struct {
+		result1 go_cfclient.OrgQuota
+		result2 error
+	}
+	SpaceQuotaByNameStub        func(name string) (go_cfclient.SpaceQuota, error)
+	spaceQuotaByNameMutex       sync.RWMutex
+	spaceQuotaByNameArgsForCall []struct {
+		name string
+	}
+	spaceQuotaByNameReturns struct {
+		result1 go_cfclient.SpaceQuota
 		result2 error
 	}
 	ListAllPrivateDomainsStub        func() (map[string]cloudcontroller.PrivateDomainInfo, error)
@@ -444,7 +453,7 @@ func (fake *FakeManager) DeleteSpaceReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) ListSpaces(orgGUID string) ([]*cloudcontroller.Space, error) {
+func (fake *FakeManager) ListSpaces(orgGUID string) ([]go_cfclient.Space, error) {
 	fake.listSpacesMutex.Lock()
 	fake.listSpacesArgsForCall = append(fake.listSpacesArgsForCall, struct {
 		orgGUID string
@@ -470,10 +479,10 @@ func (fake *FakeManager) ListSpacesArgsForCall(i int) string {
 	return fake.listSpacesArgsForCall[i].orgGUID
 }
 
-func (fake *FakeManager) ListSpacesReturns(result1 []*cloudcontroller.Space, result2 error) {
+func (fake *FakeManager) ListSpacesReturns(result1 []go_cfclient.Space, result2 error) {
 	fake.ListSpacesStub = nil
 	fake.listSpacesReturns = struct {
-		result1 []*cloudcontroller.Space
+		result1 []go_cfclient.Space
 		result2 error
 	}{result1, result2}
 }
@@ -1164,7 +1173,7 @@ func (fake *FakeManager) DeleteOrgByNameReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) ListOrgs() ([]*cloudcontroller.Org, error) {
+func (fake *FakeManager) ListOrgs() ([]go_cfclient.Org, error) {
 	fake.listOrgsMutex.Lock()
 	fake.listOrgsArgsForCall = append(fake.listOrgsArgsForCall, struct{}{})
 	fake.recordInvocation("ListOrgs", []interface{}{})
@@ -1182,15 +1191,15 @@ func (fake *FakeManager) ListOrgsCallCount() int {
 	return len(fake.listOrgsArgsForCall)
 }
 
-func (fake *FakeManager) ListOrgsReturns(result1 []*cloudcontroller.Org, result2 error) {
+func (fake *FakeManager) ListOrgsReturns(result1 []go_cfclient.Org, result2 error) {
 	fake.ListOrgsStub = nil
 	fake.listOrgsReturns = struct {
-		result1 []*cloudcontroller.Org
+		result1 []go_cfclient.Org
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListIsolationSegments() ([]*cloudcontroller.IsoSegment, error) {
+func (fake *FakeManager) ListIsolationSegments() ([]go_cfclient.IsolationSegment, error) {
 	fake.listIsolationSegmentsMutex.Lock()
 	fake.listIsolationSegmentsArgsForCall = append(fake.listIsolationSegmentsArgsForCall, struct{}{})
 	fake.recordInvocation("ListIsolationSegments", []interface{}{})
@@ -1208,10 +1217,10 @@ func (fake *FakeManager) ListIsolationSegmentsCallCount() int {
 	return len(fake.listIsolationSegmentsArgsForCall)
 }
 
-func (fake *FakeManager) ListIsolationSegmentsReturns(result1 []*cloudcontroller.IsoSegment, result2 error) {
+func (fake *FakeManager) ListIsolationSegmentsReturns(result1 []go_cfclient.IsolationSegment, result2 error) {
 	fake.ListIsolationSegmentsStub = nil
 	fake.listIsolationSegmentsReturns = struct {
-		result1 []*cloudcontroller.IsoSegment
+		result1 []go_cfclient.IsolationSegment
 		result2 error
 	}{result1, result2}
 }
@@ -1449,73 +1458,106 @@ func (fake *FakeManager) GetCFUsersReturns(result1 map[string]string, result2 er
 	}{result1, result2}
 }
 
-func (fake *FakeManager) RemoveCFUser(entityGUID string, entityType string, userGUID string, role string) error {
-	fake.removeCFUserMutex.Lock()
-	fake.removeCFUserArgsForCall = append(fake.removeCFUserArgsForCall, struct {
+func (fake *FakeManager) RemoveCFUserByUserName(entityGUID string, entityType string, userName string, role string) error {
+	fake.removeCFUserByUserNameMutex.Lock()
+	fake.removeCFUserByUserNameArgsForCall = append(fake.removeCFUserByUserNameArgsForCall, struct {
 		entityGUID string
 		entityType string
-		userGUID   string
+		userName   string
 		role       string
-	}{entityGUID, entityType, userGUID, role})
-	fake.recordInvocation("RemoveCFUser", []interface{}{entityGUID, entityType, userGUID, role})
-	fake.removeCFUserMutex.Unlock()
-	if fake.RemoveCFUserStub != nil {
-		return fake.RemoveCFUserStub(entityGUID, entityType, userGUID, role)
+	}{entityGUID, entityType, userName, role})
+	fake.recordInvocation("RemoveCFUserByUserName", []interface{}{entityGUID, entityType, userName, role})
+	fake.removeCFUserByUserNameMutex.Unlock()
+	if fake.RemoveCFUserByUserNameStub != nil {
+		return fake.RemoveCFUserByUserNameStub(entityGUID, entityType, userName, role)
 	} else {
-		return fake.removeCFUserReturns.result1
+		return fake.removeCFUserByUserNameReturns.result1
 	}
 }
 
-func (fake *FakeManager) RemoveCFUserCallCount() int {
-	fake.removeCFUserMutex.RLock()
-	defer fake.removeCFUserMutex.RUnlock()
-	return len(fake.removeCFUserArgsForCall)
+func (fake *FakeManager) RemoveCFUserByUserNameCallCount() int {
+	fake.removeCFUserByUserNameMutex.RLock()
+	defer fake.removeCFUserByUserNameMutex.RUnlock()
+	return len(fake.removeCFUserByUserNameArgsForCall)
 }
 
-func (fake *FakeManager) RemoveCFUserArgsForCall(i int) (string, string, string, string) {
-	fake.removeCFUserMutex.RLock()
-	defer fake.removeCFUserMutex.RUnlock()
-	return fake.removeCFUserArgsForCall[i].entityGUID, fake.removeCFUserArgsForCall[i].entityType, fake.removeCFUserArgsForCall[i].userGUID, fake.removeCFUserArgsForCall[i].role
+func (fake *FakeManager) RemoveCFUserByUserNameArgsForCall(i int) (string, string, string, string) {
+	fake.removeCFUserByUserNameMutex.RLock()
+	defer fake.removeCFUserByUserNameMutex.RUnlock()
+	return fake.removeCFUserByUserNameArgsForCall[i].entityGUID, fake.removeCFUserByUserNameArgsForCall[i].entityType, fake.removeCFUserByUserNameArgsForCall[i].userName, fake.removeCFUserByUserNameArgsForCall[i].role
 }
 
-func (fake *FakeManager) RemoveCFUserReturns(result1 error) {
-	fake.RemoveCFUserStub = nil
-	fake.removeCFUserReturns = struct {
+func (fake *FakeManager) RemoveCFUserByUserNameReturns(result1 error) {
+	fake.RemoveCFUserByUserNameStub = nil
+	fake.removeCFUserByUserNameReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeManager) QuotaDef(quotaDefGUID string, entityType string) (*cloudcontroller.Quota, error) {
-	fake.quotaDefMutex.Lock()
-	fake.quotaDefArgsForCall = append(fake.quotaDefArgsForCall, struct {
-		quotaDefGUID string
-		entityType   string
-	}{quotaDefGUID, entityType})
-	fake.recordInvocation("QuotaDef", []interface{}{quotaDefGUID, entityType})
-	fake.quotaDefMutex.Unlock()
-	if fake.QuotaDefStub != nil {
-		return fake.QuotaDefStub(quotaDefGUID, entityType)
+func (fake *FakeManager) OrgQuotaByName(name string) (go_cfclient.OrgQuota, error) {
+	fake.orgQuotaByNameMutex.Lock()
+	fake.orgQuotaByNameArgsForCall = append(fake.orgQuotaByNameArgsForCall, struct {
+		name string
+	}{name})
+	fake.recordInvocation("OrgQuotaByName", []interface{}{name})
+	fake.orgQuotaByNameMutex.Unlock()
+	if fake.OrgQuotaByNameStub != nil {
+		return fake.OrgQuotaByNameStub(name)
 	} else {
-		return fake.quotaDefReturns.result1, fake.quotaDefReturns.result2
+		return fake.orgQuotaByNameReturns.result1, fake.orgQuotaByNameReturns.result2
 	}
 }
 
-func (fake *FakeManager) QuotaDefCallCount() int {
-	fake.quotaDefMutex.RLock()
-	defer fake.quotaDefMutex.RUnlock()
-	return len(fake.quotaDefArgsForCall)
+func (fake *FakeManager) OrgQuotaByNameCallCount() int {
+	fake.orgQuotaByNameMutex.RLock()
+	defer fake.orgQuotaByNameMutex.RUnlock()
+	return len(fake.orgQuotaByNameArgsForCall)
 }
 
-func (fake *FakeManager) QuotaDefArgsForCall(i int) (string, string) {
-	fake.quotaDefMutex.RLock()
-	defer fake.quotaDefMutex.RUnlock()
-	return fake.quotaDefArgsForCall[i].quotaDefGUID, fake.quotaDefArgsForCall[i].entityType
+func (fake *FakeManager) OrgQuotaByNameArgsForCall(i int) string {
+	fake.orgQuotaByNameMutex.RLock()
+	defer fake.orgQuotaByNameMutex.RUnlock()
+	return fake.orgQuotaByNameArgsForCall[i].name
 }
 
-func (fake *FakeManager) QuotaDefReturns(result1 *cloudcontroller.Quota, result2 error) {
-	fake.QuotaDefStub = nil
-	fake.quotaDefReturns = struct {
-		result1 *cloudcontroller.Quota
+func (fake *FakeManager) OrgQuotaByNameReturns(result1 go_cfclient.OrgQuota, result2 error) {
+	fake.OrgQuotaByNameStub = nil
+	fake.orgQuotaByNameReturns = struct {
+		result1 go_cfclient.OrgQuota
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) SpaceQuotaByName(name string) (go_cfclient.SpaceQuota, error) {
+	fake.spaceQuotaByNameMutex.Lock()
+	fake.spaceQuotaByNameArgsForCall = append(fake.spaceQuotaByNameArgsForCall, struct {
+		name string
+	}{name})
+	fake.recordInvocation("SpaceQuotaByName", []interface{}{name})
+	fake.spaceQuotaByNameMutex.Unlock()
+	if fake.SpaceQuotaByNameStub != nil {
+		return fake.SpaceQuotaByNameStub(name)
+	} else {
+		return fake.spaceQuotaByNameReturns.result1, fake.spaceQuotaByNameReturns.result2
+	}
+}
+
+func (fake *FakeManager) SpaceQuotaByNameCallCount() int {
+	fake.spaceQuotaByNameMutex.RLock()
+	defer fake.spaceQuotaByNameMutex.RUnlock()
+	return len(fake.spaceQuotaByNameArgsForCall)
+}
+
+func (fake *FakeManager) SpaceQuotaByNameArgsForCall(i int) string {
+	fake.spaceQuotaByNameMutex.RLock()
+	defer fake.spaceQuotaByNameMutex.RUnlock()
+	return fake.spaceQuotaByNameArgsForCall[i].name
+}
+
+func (fake *FakeManager) SpaceQuotaByNameReturns(result1 go_cfclient.SpaceQuota, result2 error) {
+	fake.SpaceQuotaByNameStub = nil
+	fake.spaceQuotaByNameReturns = struct {
+		result1 go_cfclient.SpaceQuota
 		result2 error
 	}{result1, result2}
 }
@@ -1819,10 +1861,12 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.assignQuotaToOrgMutex.RUnlock()
 	fake.getCFUsersMutex.RLock()
 	defer fake.getCFUsersMutex.RUnlock()
-	fake.removeCFUserMutex.RLock()
-	defer fake.removeCFUserMutex.RUnlock()
-	fake.quotaDefMutex.RLock()
-	defer fake.quotaDefMutex.RUnlock()
+	fake.removeCFUserByUserNameMutex.RLock()
+	defer fake.removeCFUserByUserNameMutex.RUnlock()
+	fake.orgQuotaByNameMutex.RLock()
+	defer fake.orgQuotaByNameMutex.RUnlock()
+	fake.spaceQuotaByNameMutex.RLock()
+	defer fake.spaceQuotaByNameMutex.RUnlock()
 	fake.listAllPrivateDomainsMutex.RLock()
 	defer fake.listAllPrivateDomainsMutex.RUnlock()
 	fake.listOrgOwnedPrivateDomainsMutex.RLock()

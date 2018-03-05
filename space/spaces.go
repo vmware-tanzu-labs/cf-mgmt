@@ -3,6 +3,7 @@ package space
 import (
 	"fmt"
 
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
@@ -46,8 +47,8 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 		for _, securityGroupName := range input.ASGs {
 			lo.G.Debug("Security Group name: " + securityGroupName)
 			if sgInfo, ok := sgs[securityGroupName]; ok {
-				lo.G.Infof("Binding NAMED security group %s to space %s", securityGroupName, space.Entity.Name)
-				m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgInfo.GUID)
+				lo.G.Infof("Binding NAMED security group %s to space %s", securityGroupName, space.Name)
+				m.CloudController.AssignSecurityGroupToSpace(space.Guid, sgInfo.GUID)
 			} else {
 				return fmt.Errorf("Security group [%s] does not exist", securityGroupName)
 			}
@@ -73,8 +74,8 @@ func (m *DefaultSpaceManager) CreateApplicationSecurityGroups(configDir string) 
 			}
 			sgGUID = targetSGGUID
 		}
-		lo.G.Infof("Binding security group %s to space %s", sgName, space.Entity.Name)
-		m.CloudController.AssignSecurityGroupToSpace(space.MetaData.GUID, sgGUID)
+		lo.G.Infof("Binding security group %s to space %s", sgName, space.Name)
+		m.CloudController.AssignSecurityGroupToSpace(space.Guid, sgGUID)
 	}
 	return nil
 }
@@ -93,14 +94,14 @@ func (m *DefaultSpaceManager) CreateQuotas(configDir string) error {
 		if err != nil {
 			continue
 		}
-		quotaName := space.Entity.Name
-		quotas, err := m.CloudController.ListAllSpaceQuotasForOrg(space.Entity.OrgGUID)
+		quotaName := space.Name
+		quotas, err := m.CloudController.ListAllSpaceQuotasForOrg(space.OrganizationGuid)
 		if err != nil {
 			continue
 		}
 
 		quota := cloudcontroller.SpaceQuotaEntity{
-			OrgGUID: space.Entity.OrgGUID,
+			OrgGUID: space.OrganizationGuid,
 			QuotaEntity: cloudcontroller.QuotaEntity{
 				Name:                    quotaName,
 				MemoryLimit:             input.MemoryLimit,
@@ -119,16 +120,16 @@ func (m *DefaultSpaceManager) CreateQuotas(configDir string) error {
 			if err := m.CloudController.UpdateSpaceQuota(quotaGUID, quota); err != nil {
 				continue
 			}
-			lo.G.Infof("Assigning %s to %s", quotaName, space.Entity.Name)
-			m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, quotaGUID)
+			lo.G.Infof("Assigning %s to %s", quotaName, space.Name)
+			m.CloudController.AssignQuotaToSpace(space.Guid, quotaGUID)
 		} else {
 			lo.G.Debug("Creating quota", quotaName)
 			targetQuotaGUID, err := m.CloudController.CreateSpaceQuota(quota)
 			if err != nil {
 				continue
 			}
-			lo.G.Infof("Assigning %s to %s", quotaName, space.Entity.Name)
-			m.CloudController.AssignQuotaToSpace(space.MetaData.GUID, targetQuotaGUID)
+			lo.G.Infof("Assigning %s to %s", quotaName, space.Name)
+			m.CloudController.AssignQuotaToSpace(space.Guid, targetQuotaGUID)
 		}
 	}
 	return nil
@@ -145,9 +146,9 @@ func (m *DefaultSpaceManager) UpdateSpaces(configDir string) error {
 		if err != nil {
 			continue
 		}
-		lo.G.Debug("Processing space", space.Entity.Name)
-		if input.AllowSSH != space.Entity.AllowSSH {
-			if err := m.CloudController.UpdateSpaceSSH(input.AllowSSH, space.MetaData.GUID); err != nil {
+		lo.G.Debug("Processing space", space.Name)
+		if input.AllowSSH != space.AllowSSH {
+			if err := m.CloudController.UpdateSpaceSSH(input.AllowSSH, space.Guid); err != nil {
 				return err
 			}
 		}
@@ -190,10 +191,10 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *confi
 		return err
 	}
 	if err = m.UserMgr.UpdateSpaceUsers(config, uaaUsers, UpdateUsersInput{
-		SpaceName:      space.Entity.Name,
-		SpaceGUID:      space.MetaData.GUID,
+		SpaceName:      space.Name,
+		SpaceGUID:      space.Guid,
 		OrgName:        input.Org,
-		OrgGUID:        space.Entity.OrgGUID,
+		OrgGUID:        space.OrganizationGuid,
 		Role:           "developers",
 		LdapGroupNames: input.GetDeveloperGroups(),
 		LdapUsers:      input.Developer.LDAPUsers,
@@ -206,9 +207,9 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *confi
 
 	if err = m.UserMgr.UpdateSpaceUsers(config, uaaUsers,
 		UpdateUsersInput{
-			SpaceName:      space.Entity.Name,
-			SpaceGUID:      space.MetaData.GUID,
-			OrgGUID:        space.Entity.OrgGUID,
+			SpaceName:      space.Name,
+			SpaceGUID:      space.Guid,
+			OrgGUID:        space.OrganizationGuid,
 			OrgName:        input.Org,
 			Role:           "managers",
 			LdapGroupNames: input.GetManagerGroups(),
@@ -221,9 +222,9 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *confi
 	}
 	if err = m.UserMgr.UpdateSpaceUsers(config, uaaUsers,
 		UpdateUsersInput{
-			SpaceName:      space.Entity.Name,
-			SpaceGUID:      space.MetaData.GUID,
-			OrgGUID:        space.Entity.OrgGUID,
+			SpaceName:      space.Name,
+			SpaceGUID:      space.Guid,
+			OrgGUID:        space.OrganizationGuid,
 			OrgName:        input.Org,
 			Role:           "auditors",
 			LdapGroupNames: input.GetAuditorGroups(),
@@ -238,21 +239,21 @@ func (m *DefaultSpaceManager) updateSpaceUsers(config *ldap.Config, input *confi
 }
 
 //FindSpace -
-func (m *DefaultSpaceManager) FindSpace(orgName, spaceName string) (*cloudcontroller.Space, error) {
+func (m *DefaultSpaceManager) FindSpace(orgName, spaceName string) (cfclient.Space, error) {
 	orgGUID, err := m.OrgMgr.GetOrgGUID(orgName)
 	if err != nil {
-		return nil, err
+		return cfclient.Space{}, err
 	}
 	spaces, err := m.CloudController.ListSpaces(orgGUID)
 	if err != nil {
-		return nil, err
+		return cfclient.Space{}, err
 	}
 	for _, theSpace := range spaces {
-		if theSpace.Entity.Name == spaceName {
+		if theSpace.Name == spaceName {
 			return theSpace, nil
 		}
 	}
-	return nil, fmt.Errorf("space [%s] not found in org [%s]", spaceName, orgName)
+	return cfclient.Space{}, fmt.Errorf("space [%s] not found in org [%s]", spaceName, orgName)
 }
 
 //CreateSpaces -
@@ -321,9 +322,9 @@ func (m *DefaultSpaceManager) UpdateSpaceWithDefaults(configDir, spaceName, orgN
 	return m.updateSpaceUsers(ldapCfg, defaults, uaaUsers)
 }
 
-func (m *DefaultSpaceManager) doesSpaceExist(spaces []*cloudcontroller.Space, spaceName string) bool {
+func (m *DefaultSpaceManager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
 	for _, space := range spaces {
-		if space.Entity.Name == spaceName {
+		if space.Name == spaceName {
 			return true
 		}
 	}
@@ -351,21 +352,21 @@ func (m *DefaultSpaceManager) DeleteSpaces(configDir string) error {
 		if err != nil {
 			return err
 		}
-		spaces, err := m.CloudController.ListSpaces(org.MetaData.GUID)
+		spaces, err := m.CloudController.ListSpaces(org.Guid)
 		if err != nil {
 			return err
 		}
 
-		spacesToDelete := make([]*cloudcontroller.Space, 0)
+		spacesToDelete := make([]cfclient.Space, 0)
 		for _, space := range spaces {
-			if _, exists := configuredSpaces[space.Entity.Name]; !exists {
+			if _, exists := configuredSpaces[space.Name]; !exists {
 				spacesToDelete = append(spacesToDelete, space)
 			}
 		}
 
 		for _, space := range spacesToDelete {
-			lo.G.Infof("Deleting [%s] space in org %s", space.Entity.Name, input.Org)
-			if err := m.CloudController.DeleteSpace(space.MetaData.GUID); err != nil {
+			lo.G.Infof("Deleting [%s] space in org %s", space.Name, input.Org)
+			if err := m.CloudController.DeleteSpace(space.Guid); err != nil {
 				return err
 			}
 		}

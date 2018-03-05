@@ -1,6 +1,7 @@
 package organization
 
 import (
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
@@ -9,7 +10,7 @@ import (
 
 //Manager -
 type Manager interface {
-	FindOrg(orgName string) (*cloudcontroller.Org, error)
+	FindOrg(orgName string) (cfclient.Org, error)
 	CreateOrgs() error
 	CreatePrivateDomains() error
 	SharePrivateDomains() error

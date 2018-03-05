@@ -18,7 +18,8 @@ imports:
   version: 4a1e882c79dcf4ec00d2e29fac74b9c8938d5052
   repo: https://github.com/blang/semver
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: b6c647fb9e104bc643891fb86e2e9125e7d7e7b8
+  version: e7d45b3c0f6b4d572b4069c9e3631b4a9cff4c74
+  repo: git@github.com:calebwashburn/go-cfclient.git
 - name: github.com/cloudfoundry/bytefmt
   version: f4415fafc5619dd75599a54a7c91fb3948ad58bd
   repo: https://github.com/cloudfoundry/bytefmt

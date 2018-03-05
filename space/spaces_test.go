@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -53,12 +54,9 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("FindSpace()", func() {
 		It("should return an space", func() {
-			spaces := []*cloudcontroller.Space{
+			spaces := []cfclient.Space{
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "testSpace",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{},
+					Name: "testSpace",
 				},
 			}
 			mockOrgMgr.EXPECT().GetOrgGUID("testOrg").Return("testOrgGUID", nil)
@@ -66,35 +64,30 @@ var _ = Describe("given SpaceManager", func() {
 			space, err := spaceManager.FindSpace("testOrg", "testSpace")
 			Ω(err).Should(BeNil())
 			Ω(space).ShouldNot(BeNil())
-			Ω(space.Entity.Name).Should(Equal("testSpace"))
+			Ω(space.Name).Should(Equal("testSpace"))
 		})
 		It("should return an error if space not found", func() {
-			spaces := []*cloudcontroller.Space{
+			spaces := []cfclient.Space{
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "testSpace",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{},
+					Name: "testSpace",
 				},
 			}
 			mockOrgMgr.EXPECT().GetOrgGUID("testOrg").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
-			space, err := spaceManager.FindSpace("testOrg", "testSpace2")
+			_, err := spaceManager.FindSpace("testOrg", "testSpace2")
 			Ω(err).Should(HaveOccurred())
-			Ω(space).Should(BeNil())
 		})
 		It("should return an error if unable to get OrgGUID", func() {
 			mockOrgMgr.EXPECT().GetOrgGUID("testOrg").Return("", fmt.Errorf("test"))
-			space, err := spaceManager.FindSpace("testOrg", "testSpace2")
+			_, err := spaceManager.FindSpace("testOrg", "testSpace2")
 			Ω(err).Should(HaveOccurred())
-			Ω(space).Should(BeNil())
 		})
 		It("should return an error if unable to get Spaces", func() {
 			mockOrgMgr.EXPECT().GetOrgGUID("testOrg").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(nil, fmt.Errorf("test"))
-			space, err := spaceManager.FindSpace("testOrg", "testSpace2")
+			_, err := spaceManager.FindSpace("testOrg", "testSpace2")
 			Ω(err).Should(HaveOccurred())
-			Ω(space).Should(BeNil())
+
 		})
 	})
 
@@ -104,7 +97,7 @@ var _ = Describe("given SpaceManager", func() {
 		})
 
 		It("should create 2 spaces", func() {
-			spaces := []*cloudcontroller.Space{}
+			spaces := []cfclient.Space{}
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
 			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
 			mockCloudController.EXPECT().CreateSpace("space1", "testOrgGUID").Return(nil)
@@ -113,12 +106,9 @@ var _ = Describe("given SpaceManager", func() {
 		})
 
 		It("should create 1 space", func() {
-			spaces := []*cloudcontroller.Space{
+			spaces := []cfclient.Space{
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space1",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{},
+					Name: "space1",
 				},
 			}
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
@@ -137,19 +127,15 @@ var _ = Describe("given SpaceManager", func() {
 				Enabled: true,
 				Origin:  "ldap",
 			}
-			spaces := []*cloudcontroller.Space{{
-				Entity: cloudcontroller.SpaceEntity{
-					Name:    "space1",
-					OrgGUID: "testOrgGUID",
-				},
-				MetaData: cloudcontroller.SpaceMetaData{
-					GUID: "space1GUID",
-				},
+			spaces := []cfclient.Space{{
+				Name:             "space1",
+				OrganizationGuid: "testOrgGUID",
+				Guid:             "space1GUID",
 			},
 			}
 			uaaUsers := make(map[string]string)
 			uaaUsers["cwashburn"] = "cwashburn"
-			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return([]*cloudcontroller.Space{}, nil)
+			mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return([]cfclient.Space{}, nil)
 			mockLdap.EXPECT().GetConfig("./fixtures/default_config", "test_pwd").Return(ldapCfg, nil)
 			mockCloudController.EXPECT().CreateSpace("space1", "testOrgGUID").Return(nil)
 			mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
@@ -210,22 +196,14 @@ var _ = Describe("given SpaceManager", func() {
 			bytes, e := ioutil.ReadFile("./fixtures/config/test/space1/security-group.json")
 			Ω(e).Should(BeNil())
 
-			spaces := []*cloudcontroller.Space{
+			spaces := []cfclient.Space{
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space1",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1GUID",
-					},
+					Name: "space1",
+					Guid: "space1GUID",
 				},
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space2",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space2GUID",
-					},
+					Name: "space2",
+					Guid: "space2GUID",
 				},
 			}
 			sgs := make(map[string]cloudcontroller.SecurityGroupInfo)
@@ -246,22 +224,14 @@ var _ = Describe("given SpaceManager", func() {
 		It("should create 1 asg", func() {
 			bytes, e := ioutil.ReadFile("./fixtures/config/test/space1/security-group.json")
 			Ω(e).Should(BeNil())
-			spaces := []*cloudcontroller.Space{
+			spaces := []cfclient.Space{
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space1",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1GUID",
-					},
+					Name: "space1",
+					Guid: "space1GUID",
 				},
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space2",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space2GUID",
-					},
+					Name: "space2",
+					Guid: "space2GUID",
 				},
 			}
 			sgs := make(map[string]cloudcontroller.SecurityGroupInfo)
@@ -279,22 +249,14 @@ var _ = Describe("given SpaceManager", func() {
 		It("should create update 1 asg", func() {
 			bytes, e := ioutil.ReadFile("./fixtures/config/test/space1/security-group.json")
 			Ω(e).Should(BeNil())
-			spaces := []*cloudcontroller.Space{
+			spaces := []cfclient.Space{
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space1",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1GUID",
-					},
+					Name: "space1",
+					Guid: "space1GUID",
 				},
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space2",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space2GUID",
-					},
+					Name: "space2",
+					Guid: "space2GUID",
 				},
 			}
 			sgs := make(map[string]cloudcontroller.SecurityGroupInfo)
@@ -314,24 +276,16 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("CreateQuotas()", func() {
 		It("should create 2 quotas", func() {
-			spaces := []*cloudcontroller.Space{
+			spaces := []cfclient.Space{
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name:    "space1",
-						OrgGUID: "testOrgGUID",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1GUID",
-					},
+					Name:             "space1",
+					OrganizationGuid: "testOrgGUID",
+					Guid:             "space1GUID",
 				},
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name:    "space2",
-						OrgGUID: "testOrgGUID",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space2GUID",
-					},
+					Name:             "space2",
+					OrganizationGuid: "testOrgGUID",
+					Guid:             "space2GUID",
 				},
 			}
 			quotas := make(map[string]string)
@@ -377,24 +331,16 @@ var _ = Describe("given SpaceManager", func() {
 		})
 
 		It("should update 2 quota", func() {
-			spaces := []*cloudcontroller.Space{
+			spaces := []cfclient.Space{
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name:    "space1",
-						OrgGUID: "testOrgGUID",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1GUID",
-					},
+					Name:             "space1",
+					OrganizationGuid: "testOrgGUID",
+					Guid:             "space1GUID",
 				},
 				{
-					Entity: cloudcontroller.SpaceEntity{
-						Name:    "space2",
-						OrgGUID: "testOrgGUID",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space2GUID",
-					},
+					Name:             "space2",
+					OrganizationGuid: "testOrgGUID",
+					Guid:             "space2GUID",
 				},
 			}
 			quotas := make(map[string]string)
@@ -443,24 +389,16 @@ var _ = Describe("given SpaceManager", func() {
 	})
 
 	Context("UpdateSpaces()", func() {
-		spaces := []*cloudcontroller.Space{
+		spaces := []cfclient.Space{
 			{
-				Entity: cloudcontroller.SpaceEntity{
-					Name:    "space1",
-					OrgGUID: "testOrgGUID",
-				},
-				MetaData: cloudcontroller.SpaceMetaData{
-					GUID: "space1GUID",
-				},
+				Name:             "space1",
+				OrganizationGuid: "testOrgGUID",
+				Guid:             "space1GUID",
 			},
 			{
-				Entity: cloudcontroller.SpaceEntity{
-					Name:    "space2",
-					OrgGUID: "testOrgGUID",
-				},
-				MetaData: cloudcontroller.SpaceMetaData{
-					GUID: "space2GUID",
-				},
+				Name:             "space2",
+				OrganizationGuid: "testOrgGUID",
+				Guid:             "space2GUID",
 			},
 		}
 		It("should turn on allow ssh", func() {
@@ -501,39 +439,23 @@ var _ = Describe("given SpaceManager", func() {
 		})
 
 		It("should delete 1 and skip 1", func() {
-			spaces := []*cloudcontroller.Space{
-				&cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space1",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space1-guid",
-					},
+			spaces := []cfclient.Space{
+				cfclient.Space{
+					Name: "space1",
+					Guid: "space1-guid",
 				},
-				&cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space2",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space2-guid",
-					},
+				cfclient.Space{
+					Name: "space2",
+					Guid: "space2-guid",
 				},
-				&cloudcontroller.Space{
-					Entity: cloudcontroller.SpaceEntity{
-						Name: "space3",
-					},
-					MetaData: cloudcontroller.SpaceMetaData{
-						GUID: "space3-guid",
-					},
+				cfclient.Space{
+					Name: "space3",
+					Guid: "space3-guid",
 				},
 			}
-			mockOrgMgr.EXPECT().FindOrg("test2").Return(&cloudcontroller.Org{
-				Entity: cloudcontroller.OrgEntity{
-					Name: "test2",
-				},
-				MetaData: cloudcontroller.OrgMetaData{
-					GUID: "test2-org-guid",
-				},
+			mockOrgMgr.EXPECT().FindOrg("test2").Return(cfclient.Org{
+				Name: "test2",
+				Guid: "test2-org-guid",
 			}, nil)
 			mockCloudController.EXPECT().ListSpaces("test2-org-guid").Return(spaces, nil)
 			mockCloudController.EXPECT().DeleteSpace("space3-guid").Return(nil)

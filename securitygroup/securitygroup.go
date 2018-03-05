@@ -65,21 +65,21 @@ func (m *DefaultSecurityGroupManager) AssignDefaultSecurityGroups() error {
 				}
 			}
 		} else {
-			return fmt.Errorf("Security Group %s does not exist", runningGroup)
+			return fmt.Errorf("Running security group [%s] does not exist", runningGroup)
 		}
 	}
 
 	for _, stagingGroup := range globalConfig.StagingSecurityGroups {
 		if group, ok := sgs[stagingGroup]; ok {
 			if !group.DefaultStaging {
-				lo.G.Infof("assigning security group %s as staging security group", stagingGroup)
+				lo.G.Infof("assigning security group [%s] as staging security group", stagingGroup)
 				err = m.CloudController.AssignStagingSecurityGroup(group.GUID)
 				if err != nil {
 					return err
 				}
 			}
 		} else {
-			return fmt.Errorf("Security Group %s does not exist", stagingGroup)
+			return fmt.Errorf("Staging security group %s does not exist", stagingGroup)
 		}
 	}
 

@@ -3,6 +3,7 @@ package organization_test
 import (
 	"fmt"
 
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -42,50 +43,41 @@ var _ = Describe("given OrgManager", func() {
 
 	Context("FindOrg()", func() {
 		It("should return an org", func() {
-			orgs := []*cloudcontroller.Org{
+			orgs := []cfclient.Org{
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
+					Name: "test",
 				},
-				{Entity: cloudcontroller.OrgEntity{
+				{
 					Name: "test2",
-				},
 				},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			org, err := orgManager.FindOrg("test")
 			Ω(err).Should(BeNil())
 			Ω(org).ShouldNot(BeNil())
-			Ω(org.Entity.Name).Should(Equal("test"))
+			Ω(org.Name).Should(Equal("test"))
 		})
 	})
 
 	It("should return an error for unfound org", func() {
-		orgs := []*cloudcontroller.Org{}
+		orgs := []cfclient.Org{}
 		mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-		org, err := orgManager.FindOrg("test")
+		_, err := orgManager.FindOrg("test")
 		Ω(err).ShouldNot(BeNil())
-		Ω(org).Should(BeNil())
 	})
 
 	It("should return an error", func() {
 		mockCloudController.EXPECT().ListOrgs().Return(nil, fmt.Errorf("test"))
-		org, err := orgManager.FindOrg("test")
+		_, err := orgManager.FindOrg("test")
 		Ω(err).ShouldNot(BeNil())
-		Ω(org).Should(BeNil())
 	})
 
 	Context("GetOrgGUID()", func() {
 		It("should return an GUID", func() {
-			orgs := []*cloudcontroller.Org{
+			orgs := []cfclient.Org{
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "theGUID",
-					},
+					Name: "test",
+					Guid: "theGUID",
 				},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
@@ -105,7 +97,7 @@ var _ = Describe("given OrgManager", func() {
 
 	Context("CreateOrgs()", func() {
 		It("should create 2", func() {
-			orgs := []*cloudcontroller.Org{}
+			orgs := []cfclient.Org{}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().CreateOrg("test").Return(nil)
 			mockCloudController.EXPECT().CreateOrg("test2").Return(nil)
@@ -118,23 +110,19 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).Should(HaveOccurred())
 		})
 		It("should error on create org", func() {
-			orgs := []*cloudcontroller.Org{}
+			orgs := []cfclient.Org{}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
 			mockCloudController.EXPECT().CreateOrg("test").Return(fmt.Errorf("test"))
 			err := orgManager.CreateOrgs()
 			Ω(err).Should(HaveOccurred())
 		})
 		It("should not create any orgs", func() {
-			orgs := []*cloudcontroller.Org{
+			orgs := []cfclient.Org{
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
+					Name: "test",
 				},
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test2",
-					},
+					Name: "test2",
 				},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
@@ -142,11 +130,9 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 		It("should not create test2 org", func() {
-			orgs := []*cloudcontroller.Org{
+			orgs := []cfclient.Org{
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
+					Name: "test",
 				},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
@@ -162,38 +148,22 @@ var _ = Describe("given OrgManager", func() {
 		})
 
 		It("should delete 1", func() {
-			orgs := []*cloudcontroller.Org{
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "system",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "system-guid",
-					},
+			orgs := []cfclient.Org{
+				cfclient.Org{
+					Name: "system",
+					Guid: "system-guid",
 				},
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "test-guid",
-					},
+				cfclient.Org{
+					Name: "test",
+					Guid: "test-guid",
 				},
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test2",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "test2-guid",
-					},
+				cfclient.Org{
+					Name: "test2",
+					Guid: "test2-guid",
 				},
-				&cloudcontroller.Org{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "redis-test-ORG-1-2017_10_04-20h06m33.481s",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "redis-guid",
-					},
+				cfclient.Org{
+					Name: "redis-test-ORG-1-2017_10_04-20h06m33.481s",
+					Guid: "redis-guid",
 				},
 			}
 			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
@@ -204,26 +174,18 @@ var _ = Describe("given OrgManager", func() {
 	})
 
 	Context("CreateQuotas()", func() {
-		var orgs []*cloudcontroller.Org
+		var orgs []cfclient.Org
 		BeforeEach(func() {
 			orgManager.Cfg = config.NewManager("./fixtures/config")
 
-			orgs = []*cloudcontroller.Org{
+			orgs = []cfclient.Org{
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "testOrgGUID",
-					},
+					Name: "test",
+					Guid: "testOrgGUID",
 				},
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test2",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "test2OrgGUID",
-					},
+					Name: "test2",
+					Guid: "test2OrgGUID",
 				},
 			}
 		})
@@ -400,26 +362,18 @@ var _ = Describe("given OrgManager", func() {
 	})
 
 	Context("CreatePrivateDomains()", func() {
-		var orgs []*cloudcontroller.Org
+		var orgs []cfclient.Org
 		BeforeEach(func() {
 			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains")
 
-			orgs = []*cloudcontroller.Org{
+			orgs = []cfclient.Org{
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "testOrgGUID",
-					},
+					Name: "test",
+					Guid: "testOrgGUID",
 				},
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test-2",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "testOtherOrgGUID",
-					},
+					Name: "test-2",
+					Guid: "testOtherOrgGUID",
 				},
 			}
 		})
@@ -482,26 +436,18 @@ var _ = Describe("given OrgManager", func() {
 	})
 
 	Context("SharePrivateDomainsDeleteEnabled", func() {
-		var orgs []*cloudcontroller.Org
+		var orgs []cfclient.Org
 		BeforeEach(func() {
 			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains")
 
-			orgs = []*cloudcontroller.Org{
+			orgs = []cfclient.Org{
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "testOrgGUID",
-					},
+					Name: "test",
+					Guid: "testOrgGUID",
 				},
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test-2",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "testOtherOrgGUID",
-					},
+					Name: "test-2",
+					Guid: "testOtherOrgGUID",
 				},
 			}
 		})
@@ -584,26 +530,18 @@ var _ = Describe("given OrgManager", func() {
 		})
 	})
 	Context("SharePrivateDomainsDeleteDisabled", func() {
-		var orgs []*cloudcontroller.Org
+		var orgs []cfclient.Org
 		BeforeEach(func() {
 			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains-no-delete")
 
-			orgs = []*cloudcontroller.Org{
+			orgs = []cfclient.Org{
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "testOrgGUID",
-					},
+					Name: "test",
+					Guid: "testOrgGUID",
 				},
 				{
-					Entity: cloudcontroller.OrgEntity{
-						Name: "test-2",
-					},
-					MetaData: cloudcontroller.OrgMetaData{
-						GUID: "testOtherOrgGUID",
-					},
+					Name: "test-2",
+					Guid: "testOtherOrgGUID",
 				},
 			}
 		})

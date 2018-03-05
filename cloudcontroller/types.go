@@ -1,11 +1,14 @@
 package cloudcontroller
 
-import "github.com/pivotalservices/cf-mgmt/http"
+import (
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/pivotalservices/cf-mgmt/http"
+)
 
 type Manager interface {
 	CreateSpace(spaceName, orgGUID string) error
 	DeleteSpace(spaceGUID string) error
-	ListSpaces(orgGUID string) ([]*Space, error)
+	ListSpaces(orgGUID string) ([]cfclient.Space, error)
 	ListSpaceSecurityGroups(spaceGUID string) (map[string]string, error)
 	AddUserToSpaceRole(userName, role, spaceGUID string) error
 	UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
@@ -31,8 +34,8 @@ type Manager interface {
 	CreateOrg(orgName string) error
 	DeleteOrg(orgGUID string) error
 	DeleteOrgByName(orgName string) error
-	ListOrgs() ([]*Org, error)
-	ListIsolationSegments() ([]*IsoSegment, error)
+	ListOrgs() ([]cfclient.Org, error)
+	ListIsolationSegments() ([]cfclient.IsolationSegment, error)
 	AddUserToOrgRole(userName, role, orgGUID string) error
 	AddUserToOrg(userName, orgGUID string) error
 
@@ -44,9 +47,10 @@ type Manager interface {
 
 	GetCFUsers(entityGUID, entityType, role string) (map[string]string, error)
 
-	RemoveCFUser(entityGUID, entityType, userGUID, role string) error
+	RemoveCFUserByUserName(entityGUID, entityType, userName, role string) error
 	//Returns a specific quota definition for either an org or space
-	QuotaDef(quotaDefGUID string, entityType string) (*Quota, error)
+	OrgQuotaByName(name string) (cfclient.OrgQuota, error)
+	SpaceQuotaByName(name string) (cfclient.SpaceQuota, error)
 
 	ListAllPrivateDomains() (map[string]PrivateDomainInfo, error)
 	ListOrgOwnedPrivateDomains(orgGUID string) (map[string]string, error)
@@ -58,10 +62,10 @@ type Manager interface {
 }
 
 type DefaultManager struct {
-	Host  string
-	Token string
-	HTTP  http.Manager
-	Peek  bool
+	Client cfclient.Client
+	Token  string
+	HTTP   http.Manager
+	Peek   bool
 }
 
 //PrivateDomainResources -

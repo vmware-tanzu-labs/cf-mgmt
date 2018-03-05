@@ -7,8 +7,8 @@ package mock_organization
 import (
 	reflect "reflect"
 
+	go_cfclient "github.com/cloudfoundry-community/go-cfclient"
 	gomock "github.com/golang/mock/gomock"
-	cloudcontroller "github.com/pivotalservices/cf-mgmt/cloudcontroller"
 )
 
 // MockManager is a mock of Manager interface
@@ -83,9 +83,9 @@ func (mr *MockManagerMockRecorder) DeleteOrgs() *gomock.Call {
 }
 
 // FindOrg mocks base method
-func (m *MockManager) FindOrg(arg0 string) (*cloudcontroller.Org, error) {
+func (m *MockManager) FindOrg(arg0 string) (go_cfclient.Org, error) {
 	ret := m.ctrl.Call(m, "FindOrg", arg0)
-	ret0, _ := ret[0].(*cloudcontroller.Org)
+	ret0, _ := ret[0].(go_cfclient.Org)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
@@ -45,7 +46,7 @@ func (m *DefaultOrgManager) CreateQuotas() error {
 		if err != nil {
 			return err
 		}
-		quotaName := org.Entity.Name
+		quotaName := org.Name
 		quota := cloudcontroller.QuotaEntity{
 			Name:                    quotaName,
 			MemoryLimit:             input.MemoryLimit,
@@ -64,8 +65,8 @@ func (m *DefaultOrgManager) CreateQuotas() error {
 			if err = m.CloudController.UpdateQuota(quotaGUID, quota); err != nil {
 				return err
 			}
-			lo.G.Debug("Assigning", quotaName, "to", org.Entity.Name)
-			if err = m.CloudController.AssignQuotaToOrg(org.MetaData.GUID, quotaGUID); err != nil {
+			lo.G.Debug("Assigning", quotaName, "to", org.Name)
+			if err = m.CloudController.AssignQuotaToOrg(org.Guid, quotaGUID); err != nil {
 				return err
 			}
 		} else {
@@ -74,8 +75,8 @@ func (m *DefaultOrgManager) CreateQuotas() error {
 			if err != nil {
 				return err
 			}
-			lo.G.Debug("Assigning", quotaName, "to", org.Entity.Name)
-			if err := m.CloudController.AssignQuotaToOrg(org.MetaData.GUID, targetQuotaGUID); err != nil {
+			lo.G.Debug("Assigning", quotaName, "to", org.Name)
+			if err := m.CloudController.AssignQuotaToOrg(org.Guid, targetQuotaGUID); err != nil {
 				return err
 			}
 		}
@@ -88,7 +89,7 @@ func (m *DefaultOrgManager) GetOrgGUID(orgName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return org.MetaData.GUID, nil
+	return org.Guid, nil
 }
 
 //CreateOrgs -
@@ -243,19 +244,19 @@ func (m *DefaultOrgManager) SharePrivateDomains() error {
 	return nil
 }
 
-func (m *DefaultOrgManager) getOrgName(orgs []*cloudcontroller.Org, orgGUID string) (string, error) {
+func (m *DefaultOrgManager) getOrgName(orgs []cfclient.Org, orgGUID string) (string, error) {
 	for _, org := range orgs {
-		if org.MetaData.GUID == orgGUID {
-			return org.Entity.Name, nil
+		if org.Guid == orgGUID {
+			return org.Name, nil
 		}
 	}
 	return "", fmt.Errorf("org for GUID %s does not exist", orgGUID)
 }
 
-func (m *DefaultOrgManager) getOrgGUID(orgs []*cloudcontroller.Org, orgName string) (string, error) {
+func (m *DefaultOrgManager) getOrgGUID(orgs []cfclient.Org, orgName string) (string, error) {
 	for _, org := range orgs {
-		if org.Entity.Name == orgName {
-			return org.MetaData.GUID, nil
+		if org.Name == orgName {
+			return org.Guid, nil
 		}
 	}
 	return "", fmt.Errorf("org %s does not exist", orgName)
@@ -284,20 +285,20 @@ func (m *DefaultOrgManager) DeleteOrgs() error {
 		return err
 	}
 
-	orgsToDelete := make([]*cloudcontroller.Org, 0)
+	orgsToDelete := make([]cfclient.Org, 0)
 	for _, org := range orgs {
-		if _, exists := configuredOrgs[org.Entity.Name]; !exists {
-			if shouldDeleteOrg(org.Entity.Name, protectedOrgs) {
+		if _, exists := configuredOrgs[org.Name]; !exists {
+			if shouldDeleteOrg(org.Name, protectedOrgs) {
 				orgsToDelete = append(orgsToDelete, org)
 			} else {
-				lo.G.Infof("Protected org [%s] - will not be deleted", org.Entity.Name)
+				lo.G.Infof("Protected org [%s] - will not be deleted", org.Name)
 			}
 		}
 	}
 
 	for _, org := range orgsToDelete {
-		lo.G.Infof("Deleting [%s] org", org.Entity.Name)
-		if err := m.CloudController.DeleteOrg(org.MetaData.GUID); err != nil {
+		lo.G.Infof("Deleting [%s] org", org.Name)
+		if err := m.CloudController.DeleteOrg(org.Guid); err != nil {
 			return err
 		}
 	}
@@ -315,9 +316,9 @@ func shouldDeleteOrg(orgName string, protectedOrgs []string) bool {
 	return true
 }
 
-func doesOrgExist(orgName string, orgs []*cloudcontroller.Org) bool {
+func doesOrgExist(orgName string, orgs []cfclient.Org) bool {
 	for _, org := range orgs {
-		if org.Entity.Name == orgName {
+		if org.Name == orgName {
 			return true
 		}
 	}
@@ -325,17 +326,17 @@ func doesOrgExist(orgName string, orgs []*cloudcontroller.Org) bool {
 }
 
 //FindOrg -
-func (m *DefaultOrgManager) FindOrg(orgName string) (*cloudcontroller.Org, error) {
+func (m *DefaultOrgManager) FindOrg(orgName string) (cfclient.Org, error) {
 	orgs, err := m.CloudController.ListOrgs()
 	if err != nil {
-		return nil, err
+		return cfclient.Org{}, err
 	}
 	for _, theOrg := range orgs {
-		if theOrg.Entity.Name == orgName {
+		if theOrg.Name == orgName {
 			return theOrg, nil
 		}
 	}
-	return nil, fmt.Errorf("org %q not found", orgName)
+	return cfclient.Org{}, fmt.Errorf("org %q not found", orgName)
 }
 
 //UpdateOrgUsers -
@@ -374,8 +375,8 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *config.Or
 
 	err = m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
-			OrgName:        org.Entity.Name,
-			OrgGUID:        org.MetaData.GUID,
+			OrgName:        org.Name,
+			OrgGUID:        org.Guid,
 			Role:           "billing_managers",
 			LdapGroupNames: input.GetBillingManagerGroups(),
 			LdapUsers:      input.BillingManager.LDAPUsers,
@@ -389,8 +390,8 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *config.Or
 
 	err = m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
-			OrgName:        org.Entity.Name,
-			OrgGUID:        org.MetaData.GUID,
+			OrgName:        org.Name,
+			OrgGUID:        org.Guid,
 			Role:           "auditors",
 			LdapGroupNames: input.GetAuditorGroups(),
 			LdapUsers:      input.Auditor.LDAPUsers,
@@ -404,8 +405,8 @@ func (m *DefaultOrgManager) updateOrgUsers(config *ldap.Config, input *config.Or
 
 	return m.UserMgr.UpdateOrgUsers(
 		config, uaacUsers, UpdateUsersInput{
-			OrgName:        org.Entity.Name,
-			OrgGUID:        org.MetaData.GUID,
+			OrgName:        org.Name,
+			OrgGUID:        org.Guid,
 			Role:           "managers",
 			LdapGroupNames: input.GetManagerGroups(),
 			LdapUsers:      input.Manager.LDAPUsers,

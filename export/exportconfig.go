@@ -88,7 +88,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	lo.G.Debugf("Orgs to process: %s", orgs)
 
 	for _, org := range orgs {
-		orgName := org.Entity.Name
+		orgName := org.Name
 		if _, ok := excludedOrgs[orgName]; ok {
 			lo.G.Infof("Skipping org: %s as it is ignored from import", orgName)
 			continue
@@ -97,30 +97,37 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		lo.G.Infof("Processing org: %s ", orgName)
 		orgConfig := &config.OrgConfig{Org: orgName}
 		//Add users
-		addOrgUsers(orgConfig, im.CloudController, userIDToUserMap, org.MetaData.GUID)
+		addOrgUsers(orgConfig, im.CloudController, userIDToUserMap, org.Guid)
 		//Add Quota definition if applicable
-		if org.Entity.QuotaDefinitionGUID != "" {
-			quota := quotaDefinition(im.CloudController, org.Entity.QuotaDefinitionGUID, organization.ORGS)
-			orgConfig.EnableOrgQuota = quota.IsQuotaEnabled()
-			orgConfig.MemoryLimit = quota.GetMemoryLimit()
-			orgConfig.InstanceMemoryLimit = quota.GetInstanceMemoryLimit()
-			orgConfig.TotalRoutes = quota.GetTotalRoutes()
-			orgConfig.TotalServices = quota.GetTotalServices()
-			orgConfig.PaidServicePlansAllowed = quota.IsPaidServicesAllowed()
-			orgConfig.TotalPrivateDomains = quota.TotalPrivateDomains
-			orgConfig.TotalReservedRoutePorts = quota.TotalReservedRoutePorts
-			orgConfig.TotalServiceKeys = quota.TotalServiceKeys
-			orgConfig.AppInstanceLimit = quota.AppInstanceLimit
+		if org.QuotaDefinitionGuid != "" {
+			quota, err := org.Quota()
+			if err != nil {
+				return err
+			}
+			if quota != nil {
+				if quota.Name == orgName {
+					orgConfig.EnableOrgQuota = true
+				}
+				orgConfig.MemoryLimit = quota.MemoryLimit
+				orgConfig.InstanceMemoryLimit = quota.InstanceMemoryLimit
+				orgConfig.TotalRoutes = quota.TotalRoutes
+				orgConfig.TotalServices = quota.TotalServices
+				orgConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
+				orgConfig.TotalPrivateDomains = quota.TotalPrivateDomains
+				orgConfig.TotalReservedRoutePorts = quota.TotalReservedRoutePorts
+				orgConfig.TotalServiceKeys = quota.TotalServiceKeys
+				orgConfig.AppInstanceLimit = quota.AppInstanceLimit
+			}
 		}
-		if org.Entity.DefaultIsolationSegmentGUID != "" {
+		if org.DefaultIsolationSegmentGuid != "" {
 			for _, isosegment := range isolationSegments {
-				if isosegment.GUID == org.Entity.DefaultIsolationSegmentGUID {
+				if isosegment.GUID == org.DefaultIsolationSegmentGuid {
 					orgConfig.DefaultIsoSegment = isosegment.Name
 				}
 			}
 		}
 
-		privatedomains, err := im.CloudController.ListOrgSharedPrivateDomains(org.MetaData.GUID)
+		privatedomains, err := im.CloudController.ListOrgSharedPrivateDomains(org.Guid)
 		if err != nil {
 			return err
 		}
@@ -128,7 +135,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			orgConfig.SharedPrivateDomains = append(orgConfig.SharedPrivateDomains, privatedomain)
 		}
 
-		privatedomains, err = im.CloudController.ListOrgOwnedPrivateDomains(org.MetaData.GUID)
+		privatedomains, err = im.CloudController.ListOrgOwnedPrivateDomains(org.Guid)
 		if err != nil {
 			return err
 		}
@@ -139,48 +146,54 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 
 		lo.G.Infof("Done creating org %s", orgConfig.Org)
 		lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
-		spaces, _ := im.CloudController.ListSpaces(org.MetaData.GUID)
+		spaces, _ := im.CloudController.ListSpaces(org.Guid)
 		lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
 		for _, orgSpace := range spaces {
-			spaceName := orgSpace.Entity.Name
+			spaceName := orgSpace.Name
 			if _, ok := excludedSpaces[spaceName]; ok {
 				lo.G.Infof("Skipping space: %s as it is ignored from import", spaceName)
 				continue
 			}
 			lo.G.Infof("Processing space: %s", spaceName)
 
-			spaceConfig := &config.SpaceConfig{Org: org.Entity.Name, Space: spaceName}
+			spaceConfig := &config.SpaceConfig{Org: org.Name, Space: spaceName}
 			//Add users
-			addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, orgSpace.MetaData.GUID)
+			addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, orgSpace.Guid)
 			//Add Quota definition if applicable
-			if orgSpace.Entity.QuotaDefinitionGUID != "" {
-				quota := quotaDefinition(im.CloudController, orgSpace.Entity.QuotaDefinitionGUID, space.SPACES)
-				spaceConfig.EnableSpaceQuota = quota.IsQuotaEnabled()
-				spaceConfig.MemoryLimit = quota.GetMemoryLimit()
-				spaceConfig.InstanceMemoryLimit = quota.GetInstanceMemoryLimit()
-				spaceConfig.TotalRoutes = quota.GetTotalRoutes()
-				spaceConfig.TotalServices = quota.GetTotalServices()
-				spaceConfig.PaidServicePlansAllowed = quota.IsPaidServicesAllowed()
-				spaceConfig.TotalPrivateDomains = quota.TotalPrivateDomains
-				spaceConfig.TotalReservedRoutePorts = quota.TotalReservedRoutePorts
-				spaceConfig.TotalServiceKeys = quota.TotalServiceKeys
-				spaceConfig.AppInstanceLimit = quota.AppInstanceLimit
+			if orgSpace.QuotaDefinitionGuid != "" {
+				quota, err := orgSpace.Quota()
+				if err != nil {
+					return err
+				}
+				if quota != nil {
+					if quota.Name == orgSpace.Name {
+						spaceConfig.EnableSpaceQuota = true
+					}
+					spaceConfig.MemoryLimit = quota.MemoryLimit
+					spaceConfig.InstanceMemoryLimit = quota.InstanceMemoryLimit
+					spaceConfig.TotalRoutes = quota.TotalRoutes
+					spaceConfig.TotalServices = quota.TotalServices
+					spaceConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
+					spaceConfig.TotalReservedRoutePorts = quota.TotalReservedRoutePorts
+					spaceConfig.TotalServiceKeys = quota.TotalServiceKeys
+					spaceConfig.AppInstanceLimit = quota.AppInstanceLimit
+				}
 			}
 
-			if orgSpace.Entity.IsolationSegmentGUID != "" {
+			if orgSpace.IsolationSegmentGuid != "" {
 				for _, isosegment := range isolationSegments {
-					if isosegment.GUID == orgSpace.Entity.IsolationSegmentGUID {
+					if isosegment.GUID == orgSpace.IsolationSegmentGuid {
 						spaceConfig.IsoSegment = isosegment.Name
 					}
 				}
 
 			}
-			if orgSpace.Entity.AllowSSH {
+			if orgSpace.AllowSSH {
 				spaceConfig.AllowSSH = true
 			}
 
 			spaceSGName := fmt.Sprintf("%s-%s", orgName, spaceName)
-			if spaceSGNames, err := im.CloudController.ListSpaceSecurityGroups(orgSpace.MetaData.GUID); err == nil {
+			if spaceSGNames, err := im.CloudController.ListSpaceSecurityGroups(orgSpace.Guid); err == nil {
 				for securityGroupName, _ := range spaceSGNames {
 					lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
 					if securityGroupName != spaceSGName {
@@ -230,13 +243,13 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	return configMgr.SaveGlobalConfig(globalConfig)
 }
 
-func quotaDefinition(controller cc.Manager, quotaDefinitionGUID, entityType string) cc.QuotaEntity {
-	quotaDef, _ := controller.QuotaDef(quotaDefinitionGUID, entityType)
-	if quotaDef.Entity.Name != "default" {
+/*func quotaDefinition(controller cc.Manager, quotaDefinitionGUID, entityType string) cc.QuotaEntity {
+	quotaDef, _ := controller.Org(quotaDefinitionGUID, entityType)
+	if quotaDef.Name != "default" {
 		return quotaDef.Entity
 	}
 	return cc.QuotaEntity{}
-}
+}*/
 
 func addOrgUsers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaa.User, orgGUID string) {
 	addOrgManagers(orgConfig, controller, userIDToUserMap, orgGUID)

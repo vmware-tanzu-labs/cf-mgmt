@@ -104,9 +104,9 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 
 	if updateUsersInput.RemoveUsers {
 		lo.G.Debugf("Deleting users for org: %s", updateUsersInput.OrgName)
-		for orgUser, orgUserGUID := range orgUsers {
+		for orgUser, _ := range orgUsers {
 			lo.G.Infof("removing user: %s from org: %s and role: %s", orgUser, updateUsersInput.OrgName, updateUsersInput.Role)
-			err = m.cloudController.RemoveCFUser(updateUsersInput.OrgGUID, ORGS, orgUserGUID, updateUsersInput.Role)
+			err = m.cloudController.RemoveCFUserByUserName(updateUsersInput.OrgGUID, ORGS, orgUser, updateUsersInput.Role)
 			if err != nil {
 				lo.G.Errorf("Unable to remove user : %s from org %s with role %s", orgUser, updateUsersInput.OrgGUID, updateUsersInput.Role)
 				lo.G.Errorf("Cloud controller API error : %s", err)

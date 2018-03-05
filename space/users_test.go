@@ -366,9 +366,9 @@ var _ = Describe("given SpaceManager", func() {
 			}
 
 			mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-			mockCloudController.EXPECT().RemoveCFUser("my-space-guid", "spaces", "cwashburn", "my-role").Return(nil)
-			mockCloudController.EXPECT().RemoveCFUser("my-space-guid", "spaces", "cwashburn1", "my-role").Return(nil)
-			mockCloudController.EXPECT().RemoveCFUser("my-space-guid", "spaces", "cwashburn2", "my-role").Return(nil)
+			mockCloudController.EXPECT().RemoveCFUserByUserName("my-space-guid", "spaces", "cwashburn", "my-role").Return(nil)
+			mockCloudController.EXPECT().RemoveCFUserByUserName("my-space-guid", "spaces", "cwashburn1", "my-role").Return(nil)
+			mockCloudController.EXPECT().RemoveCFUserByUserName("my-space-guid", "spaces", "cwashburn2", "my-role").Return(nil)
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
 		})
@@ -412,7 +412,7 @@ var _ = Describe("given SpaceManager", func() {
 			mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
 
 			mockCloudController.EXPECT().GetCFUsers("space-guid", "spaces", "space-role-name").Return(spaceUsers, nil)
-			mockCloudController.EXPECT().RemoveCFUser("space-guid", "spaces", "asmith-space-user-guid", "space-role-name").Return(nil)
+			mockCloudController.EXPECT().RemoveCFUserByUserName("space-guid", "spaces", "alex.j.smith@example.com", "space-role-name").Return(nil)
 			err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
 			Ω(err).Should(BeNil())
 		})

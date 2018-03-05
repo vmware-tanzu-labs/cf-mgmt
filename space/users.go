@@ -105,9 +105,9 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaaUsers map[string]
 	}
 	if updateUsersInput.RemoveUsers {
 		lo.G.Debugf("Deleting users for org/space: %s/%s", updateUsersInput.OrgName, updateUsersInput.SpaceName)
-		for spaceUser, spaceUserGUID := range spaceUsers {
+		for spaceUser, _ := range spaceUsers {
 			lo.G.Infof("removing user: %s from space: %s and role: %s", spaceUser, updateUsersInput.SpaceName, updateUsersInput.Role)
-			err = m.cloudController.RemoveCFUser(updateUsersInput.SpaceGUID, SPACES, spaceUserGUID, updateUsersInput.Role)
+			err = m.cloudController.RemoveCFUserByUserName(updateUsersInput.SpaceGUID, SPACES, spaceUser, updateUsersInput.Role)
 			if err != nil {
 				lo.G.Errorf("Unable to remove user : %s from space %s role in space : %s", spaceUser, updateUsersInput.Role, updateUsersInput.SpaceName)
 				lo.G.Errorf("Cloud controller API error: %s", err)

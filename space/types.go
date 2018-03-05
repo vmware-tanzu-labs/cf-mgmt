@@ -1,6 +1,7 @@
 package space
 
 import (
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
@@ -15,7 +16,7 @@ const ROLE_SPACE_AUDITORS = "auditors"
 
 //Manager -
 type Manager interface {
-	FindSpace(orgName, spaceName string) (*cloudcontroller.Space, error)
+	FindSpace(orgName, spaceName string) (cfclient.Space, error)
 	CreateSpaces(configDir, ldapBindPassword string) error
 	UpdateSpaces(configDir string) (err error)
 	UpdateSpaceUsers(configDir, ldapBindPassword string) error

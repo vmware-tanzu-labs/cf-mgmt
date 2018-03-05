@@ -66,18 +66,11 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	} else {
 		cfToken = uaacToken
 	}
-
-	cfMgmt.CloudController = cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken, peek)
-
-	/*c := &cfclient.Config{
-		ApiAddress:        fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
-		SkipSslValidation: true,
-		Token:             cfToken,
-		UserAgent:         fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION),
+	ccManager, err := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken, configcommands.VERSION, peek)
+	if err != nil {
+		return nil, err
 	}
-
-	client, _ := cfclient.NewClient(c)*/
-
+	cfMgmt.CloudController = ccManager
 	cfMgmt.OrgManager = organization.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfg)
 	cfMgmt.SpaceManager = space.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfMgmt.OrgManager, cfg)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(cfMgmt.CloudController, cfg)
