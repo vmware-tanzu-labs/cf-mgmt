@@ -17,7 +17,12 @@ func (c *ExportConfigurationCommand) Execute([]string) error {
 		lo.G.Errorf("Unable to initialize cf-mgmt. Error : %s", err)
 		return err
 	} else {
-		exportManager := export.NewExportManager(c.ConfigDirectory, cfMgmt.UAAManager, cfMgmt.CloudController, cfMgmt.SpaceManager, cfMgmt.SecurityGroupManager)
+		exportManager := export.NewExportManager(c.ConfigDirectory,
+			cfMgmt.UAAManager,
+			cfMgmt.CloudController,
+			cfMgmt.SpaceManager,
+			cfMgmt.OrgManager,
+			cfMgmt.SecurityGroupManager)
 		excludedOrgs := make(map[string]string)
 		excludedOrgs["system"] = "system"
 		for _, org := range c.ExcludedOrgs {

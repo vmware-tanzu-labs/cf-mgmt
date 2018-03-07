@@ -67,10 +67,6 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	} else {
 		cfToken = uaacToken
 	}
-	ccManager, err := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain), cfToken, configcommands.VERSION, peek)
-	if err != nil {
-		return nil, err
-	}
 
 	c := &cfclient.Config{
 		ApiAddress:        fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
@@ -83,9 +79,9 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	if err != nil {
 		return nil, err
 	}
-	cfMgmt.CloudController = ccManager
+	cfMgmt.CloudController = cloudcontroller.NewManager(client, peek)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfg, peek)
-	cfMgmt.OrgManager = organization.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfg)
+	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.UAAManager, cfg, peek)
 	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgManager, cfMgmt.SecurityGroupManager, cfg, peek)
 
 	if isoSegmentUpdater, err := isosegment.NewUpdater(configcommands.VERSION, cfMgmt.SystemDomain, cfToken, baseCommand.UserID, baseCommand.ClientSecret, cfg); err == nil {

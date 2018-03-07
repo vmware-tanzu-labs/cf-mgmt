@@ -9,7 +9,6 @@ import (
 
 	go_cfclient "github.com/cloudfoundry-community/go-cfclient"
 	gomock "github.com/golang/mock/gomock"
-	cloudcontroller "github.com/pivotalservices/cf-mgmt/cloudcontroller"
 )
 
 // MockManager is a mock of Manager interface
@@ -35,155 +34,6 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 	return m.recorder
 }
 
-// AddUserToOrg mocks base method
-func (m *MockManager) AddUserToOrg(arg0, arg1 string) error {
-	ret := m.ctrl.Call(m, "AddUserToOrg", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddUserToOrg indicates an expected call of AddUserToOrg
-func (mr *MockManagerMockRecorder) AddUserToOrg(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUserToOrg", reflect.TypeOf((*MockManager)(nil).AddUserToOrg), arg0, arg1)
-}
-
-// AddUserToOrgRole mocks base method
-func (m *MockManager) AddUserToOrgRole(arg0, arg1, arg2 string) error {
-	ret := m.ctrl.Call(m, "AddUserToOrgRole", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddUserToOrgRole indicates an expected call of AddUserToOrgRole
-func (mr *MockManagerMockRecorder) AddUserToOrgRole(arg0, arg1, arg2 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUserToOrgRole", reflect.TypeOf((*MockManager)(nil).AddUserToOrgRole), arg0, arg1, arg2)
-}
-
-// AssignQuotaToOrg mocks base method
-func (m *MockManager) AssignQuotaToOrg(arg0, arg1 string) error {
-	ret := m.ctrl.Call(m, "AssignQuotaToOrg", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AssignQuotaToOrg indicates an expected call of AssignQuotaToOrg
-func (mr *MockManagerMockRecorder) AssignQuotaToOrg(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignQuotaToOrg", reflect.TypeOf((*MockManager)(nil).AssignQuotaToOrg), arg0, arg1)
-}
-
-// CreateOrg mocks base method
-func (m *MockManager) CreateOrg(arg0 string) error {
-	ret := m.ctrl.Call(m, "CreateOrg", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateOrg indicates an expected call of CreateOrg
-func (mr *MockManagerMockRecorder) CreateOrg(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrg", reflect.TypeOf((*MockManager)(nil).CreateOrg), arg0)
-}
-
-// CreatePrivateDomain mocks base method
-func (m *MockManager) CreatePrivateDomain(arg0, arg1 string) (string, error) {
-	ret := m.ctrl.Call(m, "CreatePrivateDomain", arg0, arg1)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreatePrivateDomain indicates an expected call of CreatePrivateDomain
-func (mr *MockManagerMockRecorder) CreatePrivateDomain(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePrivateDomain", reflect.TypeOf((*MockManager)(nil).CreatePrivateDomain), arg0, arg1)
-}
-
-// CreateQuota mocks base method
-func (m *MockManager) CreateQuota(arg0 cloudcontroller.QuotaEntity) (string, error) {
-	ret := m.ctrl.Call(m, "CreateQuota", arg0)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateQuota indicates an expected call of CreateQuota
-func (mr *MockManagerMockRecorder) CreateQuota(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateQuota", reflect.TypeOf((*MockManager)(nil).CreateQuota), arg0)
-}
-
-// DeleteOrg mocks base method
-func (m *MockManager) DeleteOrg(arg0 string) error {
-	ret := m.ctrl.Call(m, "DeleteOrg", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteOrg indicates an expected call of DeleteOrg
-func (mr *MockManagerMockRecorder) DeleteOrg(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrg", reflect.TypeOf((*MockManager)(nil).DeleteOrg), arg0)
-}
-
-// DeleteOrgByName mocks base method
-func (m *MockManager) DeleteOrgByName(arg0 string) error {
-	ret := m.ctrl.Call(m, "DeleteOrgByName", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteOrgByName indicates an expected call of DeleteOrgByName
-func (mr *MockManagerMockRecorder) DeleteOrgByName(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrgByName", reflect.TypeOf((*MockManager)(nil).DeleteOrgByName), arg0)
-}
-
-// DeletePrivateDomain mocks base method
-func (m *MockManager) DeletePrivateDomain(arg0 string) error {
-	ret := m.ctrl.Call(m, "DeletePrivateDomain", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePrivateDomain indicates an expected call of DeletePrivateDomain
-func (mr *MockManagerMockRecorder) DeletePrivateDomain(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePrivateDomain", reflect.TypeOf((*MockManager)(nil).DeletePrivateDomain), arg0)
-}
-
-// GetCFUsers mocks base method
-func (m *MockManager) GetCFUsers(arg0, arg1, arg2 string) (map[string]string, error) {
-	ret := m.ctrl.Call(m, "GetCFUsers", arg0, arg1, arg2)
-	ret0, _ := ret[0].(map[string]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetCFUsers indicates an expected call of GetCFUsers
-func (mr *MockManagerMockRecorder) GetCFUsers(arg0, arg1, arg2 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCFUsers", reflect.TypeOf((*MockManager)(nil).GetCFUsers), arg0, arg1, arg2)
-}
-
-// ListAllOrgQuotas mocks base method
-func (m *MockManager) ListAllOrgQuotas() (map[string]string, error) {
-	ret := m.ctrl.Call(m, "ListAllOrgQuotas")
-	ret0, _ := ret[0].(map[string]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListAllOrgQuotas indicates an expected call of ListAllOrgQuotas
-func (mr *MockManagerMockRecorder) ListAllOrgQuotas() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllOrgQuotas", reflect.TypeOf((*MockManager)(nil).ListAllOrgQuotas))
-}
-
-// ListAllPrivateDomains mocks base method
-func (m *MockManager) ListAllPrivateDomains() (map[string]cloudcontroller.PrivateDomainInfo, error) {
-	ret := m.ctrl.Call(m, "ListAllPrivateDomains")
-	ret0, _ := ret[0].(map[string]cloudcontroller.PrivateDomainInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListAllPrivateDomains indicates an expected call of ListAllPrivateDomains
-func (mr *MockManagerMockRecorder) ListAllPrivateDomains() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllPrivateDomains", reflect.TypeOf((*MockManager)(nil).ListAllPrivateDomains))
-}
-
 // ListIsolationSegments mocks base method
 func (m *MockManager) ListIsolationSegments() ([]go_cfclient.IsolationSegment, error) {
 	ret := m.ctrl.Call(m, "ListIsolationSegments")
@@ -195,45 +45,6 @@ func (m *MockManager) ListIsolationSegments() ([]go_cfclient.IsolationSegment, e
 // ListIsolationSegments indicates an expected call of ListIsolationSegments
 func (mr *MockManagerMockRecorder) ListIsolationSegments() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListIsolationSegments", reflect.TypeOf((*MockManager)(nil).ListIsolationSegments))
-}
-
-// ListOrgOwnedPrivateDomains mocks base method
-func (m *MockManager) ListOrgOwnedPrivateDomains(arg0 string) (map[string]string, error) {
-	ret := m.ctrl.Call(m, "ListOrgOwnedPrivateDomains", arg0)
-	ret0, _ := ret[0].(map[string]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListOrgOwnedPrivateDomains indicates an expected call of ListOrgOwnedPrivateDomains
-func (mr *MockManagerMockRecorder) ListOrgOwnedPrivateDomains(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrgOwnedPrivateDomains", reflect.TypeOf((*MockManager)(nil).ListOrgOwnedPrivateDomains), arg0)
-}
-
-// ListOrgSharedPrivateDomains mocks base method
-func (m *MockManager) ListOrgSharedPrivateDomains(arg0 string) (map[string]string, error) {
-	ret := m.ctrl.Call(m, "ListOrgSharedPrivateDomains", arg0)
-	ret0, _ := ret[0].(map[string]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListOrgSharedPrivateDomains indicates an expected call of ListOrgSharedPrivateDomains
-func (mr *MockManagerMockRecorder) ListOrgSharedPrivateDomains(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrgSharedPrivateDomains", reflect.TypeOf((*MockManager)(nil).ListOrgSharedPrivateDomains), arg0)
-}
-
-// ListOrgs mocks base method
-func (m *MockManager) ListOrgs() ([]go_cfclient.Org, error) {
-	ret := m.ctrl.Call(m, "ListOrgs")
-	ret0, _ := ret[0].([]go_cfclient.Org)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListOrgs indicates an expected call of ListOrgs
-func (mr *MockManagerMockRecorder) ListOrgs() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrgs", reflect.TypeOf((*MockManager)(nil).ListOrgs))
 }
 
 // OrgQuotaByName mocks base method
@@ -249,42 +60,6 @@ func (mr *MockManagerMockRecorder) OrgQuotaByName(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OrgQuotaByName", reflect.TypeOf((*MockManager)(nil).OrgQuotaByName), arg0)
 }
 
-// RemoveCFUserByUserName mocks base method
-func (m *MockManager) RemoveCFUserByUserName(arg0, arg1, arg2, arg3 string) error {
-	ret := m.ctrl.Call(m, "RemoveCFUserByUserName", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RemoveCFUserByUserName indicates an expected call of RemoveCFUserByUserName
-func (mr *MockManagerMockRecorder) RemoveCFUserByUserName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveCFUserByUserName", reflect.TypeOf((*MockManager)(nil).RemoveCFUserByUserName), arg0, arg1, arg2, arg3)
-}
-
-// RemoveSharedPrivateDomain mocks base method
-func (m *MockManager) RemoveSharedPrivateDomain(arg0, arg1 string) error {
-	ret := m.ctrl.Call(m, "RemoveSharedPrivateDomain", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RemoveSharedPrivateDomain indicates an expected call of RemoveSharedPrivateDomain
-func (mr *MockManagerMockRecorder) RemoveSharedPrivateDomain(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveSharedPrivateDomain", reflect.TypeOf((*MockManager)(nil).RemoveSharedPrivateDomain), arg0, arg1)
-}
-
-// SharePrivateDomain mocks base method
-func (m *MockManager) SharePrivateDomain(arg0, arg1 string) error {
-	ret := m.ctrl.Call(m, "SharePrivateDomain", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SharePrivateDomain indicates an expected call of SharePrivateDomain
-func (mr *MockManagerMockRecorder) SharePrivateDomain(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SharePrivateDomain", reflect.TypeOf((*MockManager)(nil).SharePrivateDomain), arg0, arg1)
-}
-
 // SpaceQuotaByName mocks base method
 func (m *MockManager) SpaceQuotaByName(arg0 string) (go_cfclient.SpaceQuota, error) {
 	ret := m.ctrl.Call(m, "SpaceQuotaByName", arg0)
@@ -296,16 +71,4 @@ func (m *MockManager) SpaceQuotaByName(arg0 string) (go_cfclient.SpaceQuota, err
 // SpaceQuotaByName indicates an expected call of SpaceQuotaByName
 func (mr *MockManagerMockRecorder) SpaceQuotaByName(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpaceQuotaByName", reflect.TypeOf((*MockManager)(nil).SpaceQuotaByName), arg0)
-}
-
-// UpdateQuota mocks base method
-func (m *MockManager) UpdateQuota(arg0 string, arg1 cloudcontroller.QuotaEntity) error {
-	ret := m.ctrl.Call(m, "UpdateQuota", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateQuota indicates an expected call of UpdateQuota
-func (mr *MockManagerMockRecorder) UpdateQuota(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuota", reflect.TypeOf((*MockManager)(nil).UpdateQuota), arg0, arg1)
 }

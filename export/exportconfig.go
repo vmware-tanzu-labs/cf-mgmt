@@ -18,12 +18,14 @@ func NewExportManager(
 	uaaMgr uaa.Manager,
 	cloudController cc.Manager,
 	spaceManager space.Manager,
+	orgManager organization.Manager,
 	securityGroupManager securitygroup.Manager) Manager {
 	return &DefaultImportManager{
 		ConfigDir:            configDir,
 		UAAMgr:               uaaMgr,
 		CloudController:      cloudController,
 		SpaceManager:         spaceManager,
+		OrgManager:           orgManager,
 		SecurityGroupManager: securityGroupManager,
 	}
 }
@@ -34,6 +36,7 @@ type DefaultImportManager struct {
 	UAAMgr               uaa.Manager
 	CloudController      cc.Manager
 	SpaceManager         space.Manager
+	OrgManager           organization.Manager
 	SecurityGroupManager securitygroup.Manager
 }
 
@@ -48,7 +51,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	}
 	lo.G.Debugf("uaa user id map %v", userIDToUserMap)
 	//Get all the orgs
-	orgs, err := im.CloudController.ListOrgs()
+	orgs, err := im.OrgManager.ListOrgs()
 	if err != nil {
 		lo.G.Errorf("Unable to retrieve orgs. Error : %s", err)
 		return err
@@ -111,7 +114,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		lo.G.Infof("Processing org: %s ", orgName)
 		orgConfig := &config.OrgConfig{Org: orgName}
 		//Add users
-		addOrgUsers(orgConfig, im.CloudController, userIDToUserMap, org.Guid)
+		im.addOrgUsers(orgConfig, userIDToUserMap, org.Guid)
 		//Add Quota definition if applicable
 		if org.QuotaDefinitionGuid != "" {
 			quota, err := org.Quota()
@@ -141,7 +144,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			}
 		}
 
-		privatedomains, err := im.CloudController.ListOrgSharedPrivateDomains(org.Guid)
+		privatedomains, err := im.OrgManager.ListOrgSharedPrivateDomains(org.Guid)
 		if err != nil {
 			return err
 		}
@@ -149,7 +152,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			orgConfig.SharedPrivateDomains = append(orgConfig.SharedPrivateDomains, privatedomain)
 		}
 
-		privatedomains, err = im.CloudController.ListOrgOwnedPrivateDomains(org.Guid)
+		privatedomains, err = im.OrgManager.ListOrgOwnedPrivateDomains(org.Guid)
 		if err != nil {
 			return err
 		}
@@ -265,10 +268,10 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	return cc.QuotaEntity{}
 }*/
 
-func addOrgUsers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaa.User, orgGUID string) {
-	addOrgManagers(orgConfig, controller, userIDToUserMap, orgGUID)
-	addBillingManagers(orgConfig, controller, userIDToUserMap, orgGUID)
-	addOrgAuditors(orgConfig, controller, userIDToUserMap, orgGUID)
+func (im *DefaultImportManager) addOrgUsers(orgConfig *config.OrgConfig, userIDToUserMap map[string]uaa.User, orgGUID string) {
+	im.addOrgManagers(orgConfig, userIDToUserMap, orgGUID)
+	im.addBillingManagers(orgConfig, userIDToUserMap, orgGUID)
+	im.addOrgAuditors(orgConfig, userIDToUserMap, orgGUID)
 }
 
 func (im *DefaultImportManager) addSpaceUsers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
@@ -277,20 +280,20 @@ func (im *DefaultImportManager) addSpaceUsers(spaceConfig *config.SpaceConfig, u
 	im.addSpaceAuditors(spaceConfig, userIDToUserMap, spaceGUID)
 }
 
-func addOrgManagers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaa.User, orgGUID string) {
-	orgMgrs, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_MANAGERS)
+func (im *DefaultImportManager) addOrgManagers(orgConfig *config.OrgConfig, userIDToUserMap map[string]uaa.User, orgGUID string) {
+	orgMgrs, _ := im.OrgManager.ListOrgManagers(orgGUID)
 	lo.G.Debugf("Found %d Org Managers for Org: %s", len(orgMgrs), orgConfig.Org)
 	doAddUsers(orgMgrs, &orgConfig.Manager.Users, &orgConfig.Manager.LDAPUsers, &orgConfig.Manager.SamlUsers, userIDToUserMap)
 }
 
-func addBillingManagers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaa.User, orgGUID string) {
-	orgBillingMgrs, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_BILLING_MANAGERS)
+func (im *DefaultImportManager) addBillingManagers(orgConfig *config.OrgConfig, userIDToUserMap map[string]uaa.User, orgGUID string) {
+	orgBillingMgrs, _ := im.OrgManager.ListOrgBillingManager(orgGUID)
 	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs), orgConfig.Org)
 	doAddUsers(orgBillingMgrs, &orgConfig.BillingManager.Users, &orgConfig.BillingManager.LDAPUsers, &orgConfig.BillingManager.SamlUsers, userIDToUserMap)
 }
 
-func addOrgAuditors(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaa.User, orgGUID string) {
-	orgAuditors, _ := getCFUsers(controller, orgGUID, organization.ORGS, organization.ROLE_ORG_AUDITORS)
+func (im *DefaultImportManager) addOrgAuditors(orgConfig *config.OrgConfig, userIDToUserMap map[string]uaa.User, orgGUID string) {
+	orgAuditors, _ := im.OrgManager.ListOrgAuditors(orgGUID)
 	lo.G.Debugf("Found %d Org Auditors for Org: %s", len(orgAuditors), orgConfig.Org)
 	doAddUsers(orgAuditors, &orgConfig.Auditor.Users, &orgConfig.Auditor.LDAPUsers, &orgConfig.Auditor.SamlUsers, userIDToUserMap)
 }
@@ -327,8 +330,4 @@ func doAddUsers(cfUsers map[string]string, uaaUsers *[]string, ldapUsers *[]stri
 			lo.G.Infof("CFUser [%s] not found in uaa user list", cfUser)
 		}
 	}
-}
-
-func getCFUsers(cc cc.Manager, entityGUID, entityType, role string) (map[string]string, error) {
-	return cc.GetCFUsers(entityGUID, entityType, role)
 }
