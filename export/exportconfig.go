@@ -6,6 +6,7 @@ import (
 	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
@@ -15,12 +16,25 @@ import (
 func NewExportManager(
 	configDir string,
 	uaaMgr uaa.Manager,
-	cloudController cc.Manager) Manager {
+	cloudController cc.Manager,
+	spaceManager space.Manager,
+	securityGroupManager securitygroup.Manager) Manager {
 	return &DefaultImportManager{
-		ConfigDir:       configDir,
-		UAAMgr:          uaaMgr,
-		CloudController: cloudController,
+		ConfigDir:            configDir,
+		UAAMgr:               uaaMgr,
+		CloudController:      cloudController,
+		SpaceManager:         spaceManager,
+		SecurityGroupManager: securityGroupManager,
 	}
+}
+
+//DefaultImportManager  -
+type DefaultImportManager struct {
+	ConfigDir            string
+	UAAMgr               uaa.Manager
+	CloudController      cc.Manager
+	SpaceManager         space.Manager
+	SecurityGroupManager securitygroup.Manager
 }
 
 //ExportConfig Imports org and space configuration from an existing CF instance
@@ -40,13 +54,13 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		return err
 	}
 
-	securityGroups, err := im.CloudController.ListNonDefaultSecurityGroups()
+	securityGroups, err := im.SecurityGroupManager.ListNonDefaultSecurityGroups()
 	if err != nil {
 		lo.G.Errorf("Unable to retrieve security groups. Error : %s", err)
 		return err
 	}
 
-	defaultSecurityGroups, err := im.CloudController.ListDefaultSecurityGroups()
+	defaultSecurityGroups, err := im.SecurityGroupManager.ListDefaultSecurityGroups()
 	if err != nil {
 		lo.G.Errorf("Unable to retrieve security groups. Error : %s", err)
 		return err
@@ -146,7 +160,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 
 		lo.G.Infof("Done creating org %s", orgConfig.Org)
 		lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
-		spaces, _ := im.CloudController.ListSpaces(org.Guid)
+		spaces, _ := im.SpaceManager.ListSpaces(org.Guid)
 		lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
 		for _, orgSpace := range spaces {
 			spaceName := orgSpace.Name
@@ -158,7 +172,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 
 			spaceConfig := &config.SpaceConfig{Org: org.Name, Space: spaceName}
 			//Add users
-			addSpaceUsers(spaceConfig, im.CloudController, userIDToUserMap, orgSpace.Guid)
+			im.addSpaceUsers(spaceConfig, userIDToUserMap, orgSpace.Guid)
 			//Add Quota definition if applicable
 			if orgSpace.QuotaDefinitionGuid != "" {
 				quota, err := orgSpace.Quota()
@@ -193,7 +207,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			}
 
 			spaceSGName := fmt.Sprintf("%s-%s", orgName, spaceName)
-			if spaceSGNames, err := im.CloudController.ListSpaceSecurityGroups(orgSpace.Guid); err == nil {
+			if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.Guid); err == nil {
 				for securityGroupName, _ := range spaceSGNames {
 					lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
 					if securityGroupName != spaceSGName {
@@ -206,7 +220,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 
 			if sgInfo, ok := securityGroups[spaceSGName]; ok {
 				delete(securityGroups, spaceSGName)
-				if rules, err := im.CloudController.GetSecurityGroupRules(sgInfo.GUID); err == nil {
+				if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
 					configMgr.AddSecurityGroupToSpace(orgName, spaceName, rules)
 				}
 			}
@@ -216,7 +230,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 
 	for sgName, sgInfo := range securityGroups {
 		lo.G.Infof("Adding security group %s", sgName)
-		if rules, err := im.CloudController.GetSecurityGroupRules(sgInfo.GUID); err == nil {
+		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
 			lo.G.Infof("Adding rules for %s", sgName)
 			configMgr.AddSecurityGroup(sgName, rules)
 		} else {
@@ -226,13 +240,13 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 
 	for sgName, sgInfo := range defaultSecurityGroups {
 		lo.G.Infof("Adding default security group %s", sgName)
-		if sgInfo.DefaultRunning {
+		if sgInfo.Running {
 			globalConfig.RunningSecurityGroups = append(globalConfig.RunningSecurityGroups, sgName)
 		}
-		if sgInfo.DefaultStaging {
+		if sgInfo.Staging {
 			globalConfig.StagingSecurityGroups = append(globalConfig.StagingSecurityGroups, sgName)
 		}
-		if rules, err := im.CloudController.GetSecurityGroupRules(sgInfo.GUID); err == nil {
+		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
 			lo.G.Infof("Adding rules for %s", sgName)
 			configMgr.AddDefaultSecurityGroup(sgName, rules)
 		} else {
@@ -257,10 +271,10 @@ func addOrgUsers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUse
 	addOrgAuditors(orgConfig, controller, userIDToUserMap, orgGUID)
 }
 
-func addSpaceUsers(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaa.User, spaceGUID string) {
-	addSpaceDevelopers(spaceConfig, controller, userIDToUserMap, spaceGUID)
-	addSpaceManagers(spaceConfig, controller, userIDToUserMap, spaceGUID)
-	addSpaceAuditors(spaceConfig, controller, userIDToUserMap, spaceGUID)
+func (im *DefaultImportManager) addSpaceUsers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
+	im.addSpaceDevelopers(spaceConfig, userIDToUserMap, spaceGUID)
+	im.addSpaceManagers(spaceConfig, userIDToUserMap, spaceGUID)
+	im.addSpaceAuditors(spaceConfig, userIDToUserMap, spaceGUID)
 }
 
 func addOrgManagers(orgConfig *config.OrgConfig, controller cc.Manager, userIDToUserMap map[string]uaa.User, orgGUID string) {
@@ -281,20 +295,20 @@ func addOrgAuditors(orgConfig *config.OrgConfig, controller cc.Manager, userIDTo
 	doAddUsers(orgAuditors, &orgConfig.Auditor.Users, &orgConfig.Auditor.LDAPUsers, &orgConfig.Auditor.SamlUsers, userIDToUserMap)
 }
 
-func addSpaceManagers(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaa.User, spaceGUID string) {
-	spaceMgrs, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_MANAGERS)
+func (im *DefaultImportManager) addSpaceManagers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
+	spaceMgrs, _ := im.SpaceManager.ListSpaceManagers(spaceGUID)
 	lo.G.Debugf("Found %d Space Managers for Org: %s and  Space:  %s", len(spaceMgrs), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceMgrs, &spaceConfig.Manager.Users, &spaceConfig.Manager.LDAPUsers, &spaceConfig.Manager.SamlUsers, userIDToUserMap)
 }
 
-func addSpaceDevelopers(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaa.User, spaceGUID string) {
-	spaceDevs, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_DEVELOPERS)
+func (im *DefaultImportManager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
+	spaceDevs, _ := im.SpaceManager.ListSpaceDevelopers(spaceGUID)
 	lo.G.Debugf("Found %d Space Developers for Org: %s and  Space:  %s", len(spaceDevs), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceDevs, &spaceConfig.Developer.Users, &spaceConfig.Developer.LDAPUsers, &spaceConfig.Developer.SamlUsers, userIDToUserMap)
 }
 
-func addSpaceAuditors(spaceConfig *config.SpaceConfig, controller cc.Manager, userIDToUserMap map[string]uaa.User, spaceGUID string) {
-	spaceAuditors, _ := getCFUsers(controller, spaceGUID, space.SPACES, space.ROLE_SPACE_AUDITORS)
+func (im *DefaultImportManager) addSpaceAuditors(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
+	spaceAuditors, _ := im.SpaceManager.ListSpaceAuditors(spaceGUID)
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceAuditors, &spaceConfig.Auditor.Users, &spaceConfig.Auditor.LDAPUsers, &spaceConfig.Auditor.SamlUsers, userIDToUserMap)
 }

@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/configcommands"
@@ -70,10 +71,22 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	if err != nil {
 		return nil, err
 	}
+
+	c := &cfclient.Config{
+		ApiAddress:        fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
+		SkipSslValidation: true,
+		Token:             cfToken,
+		UserAgent:         fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION),
+	}
+
+	client, err := cfclient.NewClient(c)
+	if err != nil {
+		return nil, err
+	}
 	cfMgmt.CloudController = ccManager
+	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfg, peek)
 	cfMgmt.OrgManager = organization.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfg)
-	cfMgmt.SpaceManager = space.NewManager(cfMgmt.CloudController, cfMgmt.UAAManager, cfMgmt.OrgManager, cfg)
-	cfMgmt.SecurityGroupManager = securitygroup.NewManager(cfMgmt.CloudController, cfg)
+	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgManager, cfMgmt.SecurityGroupManager, cfg, peek)
 
 	if isoSegmentUpdater, err := isosegment.NewUpdater(configcommands.VERSION, cfMgmt.SystemDomain, cfToken, baseCommand.UserID, baseCommand.ClientSecret, cfg); err == nil {
 		cfMgmt.IsolationSegmentUpdater = isoSegmentUpdater

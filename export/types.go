@@ -1,10 +1,5 @@
 package export
 
-import (
-	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
-	"github.com/pivotalservices/cf-mgmt/uaa"
-)
-
 //LDAP Represents constant for value ldap
 const LDAP string = "ldap"
 
@@ -14,11 +9,4 @@ const SAML string = "saml"
 //Manager -
 type Manager interface {
 	ExportConfig(excludedOrgs map[string]string, excludedSpaces map[string]string) error
-}
-
-//DefaultImportManager  -
-type DefaultImportManager struct {
-	ConfigDir       string
-	UAAMgr          uaa.Manager
-	CloudController cloudcontroller.Manager
 }

@@ -59,18 +59,6 @@ func (mr *MockManagerMockRecorder) AddUserToOrgRole(arg0, arg1, arg2 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUserToOrgRole", reflect.TypeOf((*MockManager)(nil).AddUserToOrgRole), arg0, arg1, arg2)
 }
 
-// AddUserToSpaceRole mocks base method
-func (m *MockManager) AddUserToSpaceRole(arg0, arg1, arg2 string) error {
-	ret := m.ctrl.Call(m, "AddUserToSpaceRole", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddUserToSpaceRole indicates an expected call of AddUserToSpaceRole
-func (mr *MockManagerMockRecorder) AddUserToSpaceRole(arg0, arg1, arg2 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUserToSpaceRole", reflect.TypeOf((*MockManager)(nil).AddUserToSpaceRole), arg0, arg1, arg2)
-}
-
 // AssignQuotaToOrg mocks base method
 func (m *MockManager) AssignQuotaToOrg(arg0, arg1 string) error {
 	ret := m.ctrl.Call(m, "AssignQuotaToOrg", arg0, arg1)
@@ -81,54 +69,6 @@ func (m *MockManager) AssignQuotaToOrg(arg0, arg1 string) error {
 // AssignQuotaToOrg indicates an expected call of AssignQuotaToOrg
 func (mr *MockManagerMockRecorder) AssignQuotaToOrg(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignQuotaToOrg", reflect.TypeOf((*MockManager)(nil).AssignQuotaToOrg), arg0, arg1)
-}
-
-// AssignQuotaToSpace mocks base method
-func (m *MockManager) AssignQuotaToSpace(arg0, arg1 string) error {
-	ret := m.ctrl.Call(m, "AssignQuotaToSpace", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AssignQuotaToSpace indicates an expected call of AssignQuotaToSpace
-func (mr *MockManagerMockRecorder) AssignQuotaToSpace(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignQuotaToSpace", reflect.TypeOf((*MockManager)(nil).AssignQuotaToSpace), arg0, arg1)
-}
-
-// AssignRunningSecurityGroup mocks base method
-func (m *MockManager) AssignRunningSecurityGroup(arg0 string) error {
-	ret := m.ctrl.Call(m, "AssignRunningSecurityGroup", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AssignRunningSecurityGroup indicates an expected call of AssignRunningSecurityGroup
-func (mr *MockManagerMockRecorder) AssignRunningSecurityGroup(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignRunningSecurityGroup", reflect.TypeOf((*MockManager)(nil).AssignRunningSecurityGroup), arg0)
-}
-
-// AssignSecurityGroupToSpace mocks base method
-func (m *MockManager) AssignSecurityGroupToSpace(arg0, arg1 string) error {
-	ret := m.ctrl.Call(m, "AssignSecurityGroupToSpace", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AssignSecurityGroupToSpace indicates an expected call of AssignSecurityGroupToSpace
-func (mr *MockManagerMockRecorder) AssignSecurityGroupToSpace(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignSecurityGroupToSpace", reflect.TypeOf((*MockManager)(nil).AssignSecurityGroupToSpace), arg0, arg1)
-}
-
-// AssignStagingSecurityGroup mocks base method
-func (m *MockManager) AssignStagingSecurityGroup(arg0 string) error {
-	ret := m.ctrl.Call(m, "AssignStagingSecurityGroup", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AssignStagingSecurityGroup indicates an expected call of AssignStagingSecurityGroup
-func (mr *MockManagerMockRecorder) AssignStagingSecurityGroup(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignStagingSecurityGroup", reflect.TypeOf((*MockManager)(nil).AssignStagingSecurityGroup), arg0)
 }
 
 // CreateOrg mocks base method
@@ -169,44 +109,6 @@ func (mr *MockManagerMockRecorder) CreateQuota(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateQuota", reflect.TypeOf((*MockManager)(nil).CreateQuota), arg0)
 }
 
-// CreateSecurityGroup mocks base method
-func (m *MockManager) CreateSecurityGroup(arg0, arg1 string) (string, error) {
-	ret := m.ctrl.Call(m, "CreateSecurityGroup", arg0, arg1)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateSecurityGroup indicates an expected call of CreateSecurityGroup
-func (mr *MockManagerMockRecorder) CreateSecurityGroup(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSecurityGroup", reflect.TypeOf((*MockManager)(nil).CreateSecurityGroup), arg0, arg1)
-}
-
-// CreateSpace mocks base method
-func (m *MockManager) CreateSpace(arg0, arg1 string) error {
-	ret := m.ctrl.Call(m, "CreateSpace", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateSpace indicates an expected call of CreateSpace
-func (mr *MockManagerMockRecorder) CreateSpace(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSpace", reflect.TypeOf((*MockManager)(nil).CreateSpace), arg0, arg1)
-}
-
-// CreateSpaceQuota mocks base method
-func (m *MockManager) CreateSpaceQuota(arg0 cloudcontroller.SpaceQuotaEntity) (string, error) {
-	ret := m.ctrl.Call(m, "CreateSpaceQuota", arg0)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateSpaceQuota indicates an expected call of CreateSpaceQuota
-func (mr *MockManagerMockRecorder) CreateSpaceQuota(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSpaceQuota", reflect.TypeOf((*MockManager)(nil).CreateSpaceQuota), arg0)
-}
-
 // DeleteOrg mocks base method
 func (m *MockManager) DeleteOrg(arg0 string) error {
 	ret := m.ctrl.Call(m, "DeleteOrg", arg0)
@@ -243,18 +145,6 @@ func (mr *MockManagerMockRecorder) DeletePrivateDomain(arg0 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePrivateDomain", reflect.TypeOf((*MockManager)(nil).DeletePrivateDomain), arg0)
 }
 
-// DeleteSpace mocks base method
-func (m *MockManager) DeleteSpace(arg0 string) error {
-	ret := m.ctrl.Call(m, "DeleteSpace", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteSpace indicates an expected call of DeleteSpace
-func (mr *MockManagerMockRecorder) DeleteSpace(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSpace", reflect.TypeOf((*MockManager)(nil).DeleteSpace), arg0)
-}
-
 // GetCFUsers mocks base method
 func (m *MockManager) GetCFUsers(arg0, arg1, arg2 string) (map[string]string, error) {
 	ret := m.ctrl.Call(m, "GetCFUsers", arg0, arg1, arg2)
@@ -266,19 +156,6 @@ func (m *MockManager) GetCFUsers(arg0, arg1, arg2 string) (map[string]string, er
 // GetCFUsers indicates an expected call of GetCFUsers
 func (mr *MockManagerMockRecorder) GetCFUsers(arg0, arg1, arg2 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCFUsers", reflect.TypeOf((*MockManager)(nil).GetCFUsers), arg0, arg1, arg2)
-}
-
-// GetSecurityGroupRules mocks base method
-func (m *MockManager) GetSecurityGroupRules(arg0 string) ([]byte, error) {
-	ret := m.ctrl.Call(m, "GetSecurityGroupRules", arg0)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetSecurityGroupRules indicates an expected call of GetSecurityGroupRules
-func (mr *MockManagerMockRecorder) GetSecurityGroupRules(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecurityGroupRules", reflect.TypeOf((*MockManager)(nil).GetSecurityGroupRules), arg0)
 }
 
 // ListAllOrgQuotas mocks base method
@@ -307,32 +184,6 @@ func (mr *MockManagerMockRecorder) ListAllPrivateDomains() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllPrivateDomains", reflect.TypeOf((*MockManager)(nil).ListAllPrivateDomains))
 }
 
-// ListAllSpaceQuotasForOrg mocks base method
-func (m *MockManager) ListAllSpaceQuotasForOrg(arg0 string) (map[string]string, error) {
-	ret := m.ctrl.Call(m, "ListAllSpaceQuotasForOrg", arg0)
-	ret0, _ := ret[0].(map[string]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListAllSpaceQuotasForOrg indicates an expected call of ListAllSpaceQuotasForOrg
-func (mr *MockManagerMockRecorder) ListAllSpaceQuotasForOrg(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllSpaceQuotasForOrg", reflect.TypeOf((*MockManager)(nil).ListAllSpaceQuotasForOrg), arg0)
-}
-
-// ListDefaultSecurityGroups mocks base method
-func (m *MockManager) ListDefaultSecurityGroups() (map[string]cloudcontroller.SecurityGroupInfo, error) {
-	ret := m.ctrl.Call(m, "ListDefaultSecurityGroups")
-	ret0, _ := ret[0].(map[string]cloudcontroller.SecurityGroupInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListDefaultSecurityGroups indicates an expected call of ListDefaultSecurityGroups
-func (mr *MockManagerMockRecorder) ListDefaultSecurityGroups() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDefaultSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListDefaultSecurityGroups))
-}
-
 // ListIsolationSegments mocks base method
 func (m *MockManager) ListIsolationSegments() ([]go_cfclient.IsolationSegment, error) {
 	ret := m.ctrl.Call(m, "ListIsolationSegments")
@@ -344,19 +195,6 @@ func (m *MockManager) ListIsolationSegments() ([]go_cfclient.IsolationSegment, e
 // ListIsolationSegments indicates an expected call of ListIsolationSegments
 func (mr *MockManagerMockRecorder) ListIsolationSegments() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListIsolationSegments", reflect.TypeOf((*MockManager)(nil).ListIsolationSegments))
-}
-
-// ListNonDefaultSecurityGroups mocks base method
-func (m *MockManager) ListNonDefaultSecurityGroups() (map[string]cloudcontroller.SecurityGroupInfo, error) {
-	ret := m.ctrl.Call(m, "ListNonDefaultSecurityGroups")
-	ret0, _ := ret[0].(map[string]cloudcontroller.SecurityGroupInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListNonDefaultSecurityGroups indicates an expected call of ListNonDefaultSecurityGroups
-func (mr *MockManagerMockRecorder) ListNonDefaultSecurityGroups() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNonDefaultSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListNonDefaultSecurityGroups))
 }
 
 // ListOrgOwnedPrivateDomains mocks base method
@@ -396,45 +234,6 @@ func (m *MockManager) ListOrgs() ([]go_cfclient.Org, error) {
 // ListOrgs indicates an expected call of ListOrgs
 func (mr *MockManagerMockRecorder) ListOrgs() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrgs", reflect.TypeOf((*MockManager)(nil).ListOrgs))
-}
-
-// ListSecurityGroups mocks base method
-func (m *MockManager) ListSecurityGroups() (map[string]cloudcontroller.SecurityGroupInfo, error) {
-	ret := m.ctrl.Call(m, "ListSecurityGroups")
-	ret0, _ := ret[0].(map[string]cloudcontroller.SecurityGroupInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListSecurityGroups indicates an expected call of ListSecurityGroups
-func (mr *MockManagerMockRecorder) ListSecurityGroups() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListSecurityGroups))
-}
-
-// ListSpaceSecurityGroups mocks base method
-func (m *MockManager) ListSpaceSecurityGroups(arg0 string) (map[string]string, error) {
-	ret := m.ctrl.Call(m, "ListSpaceSecurityGroups", arg0)
-	ret0, _ := ret[0].(map[string]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListSpaceSecurityGroups indicates an expected call of ListSpaceSecurityGroups
-func (mr *MockManagerMockRecorder) ListSpaceSecurityGroups(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSpaceSecurityGroups", reflect.TypeOf((*MockManager)(nil).ListSpaceSecurityGroups), arg0)
-}
-
-// ListSpaces mocks base method
-func (m *MockManager) ListSpaces(arg0 string) ([]go_cfclient.Space, error) {
-	ret := m.ctrl.Call(m, "ListSpaces", arg0)
-	ret0, _ := ret[0].([]go_cfclient.Space)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListSpaces indicates an expected call of ListSpaces
-func (mr *MockManagerMockRecorder) ListSpaces(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSpaces", reflect.TypeOf((*MockManager)(nil).ListSpaces), arg0)
 }
 
 // OrgQuotaByName mocks base method
@@ -499,30 +298,6 @@ func (mr *MockManagerMockRecorder) SpaceQuotaByName(arg0 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpaceQuotaByName", reflect.TypeOf((*MockManager)(nil).SpaceQuotaByName), arg0)
 }
 
-// UnassignRunningSecurityGroup mocks base method
-func (m *MockManager) UnassignRunningSecurityGroup(arg0 string) error {
-	ret := m.ctrl.Call(m, "UnassignRunningSecurityGroup", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UnassignRunningSecurityGroup indicates an expected call of UnassignRunningSecurityGroup
-func (mr *MockManagerMockRecorder) UnassignRunningSecurityGroup(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnassignRunningSecurityGroup", reflect.TypeOf((*MockManager)(nil).UnassignRunningSecurityGroup), arg0)
-}
-
-// UnassignStagingSecurityGroup mocks base method
-func (m *MockManager) UnassignStagingSecurityGroup(arg0 string) error {
-	ret := m.ctrl.Call(m, "UnassignStagingSecurityGroup", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UnassignStagingSecurityGroup indicates an expected call of UnassignStagingSecurityGroup
-func (mr *MockManagerMockRecorder) UnassignStagingSecurityGroup(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnassignStagingSecurityGroup", reflect.TypeOf((*MockManager)(nil).UnassignStagingSecurityGroup), arg0)
-}
-
 // UpdateQuota mocks base method
 func (m *MockManager) UpdateQuota(arg0 string, arg1 cloudcontroller.QuotaEntity) error {
 	ret := m.ctrl.Call(m, "UpdateQuota", arg0, arg1)
@@ -533,40 +308,4 @@ func (m *MockManager) UpdateQuota(arg0 string, arg1 cloudcontroller.QuotaEntity)
 // UpdateQuota indicates an expected call of UpdateQuota
 func (mr *MockManagerMockRecorder) UpdateQuota(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuota", reflect.TypeOf((*MockManager)(nil).UpdateQuota), arg0, arg1)
-}
-
-// UpdateSecurityGroup mocks base method
-func (m *MockManager) UpdateSecurityGroup(arg0, arg1, arg2 string) error {
-	ret := m.ctrl.Call(m, "UpdateSecurityGroup", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateSecurityGroup indicates an expected call of UpdateSecurityGroup
-func (mr *MockManagerMockRecorder) UpdateSecurityGroup(arg0, arg1, arg2 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSecurityGroup", reflect.TypeOf((*MockManager)(nil).UpdateSecurityGroup), arg0, arg1, arg2)
-}
-
-// UpdateSpaceQuota mocks base method
-func (m *MockManager) UpdateSpaceQuota(arg0 string, arg1 cloudcontroller.SpaceQuotaEntity) error {
-	ret := m.ctrl.Call(m, "UpdateSpaceQuota", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateSpaceQuota indicates an expected call of UpdateSpaceQuota
-func (mr *MockManagerMockRecorder) UpdateSpaceQuota(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSpaceQuota", reflect.TypeOf((*MockManager)(nil).UpdateSpaceQuota), arg0, arg1)
-}
-
-// UpdateSpaceSSH mocks base method
-func (m *MockManager) UpdateSpaceSSH(arg0 bool, arg1 string) error {
-	ret := m.ctrl.Call(m, "UpdateSpaceSSH", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateSpaceSSH indicates an expected call of UpdateSpaceSSH
-func (mr *MockManagerMockRecorder) UpdateSpaceSSH(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSpaceSSH", reflect.TypeOf((*MockManager)(nil).UpdateSpaceSSH), arg0, arg1)
 }

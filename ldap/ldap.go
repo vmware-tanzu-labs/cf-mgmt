@@ -242,3 +242,29 @@ func (m *DefaultManager) getUserFilterWithDN(config *Config, userDN string) stri
 	}
 	return fmt.Sprintf(userDNFilterWithObjectClass, config.UserObjectClass, userDN)
 }
+
+func (m *DefaultManager) GetLdapUsers(config *Config, groupNames []string, userList []string) ([]User, error) {
+	users := []User{}
+	for _, groupName := range groupNames {
+		if groupName != "" {
+			lo.G.Debug("Finding LDAP user for group:", groupName)
+			if groupUsers, err := m.GetUserIDs(config, groupName); err == nil {
+				users = append(users, groupUsers...)
+			} else {
+				lo.G.Error(err)
+				return nil, err
+			}
+		}
+	}
+	for _, user := range userList {
+		if ldapUser, err := m.GetUser(config, user); err == nil {
+			if ldapUser != nil {
+				users = append(users, *ldapUser)
+			}
+		} else {
+			lo.G.Error(err)
+			return nil, err
+		}
+	}
+	return users, nil
+}

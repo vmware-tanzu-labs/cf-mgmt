@@ -10,8 +10,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
-	"github.com/pivotalservices/cf-mgmt/uaa"
 )
 
 const (
@@ -247,7 +245,7 @@ var _ = Describe("cf-mgmt cli", func() {
 		})
 
 		Describe("export config", func() {
-			It("should export config with > 50 spaces", func() {
+			/*It("should export config with > 50 spaces", func() {
 				cfToken, err := uaa.GetCFToken(systemDomain, userId, password)
 				Expect(err).ShouldNot(HaveOccurred())
 				ccManager, err := cloudcontroller.NewManager(fmt.Sprintf("https://api.%s", systemDomain), cfToken, "1.0", false)
@@ -298,7 +296,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Eventually(session).Should(Exit(0))
 
-			})
+			})*/
 
 		})
 	})

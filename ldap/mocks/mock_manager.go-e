@@ -60,6 +60,19 @@ func (mr *MockManagerMockRecorder) GetLdapUser(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLdapUser", reflect.TypeOf((*MockManager)(nil).GetLdapUser), arg0, arg1)
 }
 
+// GetLdapUsers mocks base method
+func (m *MockManager) GetLdapUsers(arg0 *ldap.Config, arg1, arg2 []string) ([]ldap.User, error) {
+	ret := m.ctrl.Call(m, "GetLdapUsers", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]ldap.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLdapUsers indicates an expected call of GetLdapUsers
+func (mr *MockManagerMockRecorder) GetLdapUsers(arg0, arg1, arg2 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLdapUsers", reflect.TypeOf((*MockManager)(nil).GetLdapUsers), arg0, arg1, arg2)
+}
+
 // GetUser mocks base method
 func (m *MockManager) GetUser(arg0 *ldap.Config, arg1 string) (*ldap.User, error) {
 	ret := m.ctrl.Call(m, "GetUser", arg0, arg1)

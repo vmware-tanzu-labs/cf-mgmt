@@ -11,6 +11,7 @@ type Manager interface {
 	GetConfig(configDir, ldapBindPassword string) (*Config, error)
 	GetLdapUser(config *Config, userDN string) (*User, error)
 	LdapConnection(config *Config) (*l.Conn, error)
+	GetLdapUsers(config *Config, groupNames []string, userList []string) ([]User, error)
 }
 
 //DefaultManager -
