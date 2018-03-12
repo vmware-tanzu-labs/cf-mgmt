@@ -1,0 +1,5 @@
+org: org1
+spaces:
+- org1space1
+- org1space2
+enable-delete-spaces: true

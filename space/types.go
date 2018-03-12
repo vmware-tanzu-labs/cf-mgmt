@@ -19,6 +19,7 @@ type Manager interface {
 	ListSpaceAuditors(spaceGUID string) (map[string]string, error)
 	ListSpaceDevelopers(spaceGUID string) (map[string]string, error)
 	ListSpaceManagers(spaceGUID string) (map[string]string, error)
+	SpaceQuotaByName(name string) (cfclient.SpaceQuota, error)
 }
 
 // UpdateSpaceUserInput
@@ -67,4 +68,5 @@ type CFClient interface {
 	ListSpacesByQuery(query url.Values) ([]cfclient.Space, error)
 	CreateSpace(req cfclient.SpaceRequest) (cfclient.Space, error)
 	DeleteSpace(guid string, recursive, async bool) error
+	GetSpaceQuotaByName(name string) (cfclient.SpaceQuota, error)
 }

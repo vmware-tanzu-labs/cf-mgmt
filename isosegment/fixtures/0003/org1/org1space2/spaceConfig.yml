@@ -1,5 +1,5 @@
 org: org1
-space: org1space1
+space: org1space2
 space-developer:
   ldap_users: []
   users: []
@@ -28,3 +28,4 @@ total_private_domains: 0
 total_reserved_route_ports: 0
 total_service_keys: 0
 app_instance_limit: 0
+isolation_segment: iso01

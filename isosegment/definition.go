@@ -1,3 +1,3 @@
 package isosegment
 
-//go:generate mockgen -destination mock_manager_test.go -source manager.go -package isosegment
+//go:generate counterfeiter -o fakes/fake_cf_client.go types.go CFClient

@@ -3,8 +3,8 @@ package export
 import (
 	"fmt"
 
-	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
@@ -16,17 +16,17 @@ import (
 func NewExportManager(
 	configDir string,
 	uaaMgr uaa.Manager,
-	cloudController cc.Manager,
 	spaceManager space.Manager,
 	orgManager organization.Manager,
-	securityGroupManager securitygroup.Manager) Manager {
+	securityGroupManager securitygroup.Manager,
+	isoSegmentMgr isosegment.Manager) Manager {
 	return &DefaultImportManager{
 		ConfigDir:            configDir,
 		UAAMgr:               uaaMgr,
-		CloudController:      cloudController,
 		SpaceManager:         spaceManager,
 		OrgManager:           orgManager,
 		SecurityGroupManager: securityGroupManager,
+		IsoSegmentManager:    isoSegmentMgr,
 	}
 }
 
@@ -34,10 +34,10 @@ func NewExportManager(
 type DefaultImportManager struct {
 	ConfigDir            string
 	UAAMgr               uaa.Manager
-	CloudController      cc.Manager
 	SpaceManager         space.Manager
 	OrgManager           organization.Manager
 	SecurityGroupManager securitygroup.Manager
+	IsoSegmentManager    isosegment.Manager
 }
 
 //ExportConfig Imports org and space configuration from an existing CF instance
@@ -69,7 +69,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		return err
 	}
 
-	isolationSegments, err := im.CloudController.ListIsolationSegments()
+	isolationSegments, err := im.IsoSegmentManager.ListIsolationSegments()
 	if err != nil {
 		lo.G.Errorf("Unable to retrieve isolation segments. Error : %s", err)
 		return err

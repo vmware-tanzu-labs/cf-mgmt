@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaa"
@@ -60,13 +59,13 @@ func (m *DefaultManager) CreateQuotas() error {
 			return err
 		}
 		quotaName := org.Name
-		quota := cloudcontroller.QuotaEntity{
+		quota := cfclient.OrgQuotaRequest{
 			Name:                    quotaName,
 			MemoryLimit:             input.MemoryLimit,
 			InstanceMemoryLimit:     input.InstanceMemoryLimit,
 			TotalRoutes:             input.TotalRoutes,
 			TotalServices:           input.TotalServices,
-			PaidServicePlansAllowed: input.PaidServicePlansAllowed,
+			NonBasicServicesAllowed: input.PaidServicePlansAllowed,
 			TotalPrivateDomains:     input.TotalPrivateDomains,
 			TotalReservedRoutePorts: input.TotalReservedRoutePorts,
 			TotalServiceKeys:        input.TotalServiceKeys,
@@ -578,47 +577,25 @@ func (m *DefaultManager) ListAllOrgQuotas() (map[string]string, error) {
 	return quotas, nil
 }
 
-func (m *DefaultManager) CreateQuota(quota cloudcontroller.QuotaEntity) (string, error) {
+func (m *DefaultManager) CreateQuota(quota cfclient.OrgQuotaRequest) (string, error) {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: create quota %+v", quota)
 		return "dry-run-quota-guid", nil
 	}
 
-	orgQuota, err := m.Client.CreateOrgQuota(cfclient.OrgQuotaRequest{
-		Name: quota.GetName(),
-		NonBasicServicesAllowed: quota.IsPaidServicesAllowed(),
-		TotalServices:           quota.TotalServices,
-		TotalRoutes:             quota.TotalRoutes,
-		TotalPrivateDomains:     quota.TotalPrivateDomains,
-		MemoryLimit:             quota.MemoryLimit,
-		InstanceMemoryLimit:     quota.InstanceMemoryLimit,
-		AppInstanceLimit:        quota.AppInstanceLimit,
-		TotalServiceKeys:        quota.TotalServiceKeys,
-		TotalReservedRoutePorts: quota.TotalReservedRoutePorts,
-	})
+	orgQuota, err := m.Client.CreateOrgQuota(quota)
 	if err != nil {
 		return "", err
 	}
 	return orgQuota.Guid, nil
 }
 
-func (m *DefaultManager) UpdateQuota(quotaGUID string, quota cloudcontroller.QuotaEntity) error {
+func (m *DefaultManager) UpdateQuota(quotaGUID string, quota cfclient.OrgQuotaRequest) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: update quota %+v with GUID %s", quota, quotaGUID)
 		return nil
 	}
-	_, err := m.Client.UpdateOrgQuota(quotaGUID, cfclient.OrgQuotaRequest{
-		Name: quota.GetName(),
-		NonBasicServicesAllowed: quota.IsPaidServicesAllowed(),
-		TotalServices:           quota.TotalServices,
-		TotalRoutes:             quota.TotalRoutes,
-		TotalPrivateDomains:     quota.TotalPrivateDomains,
-		MemoryLimit:             quota.MemoryLimit,
-		InstanceMemoryLimit:     quota.InstanceMemoryLimit,
-		AppInstanceLimit:        quota.AppInstanceLimit,
-		TotalServiceKeys:        quota.TotalServiceKeys,
-		TotalReservedRoutePorts: quota.TotalReservedRoutePorts,
-	})
+	_, err := m.Client.UpdateOrgQuota(quotaGUID, quota)
 	return err
 }
 
@@ -779,4 +756,8 @@ func (m *DefaultManager) ListOrgBillingManager(orgGUID string) (map[string]strin
 }
 func (m *DefaultManager) ListOrgManagers(orgGUID string) (map[string]string, error) {
 	return m.UserMgr.ListOrgManagers(orgGUID)
+}
+
+func (m *DefaultManager) OrgQuotaByName(name string) (cfclient.OrgQuota, error) {
+	return m.Client.GetOrgQuotaByName(name)
 }

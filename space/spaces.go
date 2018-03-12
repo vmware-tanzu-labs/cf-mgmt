@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
@@ -114,15 +113,15 @@ func (m *DefaultManager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]st
 	return quotas, nil
 }
 
-func (m *DefaultManager) UpdateSpaceQuota(quotaGUID string, quota cloudcontroller.SpaceQuotaEntity) error {
+func (m *DefaultManager) UpdateSpaceQuota(quotaGUID string, quota cfclient.SpaceQuota) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: update quota %s with %+v", quotaGUID, quota)
 		return nil
 	}
 	_, err := m.Client.UpdateSpaceQuota(quotaGUID, cfclient.SpaceQuotaRequest{
-		Name:                    quota.GetName(),
-		OrganizationGuid:        quota.OrgGUID,
-		NonBasicServicesAllowed: quota.IsPaidServicesAllowed(),
+		Name:                    quota.Name,
+		OrganizationGuid:        quota.OrganizationGuid,
+		NonBasicServicesAllowed: quota.NonBasicServicesAllowed,
 		TotalServices:           quota.TotalServices,
 		TotalRoutes:             quota.TotalRoutes,
 		MemoryLimit:             quota.MemoryLimit,
@@ -142,15 +141,15 @@ func (m *DefaultManager) AssignQuotaToSpace(spaceGUID, quotaGUID string) error {
 	return m.Client.AssignSpaceQuota(quotaGUID, spaceGUID)
 }
 
-func (m *DefaultManager) CreateSpaceQuota(quota cloudcontroller.SpaceQuotaEntity) (*cfclient.SpaceQuota, error) {
+func (m *DefaultManager) CreateSpaceQuota(quota cfclient.SpaceQuota) (*cfclient.SpaceQuota, error) {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: creating quota %+v", quota)
 		return nil, nil
 	}
 	spaceQuota, err := m.Client.CreateSpaceQuota(cfclient.SpaceQuotaRequest{
-		Name:                    quota.GetName(),
-		OrganizationGuid:        quota.OrgGUID,
-		NonBasicServicesAllowed: quota.IsPaidServicesAllowed(),
+		Name:                    quota.Name,
+		OrganizationGuid:        quota.OrganizationGuid,
+		NonBasicServicesAllowed: quota.NonBasicServicesAllowed,
 		TotalServices:           quota.TotalServices,
 		TotalRoutes:             quota.TotalRoutes,
 		MemoryLimit:             quota.MemoryLimit,
@@ -185,20 +184,16 @@ func (m *DefaultManager) CreateQuotas(configDir string) error {
 			continue
 		}
 
-		quota := cloudcontroller.SpaceQuotaEntity{
-			OrgGUID: space.OrganizationGuid,
-			QuotaEntity: cloudcontroller.QuotaEntity{
-				Name:                    quotaName,
-				MemoryLimit:             input.MemoryLimit,
-				InstanceMemoryLimit:     input.InstanceMemoryLimit,
-				TotalRoutes:             input.TotalRoutes,
-				TotalServices:           input.TotalServices,
-				PaidServicePlansAllowed: input.PaidServicePlansAllowed,
-				TotalPrivateDomains:     input.TotalPrivateDomains,
-				TotalReservedRoutePorts: input.TotalReservedRoutePorts,
-				TotalServiceKeys:        input.TotalServiceKeys,
-				AppInstanceLimit:        input.AppInstanceLimit,
-			},
+		quota := cfclient.SpaceQuota{
+			OrganizationGuid: space.OrganizationGuid, Name: quotaName,
+			MemoryLimit:             input.MemoryLimit,
+			InstanceMemoryLimit:     input.InstanceMemoryLimit,
+			TotalRoutes:             input.TotalRoutes,
+			TotalServices:           input.TotalServices,
+			NonBasicServicesAllowed: input.PaidServicePlansAllowed,
+			TotalReservedRoutePorts: input.TotalReservedRoutePorts,
+			TotalServiceKeys:        input.TotalServiceKeys,
+			AppInstanceLimit:        input.AppInstanceLimit,
 		}
 		if quotaGUID, ok := quotas[quotaName]; ok {
 			lo.G.Debug("Updating quota", quotaName)
@@ -632,4 +627,7 @@ func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string) (map[string]strin
 }
 func (m *DefaultManager) ListSpaceManagers(spaceGUID string) (map[string]string, error) {
 	return m.UserMgr.ListSpaceManagers(spaceGUID)
+}
+func (m *DefaultManager) SpaceQuotaByName(name string) (cfclient.SpaceQuota, error) {
+	return m.Client.GetSpaceQuotaByName(name)
 }

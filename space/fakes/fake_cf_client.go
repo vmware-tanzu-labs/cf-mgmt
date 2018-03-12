@@ -188,6 +188,15 @@ type FakeCFClient struct {
 	deleteSpaceReturns struct {
 		result1 error
 	}
+	GetSpaceQuotaByNameStub        func(name string) (go_cfclient.SpaceQuota, error)
+	getSpaceQuotaByNameMutex       sync.RWMutex
+	getSpaceQuotaByNameArgsForCall []struct {
+		name string
+	}
+	getSpaceQuotaByNameReturns struct {
+		result1 go_cfclient.SpaceQuota
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -845,6 +854,40 @@ func (fake *FakeCFClient) DeleteSpaceReturns(result1 error) {
 	}{result1}
 }
 
+func (fake *FakeCFClient) GetSpaceQuotaByName(name string) (go_cfclient.SpaceQuota, error) {
+	fake.getSpaceQuotaByNameMutex.Lock()
+	fake.getSpaceQuotaByNameArgsForCall = append(fake.getSpaceQuotaByNameArgsForCall, struct {
+		name string
+	}{name})
+	fake.recordInvocation("GetSpaceQuotaByName", []interface{}{name})
+	fake.getSpaceQuotaByNameMutex.Unlock()
+	if fake.GetSpaceQuotaByNameStub != nil {
+		return fake.GetSpaceQuotaByNameStub(name)
+	} else {
+		return fake.getSpaceQuotaByNameReturns.result1, fake.getSpaceQuotaByNameReturns.result2
+	}
+}
+
+func (fake *FakeCFClient) GetSpaceQuotaByNameCallCount() int {
+	fake.getSpaceQuotaByNameMutex.RLock()
+	defer fake.getSpaceQuotaByNameMutex.RUnlock()
+	return len(fake.getSpaceQuotaByNameArgsForCall)
+}
+
+func (fake *FakeCFClient) GetSpaceQuotaByNameArgsForCall(i int) string {
+	fake.getSpaceQuotaByNameMutex.RLock()
+	defer fake.getSpaceQuotaByNameMutex.RUnlock()
+	return fake.getSpaceQuotaByNameArgsForCall[i].name
+}
+
+func (fake *FakeCFClient) GetSpaceQuotaByNameReturns(result1 go_cfclient.SpaceQuota, result2 error) {
+	fake.GetSpaceQuotaByNameStub = nil
+	fake.getSpaceQuotaByNameReturns = struct {
+		result1 go_cfclient.SpaceQuota
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -886,6 +929,8 @@ func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	defer fake.createSpaceMutex.RUnlock()
 	fake.deleteSpaceMutex.RLock()
 	defer fake.deleteSpaceMutex.RUnlock()
+	fake.getSpaceQuotaByNameMutex.RLock()
+	defer fake.getSpaceQuotaByNameMutex.RUnlock()
 	return fake.invocations
 }
 

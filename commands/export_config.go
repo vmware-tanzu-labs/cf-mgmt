@@ -19,10 +19,10 @@ func (c *ExportConfigurationCommand) Execute([]string) error {
 	} else {
 		exportManager := export.NewExportManager(c.ConfigDirectory,
 			cfMgmt.UAAManager,
-			cfMgmt.CloudController,
 			cfMgmt.SpaceManager,
 			cfMgmt.OrgManager,
-			cfMgmt.SecurityGroupManager)
+			cfMgmt.SecurityGroupManager,
+			cfMgmt.IsolationSegmentManager)
 		excludedOrgs := make(map[string]string)
 		excludedOrgs["system"] = "system"
 		for _, org := range c.ExcludedOrgs {

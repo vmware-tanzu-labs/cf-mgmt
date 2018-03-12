@@ -20,6 +20,7 @@ type Manager interface {
 	ListOrgAuditors(orgGUID string) (map[string]string, error)
 	ListOrgBillingManager(orgGUID string) (map[string]string, error)
 	ListOrgManagers(orgGUID string) (map[string]string, error)
+	OrgQuotaByName(name string) (cfclient.OrgQuota, error)
 }
 
 // UserMgr - interface type encapsulating Update space users behavior
@@ -61,6 +62,7 @@ type CFClient interface {
 	ListOrgQuotas() ([]cfclient.OrgQuota, error)
 	CreateOrgQuota(orgQuote cfclient.OrgQuotaRequest) (*cfclient.OrgQuota, error)
 	UpdateOrgQuota(orgQuotaGUID string, orgQuota cfclient.OrgQuotaRequest) (*cfclient.OrgQuota, error)
+	GetOrgQuotaByName(name string) (cfclient.OrgQuota, error)
 }
 
 // UpdateUsersInput -

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/configcommands"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
@@ -23,9 +22,8 @@ type CFMgmt struct {
 	ConfigDirectory         string
 	UaacToken               string
 	SystemDomain            string
-	CloudController         cloudcontroller.Manager
 	SecurityGroupManager    securitygroup.Manager
-	IsolationSegmentUpdater *isosegment.Updater
+	IsolationSegmentManager isosegment.Manager
 }
 
 type Initialize struct {
@@ -79,13 +77,12 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	if err != nil {
 		return nil, err
 	}
-	cfMgmt.CloudController = cloudcontroller.NewManager(client, peek)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfg, peek)
 	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.UAAManager, cfg, peek)
 	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgManager, cfMgmt.SecurityGroupManager, cfg, peek)
 
-	if isoSegmentUpdater, err := isosegment.NewUpdater(configcommands.VERSION, cfMgmt.SystemDomain, cfToken, baseCommand.UserID, baseCommand.ClientSecret, cfg); err == nil {
-		cfMgmt.IsolationSegmentUpdater = isoSegmentUpdater
+	if isoSegmentManager, err := isosegment.NewManager(client, cfg, peek); err == nil {
+		cfMgmt.IsolationSegmentManager = isoSegmentManager
 	} else {
 		return nil, err
 	}
