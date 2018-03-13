@@ -8,6 +8,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
+	"github.com/pivotalservices/cf-mgmt/spaceusers"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
@@ -17,6 +18,7 @@ func NewExportManager(
 	configDir string,
 	uaaMgr uaa.Manager,
 	spaceManager space.Manager,
+	spaceUserManager spaceusers.Manager,
 	orgManager organization.Manager,
 	securityGroupManager securitygroup.Manager,
 	isoSegmentMgr isosegment.Manager) Manager {
@@ -24,6 +26,7 @@ func NewExportManager(
 		ConfigDir:            configDir,
 		UAAMgr:               uaaMgr,
 		SpaceManager:         spaceManager,
+		SpaceUserManager:     spaceUserManager,
 		OrgManager:           orgManager,
 		SecurityGroupManager: securityGroupManager,
 		IsoSegmentManager:    isoSegmentMgr,
@@ -35,6 +38,7 @@ type DefaultImportManager struct {
 	ConfigDir            string
 	UAAMgr               uaa.Manager
 	SpaceManager         space.Manager
+	SpaceUserManager     spaceusers.Manager
 	OrgManager           organization.Manager
 	SecurityGroupManager securitygroup.Manager
 	IsoSegmentManager    isosegment.Manager
@@ -299,19 +303,19 @@ func (im *DefaultImportManager) addOrgAuditors(orgConfig *config.OrgConfig, user
 }
 
 func (im *DefaultImportManager) addSpaceManagers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
-	spaceMgrs, _ := im.SpaceManager.ListSpaceManagers(spaceGUID)
+	spaceMgrs, _ := im.SpaceUserManager.ListSpaceManagers(spaceGUID)
 	lo.G.Debugf("Found %d Space Managers for Org: %s and  Space:  %s", len(spaceMgrs), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceMgrs, &spaceConfig.Manager.Users, &spaceConfig.Manager.LDAPUsers, &spaceConfig.Manager.SamlUsers, userIDToUserMap)
 }
 
 func (im *DefaultImportManager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
-	spaceDevs, _ := im.SpaceManager.ListSpaceDevelopers(spaceGUID)
+	spaceDevs, _ := im.SpaceUserManager.ListSpaceDevelopers(spaceGUID)
 	lo.G.Debugf("Found %d Space Developers for Org: %s and  Space:  %s", len(spaceDevs), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceDevs, &spaceConfig.Developer.Users, &spaceConfig.Developer.LDAPUsers, &spaceConfig.Developer.SamlUsers, userIDToUserMap)
 }
 
 func (im *DefaultImportManager) addSpaceAuditors(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
-	spaceAuditors, _ := im.SpaceManager.ListSpaceAuditors(spaceGUID)
+	spaceAuditors, _ := im.SpaceUserManager.ListSpaceAuditors(spaceGUID)
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceAuditors, &spaceConfig.Auditor.Users, &spaceConfig.Auditor.LDAPUsers, &spaceConfig.Auditor.SamlUsers, userIDToUserMap)
 }

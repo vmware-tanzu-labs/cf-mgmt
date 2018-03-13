@@ -7,9 +7,12 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/configcommands"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
+	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
+	"github.com/pivotalservices/cf-mgmt/spacequota"
+	"github.com/pivotalservices/cf-mgmt/spaceusers"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
@@ -18,12 +21,14 @@ type CFMgmt struct {
 	UAAManager              uaa.Manager
 	OrgManager              organization.Manager
 	SpaceManager            space.Manager
+	SpaceUserManager        spaceusers.Manager
 	ConfigManager           config.Updater
 	ConfigDirectory         string
 	UaacToken               string
 	SystemDomain            string
 	SecurityGroupManager    securitygroup.Manager
 	IsolationSegmentManager isosegment.Manager
+	SpaceQuotaManager       spacequota.Manager
 }
 
 type Initialize struct {
@@ -77,10 +82,12 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	if err != nil {
 		return nil, err
 	}
-	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfg, peek)
+	ldapMgr := ldap.NewManager()
 	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.UAAManager, cfg, peek)
-	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgManager, cfMgmt.SecurityGroupManager, cfg, peek)
-
+	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgManager, cfg, peek)
+	cfMgmt.SpaceUserManager = spaceusers.NewManager(client, cfg, cfMgmt.SpaceManager, ldapMgr, cfMgmt.UAAManager, peek)
+	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
+	cfMgmt.SpaceQuotaManager = spacequota.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
 	if isoSegmentManager, err := isosegment.NewManager(client, cfg, peek); err == nil {
 		cfMgmt.IsolationSegmentManager = isoSegmentManager
 	} else {

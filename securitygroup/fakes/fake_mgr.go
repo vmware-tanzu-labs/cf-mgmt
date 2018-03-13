@@ -9,10 +9,18 @@ import (
 )
 
 type FakeManager struct {
-	CreateApplicationSecurityGroupsStub        func() error
+	CreateApplicationSecurityGroupsStub        func(configDir string) error
 	createApplicationSecurityGroupsMutex       sync.RWMutex
-	createApplicationSecurityGroupsArgsForCall []struct{}
-	createApplicationSecurityGroupsReturns     struct {
+	createApplicationSecurityGroupsArgsForCall []struct {
+		configDir string
+	}
+	createApplicationSecurityGroupsReturns struct {
+		result1 error
+	}
+	CreateGlobalSecurityGroupsStub        func() error
+	createGlobalSecurityGroupsMutex       sync.RWMutex
+	createGlobalSecurityGroupsArgsForCall []struct{}
+	createGlobalSecurityGroupsReturns     struct {
 		result1 error
 	}
 	AssignDefaultSecurityGroupsStub        func() error
@@ -86,13 +94,15 @@ type FakeManager struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeManager) CreateApplicationSecurityGroups() error {
+func (fake *FakeManager) CreateApplicationSecurityGroups(configDir string) error {
 	fake.createApplicationSecurityGroupsMutex.Lock()
-	fake.createApplicationSecurityGroupsArgsForCall = append(fake.createApplicationSecurityGroupsArgsForCall, struct{}{})
-	fake.recordInvocation("CreateApplicationSecurityGroups", []interface{}{})
+	fake.createApplicationSecurityGroupsArgsForCall = append(fake.createApplicationSecurityGroupsArgsForCall, struct {
+		configDir string
+	}{configDir})
+	fake.recordInvocation("CreateApplicationSecurityGroups", []interface{}{configDir})
 	fake.createApplicationSecurityGroupsMutex.Unlock()
 	if fake.CreateApplicationSecurityGroupsStub != nil {
-		return fake.CreateApplicationSecurityGroupsStub()
+		return fake.CreateApplicationSecurityGroupsStub(configDir)
 	} else {
 		return fake.createApplicationSecurityGroupsReturns.result1
 	}
@@ -104,9 +114,40 @@ func (fake *FakeManager) CreateApplicationSecurityGroupsCallCount() int {
 	return len(fake.createApplicationSecurityGroupsArgsForCall)
 }
 
+func (fake *FakeManager) CreateApplicationSecurityGroupsArgsForCall(i int) string {
+	fake.createApplicationSecurityGroupsMutex.RLock()
+	defer fake.createApplicationSecurityGroupsMutex.RUnlock()
+	return fake.createApplicationSecurityGroupsArgsForCall[i].configDir
+}
+
 func (fake *FakeManager) CreateApplicationSecurityGroupsReturns(result1 error) {
 	fake.CreateApplicationSecurityGroupsStub = nil
 	fake.createApplicationSecurityGroupsReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) CreateGlobalSecurityGroups() error {
+	fake.createGlobalSecurityGroupsMutex.Lock()
+	fake.createGlobalSecurityGroupsArgsForCall = append(fake.createGlobalSecurityGroupsArgsForCall, struct{}{})
+	fake.recordInvocation("CreateGlobalSecurityGroups", []interface{}{})
+	fake.createGlobalSecurityGroupsMutex.Unlock()
+	if fake.CreateGlobalSecurityGroupsStub != nil {
+		return fake.CreateGlobalSecurityGroupsStub()
+	} else {
+		return fake.createGlobalSecurityGroupsReturns.result1
+	}
+}
+
+func (fake *FakeManager) CreateGlobalSecurityGroupsCallCount() int {
+	fake.createGlobalSecurityGroupsMutex.RLock()
+	defer fake.createGlobalSecurityGroupsMutex.RUnlock()
+	return len(fake.createGlobalSecurityGroupsArgsForCall)
+}
+
+func (fake *FakeManager) CreateGlobalSecurityGroupsReturns(result1 error) {
+	fake.CreateGlobalSecurityGroupsStub = nil
+	fake.createGlobalSecurityGroupsReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -365,6 +406,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.createApplicationSecurityGroupsMutex.RLock()
 	defer fake.createApplicationSecurityGroupsMutex.RUnlock()
+	fake.createGlobalSecurityGroupsMutex.RLock()
+	defer fake.createGlobalSecurityGroupsMutex.RUnlock()
 	fake.assignDefaultSecurityGroupsMutex.RLock()
 	defer fake.assignDefaultSecurityGroupsMutex.RUnlock()
 	fake.listNonDefaultSecurityGroupsMutex.RLock()

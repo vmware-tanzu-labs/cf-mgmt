@@ -1,0 +1,11 @@
+---
+org: test
+space: space2
+allow-ssh: false
+enable-space-quota: true
+memory-limit: 10240
+instance-memory-limit: -1
+total-routes: 10
+total-services: -1
+paid-service-plans-allowed: true
+enable-security-group: false

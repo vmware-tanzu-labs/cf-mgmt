@@ -10,7 +10,7 @@ func (c *UpdateSpaceQuotasCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
-		err = cfMgmt.SpaceManager.CreateQuotas(c.ConfigDirectory)
+		err = cfMgmt.SpaceQuotaManager.CreateQuotas(c.ConfigDirectory)
 	}
 	return err
 }

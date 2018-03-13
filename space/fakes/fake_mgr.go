@@ -36,31 +36,6 @@ type FakeManager struct {
 	updateSpacesReturns struct {
 		result1 error
 	}
-	UpdateSpaceUsersStub        func(configDir, ldapBindPassword string) error
-	updateSpaceUsersMutex       sync.RWMutex
-	updateSpaceUsersArgsForCall []struct {
-		configDir        string
-		ldapBindPassword string
-	}
-	updateSpaceUsersReturns struct {
-		result1 error
-	}
-	CreateQuotasStub        func(configDir string) error
-	createQuotasMutex       sync.RWMutex
-	createQuotasArgsForCall []struct {
-		configDir string
-	}
-	createQuotasReturns struct {
-		result1 error
-	}
-	CreateApplicationSecurityGroupsStub        func(configDir string) error
-	createApplicationSecurityGroupsMutex       sync.RWMutex
-	createApplicationSecurityGroupsArgsForCall []struct {
-		configDir string
-	}
-	createApplicationSecurityGroupsReturns struct {
-		result1 error
-	}
 	DeleteSpacesStub        func(configFile string) (err error)
 	deleteSpacesMutex       sync.RWMutex
 	deleteSpacesArgsForCall []struct {
@@ -76,42 +51,6 @@ type FakeManager struct {
 	}
 	listSpacesReturns struct {
 		result1 []go_cfclient.Space
-		result2 error
-	}
-	ListSpaceAuditorsStub        func(spaceGUID string) (map[string]string, error)
-	listSpaceAuditorsMutex       sync.RWMutex
-	listSpaceAuditorsArgsForCall []struct {
-		spaceGUID string
-	}
-	listSpaceAuditorsReturns struct {
-		result1 map[string]string
-		result2 error
-	}
-	ListSpaceDevelopersStub        func(spaceGUID string) (map[string]string, error)
-	listSpaceDevelopersMutex       sync.RWMutex
-	listSpaceDevelopersArgsForCall []struct {
-		spaceGUID string
-	}
-	listSpaceDevelopersReturns struct {
-		result1 map[string]string
-		result2 error
-	}
-	ListSpaceManagersStub        func(spaceGUID string) (map[string]string, error)
-	listSpaceManagersMutex       sync.RWMutex
-	listSpaceManagersArgsForCall []struct {
-		spaceGUID string
-	}
-	listSpaceManagersReturns struct {
-		result1 map[string]string
-		result2 error
-	}
-	SpaceQuotaByNameStub        func(name string) (go_cfclient.SpaceQuota, error)
-	spaceQuotaByNameMutex       sync.RWMutex
-	spaceQuotaByNameArgsForCall []struct {
-		name string
-	}
-	spaceQuotaByNameReturns struct {
-		result1 go_cfclient.SpaceQuota
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -220,106 +159,6 @@ func (fake *FakeManager) UpdateSpacesReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateSpaceUsers(configDir string, ldapBindPassword string) error {
-	fake.updateSpaceUsersMutex.Lock()
-	fake.updateSpaceUsersArgsForCall = append(fake.updateSpaceUsersArgsForCall, struct {
-		configDir        string
-		ldapBindPassword string
-	}{configDir, ldapBindPassword})
-	fake.recordInvocation("UpdateSpaceUsers", []interface{}{configDir, ldapBindPassword})
-	fake.updateSpaceUsersMutex.Unlock()
-	if fake.UpdateSpaceUsersStub != nil {
-		return fake.UpdateSpaceUsersStub(configDir, ldapBindPassword)
-	} else {
-		return fake.updateSpaceUsersReturns.result1
-	}
-}
-
-func (fake *FakeManager) UpdateSpaceUsersCallCount() int {
-	fake.updateSpaceUsersMutex.RLock()
-	defer fake.updateSpaceUsersMutex.RUnlock()
-	return len(fake.updateSpaceUsersArgsForCall)
-}
-
-func (fake *FakeManager) UpdateSpaceUsersArgsForCall(i int) (string, string) {
-	fake.updateSpaceUsersMutex.RLock()
-	defer fake.updateSpaceUsersMutex.RUnlock()
-	return fake.updateSpaceUsersArgsForCall[i].configDir, fake.updateSpaceUsersArgsForCall[i].ldapBindPassword
-}
-
-func (fake *FakeManager) UpdateSpaceUsersReturns(result1 error) {
-	fake.UpdateSpaceUsersStub = nil
-	fake.updateSpaceUsersReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeManager) CreateQuotas(configDir string) error {
-	fake.createQuotasMutex.Lock()
-	fake.createQuotasArgsForCall = append(fake.createQuotasArgsForCall, struct {
-		configDir string
-	}{configDir})
-	fake.recordInvocation("CreateQuotas", []interface{}{configDir})
-	fake.createQuotasMutex.Unlock()
-	if fake.CreateQuotasStub != nil {
-		return fake.CreateQuotasStub(configDir)
-	} else {
-		return fake.createQuotasReturns.result1
-	}
-}
-
-func (fake *FakeManager) CreateQuotasCallCount() int {
-	fake.createQuotasMutex.RLock()
-	defer fake.createQuotasMutex.RUnlock()
-	return len(fake.createQuotasArgsForCall)
-}
-
-func (fake *FakeManager) CreateQuotasArgsForCall(i int) string {
-	fake.createQuotasMutex.RLock()
-	defer fake.createQuotasMutex.RUnlock()
-	return fake.createQuotasArgsForCall[i].configDir
-}
-
-func (fake *FakeManager) CreateQuotasReturns(result1 error) {
-	fake.CreateQuotasStub = nil
-	fake.createQuotasReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeManager) CreateApplicationSecurityGroups(configDir string) error {
-	fake.createApplicationSecurityGroupsMutex.Lock()
-	fake.createApplicationSecurityGroupsArgsForCall = append(fake.createApplicationSecurityGroupsArgsForCall, struct {
-		configDir string
-	}{configDir})
-	fake.recordInvocation("CreateApplicationSecurityGroups", []interface{}{configDir})
-	fake.createApplicationSecurityGroupsMutex.Unlock()
-	if fake.CreateApplicationSecurityGroupsStub != nil {
-		return fake.CreateApplicationSecurityGroupsStub(configDir)
-	} else {
-		return fake.createApplicationSecurityGroupsReturns.result1
-	}
-}
-
-func (fake *FakeManager) CreateApplicationSecurityGroupsCallCount() int {
-	fake.createApplicationSecurityGroupsMutex.RLock()
-	defer fake.createApplicationSecurityGroupsMutex.RUnlock()
-	return len(fake.createApplicationSecurityGroupsArgsForCall)
-}
-
-func (fake *FakeManager) CreateApplicationSecurityGroupsArgsForCall(i int) string {
-	fake.createApplicationSecurityGroupsMutex.RLock()
-	defer fake.createApplicationSecurityGroupsMutex.RUnlock()
-	return fake.createApplicationSecurityGroupsArgsForCall[i].configDir
-}
-
-func (fake *FakeManager) CreateApplicationSecurityGroupsReturns(result1 error) {
-	fake.CreateApplicationSecurityGroupsStub = nil
-	fake.createApplicationSecurityGroupsReturns = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeManager) DeleteSpaces(configFile string) (err error) {
 	fake.deleteSpacesMutex.Lock()
 	fake.deleteSpacesArgsForCall = append(fake.deleteSpacesArgsForCall, struct {
@@ -387,142 +226,6 @@ func (fake *FakeManager) ListSpacesReturns(result1 []go_cfclient.Space, result2 
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListSpaceAuditors(spaceGUID string) (map[string]string, error) {
-	fake.listSpaceAuditorsMutex.Lock()
-	fake.listSpaceAuditorsArgsForCall = append(fake.listSpaceAuditorsArgsForCall, struct {
-		spaceGUID string
-	}{spaceGUID})
-	fake.recordInvocation("ListSpaceAuditors", []interface{}{spaceGUID})
-	fake.listSpaceAuditorsMutex.Unlock()
-	if fake.ListSpaceAuditorsStub != nil {
-		return fake.ListSpaceAuditorsStub(spaceGUID)
-	} else {
-		return fake.listSpaceAuditorsReturns.result1, fake.listSpaceAuditorsReturns.result2
-	}
-}
-
-func (fake *FakeManager) ListSpaceAuditorsCallCount() int {
-	fake.listSpaceAuditorsMutex.RLock()
-	defer fake.listSpaceAuditorsMutex.RUnlock()
-	return len(fake.listSpaceAuditorsArgsForCall)
-}
-
-func (fake *FakeManager) ListSpaceAuditorsArgsForCall(i int) string {
-	fake.listSpaceAuditorsMutex.RLock()
-	defer fake.listSpaceAuditorsMutex.RUnlock()
-	return fake.listSpaceAuditorsArgsForCall[i].spaceGUID
-}
-
-func (fake *FakeManager) ListSpaceAuditorsReturns(result1 map[string]string, result2 error) {
-	fake.ListSpaceAuditorsStub = nil
-	fake.listSpaceAuditorsReturns = struct {
-		result1 map[string]string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListSpaceDevelopers(spaceGUID string) (map[string]string, error) {
-	fake.listSpaceDevelopersMutex.Lock()
-	fake.listSpaceDevelopersArgsForCall = append(fake.listSpaceDevelopersArgsForCall, struct {
-		spaceGUID string
-	}{spaceGUID})
-	fake.recordInvocation("ListSpaceDevelopers", []interface{}{spaceGUID})
-	fake.listSpaceDevelopersMutex.Unlock()
-	if fake.ListSpaceDevelopersStub != nil {
-		return fake.ListSpaceDevelopersStub(spaceGUID)
-	} else {
-		return fake.listSpaceDevelopersReturns.result1, fake.listSpaceDevelopersReturns.result2
-	}
-}
-
-func (fake *FakeManager) ListSpaceDevelopersCallCount() int {
-	fake.listSpaceDevelopersMutex.RLock()
-	defer fake.listSpaceDevelopersMutex.RUnlock()
-	return len(fake.listSpaceDevelopersArgsForCall)
-}
-
-func (fake *FakeManager) ListSpaceDevelopersArgsForCall(i int) string {
-	fake.listSpaceDevelopersMutex.RLock()
-	defer fake.listSpaceDevelopersMutex.RUnlock()
-	return fake.listSpaceDevelopersArgsForCall[i].spaceGUID
-}
-
-func (fake *FakeManager) ListSpaceDevelopersReturns(result1 map[string]string, result2 error) {
-	fake.ListSpaceDevelopersStub = nil
-	fake.listSpaceDevelopersReturns = struct {
-		result1 map[string]string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListSpaceManagers(spaceGUID string) (map[string]string, error) {
-	fake.listSpaceManagersMutex.Lock()
-	fake.listSpaceManagersArgsForCall = append(fake.listSpaceManagersArgsForCall, struct {
-		spaceGUID string
-	}{spaceGUID})
-	fake.recordInvocation("ListSpaceManagers", []interface{}{spaceGUID})
-	fake.listSpaceManagersMutex.Unlock()
-	if fake.ListSpaceManagersStub != nil {
-		return fake.ListSpaceManagersStub(spaceGUID)
-	} else {
-		return fake.listSpaceManagersReturns.result1, fake.listSpaceManagersReturns.result2
-	}
-}
-
-func (fake *FakeManager) ListSpaceManagersCallCount() int {
-	fake.listSpaceManagersMutex.RLock()
-	defer fake.listSpaceManagersMutex.RUnlock()
-	return len(fake.listSpaceManagersArgsForCall)
-}
-
-func (fake *FakeManager) ListSpaceManagersArgsForCall(i int) string {
-	fake.listSpaceManagersMutex.RLock()
-	defer fake.listSpaceManagersMutex.RUnlock()
-	return fake.listSpaceManagersArgsForCall[i].spaceGUID
-}
-
-func (fake *FakeManager) ListSpaceManagersReturns(result1 map[string]string, result2 error) {
-	fake.ListSpaceManagersStub = nil
-	fake.listSpaceManagersReturns = struct {
-		result1 map[string]string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) SpaceQuotaByName(name string) (go_cfclient.SpaceQuota, error) {
-	fake.spaceQuotaByNameMutex.Lock()
-	fake.spaceQuotaByNameArgsForCall = append(fake.spaceQuotaByNameArgsForCall, struct {
-		name string
-	}{name})
-	fake.recordInvocation("SpaceQuotaByName", []interface{}{name})
-	fake.spaceQuotaByNameMutex.Unlock()
-	if fake.SpaceQuotaByNameStub != nil {
-		return fake.SpaceQuotaByNameStub(name)
-	} else {
-		return fake.spaceQuotaByNameReturns.result1, fake.spaceQuotaByNameReturns.result2
-	}
-}
-
-func (fake *FakeManager) SpaceQuotaByNameCallCount() int {
-	fake.spaceQuotaByNameMutex.RLock()
-	defer fake.spaceQuotaByNameMutex.RUnlock()
-	return len(fake.spaceQuotaByNameArgsForCall)
-}
-
-func (fake *FakeManager) SpaceQuotaByNameArgsForCall(i int) string {
-	fake.spaceQuotaByNameMutex.RLock()
-	defer fake.spaceQuotaByNameMutex.RUnlock()
-	return fake.spaceQuotaByNameArgsForCall[i].name
-}
-
-func (fake *FakeManager) SpaceQuotaByNameReturns(result1 go_cfclient.SpaceQuota, result2 error) {
-	fake.SpaceQuotaByNameStub = nil
-	fake.spaceQuotaByNameReturns = struct {
-		result1 go_cfclient.SpaceQuota
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -532,24 +235,10 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.createSpacesMutex.RUnlock()
 	fake.updateSpacesMutex.RLock()
 	defer fake.updateSpacesMutex.RUnlock()
-	fake.updateSpaceUsersMutex.RLock()
-	defer fake.updateSpaceUsersMutex.RUnlock()
-	fake.createQuotasMutex.RLock()
-	defer fake.createQuotasMutex.RUnlock()
-	fake.createApplicationSecurityGroupsMutex.RLock()
-	defer fake.createApplicationSecurityGroupsMutex.RUnlock()
 	fake.deleteSpacesMutex.RLock()
 	defer fake.deleteSpacesMutex.RUnlock()
 	fake.listSpacesMutex.RLock()
 	defer fake.listSpacesMutex.RUnlock()
-	fake.listSpaceAuditorsMutex.RLock()
-	defer fake.listSpaceAuditorsMutex.RUnlock()
-	fake.listSpaceDevelopersMutex.RLock()
-	defer fake.listSpaceDevelopersMutex.RUnlock()
-	fake.listSpaceManagersMutex.RLock()
-	defer fake.listSpaceManagersMutex.RUnlock()
-	fake.spaceQuotaByNameMutex.RLock()
-	defer fake.spaceQuotaByNameMutex.RUnlock()
 	return fake.invocations
 }
 

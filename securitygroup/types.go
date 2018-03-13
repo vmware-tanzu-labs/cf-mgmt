@@ -31,7 +31,8 @@ type Rule struct {
 }
 
 type Manager interface {
-	CreateApplicationSecurityGroups() error
+	CreateApplicationSecurityGroups(configDir string) error
+	CreateGlobalSecurityGroups() error
 	AssignDefaultSecurityGroups() error
 	ListNonDefaultSecurityGroups() (map[string]cfclient.SecGroup, error)
 	ListDefaultSecurityGroups() (map[string]cfclient.SecGroup, error)

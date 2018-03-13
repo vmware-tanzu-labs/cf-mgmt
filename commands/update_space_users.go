@@ -11,7 +11,7 @@ func (c *UpdateSpaceUsersCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
-		err = cfMgmt.SpaceManager.UpdateSpaceUsers(c.ConfigDirectory, c.LdapPassword)
+		err = cfMgmt.SpaceUserManager.UpdateSpaceUsers(c.ConfigDirectory, c.LdapPassword)
 	}
 	return err
 }

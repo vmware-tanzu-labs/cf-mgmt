@@ -1,3 +1,3 @@
 package uaa
 
-//go:generate mockgen -destination mocks/mock_manager.go "github.com/pivotalservices/cf-mgmt/uaa" Manager
+//go:generate counterfeiter -o fakes/fake_mgr.go uaa.go Manager

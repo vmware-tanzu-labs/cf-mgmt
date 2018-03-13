@@ -20,6 +20,7 @@ func (c *ExportConfigurationCommand) Execute([]string) error {
 		exportManager := export.NewExportManager(c.ConfigDirectory,
 			cfMgmt.UAAManager,
 			cfMgmt.SpaceManager,
+			cfMgmt.SpaceUserManager,
 			cfMgmt.OrgManager,
 			cfMgmt.SecurityGroupManager,
 			cfMgmt.IsolationSegmentManager)

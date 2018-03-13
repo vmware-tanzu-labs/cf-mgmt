@@ -7,25 +7,80 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/xchapter7x/lo"
 )
 
 //NewManager -
-func NewManager(client CFClient, cfg config.Reader, peek bool) Manager {
+func NewManager(client CFClient, spaceMgr space.Manager, cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
-		Cfg:    cfg,
-		Client: client,
-		Peek:   peek,
+		Cfg:          cfg,
+		Client:       client,
+		SpaceManager: spaceMgr,
+		Peek:         peek,
 	}
 }
 
 //DefaultSecurityGroupManager -
 type DefaultManager struct {
-	Cfg         config.Reader
-	FilePattern string
-	FilePaths   []string
-	Client      CFClient
-	Peek        bool
+	Cfg          config.Reader
+	SpaceManager space.Manager
+	Client       CFClient
+	Peek         bool
+}
+
+//CreateApplicationSecurityGroups -
+func (m *DefaultManager) CreateApplicationSecurityGroups(configDir string) error {
+	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
+	if err != nil {
+		return err
+	}
+	sgs, err := m.ListNonDefaultSecurityGroups()
+	if err != nil {
+		return err
+	}
+
+	for _, input := range spaceConfigs {
+		space, err := m.SpaceManager.FindSpace(input.Org, input.Space)
+		if err != nil {
+			return err
+		}
+
+		// iterate through and assign named security groups to the space - ensuring that they are up to date is
+		// done elsewhere.
+		for _, securityGroupName := range input.ASGs {
+			lo.G.Debug("Security Group name: " + securityGroupName)
+			if sgInfo, ok := sgs[securityGroupName]; ok {
+				lo.G.Infof("Binding NAMED security group %s to space %s", securityGroupName, space.Name)
+				m.AssignSecurityGroupToSpace(space.Guid, sgInfo.Guid)
+			} else {
+				return fmt.Errorf("Security group [%s] does not exist", securityGroupName)
+			}
+		}
+
+		if input.EnableSecurityGroup {
+			sgName := fmt.Sprintf("%s-%s", input.Org, input.Space)
+			var sgGUID string
+			if sgInfo, ok := sgs[sgName]; ok {
+				lo.G.Info("Updating security group", sgName)
+				if err := m.UpdateSecurityGroup(sgInfo.Guid, sgName, input.SecurityGroupContents); err != nil {
+					return err
+				}
+				sgGUID = sgInfo.Guid
+			} else {
+				lo.G.Info("Creating security group", sgName)
+				securityGroup, err := m.CreateSecurityGroup(sgName, input.SecurityGroupContents)
+				if err != nil {
+					return err
+				}
+				sgs[sgName] = *securityGroup
+				sgGUID = securityGroup.Guid
+			}
+			lo.G.Infof("Binding security group %s to space %s", sgName, space.Name)
+			return m.AssignSecurityGroupToSpace(space.Guid, sgGUID)
+		}
+	}
+	return nil
 }
 
 func (m *DefaultManager) ListSecurityGroups() (map[string]cfclient.SecGroup, error) {
@@ -41,8 +96,8 @@ func (m *DefaultManager) ListSecurityGroups() (map[string]cfclient.SecGroup, err
 	return securityGroups, nil
 }
 
-//CreateApplicationSecurityGroups -
-func (m *DefaultManager) CreateApplicationSecurityGroups() error {
+//CreateGlobalSecurityGroups -
+func (m *DefaultManager) CreateGlobalSecurityGroups() error {
 	sgs, err := m.ListSecurityGroups()
 	if err != nil {
 		return err
