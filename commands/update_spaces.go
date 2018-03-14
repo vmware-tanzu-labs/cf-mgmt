@@ -10,7 +10,7 @@ func (c *UpdateSpacesCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
-		err = cfMgmt.SpaceManager.UpdateSpaces(c.ConfigDirectory)
+		err = cfMgmt.SpaceManager.UpdateSpaces()
 	}
 	return err
 }

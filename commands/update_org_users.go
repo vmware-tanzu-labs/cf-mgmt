@@ -8,10 +8,11 @@ type UpdateOrgUsersCommand struct {
 
 //Execute - updates orgs quotas
 func (c *UpdateOrgUsersCommand) Execute([]string) error {
-	var cfMgmt *CFMgmt
-	var err error
-	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
-		err = cfMgmt.OrgManager.UpdateOrgUsers(c.ConfigDirectory, c.LdapPassword)
+	if cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
+		if err := cfMgmt.OrgManager.InitializeLdap(c.LdapPassword); err != nil {
+			return err
+		}
+		return cfMgmt.OrgManager.UpdateOrgUsers()
 	}
-	return err
+	return nil
 }

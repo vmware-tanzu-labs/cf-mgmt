@@ -6,6 +6,7 @@ import (
 
 //Manager -
 type Manager interface {
+	InitializeLdap(ldapBindPassword string) error
 	ListOrgs() ([]cfclient.Org, error)
 	ListOrgSharedPrivateDomains(orgGUID string) (map[string]cfclient.Domain, error)
 	ListOrgOwnedPrivateDomains(orgGUID string) (map[string]cfclient.Domain, error)
@@ -14,7 +15,7 @@ type Manager interface {
 	CreatePrivateDomains() error
 	SharePrivateDomains() error
 	DeleteOrgs() error
-	UpdateOrgUsers(configDir, ldapBindPassword string) error
+	UpdateOrgUsers() error
 	CreateQuotas() error
 	GetOrgGUID(orgName string) (string, error)
 	ListOrgAuditors(orgGUID string) (map[string]string, error)

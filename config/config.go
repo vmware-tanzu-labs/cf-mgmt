@@ -50,6 +50,7 @@ type Reader interface {
 	GetSpaceDefaults() (*SpaceConfig, error)
 	GetOrgConfig(orgName string) (*OrgConfig, error)
 	GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, error)
+	LdapConfig(bindPassword string) (*LdapConfig, error)
 }
 
 // NewManager creates a Manager that is backed by a set of YAML

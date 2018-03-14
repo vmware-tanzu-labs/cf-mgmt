@@ -9,9 +9,9 @@ import (
 //Manager -
 type Manager interface {
 	FindSpace(orgName, spaceName string) (cfclient.Space, error)
-	CreateSpaces(configDir, ldapBindPassword string) error
-	UpdateSpaces(configDir string) (err error)
-	DeleteSpaces(configFile string) (err error)
+	CreateSpaces() error
+	UpdateSpaces() (err error)
+	DeleteSpaces() (err error)
 	ListSpaces(orgGUID string) ([]cfclient.Space, error)
 }
 

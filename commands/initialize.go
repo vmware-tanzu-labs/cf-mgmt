@@ -7,7 +7,6 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/configcommands"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
-	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
@@ -82,10 +81,9 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	if err != nil {
 		return nil, err
 	}
-	ldapMgr := ldap.NewManager()
 	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.UAAManager, cfg, peek)
 	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgManager, cfg, peek)
-	cfMgmt.SpaceUserManager = spaceusers.NewManager(client, cfg, cfMgmt.SpaceManager, ldapMgr, cfMgmt.UAAManager, peek)
+	cfMgmt.SpaceUserManager = spaceusers.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.UAAManager, peek)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
 	cfMgmt.SpaceQuotaManager = spacequota.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
 	if isoSegmentManager, err := isosegment.NewManager(client, cfg, peek); err == nil {

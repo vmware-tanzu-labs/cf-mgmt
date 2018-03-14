@@ -19,29 +19,22 @@ type FakeManager struct {
 		result1 go_cfclient.Space
 		result2 error
 	}
-	CreateSpacesStub        func(configDir, ldapBindPassword string) error
+	CreateSpacesStub        func() error
 	createSpacesMutex       sync.RWMutex
-	createSpacesArgsForCall []struct {
-		configDir        string
-		ldapBindPassword string
-	}
-	createSpacesReturns struct {
+	createSpacesArgsForCall []struct{}
+	createSpacesReturns     struct {
 		result1 error
 	}
-	UpdateSpacesStub        func(configDir string) (err error)
+	UpdateSpacesStub        func() (err error)
 	updateSpacesMutex       sync.RWMutex
-	updateSpacesArgsForCall []struct {
-		configDir string
-	}
-	updateSpacesReturns struct {
+	updateSpacesArgsForCall []struct{}
+	updateSpacesReturns     struct {
 		result1 error
 	}
-	DeleteSpacesStub        func(configFile string) (err error)
+	DeleteSpacesStub        func() (err error)
 	deleteSpacesMutex       sync.RWMutex
-	deleteSpacesArgsForCall []struct {
-		configFile string
-	}
-	deleteSpacesReturns struct {
+	deleteSpacesArgsForCall []struct{}
+	deleteSpacesReturns     struct {
 		result1 error
 	}
 	ListSpacesStub        func(orgGUID string) ([]go_cfclient.Space, error)
@@ -92,16 +85,13 @@ func (fake *FakeManager) FindSpaceReturns(result1 go_cfclient.Space, result2 err
 	}{result1, result2}
 }
 
-func (fake *FakeManager) CreateSpaces(configDir string, ldapBindPassword string) error {
+func (fake *FakeManager) CreateSpaces() error {
 	fake.createSpacesMutex.Lock()
-	fake.createSpacesArgsForCall = append(fake.createSpacesArgsForCall, struct {
-		configDir        string
-		ldapBindPassword string
-	}{configDir, ldapBindPassword})
-	fake.recordInvocation("CreateSpaces", []interface{}{configDir, ldapBindPassword})
+	fake.createSpacesArgsForCall = append(fake.createSpacesArgsForCall, struct{}{})
+	fake.recordInvocation("CreateSpaces", []interface{}{})
 	fake.createSpacesMutex.Unlock()
 	if fake.CreateSpacesStub != nil {
-		return fake.CreateSpacesStub(configDir, ldapBindPassword)
+		return fake.CreateSpacesStub()
 	} else {
 		return fake.createSpacesReturns.result1
 	}
@@ -113,12 +103,6 @@ func (fake *FakeManager) CreateSpacesCallCount() int {
 	return len(fake.createSpacesArgsForCall)
 }
 
-func (fake *FakeManager) CreateSpacesArgsForCall(i int) (string, string) {
-	fake.createSpacesMutex.RLock()
-	defer fake.createSpacesMutex.RUnlock()
-	return fake.createSpacesArgsForCall[i].configDir, fake.createSpacesArgsForCall[i].ldapBindPassword
-}
-
 func (fake *FakeManager) CreateSpacesReturns(result1 error) {
 	fake.CreateSpacesStub = nil
 	fake.createSpacesReturns = struct {
@@ -126,15 +110,13 @@ func (fake *FakeManager) CreateSpacesReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateSpaces(configDir string) (err error) {
+func (fake *FakeManager) UpdateSpaces() (err error) {
 	fake.updateSpacesMutex.Lock()
-	fake.updateSpacesArgsForCall = append(fake.updateSpacesArgsForCall, struct {
-		configDir string
-	}{configDir})
-	fake.recordInvocation("UpdateSpaces", []interface{}{configDir})
+	fake.updateSpacesArgsForCall = append(fake.updateSpacesArgsForCall, struct{}{})
+	fake.recordInvocation("UpdateSpaces", []interface{}{})
 	fake.updateSpacesMutex.Unlock()
 	if fake.UpdateSpacesStub != nil {
-		return fake.UpdateSpacesStub(configDir)
+		return fake.UpdateSpacesStub()
 	} else {
 		return fake.updateSpacesReturns.result1
 	}
@@ -146,12 +128,6 @@ func (fake *FakeManager) UpdateSpacesCallCount() int {
 	return len(fake.updateSpacesArgsForCall)
 }
 
-func (fake *FakeManager) UpdateSpacesArgsForCall(i int) string {
-	fake.updateSpacesMutex.RLock()
-	defer fake.updateSpacesMutex.RUnlock()
-	return fake.updateSpacesArgsForCall[i].configDir
-}
-
 func (fake *FakeManager) UpdateSpacesReturns(result1 error) {
 	fake.UpdateSpacesStub = nil
 	fake.updateSpacesReturns = struct {
@@ -159,15 +135,13 @@ func (fake *FakeManager) UpdateSpacesReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) DeleteSpaces(configFile string) (err error) {
+func (fake *FakeManager) DeleteSpaces() (err error) {
 	fake.deleteSpacesMutex.Lock()
-	fake.deleteSpacesArgsForCall = append(fake.deleteSpacesArgsForCall, struct {
-		configFile string
-	}{configFile})
-	fake.recordInvocation("DeleteSpaces", []interface{}{configFile})
+	fake.deleteSpacesArgsForCall = append(fake.deleteSpacesArgsForCall, struct{}{})
+	fake.recordInvocation("DeleteSpaces", []interface{}{})
 	fake.deleteSpacesMutex.Unlock()
 	if fake.DeleteSpacesStub != nil {
-		return fake.DeleteSpacesStub(configFile)
+		return fake.DeleteSpacesStub()
 	} else {
 		return fake.deleteSpacesReturns.result1
 	}
@@ -177,12 +151,6 @@ func (fake *FakeManager) DeleteSpacesCallCount() int {
 	fake.deleteSpacesMutex.RLock()
 	defer fake.deleteSpacesMutex.RUnlock()
 	return len(fake.deleteSpacesArgsForCall)
-}
-
-func (fake *FakeManager) DeleteSpacesArgsForCall(i int) string {
-	fake.deleteSpacesMutex.RLock()
-	defer fake.deleteSpacesMutex.RUnlock()
-	return fake.deleteSpacesArgsForCall[i].configFile
 }
 
 func (fake *FakeManager) DeleteSpacesReturns(result1 error) {

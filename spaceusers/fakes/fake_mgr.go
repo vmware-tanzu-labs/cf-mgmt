@@ -8,13 +8,18 @@ import (
 )
 
 type FakeManager struct {
-	UpdateSpaceUsersStub        func(configDir, ldapBindPassword string) error
-	updateSpaceUsersMutex       sync.RWMutex
-	updateSpaceUsersArgsForCall []struct {
-		configDir        string
+	InitializeLdapStub        func(ldapBindPassword string) error
+	initializeLdapMutex       sync.RWMutex
+	initializeLdapArgsForCall []struct {
 		ldapBindPassword string
 	}
-	updateSpaceUsersReturns struct {
+	initializeLdapReturns struct {
+		result1 error
+	}
+	UpdateSpaceUsersStub        func() error
+	updateSpaceUsersMutex       sync.RWMutex
+	updateSpaceUsersArgsForCall []struct{}
+	updateSpaceUsersReturns     struct {
 		result1 error
 	}
 	RemoveSpaceAuditorByUsernameStub        func(spaceGUID, userName string) error
@@ -105,16 +110,46 @@ type FakeManager struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeManager) UpdateSpaceUsers(configDir string, ldapBindPassword string) error {
-	fake.updateSpaceUsersMutex.Lock()
-	fake.updateSpaceUsersArgsForCall = append(fake.updateSpaceUsersArgsForCall, struct {
-		configDir        string
+func (fake *FakeManager) InitializeLdap(ldapBindPassword string) error {
+	fake.initializeLdapMutex.Lock()
+	fake.initializeLdapArgsForCall = append(fake.initializeLdapArgsForCall, struct {
 		ldapBindPassword string
-	}{configDir, ldapBindPassword})
-	fake.recordInvocation("UpdateSpaceUsers", []interface{}{configDir, ldapBindPassword})
+	}{ldapBindPassword})
+	fake.recordInvocation("InitializeLdap", []interface{}{ldapBindPassword})
+	fake.initializeLdapMutex.Unlock()
+	if fake.InitializeLdapStub != nil {
+		return fake.InitializeLdapStub(ldapBindPassword)
+	} else {
+		return fake.initializeLdapReturns.result1
+	}
+}
+
+func (fake *FakeManager) InitializeLdapCallCount() int {
+	fake.initializeLdapMutex.RLock()
+	defer fake.initializeLdapMutex.RUnlock()
+	return len(fake.initializeLdapArgsForCall)
+}
+
+func (fake *FakeManager) InitializeLdapArgsForCall(i int) string {
+	fake.initializeLdapMutex.RLock()
+	defer fake.initializeLdapMutex.RUnlock()
+	return fake.initializeLdapArgsForCall[i].ldapBindPassword
+}
+
+func (fake *FakeManager) InitializeLdapReturns(result1 error) {
+	fake.InitializeLdapStub = nil
+	fake.initializeLdapReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) UpdateSpaceUsers() error {
+	fake.updateSpaceUsersMutex.Lock()
+	fake.updateSpaceUsersArgsForCall = append(fake.updateSpaceUsersArgsForCall, struct{}{})
+	fake.recordInvocation("UpdateSpaceUsers", []interface{}{})
 	fake.updateSpaceUsersMutex.Unlock()
 	if fake.UpdateSpaceUsersStub != nil {
-		return fake.UpdateSpaceUsersStub(configDir, ldapBindPassword)
+		return fake.UpdateSpaceUsersStub()
 	} else {
 		return fake.updateSpaceUsersReturns.result1
 	}
@@ -124,12 +159,6 @@ func (fake *FakeManager) UpdateSpaceUsersCallCount() int {
 	fake.updateSpaceUsersMutex.RLock()
 	defer fake.updateSpaceUsersMutex.RUnlock()
 	return len(fake.updateSpaceUsersArgsForCall)
-}
-
-func (fake *FakeManager) UpdateSpaceUsersArgsForCall(i int) (string, string) {
-	fake.updateSpaceUsersMutex.RLock()
-	defer fake.updateSpaceUsersMutex.RUnlock()
-	return fake.updateSpaceUsersArgsForCall[i].configDir, fake.updateSpaceUsersArgsForCall[i].ldapBindPassword
 }
 
 func (fake *FakeManager) UpdateSpaceUsersReturns(result1 error) {
@@ -451,6 +480,8 @@ func (fake *FakeManager) AssociateSpaceManagerByUsernameReturns(result1 error) {
 func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.initializeLdapMutex.RLock()
+	defer fake.initializeLdapMutex.RUnlock()
 	fake.updateSpaceUsersMutex.RLock()
 	defer fake.updateSpaceUsersMutex.RUnlock()
 	fake.removeSpaceAuditorByUsernameMutex.RLock()

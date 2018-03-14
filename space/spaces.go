@@ -6,7 +6,6 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
@@ -16,25 +15,22 @@ import (
 func NewManager(client CFClient, uaaMgr uaa.Manager,
 	orgMgr organization.Manager,
 	cfg config.Reader, peek bool) Manager {
-	ldapMgr := ldap.NewManager()
 	return &DefaultManager{
-		Cfg:     cfg,
-		UAAMgr:  uaaMgr,
-		Client:  client,
-		OrgMgr:  orgMgr,
-		LdapMgr: ldapMgr,
-		Peek:    peek,
+		Cfg:    cfg,
+		UAAMgr: uaaMgr,
+		Client: client,
+		OrgMgr: orgMgr,
+		Peek:   peek,
 	}
 }
 
 //DefaultManager -
 type DefaultManager struct {
-	Cfg     config.Reader
-	Client  CFClient
-	UAAMgr  uaa.Manager
-	OrgMgr  organization.Manager
-	LdapMgr ldap.Manager
-	Peek    bool
+	Cfg    config.Reader
+	Client CFClient
+	UAAMgr uaa.Manager
+	OrgMgr organization.Manager
+	Peek   bool
 }
 
 func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error {
@@ -55,7 +51,7 @@ func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, spaceGUID string) error
 }
 
 //UpdateSpaces -
-func (m *DefaultManager) UpdateSpaces(configDir string) error {
+func (m *DefaultManager) UpdateSpaces() error {
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		return err
@@ -113,7 +109,7 @@ func (m *DefaultManager) CreateSpace(spaceName, orgGUID string) error {
 }
 
 //CreateSpaces -
-func (m *DefaultManager) CreateSpaces(configDir, ldapBindPassword string) error {
+func (m *DefaultManager) CreateSpaces() error {
 	configSpaceList, err := m.Cfg.Spaces()
 	if err != nil {
 		return err
@@ -140,43 +136,10 @@ func (m *DefaultManager) CreateSpaces(configDir, ldapBindPassword string) error 
 				lo.G.Error(err)
 				return err
 			}
-			/*if err = m.UpdateSpaceWithDefaults(configDir, spaceName, input.Org, ldapBindPassword); err != nil {
-				lo.G.Error(err)
-				return err
-			}*/
 		}
 	}
 	return nil
 }
-
-/*func (m *DefaultManager) UpdateSpaceWithDefaults(configDir, spaceName, orgName, ldapBindPassword string) error {
-	defaults, err := m.Cfg.GetSpaceDefaults()
-	if err != nil || defaults == nil {
-		return nil
-	}
-
-	var ldapCfg *ldap.Config
-	if ldapBindPassword == "" {
-		ldapCfg = &ldap.Config{
-			Enabled: false,
-		}
-	} else {
-		if ldapCfg, err = m.LdapMgr.GetConfig(configDir, ldapBindPassword); err != nil {
-			lo.G.Error(err)
-			return err
-		}
-	}
-
-	uaaUsers, err := m.UAAMgr.ListUsers()
-	if err != nil {
-		lo.G.Error(err)
-		return err
-	}
-
-	defaults.Org = orgName
-	defaults.Space = spaceName
-	return m.updateSpaceUsers(ldapCfg, defaults, uaaUsers)
-}*/
 
 func (m *DefaultManager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
 	for _, space := range spaces {
@@ -187,7 +150,7 @@ func (m *DefaultManager) doesSpaceExist(spaces []cfclient.Space, spaceName strin
 	return false
 }
 
-func (m *DefaultManager) DeleteSpaces(configDir string) error {
+func (m *DefaultManager) DeleteSpaces() error {
 	configSpaceList, err := m.Cfg.Spaces()
 	if err != nil {
 		return err

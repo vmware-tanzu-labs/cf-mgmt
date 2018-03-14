@@ -207,6 +207,15 @@ type FakeManager struct {
 		result1 *config.SpaceConfig
 		result2 error
 	}
+	LdapConfigStub        func(bindPassword string) (*config.LdapConfig, error)
+	ldapConfigMutex       sync.RWMutex
+	ldapConfigArgsForCall []struct {
+		bindPassword string
+	}
+	ldapConfigReturns struct {
+		result1 *config.LdapConfig
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -996,6 +1005,40 @@ func (fake *FakeManager) GetSpaceConfigReturns(result1 *config.SpaceConfig, resu
 	}{result1, result2}
 }
 
+func (fake *FakeManager) LdapConfig(bindPassword string) (*config.LdapConfig, error) {
+	fake.ldapConfigMutex.Lock()
+	fake.ldapConfigArgsForCall = append(fake.ldapConfigArgsForCall, struct {
+		bindPassword string
+	}{bindPassword})
+	fake.recordInvocation("LdapConfig", []interface{}{bindPassword})
+	fake.ldapConfigMutex.Unlock()
+	if fake.LdapConfigStub != nil {
+		return fake.LdapConfigStub(bindPassword)
+	} else {
+		return fake.ldapConfigReturns.result1, fake.ldapConfigReturns.result2
+	}
+}
+
+func (fake *FakeManager) LdapConfigCallCount() int {
+	fake.ldapConfigMutex.RLock()
+	defer fake.ldapConfigMutex.RUnlock()
+	return len(fake.ldapConfigArgsForCall)
+}
+
+func (fake *FakeManager) LdapConfigArgsForCall(i int) string {
+	fake.ldapConfigMutex.RLock()
+	defer fake.ldapConfigMutex.RUnlock()
+	return fake.ldapConfigArgsForCall[i].bindPassword
+}
+
+func (fake *FakeManager) LdapConfigReturns(result1 *config.LdapConfig, result2 error) {
+	fake.LdapConfigStub = nil
+	fake.ldapConfigReturns = struct {
+		result1 *config.LdapConfig
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -1049,6 +1092,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.getOrgConfigMutex.RUnlock()
 	fake.getSpaceConfigMutex.RLock()
 	defer fake.getSpaceConfigMutex.RUnlock()
+	fake.ldapConfigMutex.RLock()
+	defer fake.ldapConfigMutex.RUnlock()
 	return fake.invocations
 }
 

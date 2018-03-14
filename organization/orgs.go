@@ -14,14 +14,11 @@ import (
 )
 
 func NewManager(client CFClient, uaaMgr uaa.Manager, cfg config.Reader, peek bool) Manager {
-	ldapMgr := ldap.NewManager()
 	UserMgr := NewUserManager(client, peek)
-
 	return &DefaultManager{
 		Cfg:     cfg,
 		Client:  client,
 		UAAMgr:  uaaMgr,
-		LdapMgr: ldapMgr,
 		UserMgr: UserMgr,
 		Peek:    peek,
 	}
@@ -352,13 +349,7 @@ func (m *DefaultManager) FindOrg(orgName string) (cfclient.Org, error) {
 }
 
 //UpdateOrgUsers -
-func (m *DefaultManager) UpdateOrgUsers(configDir, ldapBindPassword string) error {
-	config, err := m.LdapMgr.GetConfig(configDir, ldapBindPassword)
-	if err != nil {
-		lo.G.Error(err)
-		return err
-	}
-
+func (m *DefaultManager) UpdateOrgUsers() error {
 	uaacUsers, err := m.UAAMgr.ListUsers()
 	if err != nil {
 		lo.G.Error(err)
@@ -372,21 +363,21 @@ func (m *DefaultManager) UpdateOrgUsers(configDir, ldapBindPassword string) erro
 	}
 
 	for _, input := range orgConfigs {
-		if err := m.updateOrgUsers(config, &input, uaacUsers); err != nil {
+		if err := m.updateOrgUsers(&input, uaacUsers); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (m *DefaultManager) updateOrgUsers(config *ldap.Config, input *config.OrgConfig, uaacUsers map[string]string) error {
+func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[string]string) error {
 	org, err := m.FindOrg(input.Org)
 	if err != nil {
 		return err
 	}
 
 	err = m.syncOrgUsers(
-		config, uaacUsers, UpdateUsersInput{
+		uaacUsers, UpdateUsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
 			LdapGroupNames: input.GetBillingManagerGroups(),
@@ -400,7 +391,7 @@ func (m *DefaultManager) updateOrgUsers(config *ldap.Config, input *config.OrgCo
 	}
 
 	err = m.syncOrgUsers(
-		config, uaacUsers, UpdateUsersInput{
+		uaacUsers, UpdateUsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
 			LdapGroupNames: input.GetAuditorGroups(),
@@ -414,7 +405,7 @@ func (m *DefaultManager) updateOrgUsers(config *ldap.Config, input *config.OrgCo
 	}
 
 	return m.syncOrgUsers(
-		config, uaacUsers, UpdateUsersInput{
+		uaacUsers, UpdateUsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
 			LdapGroupNames: input.GetManagerGroups(),
@@ -426,8 +417,8 @@ func (m *DefaultManager) updateOrgUsers(config *ldap.Config, input *config.OrgCo
 }
 
 //UpdateOrgUsers -
-func (m *DefaultManager) syncOrgUsers(config *ldap.Config, uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error {
-
+func (m *DefaultManager) syncOrgUsers(uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+	config := m.LdapMgr.LdapConfig()
 	orgUsers, err := updateUsersInput.ListUsers(updateUsersInput.OrgGUID)
 
 	if err != nil {
@@ -435,12 +426,12 @@ func (m *DefaultManager) syncOrgUsers(config *ldap.Config, uaacUsers map[string]
 	}
 	if config.Enabled {
 		var ldapUsers []ldap.User
-		ldapUsers, err = m.getLdapUsers(config, updateUsersInput)
+		ldapUsers, err = m.getLdapUsers(updateUsersInput)
 		if err != nil {
 			return err
 		}
 		for _, user := range ldapUsers {
-			err = m.updateLdapUser(config, updateUsersInput, uaacUsers, user, orgUsers)
+			err = m.updateLdapUser(updateUsersInput, uaacUsers, user, orgUsers)
 			if err != nil {
 				return err
 			}
@@ -498,10 +489,11 @@ func (m *DefaultManager) syncOrgUsers(config *ldap.Config, uaacUsers map[string]
 	return nil
 }
 
-func (m *DefaultManager) updateLdapUser(config *ldap.Config, updateUsersInput UpdateUsersInput,
+func (m *DefaultManager) updateLdapUser(updateUsersInput UpdateUsersInput,
 	uaacUsers map[string]string,
 	user ldap.User, orgUsers map[string]string) error {
 
+	config := m.LdapMgr.LdapConfig()
 	userID := user.UserID
 	externalID := user.UserDN
 	if config.Origin != "ldap" {
@@ -538,12 +530,12 @@ func (m *DefaultManager) updateLdapUser(config *ldap.Config, updateUsersInput Up
 	return nil
 }
 
-func (m *DefaultManager) getLdapUsers(config *ldap.Config, updateUsersInput UpdateUsersInput) ([]ldap.User, error) {
+func (m *DefaultManager) getLdapUsers(updateUsersInput UpdateUsersInput) ([]ldap.User, error) {
 	users := []ldap.User{}
 	for _, groupName := range updateUsersInput.LdapGroupNames {
 		if groupName != "" {
 			lo.G.Debug("Finding LDAP user for group:", groupName)
-			if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
+			if groupUsers, err := m.LdapMgr.GetUserIDs(groupName); err == nil {
 				users = append(users, groupUsers...)
 			} else {
 				lo.G.Error(err)
@@ -552,7 +544,7 @@ func (m *DefaultManager) getLdapUsers(config *ldap.Config, updateUsersInput Upda
 		}
 	}
 	for _, user := range updateUsersInput.LdapUsers {
-		if ldapUser, err := m.LdapMgr.GetUser(config, user); err == nil {
+		if ldapUser, err := m.LdapMgr.GetUser(user); err == nil {
 			if ldapUser != nil {
 				users = append(users, *ldapUser)
 			}
@@ -760,4 +752,13 @@ func (m *DefaultManager) ListOrgManagers(orgGUID string) (map[string]string, err
 
 func (m *DefaultManager) OrgQuotaByName(name string) (cfclient.OrgQuota, error) {
 	return m.Client.GetOrgQuotaByName(name)
+}
+
+func (m *DefaultManager) InitializeLdap(ldapBindPassword string) error {
+	ldapMgr, err := ldap.NewManager(m.Cfg, ldapBindPassword)
+	if err != nil {
+		return err
+	}
+	m.LdapMgr = ldapMgr
+	return nil
 }

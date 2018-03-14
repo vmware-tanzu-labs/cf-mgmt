@@ -8,10 +8,11 @@ type UpdateSpaceUsersCommand struct {
 
 //Execute - updates space users
 func (c *UpdateSpaceUsersCommand) Execute([]string) error {
-	var cfMgmt *CFMgmt
-	var err error
-	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
-		err = cfMgmt.SpaceUserManager.UpdateSpaceUsers(c.ConfigDirectory, c.LdapPassword)
+	if cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
+		if err := cfMgmt.SpaceUserManager.InitializeLdap(c.LdapPassword); err != nil {
+			return err
+		}
+		return cfMgmt.SpaceUserManager.UpdateSpaceUsers()
 	}
-	return err
+	return nil
 }

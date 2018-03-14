@@ -2,37 +2,22 @@ package ldap
 
 import (
 	l "github.com/go-ldap/ldap"
+	"github.com/pivotalservices/cf-mgmt/config"
 )
 
 //Manager -
 type Manager interface {
-	GetUserIDs(config *Config, groupName string) (users []User, err error)
-	GetUser(config *Config, userID string) (*User, error)
-	GetConfig(configDir, ldapBindPassword string) (*Config, error)
-	GetLdapUser(config *Config, userDN string) (*User, error)
-	LdapConnection(config *Config) (*l.Conn, error)
-	GetLdapUsers(config *Config, groupNames []string, userList []string) ([]User, error)
+	GetUserIDs(groupName string) (users []User, err error)
+	GetUser(userID string) (*User, error)
+	GetLdapUser(userDN string) (*User, error)
+	LdapConnection() (*l.Conn, error)
+	GetLdapUsers(groupNames []string, userList []string) ([]User, error)
+	LdapConfig() *config.LdapConfig
 }
 
 //DefaultManager -
 type DefaultManager struct {
-}
-
-//Config -
-type Config struct {
-	Enabled           bool   `yaml:"enabled"`
-	LdapHost          string `yaml:"ldapHost"`
-	LdapPort          int    `yaml:"ldapPort"`
-	TLS               bool   `yaml:"use_tls"`
-	BindDN            string `yaml:"bindDN"`
-	BindPassword      string `yaml:"bindPwd,omitempty"`
-	UserSearchBase    string `yaml:"userSearchBase"`
-	UserNameAttribute string `yaml:"userNameAttribute"`
-	UserMailAttribute string `yaml:"userMailAttribute"`
-	UserObjectClass   string `yaml:"userObjectClass"`
-	GroupSearchBase   string `yaml:"groupSearchBase"`
-	GroupAttribute    string `yaml:"groupAttribute"`
-	Origin            string `yaml:"origin"`
+	Config *config.LdapConfig
 }
 
 //User -

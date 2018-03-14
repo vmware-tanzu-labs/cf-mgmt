@@ -17,21 +17,19 @@ func NewManager(
 	client CFClient,
 	cfg config.Reader,
 	spaceMgr space.Manager,
-	ldapMgr ldap.Manager,
 	uaaMgr uaa.Manager,
 	peek bool) Manager {
 	return &DefaultManager{
-		client:   client,
+		Client:   client,
 		Peek:     peek,
 		SpaceMgr: spaceMgr,
-		LdapMgr:  ldapMgr,
 		UAAMgr:   uaaMgr,
 		Cfg:      cfg,
 	}
 }
 
 type DefaultManager struct {
-	client   CFClient
+	Client   CFClient
 	Cfg      config.Reader
 	SpaceMgr space.Manager
 	LdapMgr  ldap.Manager
@@ -39,50 +37,59 @@ type DefaultManager struct {
 	Peek     bool
 }
 
+func (m *DefaultManager) InitializeLdap(ldapBindPassword string) error {
+	ldapMgr, err := ldap.NewManager(m.Cfg, ldapBindPassword)
+	if err != nil {
+		return err
+	}
+	m.LdapMgr = ldapMgr
+	return nil
+}
+
 func (m *DefaultManager) RemoveSpaceAuditorByUsername(spaceGUID, userName string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: removing user %s from GUID %s with role %s", userName, spaceGUID, "Auditor")
 		return nil
 	}
-	return m.client.RemoveSpaceAuditorByUsername(spaceGUID, userName)
+	return m.Client.RemoveSpaceAuditorByUsername(spaceGUID, userName)
 }
 func (m *DefaultManager) RemoveSpaceDeveloperByUsername(spaceGUID, userName string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: removing user %s from GUID %s with role %s", userName, spaceGUID, "Developer")
 		return nil
 	}
-	return m.client.RemoveSpaceDeveloperByUsername(spaceGUID, userName)
+	return m.Client.RemoveSpaceDeveloperByUsername(spaceGUID, userName)
 }
 func (m *DefaultManager) RemoveSpaceManagerByUsername(spaceGUID, userName string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: removing user %s from GUID %s with role %s", userName, spaceGUID, "Manager")
 		return nil
 	}
-	return m.client.RemoveSpaceManagerByUsername(spaceGUID, userName)
+	return m.Client.RemoveSpaceManagerByUsername(spaceGUID, userName)
 }
 func (m *DefaultManager) ListSpaceAuditors(spaceGUID string) (map[string]string, error) {
-	users, err := m.client.ListSpaceAuditors(spaceGUID)
+	users, err := m.Client.ListSpaceAuditors(spaceGUID)
 	if err != nil {
 		return nil, err
 	}
 	return m.userListToMap(users), nil
 }
 func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string) (map[string]string, error) {
-	users, err := m.client.ListSpaceDevelopers(spaceGUID)
+	users, err := m.Client.ListSpaceDevelopers(spaceGUID)
 	if err != nil {
 		return nil, err
 	}
 	return m.userListToMap(users), nil
 }
 func (m *DefaultManager) ListSpaceManagers(spaceGUID string) (map[string]string, error) {
-	users, err := m.client.ListSpaceManagers(spaceGUID)
+	users, err := m.Client.ListSpaceManagers(spaceGUID)
 	if err != nil {
 		return nil, err
 	}
 	return m.userListToMap(users), nil
 }
 func (m *DefaultManager) associateOrgUserByUsername(orgGUID, userName string) error {
-	_, err := m.client.AssociateOrgUserByUsername(orgGUID, userName)
+	_, err := m.Client.AssociateOrgUserByUsername(orgGUID, userName)
 	return err
 }
 
@@ -103,7 +110,7 @@ func (m *DefaultManager) AssociateSpaceAuditorByUsername(orgGUID, spaceGUID, use
 	if err != nil {
 		return err
 	}
-	_, err = m.client.AssociateSpaceAuditorByUsername(spaceGUID, userName)
+	_, err = m.Client.AssociateSpaceAuditorByUsername(spaceGUID, userName)
 	return err
 }
 func (m *DefaultManager) AssociateSpaceDeveloperByUsername(orgGUID, spaceGUID, userName string) error {
@@ -115,7 +122,7 @@ func (m *DefaultManager) AssociateSpaceDeveloperByUsername(orgGUID, spaceGUID, u
 	if err != nil {
 		return err
 	}
-	_, err = m.client.AssociateSpaceDeveloperByUsername(spaceGUID, userName)
+	_, err = m.Client.AssociateSpaceDeveloperByUsername(spaceGUID, userName)
 	return err
 }
 func (m *DefaultManager) AssociateSpaceManagerByUsername(orgGUID, spaceGUID, userName string) error {
@@ -127,18 +134,12 @@ func (m *DefaultManager) AssociateSpaceManagerByUsername(orgGUID, spaceGUID, use
 	if err != nil {
 		return err
 	}
-	_, err = m.client.AssociateSpaceManagerByUsername(spaceGUID, userName)
+	_, err = m.Client.AssociateSpaceManagerByUsername(spaceGUID, userName)
 	return err
 }
 
 //UpdateSpaceUsers -
-func (m *DefaultManager) UpdateSpaceUsers(configDir, ldapBindPassword string) error {
-	config, err := m.LdapMgr.GetConfig(configDir, ldapBindPassword)
-	if err != nil {
-		lo.G.Error(err)
-		return err
-	}
-
+func (m *DefaultManager) UpdateSpaceUsers() error {
 	uaaUsers, err := m.UAAMgr.ListUsers()
 	if err != nil {
 		lo.G.Error(err)
@@ -152,7 +153,7 @@ func (m *DefaultManager) UpdateSpaceUsers(configDir, ldapBindPassword string) er
 	}
 
 	for _, input := range spaceConfigs {
-		if err := m.updateSpaceUsers(config, &input, uaaUsers); err != nil {
+		if err := m.updateSpaceUsers(&input, uaaUsers); err != nil {
 			return err
 		}
 	}
@@ -160,12 +161,12 @@ func (m *DefaultManager) UpdateSpaceUsers(configDir, ldapBindPassword string) er
 	return nil
 }
 
-func (m *DefaultManager) updateSpaceUsers(config *ldap.Config, input *config.SpaceConfig, uaaUsers map[string]string) error {
+func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers map[string]string) error {
 	space, err := m.SpaceMgr.FindSpace(input.Org, input.Space)
 	if err != nil {
 		return err
 	}
-	if err = m.syncSpaceUsers(config, uaaUsers, UpdateUsersInput{
+	if err = m.SyncSpaceUsers(uaaUsers, UpdateUsersInput{
 		SpaceName:      space.Name,
 		SpaceGUID:      space.Guid,
 		OrgName:        input.Org,
@@ -182,7 +183,7 @@ func (m *DefaultManager) updateSpaceUsers(config *ldap.Config, input *config.Spa
 		return err
 	}
 
-	if err = m.syncSpaceUsers(config, uaaUsers,
+	if err = m.SyncSpaceUsers(uaaUsers,
 		UpdateUsersInput{
 			SpaceName:      space.Name,
 			SpaceGUID:      space.Guid,
@@ -199,7 +200,7 @@ func (m *DefaultManager) updateSpaceUsers(config *ldap.Config, input *config.Spa
 		}); err != nil {
 		return err
 	}
-	if err = m.syncSpaceUsers(config, uaaUsers,
+	if err = m.SyncSpaceUsers(uaaUsers,
 		UpdateUsersInput{
 			SpaceName:      space.Name,
 			SpaceGUID:      space.Guid,
@@ -219,114 +220,138 @@ func (m *DefaultManager) updateSpaceUsers(config *ldap.Config, input *config.Spa
 	return nil
 }
 
-//UpdateSpaceUsers Update space users
-func (m *DefaultManager) syncSpaceUsers(config *ldap.Config, uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error {
-	spaceUsers, err := updateUsersInput.ListUsers(updateUsersInput.SpaceGUID)
+//SyncSpaceUsers
+func (m *DefaultManager) SyncSpaceUsers(uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+	roleUsers, err := updateUsersInput.ListUsers(updateUsersInput.SpaceGUID)
 	if err != nil {
 		return err
 	}
 
-	lo.G.Debugf("SpaceUsers before: %v", spaceUsers)
+	lo.G.Debugf("RoleUsers before: %v", roleUsers)
+	if err := m.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
+		return err
+	}
+	if err := m.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
+		return err
+	}
+	if err := m.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
+		return err
+	}
+	if err := m.RemoveUsers(roleUsers, updateUsersInput); err != nil {
+		return err
+	}
+	lo.G.Debugf("RoleUsers after: %v", roleUsers)
+	return nil
+}
+
+func (m *DefaultManager) SyncLdapUsers(roleUsers, uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+	config := m.LdapMgr.LdapConfig()
 	if config.Enabled {
-		var ldapUsers []ldap.User
-		ldapUsers, err = m.LdapMgr.GetLdapUsers(config, updateUsersInput.LdapGroupNames, updateUsersInput.LdapUsers)
+		ldapUsers, err := m.LdapMgr.GetLdapUsers(updateUsersInput.LdapGroupNames, updateUsersInput.LdapUsers)
 		if err != nil {
 			return err
 		}
 		lo.G.Debugf("LdapUsers: %v", ldapUsers)
-		for _, user := range ldapUsers {
-			err = m.updateLdapUser(config, updateUsersInput, uaaUsers, user, spaceUsers)
-			if err != nil {
-				return err
+		for _, inputUser := range ldapUsers {
+			userToUse := m.UpdateUserInfo(inputUser)
+			config := m.LdapMgr.LdapConfig()
+			userID := userToUse.UserID
+			if _, ok := roleUsers[userID]; !ok {
+				lo.G.Debugf("User[%s] not found in: %v", userID, roleUsers)
+				if _, userExists := uaaUsers[userID]; !userExists {
+					lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
+					if err := m.UAAMgr.CreateExternalUser(userID, userToUse.Email, userToUse.UserDN, config.Origin); err != nil {
+						lo.G.Error("Unable to create user", userID)
+						continue
+					} else {
+						uaaUsers[userID] = userID
+					}
+				}
+				if err := updateUsersInput.AddUser(updateUsersInput.OrgGUID, updateUsersInput.SpaceGUID, userID); err != nil {
+					return err
+				}
+			} else {
+				delete(roleUsers, userID)
 			}
 		}
 	} else {
 		lo.G.Debug("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
+	return nil
+}
+
+func (m *DefaultManager) SyncInternalUsers(roleUsers, uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error {
 	for _, userID := range updateUsersInput.Users {
 		lowerUserID := strings.ToLower(userID)
 		if _, userExists := uaaUsers[lowerUserID]; !userExists {
 			return fmt.Errorf("user %s doesn't exist in cloud foundry, so must add internal user first", lowerUserID)
 		}
-		if _, ok := spaceUsers[lowerUserID]; !ok {
-			if err = updateUsersInput.AddUser(updateUsersInput.OrgGUID, updateUsersInput.SpaceGUID, userID); err != nil {
-				lo.G.Error(err)
+		if _, ok := roleUsers[lowerUserID]; !ok {
+			if err := updateUsersInput.AddUser(updateUsersInput.OrgGUID, updateUsersInput.SpaceGUID, userID); err != nil {
 				return err
 			}
 		} else {
-			delete(spaceUsers, lowerUserID)
+			delete(roleUsers, lowerUserID)
 		}
 	}
+	return nil
+}
 
+func (m *DefaultManager) SyncSamlUsers(roleUsers, uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+	config := m.LdapMgr.LdapConfig()
 	for _, userEmail := range updateUsersInput.SamlUsers {
 		lowerUserEmail := strings.ToLower(userEmail)
 		if _, userExists := uaaUsers[lowerUserEmail]; !userExists {
 			lo.G.Debug("User", userEmail, "doesn't exist in cloud foundry, so creating user")
-			if err = m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
+			if err := m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
 				lo.G.Error("Unable to create user", userEmail)
-				return err
+				continue
 			} else {
 				uaaUsers[userEmail] = userEmail
 			}
 		}
-		if _, ok := spaceUsers[lowerUserEmail]; !ok {
-			if err = updateUsersInput.AddUser(updateUsersInput.OrgGUID, updateUsersInput.SpaceGUID, userEmail); err != nil {
-				lo.G.Error(err)
+		if _, ok := roleUsers[lowerUserEmail]; !ok {
+			if err := updateUsersInput.AddUser(updateUsersInput.OrgGUID, updateUsersInput.SpaceGUID, userEmail); err != nil {
 				return err
 			}
 		} else {
-			delete(spaceUsers, lowerUserEmail)
+			delete(roleUsers, lowerUserEmail)
 		}
 	}
+	return nil
+}
+
+func (m *DefaultManager) RemoveUsers(roleUsers map[string]string, updateUsersInput UpdateUsersInput) error {
 	if updateUsersInput.RemoveUsers {
 		lo.G.Debugf("Deleting users for org/space: %s/%s", updateUsersInput.OrgName, updateUsersInput.SpaceName)
-		for spaceUser, _ := range spaceUsers {
-			err = updateUsersInput.RemoveUser(updateUsersInput.SpaceGUID, spaceUser)
-			if err != nil {
-				lo.G.Errorf("Cloud controller API error: %s", err)
+		for roleUser, _ := range roleUsers {
+			if err := updateUsersInput.RemoveUser(updateUsersInput.SpaceGUID, roleUser); err != nil {
 				return err
 			}
 		}
 	} else {
 		lo.G.Debugf("Not removing users. Set enable-remove-users: true to spaceConfig for org/space: %s/%s", updateUsersInput.OrgName, updateUsersInput.SpaceName)
 	}
-
-	lo.G.Debugf("SpaceUsers after: %v", spaceUsers)
 	return nil
 }
 
-func (m *DefaultManager) updateLdapUser(config *ldap.Config, updateUsersInput UpdateUsersInput,
-	uaaUsers map[string]string,
-	user ldap.User, spaceUsers map[string]string) error {
-
-	userID := user.UserID
+func (m *DefaultManager) UpdateUserInfo(user ldap.User) ldap.User {
+	config := m.LdapMgr.LdapConfig()
+	userID := strings.ToLower(user.UserID)
 	externalID := user.UserDN
+	email := user.Email
 	if config.Origin != "ldap" {
-		userID = user.Email
+		userID = strings.ToLower(user.Email)
 		externalID = user.Email
 	} else {
-		if user.Email == "" {
-			user.Email = fmt.Sprintf("%s@user.from.ldap.cf", userID)
+		if email == "" {
+			email = fmt.Sprintf("%s@user.from.ldap.cf", userID)
 		}
 	}
-	userID = strings.ToLower(userID)
 
-	if _, ok := spaceUsers[userID]; !ok {
-		lo.G.Debugf("User[%s] not found in: %v", userID, spaceUsers)
-		if _, userExists := uaaUsers[userID]; !userExists {
-			lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
-			if err := m.UAAMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
-				lo.G.Error("Unable to create user", userID)
-				return nil
-			} else {
-				uaaUsers[userID] = userID
-			}
-		}
-		if err := updateUsersInput.AddUser(updateUsersInput.OrgGUID, updateUsersInput.SpaceGUID, userID); err != nil {
-			return err
-		}
-	} else {
-		delete(spaceUsers, userID)
+	return ldap.User{
+		UserID: userID,
+		UserDN: externalID,
+		Email:  email,
 	}
-	return nil
 }

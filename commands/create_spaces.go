@@ -2,7 +2,6 @@ package commands
 
 type CreateSpacesCommand struct {
 	BaseCFConfigCommand
-	BaseLDAPCommand
 	BasePeekCommand
 }
 
@@ -11,7 +10,7 @@ func (c *CreateSpacesCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
-		err = cfMgmt.SpaceManager.CreateSpaces(c.ConfigDirectory, c.LdapPassword)
+		err = cfMgmt.SpaceManager.CreateSpaces()
 	}
 	return err
 }

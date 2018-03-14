@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/pivotalservices/cf-mgmt/config"
 	. "github.com/pivotalservices/cf-mgmt/ldap"
 
 	. "github.com/onsi/ginkgo"
@@ -13,7 +14,6 @@ import (
 
 var _ = Describe("Ldap", func() {
 	var ldapManager Manager
-	var config *Config
 	Describe("given a ldap manager", func() {
 		BeforeEach(func() {
 			var host string
@@ -25,50 +25,51 @@ var _ = Describe("Ldap", func() {
 				host = os.Getenv("LDAP_PORT_389_TCP_ADDR")
 				port, _ = strconv.Atoi(os.Getenv("LDAP_PORT_389_TCP_PORT"))
 			}
-			ldapManager = &DefaultManager{}
-			config = &Config{
-				BindDN:            "cn=admin,dc=pivotal,dc=org",
-				BindPassword:      "password",
-				UserSearchBase:    "dc=pivotal,dc=org",
-				UserNameAttribute: "uid",
-				UserMailAttribute: "mail",
-				GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
-				GroupAttribute:    "member",
-				LdapHost:          host,
-				LdapPort:          port,
+			ldapManager = &DefaultManager{
+				Config: &config.LdapConfig{
+					BindDN:            "cn=admin,dc=pivotal,dc=org",
+					BindPassword:      "password",
+					UserSearchBase:    "dc=pivotal,dc=org",
+					UserNameAttribute: "uid",
+					UserMailAttribute: "mail",
+					GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
+					GroupAttribute:    "member",
+					LdapHost:          host,
+					LdapPort:          port,
+				},
 			}
 		})
 		Context("when cn with special characters", func() {
 			It("then it should return 1 Entry", func() {
-				entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
+				entry, err := ldapManager.GetLdapUser("cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
 				Ω(err).Should(BeNil())
 				Ω(entry).ShouldNot(BeNil())
 			})
 		})
 		Context("when cn has a period", func() {
 			It("then it should return 1 Entry", func() {
-				entry, err := ldapManager.GetLdapUser(config, "cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org")
+				entry, err := ldapManager.GetLdapUser("cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org")
 				Ω(err).Should(BeNil())
 				Ω(entry).ShouldNot(BeNil())
 			})
 		})
 		Context("when called with a valid group", func() {
 			It("then it should return 5 users", func() {
-				users, err := ldapManager.GetUserIDs(config, "space_developers")
+				users, err := ldapManager.GetUserIDs("space_developers")
 				Ω(err).Should(BeNil())
 				Ω(len(users)).Should(Equal(5))
 			})
 		})
 		Context("when called with a valid group with special characters", func() {
 			It("then it should return 4 users", func() {
-				users, err := ldapManager.GetUserIDs(config, "special (char) group,name")
+				users, err := ldapManager.GetUserIDs("special (char) group,name")
 				Ω(err).Should(BeNil())
 				Ω(len(users)).Should(Equal(4))
 			})
 		})
 		Context("GetUser()", func() {
 			It("then it should return 1 user", func() {
-				user, err := ldapManager.GetUser(config, "cwashburn")
+				user, err := ldapManager.GetUser("cwashburn")
 				Ω(err).Should(BeNil())
 				Ω(user).ShouldNot(BeNil())
 				Ω(user.UserID).Should(Equal("cwashburn"))
@@ -88,30 +89,31 @@ var _ = Describe("Ldap", func() {
 					host = os.Getenv("LDAP_PORT_389_TCP_ADDR")
 					port, _ = strconv.Atoi(os.Getenv("LDAP_PORT_389_TCP_PORT"))
 				}
-				ldapManager = &DefaultManager{}
-				config = &Config{
-					BindDN:            "cn=admin,dc=pivotal,dc=org",
-					BindPassword:      "password",
-					UserSearchBase:    "dc=pivotal,dc=org",
-					UserNameAttribute: "uid",
-					UserMailAttribute: "mail",
-					GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
-					GroupAttribute:    "member",
-					LdapHost:          host,
-					LdapPort:          port,
-					UserObjectClass:   "inetOrgPerson",
+				ldapManager = &DefaultManager{
+					Config: &config.LdapConfig{
+						BindDN:            "cn=admin,dc=pivotal,dc=org",
+						BindPassword:      "password",
+						UserSearchBase:    "dc=pivotal,dc=org",
+						UserNameAttribute: "uid",
+						UserMailAttribute: "mail",
+						GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
+						GroupAttribute:    "member",
+						LdapHost:          host,
+						LdapPort:          port,
+						UserObjectClass:   "inetOrgPerson",
+					},
 				}
 			})
 			Context("when cn with special characters", func() {
 				It("then it should return 1 Entry", func() {
-					entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
+					entry, err := ldapManager.GetLdapUser("cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
 					Ω(err).Should(BeNil())
 					Ω(entry).ShouldNot(BeNil())
 				})
 			})
 			Context("GetUser()", func() {
 				It("then it should return 1 user", func() {
-					user, err := ldapManager.GetUser(config, "cwashburn")
+					user, err := ldapManager.GetUser("cwashburn")
 					Ω(err).Should(BeNil())
 					Ω(user).ShouldNot(BeNil())
 					Ω(user.UserID).Should(Equal("cwashburn"))
@@ -123,7 +125,7 @@ var _ = Describe("Ldap", func() {
 		Context("GetLdapUser()", func() {
 			It("then it should return 1 user", func() {
 				data, _ := ioutil.ReadFile("./fixtures/user1.txt")
-				user, err := ldapManager.GetLdapUser(config, string(data))
+				user, err := ldapManager.GetLdapUser(string(data))
 				Ω(err).Should(BeNil())
 				Ω(user).ShouldNot(BeNil())
 				Ω(user.UserID).Should(Equal("cwashburn2"))

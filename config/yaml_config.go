@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/xchapter7x/lo"
 )
 
@@ -394,7 +393,7 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	if err := m.SaveGlobalConfig(&GlobalConfig{}); err != nil {
 		return err
 	}
-	if err := WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &ldap.Config{TLS: false, Origin: uaaOrigin}); err != nil {
+	if err := WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &LdapConfig{TLS: false, Origin: uaaOrigin}); err != nil {
 		return err
 	}
 
@@ -430,4 +429,21 @@ func (m *yamlManager) DeleteConfigIfExists() error {
 	}
 	lo.G.Info("Config directory deleted")
 	return nil
+}
+
+func (m *yamlManager) LdapConfig(ldapBindPassword string) (*LdapConfig, error) {
+	config := &LdapConfig{}
+	err := LoadFile(path.Join(m.ConfigDir, "ldap.yml"), config)
+	if err != nil {
+		return nil, err
+	}
+	if ldapBindPassword != "" {
+		config.BindPassword = ldapBindPassword
+	} else {
+		lo.G.Warning("Ldap bind password should be removed from ldap.yml as this will be deprecated in a future release.  Use --ldap-password flag instead.")
+	}
+	if config.Origin == "" {
+		config.Origin = "ldap"
+	}
+	return config, nil
 }

@@ -9,6 +9,14 @@ import (
 )
 
 type FakeManager struct {
+	InitializeLdapStub        func(ldapBindPassword string) error
+	initializeLdapMutex       sync.RWMutex
+	initializeLdapArgsForCall []struct {
+		ldapBindPassword string
+	}
+	initializeLdapReturns struct {
+		result1 error
+	}
 	ListOrgsStub        func() ([]go_cfclient.Org, error)
 	listOrgsMutex       sync.RWMutex
 	listOrgsArgsForCall []struct{}
@@ -67,13 +75,10 @@ type FakeManager struct {
 	deleteOrgsReturns     struct {
 		result1 error
 	}
-	UpdateOrgUsersStub        func(configDir, ldapBindPassword string) error
+	UpdateOrgUsersStub        func() error
 	updateOrgUsersMutex       sync.RWMutex
-	updateOrgUsersArgsForCall []struct {
-		configDir        string
-		ldapBindPassword string
-	}
-	updateOrgUsersReturns struct {
+	updateOrgUsersArgsForCall []struct{}
+	updateOrgUsersReturns     struct {
 		result1 error
 	}
 	CreateQuotasStub        func() error
@@ -129,6 +134,39 @@ type FakeManager struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeManager) InitializeLdap(ldapBindPassword string) error {
+	fake.initializeLdapMutex.Lock()
+	fake.initializeLdapArgsForCall = append(fake.initializeLdapArgsForCall, struct {
+		ldapBindPassword string
+	}{ldapBindPassword})
+	fake.recordInvocation("InitializeLdap", []interface{}{ldapBindPassword})
+	fake.initializeLdapMutex.Unlock()
+	if fake.InitializeLdapStub != nil {
+		return fake.InitializeLdapStub(ldapBindPassword)
+	} else {
+		return fake.initializeLdapReturns.result1
+	}
+}
+
+func (fake *FakeManager) InitializeLdapCallCount() int {
+	fake.initializeLdapMutex.RLock()
+	defer fake.initializeLdapMutex.RUnlock()
+	return len(fake.initializeLdapArgsForCall)
+}
+
+func (fake *FakeManager) InitializeLdapArgsForCall(i int) string {
+	fake.initializeLdapMutex.RLock()
+	defer fake.initializeLdapMutex.RUnlock()
+	return fake.initializeLdapArgsForCall[i].ldapBindPassword
+}
+
+func (fake *FakeManager) InitializeLdapReturns(result1 error) {
+	fake.InitializeLdapStub = nil
+	fake.initializeLdapReturns = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeManager) ListOrgs() ([]go_cfclient.Org, error) {
@@ -359,16 +397,13 @@ func (fake *FakeManager) DeleteOrgsReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateOrgUsers(configDir string, ldapBindPassword string) error {
+func (fake *FakeManager) UpdateOrgUsers() error {
 	fake.updateOrgUsersMutex.Lock()
-	fake.updateOrgUsersArgsForCall = append(fake.updateOrgUsersArgsForCall, struct {
-		configDir        string
-		ldapBindPassword string
-	}{configDir, ldapBindPassword})
-	fake.recordInvocation("UpdateOrgUsers", []interface{}{configDir, ldapBindPassword})
+	fake.updateOrgUsersArgsForCall = append(fake.updateOrgUsersArgsForCall, struct{}{})
+	fake.recordInvocation("UpdateOrgUsers", []interface{}{})
 	fake.updateOrgUsersMutex.Unlock()
 	if fake.UpdateOrgUsersStub != nil {
-		return fake.UpdateOrgUsersStub(configDir, ldapBindPassword)
+		return fake.UpdateOrgUsersStub()
 	} else {
 		return fake.updateOrgUsersReturns.result1
 	}
@@ -378,12 +413,6 @@ func (fake *FakeManager) UpdateOrgUsersCallCount() int {
 	fake.updateOrgUsersMutex.RLock()
 	defer fake.updateOrgUsersMutex.RUnlock()
 	return len(fake.updateOrgUsersArgsForCall)
-}
-
-func (fake *FakeManager) UpdateOrgUsersArgsForCall(i int) (string, string) {
-	fake.updateOrgUsersMutex.RLock()
-	defer fake.updateOrgUsersMutex.RUnlock()
-	return fake.updateOrgUsersArgsForCall[i].configDir, fake.updateOrgUsersArgsForCall[i].ldapBindPassword
 }
 
 func (fake *FakeManager) UpdateOrgUsersReturns(result1 error) {
@@ -591,6 +620,8 @@ func (fake *FakeManager) OrgQuotaByNameReturns(result1 go_cfclient.OrgQuota, res
 func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.initializeLdapMutex.RLock()
+	defer fake.initializeLdapMutex.RUnlock()
 	fake.listOrgsMutex.RLock()
 	defer fake.listOrgsMutex.RUnlock()
 	fake.listOrgSharedPrivateDomainsMutex.RLock()
