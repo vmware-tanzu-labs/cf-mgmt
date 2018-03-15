@@ -11,7 +11,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/spacequota"
-	"github.com/pivotalservices/cf-mgmt/spaceusers"
+	"github.com/pivotalservices/cf-mgmt/users"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
@@ -20,7 +20,7 @@ type CFMgmt struct {
 	UAAManager              uaa.Manager
 	OrgManager              organization.Manager
 	SpaceManager            space.Manager
-	SpaceUserManager        spaceusers.Manager
+	SpaceUserManager        users.Manager
 	ConfigManager           config.Updater
 	ConfigDirectory         string
 	UaacToken               string
@@ -83,7 +83,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	}
 	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.UAAManager, cfg, peek)
 	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgManager, cfg, peek)
-	cfMgmt.SpaceUserManager = spaceusers.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.UAAManager, peek)
+	cfMgmt.SpaceUserManager = users.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.UAAManager, peek)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
 	cfMgmt.SpaceQuotaManager = spacequota.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
 	if isoSegmentManager, err := isosegment.NewManager(client, cfg, peek); err == nil {

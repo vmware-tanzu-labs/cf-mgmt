@@ -1,4 +1,4 @@
-package spaceusers
+package users
 
 import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"

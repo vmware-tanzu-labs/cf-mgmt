@@ -1,4 +1,4 @@
-package spaceusers_test
+package users_test
 
 import (
 	"errors"
@@ -9,9 +9,9 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap"
 	ldapfakes "github.com/pivotalservices/cf-mgmt/ldap/fakes"
-	. "github.com/pivotalservices/cf-mgmt/spaceusers"
-	"github.com/pivotalservices/cf-mgmt/spaceusers/fakes"
 	uaafakes "github.com/pivotalservices/cf-mgmt/uaa/fakes"
+	. "github.com/pivotalservices/cf-mgmt/users"
+	"github.com/pivotalservices/cf-mgmt/users/fakes"
 )
 
 var _ = Describe("given UserSpaces", func() {

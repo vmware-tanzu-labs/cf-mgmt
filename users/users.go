@@ -1,4 +1,4 @@
-package spaceusers
+package users
 
 import (
 	"fmt"

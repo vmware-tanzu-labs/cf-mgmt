@@ -1,4 +1,4 @@
-package spaceusers_test
+package users_test
 
 import (
 	. "github.com/onsi/ginkgo"

@@ -8,7 +8,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
-	"github.com/pivotalservices/cf-mgmt/spaceusers"
+	"github.com/pivotalservices/cf-mgmt/users"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
@@ -18,7 +18,7 @@ func NewExportManager(
 	configDir string,
 	uaaMgr uaa.Manager,
 	spaceManager space.Manager,
-	spaceUserManager spaceusers.Manager,
+	spaceUserManager users.Manager,
 	orgManager organization.Manager,
 	securityGroupManager securitygroup.Manager,
 	isoSegmentMgr isosegment.Manager) Manager {
@@ -38,7 +38,7 @@ type DefaultImportManager struct {
 	ConfigDir            string
 	UAAMgr               uaa.Manager
 	SpaceManager         space.Manager
-	SpaceUserManager     spaceusers.Manager
+	SpaceUserManager     users.Manager
 	OrgManager           organization.Manager
 	SecurityGroupManager securitygroup.Manager
 	IsoSegmentManager    isosegment.Manager

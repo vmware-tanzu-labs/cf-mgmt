@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	"github.com/pivotalservices/cf-mgmt/spaceusers"
+	"github.com/pivotalservices/cf-mgmt/users"
 )
 
 type FakeManager struct {
@@ -517,4 +517,4 @@ func (fake *FakeManager) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ spaceusers.Manager = new(FakeManager)
+var _ users.Manager = new(FakeManager)
