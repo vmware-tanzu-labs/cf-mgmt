@@ -511,6 +511,57 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(client.AssociateOrgUserByUsernameCallCount()).Should(Equal(0))
 				Expect(client.AssociateSpaceAuditorByUsernameCallCount()).Should(Equal(0))
 			})
+		})
+
+		Context("Remove Users", func() {
+			It("Should remove users", func() {
+				roleUsers := make(map[string]string)
+				roleUsers["test"] = "test"
+				updateUsersInput := UpdateUsersInput{
+					RemoveUsers: true,
+					SpaceGUID:   "space_guid",
+					OrgGUID:     "org_guid",
+					RemoveUser:  userManager.RemoveSpaceAuditorByUsername,
+				}
+
+				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.RemoveSpaceAuditorByUsernameCallCount()).Should(Equal(1))
+
+				spaceGUID, userName := client.RemoveSpaceAuditorByUsernameArgsForCall(0)
+				Expect(spaceGUID).Should(Equal("space_guid"))
+				Expect(userName).Should(Equal("test"))
+			})
+
+			It("Should not remove users", func() {
+				roleUsers := make(map[string]string)
+				roleUsers["test"] = "test"
+				updateUsersInput := UpdateUsersInput{
+					RemoveUsers: false,
+					SpaceGUID:   "space_guid",
+					OrgGUID:     "org_guid",
+					RemoveUser:  userManager.RemoveSpaceAuditorByUsername,
+				}
+
+				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.RemoveSpaceAuditorByUsernameCallCount()).Should(Equal(0))
+			})
+
+			It("Should return error", func() {
+				roleUsers := make(map[string]string)
+				roleUsers["test"] = "test"
+				updateUsersInput := UpdateUsersInput{
+					RemoveUsers: true,
+					SpaceGUID:   "space_guid",
+					OrgGUID:     "org_guid",
+					RemoveUser:  userManager.RemoveSpaceAuditorByUsername,
+				}
+				client.RemoveSpaceAuditorByUsernameReturns(errors.New("error"))
+				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
+				Expect(err).Should(HaveOccurred())
+				Expect(client.RemoveSpaceAuditorByUsernameCallCount()).Should(Equal(1))
+			})
 
 		})
 
