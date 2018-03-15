@@ -7,12 +7,8 @@ import (
 //Manager -
 type Manager interface {
 	ListOrgs() ([]cfclient.Org, error)
-	ListOrgSharedPrivateDomains(orgGUID string) (map[string]cfclient.Domain, error)
-	ListOrgOwnedPrivateDomains(orgGUID string) (map[string]cfclient.Domain, error)
 	FindOrg(orgName string) (cfclient.Org, error)
 	CreateOrgs() error
-	CreatePrivateDomains() error
-	SharePrivateDomains() error
 	DeleteOrgs() error
 	GetOrgGUID(orgName string) (string, error)
 	UpdateOrg(orgGUID string, orgRequest cfclient.OrgRequest) (cfclient.Org, error)

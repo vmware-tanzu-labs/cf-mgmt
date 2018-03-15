@@ -6,6 +6,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/privatedomain"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
@@ -21,7 +22,8 @@ func NewExportManager(
 	userManager user.Manager,
 	orgManager organization.Manager,
 	securityGroupManager securitygroup.Manager,
-	isoSegmentMgr isosegment.Manager) Manager {
+	isoSegmentMgr isosegment.Manager,
+	privateDomainMgr privatedomain.Manager) Manager {
 	return &DefaultImportManager{
 		ConfigDir:            configDir,
 		UAAMgr:               uaaMgr,
@@ -30,6 +32,7 @@ func NewExportManager(
 		OrgManager:           orgManager,
 		SecurityGroupManager: securityGroupManager,
 		IsoSegmentManager:    isoSegmentMgr,
+		PrivateDomainManager: privateDomainMgr,
 	}
 }
 
@@ -42,6 +45,7 @@ type DefaultImportManager struct {
 	OrgManager           organization.Manager
 	SecurityGroupManager securitygroup.Manager
 	IsoSegmentManager    isosegment.Manager
+	PrivateDomainManager privatedomain.Manager
 }
 
 //ExportConfig Imports org and space configuration from an existing CF instance
@@ -148,7 +152,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			}
 		}
 
-		privatedomains, err := im.OrgManager.ListOrgSharedPrivateDomains(org.Guid)
+		privatedomains, err := im.PrivateDomainManager.ListOrgSharedPrivateDomains(org.Guid)
 		if err != nil {
 			return err
 		}
@@ -156,7 +160,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			orgConfig.SharedPrivateDomains = append(orgConfig.SharedPrivateDomains, privatedomain)
 		}
 
-		privatedomains, err = im.OrgManager.ListOrgOwnedPrivateDomains(org.Guid)
+		privatedomains, err = im.PrivateDomainManager.ListOrgOwnedPrivateDomains(org.Guid)
 		if err != nil {
 			return err
 		}

@@ -10,7 +10,7 @@ func (c *SharePrivateDomainsCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
-		err = cfMgmt.OrgManager.SharePrivateDomains()
+		err = cfMgmt.PrivateDomainManager.SharePrivateDomains()
 	}
 	return err
 }

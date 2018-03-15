@@ -8,6 +8,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/configcommands"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/privatedomain"
 	"github.com/pivotalservices/cf-mgmt/quota"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
@@ -22,6 +23,7 @@ type CFMgmt struct {
 	SpaceManager            space.Manager
 	UserManager             user.Manager
 	QuotaManager            quota.Manager
+	PrivateDomainManager    privatedomain.Manager
 	ConfigManager           config.Updater
 	ConfigDirectory         string
 	UaacToken               string
@@ -86,6 +88,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	cfMgmt.UserManager = user.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.OrgManager, cfMgmt.UAAManager, peek)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
 	cfMgmt.QuotaManager = quota.NewManager(client, cfMgmt.SpaceManager, cfMgmt.OrgManager, cfg, peek)
+	cfMgmt.PrivateDomainManager = privatedomain.NewManager(client, cfMgmt.OrgManager, cfg, peek)
 	if isoSegmentManager, err := isosegment.NewManager(client, cfg, peek); err == nil {
 		cfMgmt.IsolationSegmentManager = isoSegmentManager
 	} else {
