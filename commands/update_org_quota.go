@@ -10,7 +10,7 @@ func (c *UpdateOrgQuotasCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
-		err = cfMgmt.OrgManager.CreateQuotas()
+		err = cfMgmt.QuotaManager.CreateOrgQuotas()
 	}
 	return err
 }

@@ -8,11 +8,11 @@ import (
 	"github.com/pivotalservices/cf-mgmt/configcommands"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/quota"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/space"
-	"github.com/pivotalservices/cf-mgmt/spacequota"
-	"github.com/pivotalservices/cf-mgmt/users"
 	"github.com/pivotalservices/cf-mgmt/uaa"
+	"github.com/pivotalservices/cf-mgmt/user"
 	"github.com/xchapter7x/lo"
 )
 
@@ -20,14 +20,14 @@ type CFMgmt struct {
 	UAAManager              uaa.Manager
 	OrgManager              organization.Manager
 	SpaceManager            space.Manager
-	SpaceUserManager        users.Manager
+	UserManager             user.Manager
+	QuotaManager            quota.Manager
 	ConfigManager           config.Updater
 	ConfigDirectory         string
 	UaacToken               string
 	SystemDomain            string
 	SecurityGroupManager    securitygroup.Manager
 	IsolationSegmentManager isosegment.Manager
-	SpaceQuotaManager       spacequota.Manager
 }
 
 type Initialize struct {
@@ -81,11 +81,11 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	if err != nil {
 		return nil, err
 	}
-	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.UAAManager, cfg, peek)
+	cfMgmt.OrgManager = organization.NewManager(client, cfg, peek)
 	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgManager, cfg, peek)
-	cfMgmt.SpaceUserManager = users.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.UAAManager, peek)
+	cfMgmt.UserManager = user.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.OrgManager, cfMgmt.UAAManager, peek)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
-	cfMgmt.SpaceQuotaManager = spacequota.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
+	cfMgmt.QuotaManager = quota.NewManager(client, cfMgmt.SpaceManager, cfMgmt.OrgManager, cfg, peek)
 	if isoSegmentManager, err := isosegment.NewManager(client, cfg, peek); err == nil {
 		cfMgmt.IsolationSegmentManager = isoSegmentManager
 	} else {

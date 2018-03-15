@@ -4,93 +4,25 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/ldap"
-	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(client CFClient, uaaMgr uaa.Manager, cfg config.Reader, peek bool) Manager {
-	UserMgr := NewUserManager(client, peek)
+func NewManager(client CFClient, cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
-		Cfg:     cfg,
-		Client:  client,
-		UAAMgr:  uaaMgr,
-		UserMgr: UserMgr,
-		Peek:    peek,
+		Cfg:    cfg,
+		Client: client,
+		Peek:   peek,
 	}
 }
 
 //DefaultManager -
 type DefaultManager struct {
-	Cfg     config.Reader
-	Client  CFClient
-	UAAMgr  uaa.Manager
-	LdapMgr ldap.Manager
-	UserMgr UserMgr
-	Peek    bool
-}
-
-//CreateQuotas -
-func (m *DefaultManager) CreateQuotas() error {
-	orgs, err := m.Cfg.GetOrgConfigs()
-	if err != nil {
-		return err
-	}
-
-	quotas, err := m.ListAllOrgQuotas()
-	if err != nil {
-		return err
-	}
-
-	for _, input := range orgs {
-		if !input.EnableOrgQuota {
-			continue
-		}
-
-		org, err := m.FindOrg(input.Org)
-		if err != nil {
-			return err
-		}
-		quotaName := org.Name
-		quota := cfclient.OrgQuotaRequest{
-			Name:                    quotaName,
-			MemoryLimit:             input.MemoryLimit,
-			InstanceMemoryLimit:     input.InstanceMemoryLimit,
-			TotalRoutes:             input.TotalRoutes,
-			TotalServices:           input.TotalServices,
-			NonBasicServicesAllowed: input.PaidServicePlansAllowed,
-			TotalPrivateDomains:     input.TotalPrivateDomains,
-			TotalReservedRoutePorts: input.TotalReservedRoutePorts,
-			TotalServiceKeys:        input.TotalServiceKeys,
-			AppInstanceLimit:        input.AppInstanceLimit,
-		}
-		if quotaGUID, ok := quotas[quotaName]; ok {
-			lo.G.Debug("Updating quota", quotaName)
-
-			if err = m.UpdateQuota(quotaGUID, quota); err != nil {
-				return err
-			}
-			lo.G.Debug("Assigning", quotaName, "to", org.Name)
-			if err = m.AssignQuotaToOrg(org.Guid, quotaGUID); err != nil {
-				return err
-			}
-		} else {
-			lo.G.Debug("Creating quota", quotaName)
-			targetQuotaGUID, err := m.CreateQuota(quota)
-			if err != nil {
-				return err
-			}
-			lo.G.Debug("Assigning", quotaName, "to", org.Name)
-			if err := m.AssignQuotaToOrg(org.Guid, targetQuotaGUID); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+	Cfg    config.Reader
+	Client CFClient
+	Peek   bool
 }
 
 func (m *DefaultManager) GetOrgGUID(orgName string) (string, error) {
@@ -348,265 +280,6 @@ func (m *DefaultManager) FindOrg(orgName string) (cfclient.Org, error) {
 	return cfclient.Org{}, fmt.Errorf("org %q not found", orgName)
 }
 
-//UpdateOrgUsers -
-func (m *DefaultManager) UpdateOrgUsers() error {
-	uaacUsers, err := m.UAAMgr.ListUsers()
-	if err != nil {
-		lo.G.Error(err)
-		return err
-	}
-
-	orgConfigs, err := m.Cfg.GetOrgConfigs()
-	if err != nil {
-		lo.G.Error(err)
-		return err
-	}
-
-	for _, input := range orgConfigs {
-		if err := m.updateOrgUsers(&input, uaacUsers); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[string]string) error {
-	org, err := m.FindOrg(input.Org)
-	if err != nil {
-		return err
-	}
-
-	err = m.syncOrgUsers(
-		uaacUsers, UpdateUsersInput{
-			OrgName:        org.Name,
-			OrgGUID:        org.Guid,
-			LdapGroupNames: input.GetBillingManagerGroups(),
-			LdapUsers:      input.BillingManager.LDAPUsers,
-			Users:          input.BillingManager.Users,
-			SamlUsers:      input.BillingManager.SamlUsers,
-			RemoveUsers:    input.RemoveUsers,
-		})
-	if err != nil {
-		return err
-	}
-
-	err = m.syncOrgUsers(
-		uaacUsers, UpdateUsersInput{
-			OrgName:        org.Name,
-			OrgGUID:        org.Guid,
-			LdapGroupNames: input.GetAuditorGroups(),
-			LdapUsers:      input.Auditor.LDAPUsers,
-			Users:          input.Auditor.Users,
-			SamlUsers:      input.Auditor.SamlUsers,
-			RemoveUsers:    input.RemoveUsers,
-		})
-	if err != nil {
-		return err
-	}
-
-	return m.syncOrgUsers(
-		uaacUsers, UpdateUsersInput{
-			OrgName:        org.Name,
-			OrgGUID:        org.Guid,
-			LdapGroupNames: input.GetManagerGroups(),
-			LdapUsers:      input.Manager.LDAPUsers,
-			Users:          input.Manager.Users,
-			SamlUsers:      input.Manager.SamlUsers,
-			RemoveUsers:    input.RemoveUsers,
-		})
-}
-
-//UpdateOrgUsers -
-func (m *DefaultManager) syncOrgUsers(uaacUsers map[string]string, updateUsersInput UpdateUsersInput) error {
-	config := m.LdapMgr.LdapConfig()
-	orgUsers, err := updateUsersInput.ListUsers(updateUsersInput.OrgGUID)
-
-	if err != nil {
-		return err
-	}
-	if config.Enabled {
-		var ldapUsers []ldap.User
-		ldapUsers, err = m.getLdapUsers(updateUsersInput)
-		if err != nil {
-			return err
-		}
-		for _, user := range ldapUsers {
-			err = m.updateLdapUser(updateUsersInput, uaacUsers, user, orgUsers)
-			if err != nil {
-				return err
-			}
-		}
-	} else {
-		lo.G.Debug("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
-	}
-	for _, userID := range updateUsersInput.Users {
-		lowerUserID := strings.ToLower(userID)
-		if _, ok := orgUsers[lowerUserID]; !ok {
-			if _, userExists := uaacUsers[lowerUserID]; !userExists {
-				return fmt.Errorf("User %s doesn't exist in cloud foundry, so must add internal user first", userID)
-			}
-			if err = updateUsersInput.AddUser(updateUsersInput.OrgGUID, userID); err != nil {
-				lo.G.Error(err)
-				return err
-			}
-		} else {
-			delete(orgUsers, lowerUserID)
-		}
-	}
-
-	for _, userEmail := range updateUsersInput.SamlUsers {
-		lowerUserEmail := strings.ToLower(userEmail)
-		if _, userExists := uaacUsers[lowerUserEmail]; !userExists {
-			lo.G.Info("User", userEmail, "doesn't exist in cloud foundry, so creating user")
-			if err = m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
-				lo.G.Error("Unable to create user", userEmail)
-				return err
-			} else {
-				uaacUsers[userEmail] = userEmail
-			}
-		}
-		if _, ok := orgUsers[lowerUserEmail]; !ok {
-			if err = updateUsersInput.AddUser(updateUsersInput.OrgGUID, userEmail); err != nil {
-				lo.G.Error(err)
-				return err
-			}
-		} else {
-			delete(orgUsers, lowerUserEmail)
-		}
-	}
-
-	if updateUsersInput.RemoveUsers {
-		lo.G.Debugf("Deleting users for org: %s", updateUsersInput.OrgName)
-		for orgUser, _ := range orgUsers {
-			err = updateUsersInput.RemoveUser(updateUsersInput.OrgGUID, orgUser)
-			if err != nil {
-				return err
-			}
-		}
-	} else {
-		lo.G.Debugf("Not removing users. Set enable-remove-users: true to orgConfig for org: %s", updateUsersInput.OrgName)
-	}
-	return nil
-}
-
-func (m *DefaultManager) updateLdapUser(updateUsersInput UpdateUsersInput,
-	uaacUsers map[string]string,
-	user ldap.User, orgUsers map[string]string) error {
-
-	config := m.LdapMgr.LdapConfig()
-	userID := user.UserID
-	externalID := user.UserDN
-	if config.Origin != "ldap" {
-		userID = user.Email
-		externalID = user.Email
-	} else {
-		if user.Email == "" {
-			user.Email = fmt.Sprintf("%s@user.from.ldap.cf", userID)
-		}
-	}
-	userID = strings.ToLower(userID)
-
-	if _, ok := orgUsers[userID]; !ok {
-		if _, userExists := uaacUsers[userID]; !userExists {
-			lo.G.Info("User", userID, "doesn't exist in cloud foundry, so creating user")
-			if err := m.UAAMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
-				lo.G.Error("Unable to create user", userID)
-			} else {
-				uaacUsers[userID] = userID
-				if err := updateUsersInput.AddUser(updateUsersInput.OrgGUID, userID); err != nil {
-					lo.G.Error(err)
-					return err
-				}
-			}
-		} else {
-			if err := updateUsersInput.AddUser(updateUsersInput.OrgGUID, userID); err != nil {
-				lo.G.Error(err)
-				return err
-			}
-		}
-	} else {
-		delete(orgUsers, userID)
-	}
-	return nil
-}
-
-func (m *DefaultManager) getLdapUsers(updateUsersInput UpdateUsersInput) ([]ldap.User, error) {
-	users := []ldap.User{}
-	for _, groupName := range updateUsersInput.LdapGroupNames {
-		if groupName != "" {
-			lo.G.Debug("Finding LDAP user for group:", groupName)
-			if groupUsers, err := m.LdapMgr.GetUserIDs(groupName); err == nil {
-				users = append(users, groupUsers...)
-			} else {
-				lo.G.Error(err)
-				return nil, err
-			}
-		}
-	}
-	for _, user := range updateUsersInput.LdapUsers {
-		if ldapUser, err := m.LdapMgr.GetUser(user); err == nil {
-			if ldapUser != nil {
-				users = append(users, *ldapUser)
-			}
-		} else {
-			lo.G.Error(err)
-			return nil, err
-		}
-	}
-	return users, nil
-}
-
-func (m *DefaultManager) ListAllOrgQuotas() (map[string]string, error) {
-	quotas := make(map[string]string)
-	orgQutotas, err := m.Client.ListOrgQuotas()
-	if err != nil {
-		return nil, err
-	}
-	lo.G.Debug("Total org quotas returned :", len(orgQutotas))
-	for _, quota := range orgQutotas {
-		quotas[quota.Name] = quota.Guid
-	}
-	return quotas, nil
-}
-
-func (m *DefaultManager) CreateQuota(quota cfclient.OrgQuotaRequest) (string, error) {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: create quota %+v", quota)
-		return "dry-run-quota-guid", nil
-	}
-
-	orgQuota, err := m.Client.CreateOrgQuota(quota)
-	if err != nil {
-		return "", err
-	}
-	return orgQuota.Guid, nil
-}
-
-func (m *DefaultManager) UpdateQuota(quotaGUID string, quota cfclient.OrgQuotaRequest) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: update quota %+v with GUID %s", quota, quotaGUID)
-		return nil
-	}
-	_, err := m.Client.UpdateOrgQuota(quotaGUID, quota)
-	return err
-}
-
-func (m *DefaultManager) AssignQuotaToOrg(orgGUID, quotaGUID string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: assign quota GUID %s to org GUID %s", quotaGUID, orgGUID)
-		return nil
-	}
-	org, err := m.Client.GetOrgByGuid(orgGUID)
-	if err != nil {
-		return err
-	}
-	_, err = m.Client.UpdateOrg(orgGUID, cfclient.OrgRequest{
-		Name:                org.Name,
-		QuotaDefinitionGuid: quotaGUID,
-	})
-	return err
-}
-
 //ListOrgs : Returns all orgs in the given foundation
 func (m *DefaultManager) ListOrgs() ([]cfclient.Org, error) {
 	orgs, err := m.Client.ListOrgs()
@@ -740,25 +413,10 @@ func (m *DefaultManager) RemoveSharedPrivateDomain(sharedOrgGUID, privateDomainG
 	return m.Client.UnshareOrgPrivateDomain(sharedOrgGUID, privateDomainGUID)
 }
 
-func (m *DefaultManager) ListOrgAuditors(orgGUID string) (map[string]string, error) {
-	return m.UserMgr.ListOrgAuditors(orgGUID)
-}
-func (m *DefaultManager) ListOrgBillingManager(orgGUID string) (map[string]string, error) {
-	return m.UserMgr.ListOrgBillingManager(orgGUID)
-}
-func (m *DefaultManager) ListOrgManagers(orgGUID string) (map[string]string, error) {
-	return m.UserMgr.ListOrgManagers(orgGUID)
+func (m *DefaultManager) UpdateOrg(orgGUID string, orgRequest cfclient.OrgRequest) (cfclient.Org, error) {
+	return m.Client.UpdateOrg(orgGUID, orgRequest)
 }
 
-func (m *DefaultManager) OrgQuotaByName(name string) (cfclient.OrgQuota, error) {
-	return m.Client.GetOrgQuotaByName(name)
-}
-
-func (m *DefaultManager) InitializeLdap(ldapBindPassword string) error {
-	ldapMgr, err := ldap.NewManager(m.Cfg, ldapBindPassword)
-	if err != nil {
-		return err
-	}
-	m.LdapMgr = ldapMgr
-	return nil
+func (m *DefaultManager) GetOrgByGUID(orgGUID string) (cfclient.Org, error) {
+	return m.Client.GetOrgByGuid(orgGUID)
 }

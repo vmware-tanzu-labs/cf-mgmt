@@ -1,4 +1,4 @@
-package users
+package user
 
 import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
@@ -12,24 +12,22 @@ type UpdateUsersInput struct {
 	SpaceName                                   string
 	OrgName                                     string
 	RemoveUsers                                 bool
-	ListUsers                                   func(spaceGUID string) (map[string]string, error)
+	ListUsers                                   func(guid string) (map[string]string, error)
 	AddUser                                     func(orgGUID, spaceGUID, userName string) error
-	RemoveUser                                  func(spaceGUID, userName string) error
+	RemoveUser                                  func(guid, userName string) error
 }
 
 // Manager - interface type encapsulating Update space users behavior
 type Manager interface {
 	InitializeLdap(ldapBindPassword string) error
 	UpdateSpaceUsers() error
-	RemoveSpaceAuditorByUsername(spaceGUID, userName string) error
-	RemoveSpaceDeveloperByUsername(spaceGUID, userName string) error
-	RemoveSpaceManagerByUsername(spaceGUID, userName string) error
+	UpdateOrgUsers() error
 	ListSpaceAuditors(spaceGUID string) (map[string]string, error)
 	ListSpaceDevelopers(spaceGUID string) (map[string]string, error)
 	ListSpaceManagers(spaceGUID string) (map[string]string, error)
-	AssociateSpaceAuditorByUsername(orgGUID, spaceGUID, userName string) error
-	AssociateSpaceDeveloperByUsername(orgGUID, spaceGUID, userName string) error
-	AssociateSpaceManagerByUsername(orgGUID, spaceGUID, userName string) error
+	ListOrgAuditors(orgGUID string) (map[string]string, error)
+	ListOrgBillingManager(orgGUID string) (map[string]string, error)
+	ListOrgManagers(orgGUID string) (map[string]string, error)
 }
 
 type CFClient interface {
@@ -43,4 +41,15 @@ type CFClient interface {
 	AssociateSpaceAuditorByUsername(spaceGUID, userName string) (cfclient.Space, error)
 	AssociateSpaceDeveloperByUsername(spaceGUID, userName string) (cfclient.Space, error)
 	AssociateSpaceManagerByUsername(spaceGUID, userName string) (cfclient.Space, error)
+
+	RemoveOrgUserByUsername(orgGUID, name string) error
+	RemoveOrgAuditorByUsername(orgGUID, name string) error
+	RemoveOrgBillingManagerByUsername(orgGUID, name string) error
+	RemoveOrgManagerByUsername(orgGUID, name string) error
+	ListOrgAuditors(orgGUID string) ([]cfclient.User, error)
+	ListOrgManagers(orgGUID string) ([]cfclient.User, error)
+	ListOrgBillingManagers(orgGUID string) ([]cfclient.User, error)
+	AssociateOrgAuditorByUsername(orgGUID, name string) (cfclient.Org, error)
+	AssociateOrgManagerByUsername(orgGUID, name string) (cfclient.Org, error)
+	AssociateOrgBillingManagerByUsername(orgGUID, name string) (cfclient.Org, error)
 }

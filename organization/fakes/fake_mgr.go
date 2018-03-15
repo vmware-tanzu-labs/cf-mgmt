@@ -9,14 +9,6 @@ import (
 )
 
 type FakeManager struct {
-	InitializeLdapStub        func(ldapBindPassword string) error
-	initializeLdapMutex       sync.RWMutex
-	initializeLdapArgsForCall []struct {
-		ldapBindPassword string
-	}
-	initializeLdapReturns struct {
-		result1 error
-	}
 	ListOrgsStub        func() ([]go_cfclient.Org, error)
 	listOrgsMutex       sync.RWMutex
 	listOrgsArgsForCall []struct{}
@@ -75,18 +67,6 @@ type FakeManager struct {
 	deleteOrgsReturns     struct {
 		result1 error
 	}
-	UpdateOrgUsersStub        func() error
-	updateOrgUsersMutex       sync.RWMutex
-	updateOrgUsersArgsForCall []struct{}
-	updateOrgUsersReturns     struct {
-		result1 error
-	}
-	CreateQuotasStub        func() error
-	createQuotasMutex       sync.RWMutex
-	createQuotasArgsForCall []struct{}
-	createQuotasReturns     struct {
-		result1 error
-	}
 	GetOrgGUIDStub        func(orgName string) (string, error)
 	getOrgGUIDMutex       sync.RWMutex
 	getOrgGUIDArgsForCall []struct {
@@ -96,77 +76,27 @@ type FakeManager struct {
 		result1 string
 		result2 error
 	}
-	ListOrgAuditorsStub        func(orgGUID string) (map[string]string, error)
-	listOrgAuditorsMutex       sync.RWMutex
-	listOrgAuditorsArgsForCall []struct {
-		orgGUID string
+	UpdateOrgStub        func(orgGUID string, orgRequest go_cfclient.OrgRequest) (go_cfclient.Org, error)
+	updateOrgMutex       sync.RWMutex
+	updateOrgArgsForCall []struct {
+		orgGUID    string
+		orgRequest go_cfclient.OrgRequest
 	}
-	listOrgAuditorsReturns struct {
-		result1 map[string]string
+	updateOrgReturns struct {
+		result1 go_cfclient.Org
 		result2 error
 	}
-	ListOrgBillingManagerStub        func(orgGUID string) (map[string]string, error)
-	listOrgBillingManagerMutex       sync.RWMutex
-	listOrgBillingManagerArgsForCall []struct {
+	GetOrgByGUIDStub        func(orgGUID string) (go_cfclient.Org, error)
+	getOrgByGUIDMutex       sync.RWMutex
+	getOrgByGUIDArgsForCall []struct {
 		orgGUID string
 	}
-	listOrgBillingManagerReturns struct {
-		result1 map[string]string
-		result2 error
-	}
-	ListOrgManagersStub        func(orgGUID string) (map[string]string, error)
-	listOrgManagersMutex       sync.RWMutex
-	listOrgManagersArgsForCall []struct {
-		orgGUID string
-	}
-	listOrgManagersReturns struct {
-		result1 map[string]string
-		result2 error
-	}
-	OrgQuotaByNameStub        func(name string) (go_cfclient.OrgQuota, error)
-	orgQuotaByNameMutex       sync.RWMutex
-	orgQuotaByNameArgsForCall []struct {
-		name string
-	}
-	orgQuotaByNameReturns struct {
-		result1 go_cfclient.OrgQuota
+	getOrgByGUIDReturns struct {
+		result1 go_cfclient.Org
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *FakeManager) InitializeLdap(ldapBindPassword string) error {
-	fake.initializeLdapMutex.Lock()
-	fake.initializeLdapArgsForCall = append(fake.initializeLdapArgsForCall, struct {
-		ldapBindPassword string
-	}{ldapBindPassword})
-	fake.recordInvocation("InitializeLdap", []interface{}{ldapBindPassword})
-	fake.initializeLdapMutex.Unlock()
-	if fake.InitializeLdapStub != nil {
-		return fake.InitializeLdapStub(ldapBindPassword)
-	} else {
-		return fake.initializeLdapReturns.result1
-	}
-}
-
-func (fake *FakeManager) InitializeLdapCallCount() int {
-	fake.initializeLdapMutex.RLock()
-	defer fake.initializeLdapMutex.RUnlock()
-	return len(fake.initializeLdapArgsForCall)
-}
-
-func (fake *FakeManager) InitializeLdapArgsForCall(i int) string {
-	fake.initializeLdapMutex.RLock()
-	defer fake.initializeLdapMutex.RUnlock()
-	return fake.initializeLdapArgsForCall[i].ldapBindPassword
-}
-
-func (fake *FakeManager) InitializeLdapReturns(result1 error) {
-	fake.InitializeLdapStub = nil
-	fake.initializeLdapReturns = struct {
-		result1 error
-	}{result1}
 }
 
 func (fake *FakeManager) ListOrgs() ([]go_cfclient.Org, error) {
@@ -397,56 +327,6 @@ func (fake *FakeManager) DeleteOrgsReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateOrgUsers() error {
-	fake.updateOrgUsersMutex.Lock()
-	fake.updateOrgUsersArgsForCall = append(fake.updateOrgUsersArgsForCall, struct{}{})
-	fake.recordInvocation("UpdateOrgUsers", []interface{}{})
-	fake.updateOrgUsersMutex.Unlock()
-	if fake.UpdateOrgUsersStub != nil {
-		return fake.UpdateOrgUsersStub()
-	} else {
-		return fake.updateOrgUsersReturns.result1
-	}
-}
-
-func (fake *FakeManager) UpdateOrgUsersCallCount() int {
-	fake.updateOrgUsersMutex.RLock()
-	defer fake.updateOrgUsersMutex.RUnlock()
-	return len(fake.updateOrgUsersArgsForCall)
-}
-
-func (fake *FakeManager) UpdateOrgUsersReturns(result1 error) {
-	fake.UpdateOrgUsersStub = nil
-	fake.updateOrgUsersReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeManager) CreateQuotas() error {
-	fake.createQuotasMutex.Lock()
-	fake.createQuotasArgsForCall = append(fake.createQuotasArgsForCall, struct{}{})
-	fake.recordInvocation("CreateQuotas", []interface{}{})
-	fake.createQuotasMutex.Unlock()
-	if fake.CreateQuotasStub != nil {
-		return fake.CreateQuotasStub()
-	} else {
-		return fake.createQuotasReturns.result1
-	}
-}
-
-func (fake *FakeManager) CreateQuotasCallCount() int {
-	fake.createQuotasMutex.RLock()
-	defer fake.createQuotasMutex.RUnlock()
-	return len(fake.createQuotasArgsForCall)
-}
-
-func (fake *FakeManager) CreateQuotasReturns(result1 error) {
-	fake.CreateQuotasStub = nil
-	fake.createQuotasReturns = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeManager) GetOrgGUID(orgName string) (string, error) {
 	fake.getOrgGUIDMutex.Lock()
 	fake.getOrgGUIDArgsForCall = append(fake.getOrgGUIDArgsForCall, struct {
@@ -481,138 +361,71 @@ func (fake *FakeManager) GetOrgGUIDReturns(result1 string, result2 error) {
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListOrgAuditors(orgGUID string) (map[string]string, error) {
-	fake.listOrgAuditorsMutex.Lock()
-	fake.listOrgAuditorsArgsForCall = append(fake.listOrgAuditorsArgsForCall, struct {
-		orgGUID string
-	}{orgGUID})
-	fake.recordInvocation("ListOrgAuditors", []interface{}{orgGUID})
-	fake.listOrgAuditorsMutex.Unlock()
-	if fake.ListOrgAuditorsStub != nil {
-		return fake.ListOrgAuditorsStub(orgGUID)
+func (fake *FakeManager) UpdateOrg(orgGUID string, orgRequest go_cfclient.OrgRequest) (go_cfclient.Org, error) {
+	fake.updateOrgMutex.Lock()
+	fake.updateOrgArgsForCall = append(fake.updateOrgArgsForCall, struct {
+		orgGUID    string
+		orgRequest go_cfclient.OrgRequest
+	}{orgGUID, orgRequest})
+	fake.recordInvocation("UpdateOrg", []interface{}{orgGUID, orgRequest})
+	fake.updateOrgMutex.Unlock()
+	if fake.UpdateOrgStub != nil {
+		return fake.UpdateOrgStub(orgGUID, orgRequest)
 	} else {
-		return fake.listOrgAuditorsReturns.result1, fake.listOrgAuditorsReturns.result2
+		return fake.updateOrgReturns.result1, fake.updateOrgReturns.result2
 	}
 }
 
-func (fake *FakeManager) ListOrgAuditorsCallCount() int {
-	fake.listOrgAuditorsMutex.RLock()
-	defer fake.listOrgAuditorsMutex.RUnlock()
-	return len(fake.listOrgAuditorsArgsForCall)
+func (fake *FakeManager) UpdateOrgCallCount() int {
+	fake.updateOrgMutex.RLock()
+	defer fake.updateOrgMutex.RUnlock()
+	return len(fake.updateOrgArgsForCall)
 }
 
-func (fake *FakeManager) ListOrgAuditorsArgsForCall(i int) string {
-	fake.listOrgAuditorsMutex.RLock()
-	defer fake.listOrgAuditorsMutex.RUnlock()
-	return fake.listOrgAuditorsArgsForCall[i].orgGUID
+func (fake *FakeManager) UpdateOrgArgsForCall(i int) (string, go_cfclient.OrgRequest) {
+	fake.updateOrgMutex.RLock()
+	defer fake.updateOrgMutex.RUnlock()
+	return fake.updateOrgArgsForCall[i].orgGUID, fake.updateOrgArgsForCall[i].orgRequest
 }
 
-func (fake *FakeManager) ListOrgAuditorsReturns(result1 map[string]string, result2 error) {
-	fake.ListOrgAuditorsStub = nil
-	fake.listOrgAuditorsReturns = struct {
-		result1 map[string]string
+func (fake *FakeManager) UpdateOrgReturns(result1 go_cfclient.Org, result2 error) {
+	fake.UpdateOrgStub = nil
+	fake.updateOrgReturns = struct {
+		result1 go_cfclient.Org
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListOrgBillingManager(orgGUID string) (map[string]string, error) {
-	fake.listOrgBillingManagerMutex.Lock()
-	fake.listOrgBillingManagerArgsForCall = append(fake.listOrgBillingManagerArgsForCall, struct {
+func (fake *FakeManager) GetOrgByGUID(orgGUID string) (go_cfclient.Org, error) {
+	fake.getOrgByGUIDMutex.Lock()
+	fake.getOrgByGUIDArgsForCall = append(fake.getOrgByGUIDArgsForCall, struct {
 		orgGUID string
 	}{orgGUID})
-	fake.recordInvocation("ListOrgBillingManager", []interface{}{orgGUID})
-	fake.listOrgBillingManagerMutex.Unlock()
-	if fake.ListOrgBillingManagerStub != nil {
-		return fake.ListOrgBillingManagerStub(orgGUID)
+	fake.recordInvocation("GetOrgByGUID", []interface{}{orgGUID})
+	fake.getOrgByGUIDMutex.Unlock()
+	if fake.GetOrgByGUIDStub != nil {
+		return fake.GetOrgByGUIDStub(orgGUID)
 	} else {
-		return fake.listOrgBillingManagerReturns.result1, fake.listOrgBillingManagerReturns.result2
+		return fake.getOrgByGUIDReturns.result1, fake.getOrgByGUIDReturns.result2
 	}
 }
 
-func (fake *FakeManager) ListOrgBillingManagerCallCount() int {
-	fake.listOrgBillingManagerMutex.RLock()
-	defer fake.listOrgBillingManagerMutex.RUnlock()
-	return len(fake.listOrgBillingManagerArgsForCall)
+func (fake *FakeManager) GetOrgByGUIDCallCount() int {
+	fake.getOrgByGUIDMutex.RLock()
+	defer fake.getOrgByGUIDMutex.RUnlock()
+	return len(fake.getOrgByGUIDArgsForCall)
 }
 
-func (fake *FakeManager) ListOrgBillingManagerArgsForCall(i int) string {
-	fake.listOrgBillingManagerMutex.RLock()
-	defer fake.listOrgBillingManagerMutex.RUnlock()
-	return fake.listOrgBillingManagerArgsForCall[i].orgGUID
+func (fake *FakeManager) GetOrgByGUIDArgsForCall(i int) string {
+	fake.getOrgByGUIDMutex.RLock()
+	defer fake.getOrgByGUIDMutex.RUnlock()
+	return fake.getOrgByGUIDArgsForCall[i].orgGUID
 }
 
-func (fake *FakeManager) ListOrgBillingManagerReturns(result1 map[string]string, result2 error) {
-	fake.ListOrgBillingManagerStub = nil
-	fake.listOrgBillingManagerReturns = struct {
-		result1 map[string]string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListOrgManagers(orgGUID string) (map[string]string, error) {
-	fake.listOrgManagersMutex.Lock()
-	fake.listOrgManagersArgsForCall = append(fake.listOrgManagersArgsForCall, struct {
-		orgGUID string
-	}{orgGUID})
-	fake.recordInvocation("ListOrgManagers", []interface{}{orgGUID})
-	fake.listOrgManagersMutex.Unlock()
-	if fake.ListOrgManagersStub != nil {
-		return fake.ListOrgManagersStub(orgGUID)
-	} else {
-		return fake.listOrgManagersReturns.result1, fake.listOrgManagersReturns.result2
-	}
-}
-
-func (fake *FakeManager) ListOrgManagersCallCount() int {
-	fake.listOrgManagersMutex.RLock()
-	defer fake.listOrgManagersMutex.RUnlock()
-	return len(fake.listOrgManagersArgsForCall)
-}
-
-func (fake *FakeManager) ListOrgManagersArgsForCall(i int) string {
-	fake.listOrgManagersMutex.RLock()
-	defer fake.listOrgManagersMutex.RUnlock()
-	return fake.listOrgManagersArgsForCall[i].orgGUID
-}
-
-func (fake *FakeManager) ListOrgManagersReturns(result1 map[string]string, result2 error) {
-	fake.ListOrgManagersStub = nil
-	fake.listOrgManagersReturns = struct {
-		result1 map[string]string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) OrgQuotaByName(name string) (go_cfclient.OrgQuota, error) {
-	fake.orgQuotaByNameMutex.Lock()
-	fake.orgQuotaByNameArgsForCall = append(fake.orgQuotaByNameArgsForCall, struct {
-		name string
-	}{name})
-	fake.recordInvocation("OrgQuotaByName", []interface{}{name})
-	fake.orgQuotaByNameMutex.Unlock()
-	if fake.OrgQuotaByNameStub != nil {
-		return fake.OrgQuotaByNameStub(name)
-	} else {
-		return fake.orgQuotaByNameReturns.result1, fake.orgQuotaByNameReturns.result2
-	}
-}
-
-func (fake *FakeManager) OrgQuotaByNameCallCount() int {
-	fake.orgQuotaByNameMutex.RLock()
-	defer fake.orgQuotaByNameMutex.RUnlock()
-	return len(fake.orgQuotaByNameArgsForCall)
-}
-
-func (fake *FakeManager) OrgQuotaByNameArgsForCall(i int) string {
-	fake.orgQuotaByNameMutex.RLock()
-	defer fake.orgQuotaByNameMutex.RUnlock()
-	return fake.orgQuotaByNameArgsForCall[i].name
-}
-
-func (fake *FakeManager) OrgQuotaByNameReturns(result1 go_cfclient.OrgQuota, result2 error) {
-	fake.OrgQuotaByNameStub = nil
-	fake.orgQuotaByNameReturns = struct {
-		result1 go_cfclient.OrgQuota
+func (fake *FakeManager) GetOrgByGUIDReturns(result1 go_cfclient.Org, result2 error) {
+	fake.GetOrgByGUIDStub = nil
+	fake.getOrgByGUIDReturns = struct {
+		result1 go_cfclient.Org
 		result2 error
 	}{result1, result2}
 }
@@ -620,8 +433,6 @@ func (fake *FakeManager) OrgQuotaByNameReturns(result1 go_cfclient.OrgQuota, res
 func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.initializeLdapMutex.RLock()
-	defer fake.initializeLdapMutex.RUnlock()
 	fake.listOrgsMutex.RLock()
 	defer fake.listOrgsMutex.RUnlock()
 	fake.listOrgSharedPrivateDomainsMutex.RLock()
@@ -638,20 +449,12 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.sharePrivateDomainsMutex.RUnlock()
 	fake.deleteOrgsMutex.RLock()
 	defer fake.deleteOrgsMutex.RUnlock()
-	fake.updateOrgUsersMutex.RLock()
-	defer fake.updateOrgUsersMutex.RUnlock()
-	fake.createQuotasMutex.RLock()
-	defer fake.createQuotasMutex.RUnlock()
 	fake.getOrgGUIDMutex.RLock()
 	defer fake.getOrgGUIDMutex.RUnlock()
-	fake.listOrgAuditorsMutex.RLock()
-	defer fake.listOrgAuditorsMutex.RUnlock()
-	fake.listOrgBillingManagerMutex.RLock()
-	defer fake.listOrgBillingManagerMutex.RUnlock()
-	fake.listOrgManagersMutex.RLock()
-	defer fake.listOrgManagersMutex.RUnlock()
-	fake.orgQuotaByNameMutex.RLock()
-	defer fake.orgQuotaByNameMutex.RUnlock()
+	fake.updateOrgMutex.RLock()
+	defer fake.updateOrgMutex.RUnlock()
+	fake.getOrgByGUIDMutex.RLock()
+	defer fake.getOrgByGUIDMutex.RUnlock()
 	return fake.invocations
 }
 

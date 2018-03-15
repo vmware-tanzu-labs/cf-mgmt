@@ -1,4 +1,4 @@
-package users_test
+package quota_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,10 +7,7 @@ import (
 	"testing"
 )
 
-var test *testing.T
-
-func TestSuite(t *testing.T) {
+func TestSpacequota(t *testing.T) {
 	RegisterFailHandler(Fail)
-	test = t
-	RunSpecs(t, "Test Suite")
+	RunSpecs(t, "Spacequota Suite")
 }

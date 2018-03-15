@@ -1,12 +1,14 @@
-package spacequota
+package quota
 
 import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
 type Manager interface {
-	CreateQuotas(configDir string) error
+	CreateSpaceQuotas() error
 	SpaceQuotaByName(name string) (cfclient.SpaceQuota, error)
+	CreateOrgQuotas() error
+	OrgQuotaByName(name string) (cfclient.OrgQuota, error)
 }
 
 type CFClient interface {
@@ -15,4 +17,8 @@ type CFClient interface {
 	AssignSpaceQuota(quotaGUID, spaceGUID string) error
 	CreateSpaceQuota(spaceQuote cfclient.SpaceQuotaRequest) (*cfclient.SpaceQuota, error)
 	GetSpaceQuotaByName(name string) (cfclient.SpaceQuota, error)
+	ListOrgQuotas() ([]cfclient.OrgQuota, error)
+	CreateOrgQuota(orgQuote cfclient.OrgQuotaRequest) (*cfclient.OrgQuota, error)
+	UpdateOrgQuota(orgQuotaGUID string, orgQuota cfclient.OrgQuotaRequest) (*cfclient.OrgQuota, error)
+	GetOrgQuotaByName(name string) (cfclient.OrgQuota, error)
 }
