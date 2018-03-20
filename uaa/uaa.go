@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/parnurzeal/gorequest"
-	http2 "github.com/pivotalservices/cf-mgmt/http"
+
 	"github.com/xchapter7x/lo"
 )
 
@@ -50,7 +50,7 @@ type Token struct {
 type DefaultUAAManager struct {
 	Host  string
 	Token string
-	Http  http2.Manager
+	Http  HttpManager
 	Peek  bool
 }
 
@@ -64,7 +64,7 @@ func NewDefaultUAAManager(sysDomain, token string, peek bool) Manager {
 	return &DefaultUAAManager{
 		Host:  fmt.Sprintf("https://uaa.%s", sysDomain),
 		Token: token,
-		Http:  http2.NewManager(),
+		Http:  NewHttpManager(),
 		Peek:  peek,
 	}
 }
@@ -72,7 +72,9 @@ func NewDefaultUAAManager(sysDomain, token string, peek bool) Manager {
 //GetCFToken -
 func GetCFToken(host, userID, password string) (string, error) {
 	tokenURL := fmt.Sprintf("%s/oauth/token", host)
-	post := gorequest.New().Post(tokenURL)
+	request := gorequest.New()
+	request.Transport = ShallowDefaultTransport()
+	post := request.Post(tokenURL)
 	post.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	post.BasicAuth.Username = "cf"
 	post.BasicAuth.Password = ""
@@ -104,6 +106,7 @@ func GetCFToken(host, userID, password string) (string, error) {
 //GetUAACToken -
 func GetUAACToken(host, userID, secret string) (string, error) {
 	request := gorequest.New()
+	request.Transport = ShallowDefaultTransport()
 	request.TargetType = "form"
 	post := request.Post(fmt.Sprintf("%s/oauth/token", host))
 	post.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})

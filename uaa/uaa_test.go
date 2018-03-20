@@ -8,7 +8,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/ghttp"
-	http2 "github.com/pivotalservices/cf-mgmt/http"
 	. "github.com/pivotalservices/cf-mgmt/uaa"
 )
 
@@ -45,7 +44,7 @@ var _ = Describe("given uaa manager", func() {
 		manager = DefaultUAAManager{
 			Host:  server.URL(),
 			Token: controlToken,
-			Http:  http2.NewManager(),
+			Http:  NewHttpManager(),
 		}
 	})
 

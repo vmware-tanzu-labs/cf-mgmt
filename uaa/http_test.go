@@ -1,4 +1,4 @@
-package http_test
+package uaa_test
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
-	. "github.com/pivotalservices/cf-mgmt/http"
+	. "github.com/pivotalservices/cf-mgmt/uaa"
 )
 
 type Sample struct {
@@ -17,18 +17,18 @@ type Sample struct {
 var _ = Describe("given utils manager", func() {
 	Describe("create new manager", func() {
 		It("should return new manager", func() {
-			manager := NewManager()
+			manager := NewHttpManager()
 			Ω(manager).ShouldNot(BeNil())
 		})
 	})
 	var (
 		server  *ghttp.Server
-		manager Manager
+		manager HttpManager
 	)
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		manager = NewManager()
+		manager = NewHttpManager()
 	})
 
 	AfterEach(func() {

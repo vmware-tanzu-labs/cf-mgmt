@@ -1,4 +1,4 @@
-package http
+package uaa
 
 import (
 	"crypto/tls"
@@ -10,14 +10,24 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-//NewManager -
-func NewManager() (mgr Manager) {
-	return &DefaultManager{}
+//NewHttpManager -
+func NewHttpManager() (mgr HttpManager) {
+	return &DefaultHttpManager{}
+}
+
+func ShallowDefaultTransport() *http.Transport {
+	defaultTransport := http.DefaultTransport.(*http.Transport)
+	return &http.Transport{
+		Proxy:                 defaultTransport.Proxy,
+		TLSHandshakeTimeout:   defaultTransport.TLSHandshakeTimeout,
+		ExpectContinueTimeout: defaultTransport.ExpectContinueTimeout,
+	}
 }
 
 //Put -
-func (m *DefaultManager) Put(url, token, payload string) error {
+func (m *DefaultHttpManager) Put(url, token, payload string) error {
 	request := gorequest.New()
+	request.Transport = ShallowDefaultTransport()
 	put := request.Put(url)
 	put.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	put.Set("Authorization", "BEARER "+token)
@@ -34,8 +44,9 @@ func (m *DefaultManager) Put(url, token, payload string) error {
 }
 
 //Post -
-func (m *DefaultManager) Post(url, token, payload string) (string, error) {
+func (m *DefaultHttpManager) Post(url, token, payload string) (string, error) {
 	request := gorequest.New()
+	request.Transport = ShallowDefaultTransport()
 	post := request.Post(url)
 	post.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	post.Set("Authorization", "BEARER "+token)
@@ -51,8 +62,9 @@ func (m *DefaultManager) Post(url, token, payload string) (string, error) {
 }
 
 //Get - return struct marshalled into target
-func (m *DefaultManager) Get(url, token string, target interface{}) error {
+func (m *DefaultHttpManager) Get(url, token string, target interface{}) error {
 	request := gorequest.New()
+	request.Transport = ShallowDefaultTransport()
 	get := request.Get(url)
 	get.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	get.Set("Authorization", "BEARER "+token)
@@ -69,8 +81,9 @@ func (m *DefaultManager) Get(url, token string, target interface{}) error {
 }
 
 // Delete deletes a given resource on the server.
-func (m *DefaultManager) Delete(url, token string) error {
+func (m *DefaultHttpManager) Delete(url, token string) error {
 	request := gorequest.New()
+	request.Transport = ShallowDefaultTransport()
 	get := request.Delete(url)
 	get.TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	get.Set("Authorization", "BEARER "+token)
@@ -86,14 +99,14 @@ func (m *DefaultManager) Delete(url, token string) error {
 	return nil
 }
 
-//Manager -
-type Manager interface {
+//HttpManager -
+type HttpManager interface {
 	Put(url, token, payload string) (err error)
 	Post(url, token, payload string) (body string, err error)
 	Get(url, token string, target interface{}) (err error)
 	Delete(url, token string) error
 }
 
-//DefaultManager -
-type DefaultManager struct {
+//DefaultHttpManager -
+type DefaultHttpManager struct {
 }
