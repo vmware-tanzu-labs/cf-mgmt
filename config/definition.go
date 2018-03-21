@@ -1,3 +1,5 @@
 package config
 
-//go:generate counterfeiter config.go Manager -o mocks/mock_manager.go
+//go:generate counterfeiter -o fakes/fake_manager.go config.go Manager
+//go:generate counterfeiter -o fakes/fake_reader.go config.go Reader
+//go:generate counterfeiter -o fakes/fake_updater.go config.go Updater
