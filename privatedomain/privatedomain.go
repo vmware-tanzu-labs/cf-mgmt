@@ -29,7 +29,6 @@ type DefaultManager struct {
 func (m *DefaultManager) CreatePrivateDomains() error {
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
-		lo.G.Error(err)
 		return err
 	}
 
@@ -42,23 +41,22 @@ func (m *DefaultManager) CreatePrivateDomains() error {
 		return err
 	}
 	for _, orgConfig := range orgConfigs {
-		orgGUID, err := m.getOrgGUID(orgs, orgConfig.Org)
+		org, err := m.getOrg(orgs, orgConfig.Org)
 		if err != nil {
 			return err
 		}
 		privateDomainMap := make(map[string]string)
 		for _, privateDomain := range orgConfig.PrivateDomains {
 			if existingPrivateDomain, ok := allPrivateDomains[privateDomain]; ok {
-				if orgGUID != existingPrivateDomain.OwningOrganizationGuid {
-					existingOrgName, _ := m.getOrgName(orgs, existingPrivateDomain.OwningOrganizationGuid)
-					msg := fmt.Sprintf("Private Domain %s already exists in org [%s]", privateDomain, existingOrgName)
-					lo.G.Error(msg)
-					return fmt.Errorf(msg)
+				if org.Guid != existingPrivateDomain.OwningOrganizationGuid {
+					existingOrg, err := m.getOrg(orgs, existingPrivateDomain.OwningOrganizationGuid)
+					if err != nil {
+						return err
+					}
+					return fmt.Errorf("Private Domain %s already exists in org [%s]", privateDomain, existingOrg.Name)
 				}
-				lo.G.Debugf("Private Domain %s already exists for Org %s", privateDomain, orgConfig.Org)
 			} else {
-				lo.G.Infof("Creating Private Domain %s for Org %s", privateDomain, orgConfig.Org)
-				privateDomain, err := m.CreatePrivateDomain(orgGUID, privateDomain)
+				privateDomain, err := m.CreatePrivateDomain(org, privateDomain)
 				if err != nil {
 					return err
 				}
@@ -68,15 +66,13 @@ func (m *DefaultManager) CreatePrivateDomains() error {
 		}
 
 		if orgConfig.RemovePrivateDomains {
-			lo.G.Debugf("Looking for private domains to remove for org [%s]", orgConfig.Org)
-			orgPrivateDomains, err := m.ListOrgOwnedPrivateDomains(orgGUID)
+			orgPrivateDomains, err := m.ListOrgOwnedPrivateDomains(org.Guid)
 			if err != nil {
 				return err
 			}
-			for existingPrivateDomain, privateDomainGUID := range orgPrivateDomains {
+			for existingPrivateDomain, privateDomain := range orgPrivateDomains {
 				if _, ok := privateDomainMap[existingPrivateDomain]; !ok {
-					lo.G.Infof("Removing Private Domain %s for Org %s", existingPrivateDomain, orgConfig.Org)
-					err = m.DeletePrivateDomain(privateDomainGUID.Guid)
+					err = m.DeletePrivateDomain(privateDomain)
 					if err != nil {
 						return err
 					}
@@ -105,44 +101,39 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		return err
 	}
 	for _, orgConfig := range orgConfigs {
-		orgGUID, err := m.getOrgGUID(orgs, orgConfig.Org)
+		org, err := m.getOrg(orgs, orgConfig.Org)
 		if err != nil {
 			return err
 		}
-		allSharedPrivateDomains, err := m.ListOrgSharedPrivateDomains(orgGUID)
+		orgSharedPrivateDomains, err := m.ListOrgSharedPrivateDomains(org.Guid)
 		if err != nil {
 			return err
 		}
 
 		privateDomainMap := make(map[string]string)
-		for _, privateDomain := range orgConfig.SharedPrivateDomains {
-			if _, ok := allSharedPrivateDomains[privateDomain]; !ok {
-				if privateDomainGUID, ok := privateDomains[privateDomain]; ok {
-					lo.G.Infof("Sharing Private Domain %s for Org %s", privateDomain, orgConfig.Org)
-					err = m.SharePrivateDomain(orgGUID, privateDomainGUID.Guid)
+		for _, privateDomainName := range orgConfig.SharedPrivateDomains {
+			if _, ok := orgSharedPrivateDomains[privateDomainName]; !ok {
+				if privateDomain, ok := privateDomains[privateDomainName]; ok {
+					err = m.SharePrivateDomain(org, privateDomain)
 					if err != nil {
 						return err
 					}
+					orgSharedPrivateDomains[privateDomain.Name] = privateDomain
+					privateDomainMap[privateDomainName] = privateDomainName
 				} else {
-					return fmt.Errorf("Private Domain [%s] is not defined", privateDomain)
+					return fmt.Errorf("Private Domain [%s] is not defined", privateDomainName)
 				}
 			}
-			privateDomainMap[privateDomain] = privateDomain
 		}
 
 		if orgConfig.RemoveSharedPrivateDomains {
-			lo.G.Debugf("Looking for shared private domains to remove for org [%s]", orgConfig.Org)
-			orgSharedPrivateDomains, err := m.ListOrgSharedPrivateDomains(orgGUID)
-			if err != nil {
-				return err
-			}
-			for existingPrivateDomain, privateDomainGUID := range orgSharedPrivateDomains {
+			for existingPrivateDomain, privateDomain := range orgSharedPrivateDomains {
 				if _, ok := privateDomainMap[existingPrivateDomain]; !ok {
-					lo.G.Infof("Removing Shared Private Domain %s for Org %s", existingPrivateDomain, orgConfig.Org)
-					err = m.RemoveSharedPrivateDomain(orgGUID, privateDomainGUID.Guid)
+					err = m.RemoveSharedPrivateDomain(org, privateDomain)
 					if err != nil {
 						return err
 					}
+					delete(orgSharedPrivateDomains, privateDomain.Name)
 				}
 			}
 		} else {
@@ -166,23 +157,21 @@ func (m *DefaultManager) ListAllPrivateDomains() (map[string]cfclient.Domain, er
 	return privateDomainMap, nil
 }
 
-func (m *DefaultManager) CreatePrivateDomain(orgGUID, privateDomain string) (*cfclient.Domain, error) {
+func (m *DefaultManager) CreatePrivateDomain(org *cfclient.Org, privateDomain string) (*cfclient.Domain, error) {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: create private domain %s for org GUID %s", privateDomain, orgGUID)
-		return nil, nil
+		lo.G.Infof("[dry-run]: create private domain %s for org %s", privateDomain, org.Name)
+		return &cfclient.Domain{Guid: "dry-run-guid", Name: privateDomain, OwningOrganizationGuid: org.Guid}, nil
 	}
-	domain, err := m.Client.CreateDomain(privateDomain, orgGUID)
-	if err != nil {
-		return nil, err
-	}
-	return domain, nil
+	lo.G.Infof("Creating Private Domain %s for Org %s", privateDomain, org.Name)
+	return m.Client.CreateDomain(privateDomain, org.Guid)
 }
-func (m *DefaultManager) SharePrivateDomain(sharedOrgGUID, privateDomainGUID string) error {
+func (m *DefaultManager) SharePrivateDomain(org *cfclient.Org, domain cfclient.Domain) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: Share private domain %s for org GUID %s", privateDomainGUID, sharedOrgGUID)
+		lo.G.Infof("[dry-run]: Share private domain %s for org %s", domain.Name, org.Name)
 		return nil
 	}
-	_, err := m.Client.ShareOrgPrivateDomain(sharedOrgGUID, privateDomainGUID)
+	lo.G.Infof("Share private domain %s for org %s", domain.Name, org.Name)
+	_, err := m.Client.ShareOrgPrivateDomain(org.Guid, domain.Guid)
 	return err
 }
 
@@ -224,36 +213,29 @@ func (m *DefaultManager) ListOrgOwnedPrivateDomains(orgGUID string) (map[string]
 	return orgOwnedPrivateDomainMap, nil
 }
 
-func (m *DefaultManager) DeletePrivateDomain(guid string) error {
+func (m *DefaultManager) DeletePrivateDomain(domain cfclient.Domain) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: Delete private domain %s", guid)
+		lo.G.Infof("[dry-run]: Delete private domain %s", domain.Name)
 		return nil
 	}
-	return m.Client.DeleteDomain(guid)
+	lo.G.Infof("Delete private domain %s", domain.Name)
+	return m.Client.DeleteDomain(domain.Guid)
 }
 
-func (m *DefaultManager) RemoveSharedPrivateDomain(sharedOrgGUID, privateDomainGUID string) error {
+func (m *DefaultManager) RemoveSharedPrivateDomain(org *cfclient.Org, domain cfclient.Domain) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: remove share private domain %s for org GUID %s", privateDomainGUID, sharedOrgGUID)
+		lo.G.Infof("[dry-run]: Unshare private domain %s for org %s", domain.Name, org.Name)
 		return nil
 	}
-	return m.Client.UnshareOrgPrivateDomain(sharedOrgGUID, privateDomainGUID)
+	lo.G.Infof("Unshare private domain %s for org %s", domain.Name, org.Name)
+	return m.Client.UnshareOrgPrivateDomain(org.Guid, domain.Guid)
 }
 
-func (m *DefaultManager) getOrgGUID(orgs []cfclient.Org, orgName string) (string, error) {
+func (m *DefaultManager) getOrg(orgs []cfclient.Org, orgName string) (*cfclient.Org, error) {
 	for _, org := range orgs {
 		if org.Name == orgName {
-			return org.Guid, nil
+			return &org, nil
 		}
 	}
-	return "", fmt.Errorf("org %s does not exist", orgName)
-}
-
-func (m *DefaultManager) getOrgName(orgs []cfclient.Org, orgGUID string) (string, error) {
-	for _, org := range orgs {
-		if org.Guid == orgGUID {
-			return org.Name, nil
-		}
-	}
-	return "", fmt.Errorf("org for GUID %s does not exist", orgGUID)
+	return nil, fmt.Errorf("org %s does not exist", orgName)
 }
