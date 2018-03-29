@@ -7,8 +7,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
+	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap"
 	ldapfakes "github.com/pivotalservices/cf-mgmt/ldap/fakes"
+	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
+	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
 	uaafakes "github.com/pivotalservices/cf-mgmt/uaa/fakes"
 	. "github.com/pivotalservices/cf-mgmt/user"
 	"github.com/pivotalservices/cf-mgmt/user/fakes"
@@ -20,21 +23,29 @@ var _ = Describe("given UserSpaces", func() {
 		client      *fakes.FakeCFClient
 		ldapFake    *ldapfakes.FakeManager
 		uaaFake     *uaafakes.FakeManager
+		fakeReader  *configfakes.FakeReader
 		userList    []cfclient.User
+		spaceFake   *spacefakes.FakeManager
+		orgFake     *orgfakes.FakeManager
 	)
 	BeforeEach(func() {
 		client = new(fakes.FakeCFClient)
 		ldapFake = new(ldapfakes.FakeManager)
 		uaaFake = new(uaafakes.FakeManager)
+		fakeReader = new(configfakes.FakeReader)
+		spaceFake = new(spacefakes.FakeManager)
+		orgFake = new(orgfakes.FakeManager)
 	})
 	Context("User Manager()", func() {
 		BeforeEach(func() {
 			userManager = &DefaultManager{
-				Client:  client,
-				Cfg:     nil,
-				UAAMgr:  uaaFake,
-				LdapMgr: ldapFake,
-				Peek:    false}
+				Client:   client,
+				Cfg:      fakeReader,
+				UAAMgr:   uaaFake,
+				LdapMgr:  ldapFake,
+				SpaceMgr: spaceFake,
+				OrgMgr:   orgFake,
+				Peek:     false}
 			userList = []cfclient.User{
 				cfclient.User{
 					Username: "hello",
@@ -709,443 +720,402 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
 			})
 		})
-		Context("Add Users", func() {
-			/*It("update ldap group users where users are not in uaac", func() {
-				config := &config.LdapConfig{
-					Enabled: true,
-					Origin:  "ldap",
-				}
-				uaacUsers := make(map[string]string)
-				spaceUsers := make(map[string]string)
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID:      "my-space-guid",
-					OrgGUID:        "my-org-guid",
-					LdapGroupNames: []string{"ldap-group-name", "ldap-group-name-2"},
-				}
-
-				ldapGroupUsers := []ldap.User{ldap.User{
-					UserDN: "user-dn",
-					UserID: "user-id",
-					Email:  "user@test.com",
-				}}
-
-				ldapGroupUsers2 := []ldap.User{ldap.User{
-					UserDN: "user-dn2",
-					UserID: "user-id2",
-					Email:  "user2@test.com",
-				}}
-
-
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-				mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
-				mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name-2").Return(ldapGroupUsers2, nil)
-
-				mockUaac.EXPECT().CreateExternalUser("user-id", "user@test.com", "user-dn", "ldap").Return(nil)
-				mockUaac.EXPECT().CreateExternalUser("user-id2", "user2@test.com", "user-dn2", "ldap").Return(nil)
-				mockCloudController.EXPECT().AddUserToOrg("user-id", "my-org-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToOrg("user-id2", "my-org-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToSpaceRole("user-id", "my-role", "my-space-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToSpaceRole("user-id2", "my-role", "my-space-guid").Return(nil)
-
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-				Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
-				_, ok := uaacUsers["user-id"]
-				Ω(ok).Should(BeTrue())
-
-				_, ok = uaacUsers["user-id2"]
-				Ω(ok).Should(BeTrue())
-			})*/
-			/*It("update ldap group users where users are in uaac", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "ldap",
-				}
-				uaacUsers := make(map[string]string)
-				uaacUsers["user-id"] = "user-id"
-				spaceUsers := make(map[string]string)
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID:      "my-space-guid",
-					OrgGUID:        "my-org-guid",
-					Role:           "my-role",
-					LdapGroupNames: []string{"ldap-group-name"},
-				}
-
-				ldapGroupUsers := []ldap.User{ldap.User{
-					UserDN: "user-dn",
-					UserID: "user-id",
-					Email:  "user@test.com",
-				}}
-
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-				mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
-
-				mockCloudController.EXPECT().AddUserToOrg("user-id", "my-org-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToSpaceRole("user-id", "my-role", "my-space-guid").Return(nil)
-
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-				Ω(len(uaacUsers)).Should(BeEquivalentTo(1))
-				_, ok := uaacUsers["user-id"]
-				Ω(ok).Should(BeTrue())
+		Context("AddUserToOrg", func() {
+			It("should associate user", func() {
+				err := userManager.AddUserToOrg("test", "test-org-guid")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+				Expect(userName).Should(Equal("test"))
 			})
 
-			It("update ldap group users where users are in uaac and already in space", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "ldap",
-				}
-				uaacUsers := make(map[string]string)
-				uaacUsers["user-id"] = "user-id"
-				spaceUsers := make(map[string]string)
-				spaceUsers["user-id"] = "user-id"
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID:      "my-space-guid",
-					OrgGUID:        "my-org-guid",
-					Role:           "my-role",
-					LdapGroupNames: []string{"ldap-group-name"},
-				}
-
-				ldapGroupUsers := []ldap.User{ldap.User{
-					UserDN: "user-dn",
-					UserID: "user-id",
-					Email:  "user@test.com",
-				}}
-
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-				mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
-
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-				Ω(len(uaacUsers)).Should(BeEquivalentTo(1))
-				_, ok := uaacUsers["user-id"]
-				Ω(ok).Should(BeTrue())
+			It("should peek", func() {
+				userManager.Peek = true
+				err := userManager.AddUserToOrg("test", "test-org-guid")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(0))
 			})
 
-			It("update other origin users where users are in uaac and already in space", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "other",
-				}
-				uaacUsers := make(map[string]string)
-				uaacUsers["user@test.com"] = "user@test.com"
-				spaceUsers := make(map[string]string)
-				spaceUsers["user@test.com"] = "user@test.com"
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID:      "my-space-guid",
-					OrgGUID:        "my-org-guid",
-					Role:           "my-role",
-					LdapGroupNames: []string{"ldap-group-name"},
-				}
-
-				ldapGroupUsers := []ldap.User{ldap.User{
-					UserDN: "user-dn",
-					UserID: "user-id",
-					Email:  "user@test.com",
-				}}
-
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-				mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
-
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-				Ω(len(uaacUsers)).Should(BeEquivalentTo(1))
-				_, ok := uaacUsers["user@test.com"]
-				Ω(ok).Should(BeTrue())
+			It("should error", func() {
+				client.AssociateOrgUserByUsernameReturns(cfclient.Org{}, errors.New("error"))
+				err := userManager.AddUserToOrg("test", "test-org-guid")
+				Expect(err).Should(HaveOccurred())
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+				Expect(userName).Should(Equal("test"))
+			})
+		})
+		Context("RemoveOrgAuditorByUsername", func() {
+			It("should succeed", func() {
+				err := userManager.RemoveOrgAuditorByUsername("test-org-guid", "test")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.RemoveOrgAuditorByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.RemoveOrgAuditorByUsernameArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+				Expect(userName).Should(Equal("test"))
 			})
 
-			It("update ldap users where users are not in uaac", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "ldap",
-				}
-				uaacUsers := make(map[string]string)
-				spaceUsers := make(map[string]string)
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID: "my-space-guid",
-					OrgGUID:   "my-org-guid",
-					Role:      "my-role",
-					LdapUsers: []string{"ldap-user-1", "ldap-user-2"},
-				}
+			It("should peek", func() {
+				userManager.Peek = true
+				err := userManager.RemoveOrgAuditorByUsername("test-org-guid", "test")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.RemoveOrgAuditorByUsernameCallCount()).To(Equal(0))
+			})
 
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-				mockLdap.EXPECT().GetUser(config, "ldap-user-1").Return(&ldap.User{
-					UserDN: "user-1-dn",
-					UserID: "user-1-id",
-					Email:  "user1@test.com",
+			It("should error", func() {
+				client.RemoveOrgAuditorByUsernameReturns(errors.New("error"))
+				err := userManager.RemoveOrgAuditorByUsername("test-org-guid", "test")
+				Expect(err).Should(HaveOccurred())
+				Expect(client.RemoveOrgAuditorByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.RemoveOrgAuditorByUsernameArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+				Expect(userName).Should(Equal("test"))
+			})
+		})
+
+		Context("RemoveOrgBillingManagerByUsername", func() {
+			It("should succeed", func() {
+				err := userManager.RemoveOrgBillingManagerByUsername("test-org-guid", "test")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.RemoveOrgBillingManagerByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.RemoveOrgBillingManagerByUsernameArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+				Expect(userName).Should(Equal("test"))
+			})
+
+			It("should peek", func() {
+				userManager.Peek = true
+				err := userManager.RemoveOrgBillingManagerByUsername("test-org-guid", "test")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.RemoveOrgBillingManagerByUsernameCallCount()).To(Equal(0))
+			})
+
+			It("should error", func() {
+				client.RemoveOrgBillingManagerByUsernameReturns(errors.New("error"))
+				err := userManager.RemoveOrgBillingManagerByUsername("test-org-guid", "test")
+				Expect(err).Should(HaveOccurred())
+				Expect(client.RemoveOrgBillingManagerByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.RemoveOrgBillingManagerByUsernameArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+				Expect(userName).Should(Equal("test"))
+			})
+		})
+
+		Context("RemoveOrgManagerByUsername", func() {
+			It("should succeed", func() {
+				err := userManager.RemoveOrgManagerByUsername("test-org-guid", "test")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.RemoveOrgManagerByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.RemoveOrgManagerByUsernameArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+				Expect(userName).Should(Equal("test"))
+			})
+
+			It("should peek", func() {
+				userManager.Peek = true
+				err := userManager.RemoveOrgManagerByUsername("test-org-guid", "test")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.RemoveOrgManagerByUsernameCallCount()).To(Equal(0))
+			})
+
+			It("should error", func() {
+				client.RemoveOrgManagerByUsernameReturns(errors.New("error"))
+				err := userManager.RemoveOrgManagerByUsername("test-org-guid", "test")
+				Expect(err).Should(HaveOccurred())
+				Expect(client.RemoveOrgManagerByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.RemoveOrgManagerByUsernameArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+				Expect(userName).Should(Equal("test"))
+			})
+		})
+
+		Context("ListOrgAuditors", func() {
+			It("should succeed", func() {
+				client.ListOrgAuditorsReturns([]cfclient.User{
+					cfclient.User{
+						Username: "test",
+						Guid:     "test-guid",
+					},
+					cfclient.User{
+						Username: "test2",
+						Guid:     "test2-guid",
+					},
 				}, nil)
-				mockLdap.EXPECT().GetUser(config, "ldap-user-2").Return(&ldap.User{
-					UserDN: "user-2-dn",
-					UserID: "user-2-id",
-					Email:  "user2@test.com",
+				users, err := userManager.ListOrgAuditors("test-org-guid")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(users)).To(Equal(2))
+				Expect(client.ListOrgAuditorsCallCount()).To(Equal(1))
+				orgGUID := client.ListOrgAuditorsArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+			})
+			It("should error", func() {
+				client.ListOrgAuditorsReturns(nil, errors.New("error"))
+				_, err := userManager.ListOrgAuditors("test-org-guid")
+				Expect(err).Should(HaveOccurred())
+				Expect(client.ListOrgAuditorsCallCount()).To(Equal(1))
+				orgGUID := client.ListOrgAuditorsArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+			})
+		})
+
+		Context("ListOrgBillingManager", func() {
+			It("should succeed", func() {
+				client.ListOrgBillingManagersReturns([]cfclient.User{
+					cfclient.User{
+						Username: "test",
+						Guid:     "test-guid",
+					},
+					cfclient.User{
+						Username: "test2",
+						Guid:     "test2-guid",
+					},
 				}, nil)
-
-				mockUaac.EXPECT().CreateExternalUser("user-1-id", "user1@test.com", "user-1-dn", "ldap").Return(nil)
-				mockCloudController.EXPECT().AddUserToOrg("user-1-id", "my-org-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToSpaceRole("user-1-id", "my-role", "my-space-guid").Return(nil)
-
-				mockUaac.EXPECT().CreateExternalUser("user-2-id", "user2@test.com", "user-2-dn", "ldap").Return(nil)
-				mockCloudController.EXPECT().AddUserToOrg("user-2-id", "my-org-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToSpaceRole("user-2-id", "my-role", "my-space-guid").Return(nil)
-
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-				Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
-				_, ok := uaacUsers["user-1-id"]
-				Ω(ok).Should(BeTrue())
-				_, ok = uaacUsers["user-2-id"]
-				Ω(ok).Should(BeTrue())
+				users, err := userManager.ListOrgBillingManagers("test-org-guid")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(users)).To(Equal(2))
+				Expect(client.ListOrgBillingManagersCallCount()).To(Equal(1))
+				orgGUID := client.ListOrgBillingManagersArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
 			})
+			It("should error", func() {
+				client.ListOrgBillingManagersReturns(nil, errors.New("error"))
+				_, err := userManager.ListOrgBillingManagers("test-org-guid")
+				Expect(err).Should(HaveOccurred())
+				Expect(client.ListOrgBillingManagersCallCount()).To(Equal(1))
+				orgGUID := client.ListOrgBillingManagersArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+			})
+		})
 
-			It("update ldap users where users are in uaac", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "ldap",
-				}
-				uaacUsers := make(map[string]string)
-				uaacUsers["user-1-id"] = "user-1-id"
-				uaacUsers["user-2-id"] = "user-2-id"
-				spaceUsers := make(map[string]string)
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID: "my-space-guid",
-					OrgGUID:   "my-org-guid",
-					Role:      "my-role",
-					LdapUsers: []string{"ldap-user-1", "ldap-user-2"},
-				}
-
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-				mockLdap.EXPECT().GetUser(config, "ldap-user-1").Return(&ldap.User{
-					UserDN: "user-1-dn",
-					UserID: "user-1-id",
-					Email:  "user1@test.com",
+		Context("ListOrgManager", func() {
+			It("should succeed", func() {
+				client.ListOrgManagersReturns([]cfclient.User{
+					cfclient.User{
+						Username: "test",
+						Guid:     "test-guid",
+					},
+					cfclient.User{
+						Username: "test2",
+						Guid:     "test2-guid",
+					},
 				}, nil)
-				mockLdap.EXPECT().GetUser(config, "ldap-user-2").Return(&ldap.User{
-					UserDN: "user-2-dn",
-					UserID: "user-2-id",
-					Email:  "user2@test.com",
+				users, err := userManager.ListOrgManagers("test-org-guid")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(users)).To(Equal(2))
+				Expect(client.ListOrgManagersCallCount()).To(Equal(1))
+				orgGUID := client.ListOrgManagersArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+			})
+			It("should error", func() {
+				client.ListOrgManagersReturns(nil, errors.New("error"))
+				_, err := userManager.ListOrgManagers("test-org-guid")
+				Expect(err).Should(HaveOccurred())
+				Expect(client.ListOrgManagersCallCount()).To(Equal(1))
+				orgGUID := client.ListOrgManagersArgsForCall(0)
+				Expect(orgGUID).Should(Equal("test-org-guid"))
+			})
+		})
+
+		Context("AssociateOrgAuditorByUsername", func() {
+			It("Should succeed", func() {
+				client.AssociateOrgAuditorByUsernameReturns(cfclient.Org{}, nil)
+				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "foo", "userName")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(client.AssociateOrgAuditorByUsernameCallCount()).To(Equal(1))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.AssociateOrgAuditorByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+
+				orgGUID, userName = client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+			})
+
+			It("Should fail", func() {
+				client.AssociateOrgAuditorByUsernameReturns(cfclient.Org{}, errors.New("error"))
+				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "foo", "userName")
+				Expect(err).To(HaveOccurred())
+				Expect(client.AssociateOrgAuditorByUsernameCallCount()).To(Equal(1))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.AssociateOrgAuditorByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+
+				orgGUID, userName = client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+			})
+
+			It("Should fail", func() {
+				client.AssociateOrgUserByUsernameReturns(cfclient.Org{}, errors.New("error"))
+				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "foo", "userName")
+				Expect(err).To(HaveOccurred())
+				Expect(client.AssociateOrgAuditorByUsernameCallCount()).To(Equal(0))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+
+				orgGUID, userName := client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+			})
+
+			It("Should peek", func() {
+				userManager.Peek = true
+				client.AssociateOrgAuditorByUsernameReturns(cfclient.Org{}, nil)
+				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "foo", "userName")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(client.AssociateOrgAuditorByUsernameCallCount()).To(Equal(0))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(0))
+			})
+		})
+		Context("AssociateOrgBillingManagerByUsername", func() {
+			It("Should succeed", func() {
+				client.AssociateOrgBillingManagerByUsernameReturns(cfclient.Org{}, nil)
+				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "foo", "userName")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(client.AssociateOrgBillingManagerByUsernameCallCount()).To(Equal(1))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.AssociateOrgBillingManagerByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+
+				orgGUID, userName = client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+			})
+
+			It("Should fail", func() {
+				client.AssociateOrgBillingManagerByUsernameReturns(cfclient.Org{}, errors.New("error"))
+				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "foo", "userName")
+				Expect(err).To(HaveOccurred())
+				Expect(client.AssociateOrgBillingManagerByUsernameCallCount()).To(Equal(1))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.AssociateOrgBillingManagerByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+
+				orgGUID, userName = client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+			})
+
+			It("Should fail", func() {
+				client.AssociateOrgUserByUsernameReturns(cfclient.Org{}, errors.New("error"))
+				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "foo", "userName")
+				Expect(err).To(HaveOccurred())
+				Expect(client.AssociateOrgBillingManagerByUsernameCallCount()).To(Equal(0))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+
+				orgGUID, userName := client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+			})
+
+			It("Should peek", func() {
+				userManager.Peek = true
+				client.AssociateOrgBillingManagerByUsernameReturns(cfclient.Org{}, nil)
+				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "foo", "userName")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(client.AssociateOrgBillingManagerByUsernameCallCount()).To(Equal(0))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(0))
+			})
+		})
+
+		Context("AssociateOrgManagerByUsername", func() {
+			It("Should succeed", func() {
+				client.AssociateOrgManagerByUsernameReturns(cfclient.Org{}, nil)
+				err := userManager.AssociateOrgManagerByUsername("orgGUID", "foo", "userName")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(client.AssociateOrgManagerByUsernameCallCount()).To(Equal(1))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.AssociateOrgManagerByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+
+				orgGUID, userName = client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+			})
+
+			It("Should fail", func() {
+				client.AssociateOrgManagerByUsernameReturns(cfclient.Org{}, errors.New("error"))
+				err := userManager.AssociateOrgManagerByUsername("orgGUID", "foo", "userName")
+				Expect(err).To(HaveOccurred())
+				Expect(client.AssociateOrgManagerByUsernameCallCount()).To(Equal(1))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+				orgGUID, userName := client.AssociateOrgManagerByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+
+				orgGUID, userName = client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+			})
+
+			It("Should fail", func() {
+				client.AssociateOrgUserByUsernameReturns(cfclient.Org{}, errors.New("error"))
+				err := userManager.AssociateOrgManagerByUsername("orgGUID", "foo", "userName")
+				Expect(err).To(HaveOccurred())
+				Expect(client.AssociateOrgManagerByUsernameCallCount()).To(Equal(0))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
+
+				orgGUID, userName := client.AssociateOrgUserByUsernameArgsForCall(0)
+				Expect(orgGUID).To(Equal("orgGUID"))
+				Expect(userName).To(Equal("userName"))
+			})
+
+			It("Should peek", func() {
+				userManager.Peek = true
+				client.AssociateOrgManagerByUsernameReturns(cfclient.Org{}, nil)
+				err := userManager.AssociateOrgManagerByUsername("orgGUID", "foo", "userName")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(client.AssociateOrgManagerByUsernameCallCount()).To(Equal(0))
+				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(0))
+			})
+		})
+
+		Context("UpdateSpaceUsers", func() {
+			It("Should succeed", func() {
+				userMap := make(map[string]string)
+				userMap["test-user"] = "test-user-guid"
+				uaaFake.ListUsersReturns(userMap, nil)
+				fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+					config.SpaceConfig{
+						Space: "test-space",
+						Org:   "test-org",
+					},
 				}, nil)
-
-				mockCloudController.EXPECT().AddUserToOrg("user-1-id", "my-org-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToSpaceRole("user-1-id", "my-role", "my-space-guid").Return(nil)
-
-				mockCloudController.EXPECT().AddUserToOrg("user-2-id", "my-org-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToSpaceRole("user-2-id", "my-role", "my-space-guid").Return(nil)
-
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-
-				Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
-				_, ok := uaacUsers["user-1-id"]
-				Ω(ok).Should(BeTrue())
-				_, ok = uaacUsers["user-2-id"]
-				Ω(ok).Should(BeTrue())
+				spaceFake.FindSpaceReturns(cfclient.Space{
+					Name:             "test-space",
+					OrganizationGuid: "test-org-guid",
+					Guid:             "test-space-guid",
+				}, nil)
+				ldapFake.LdapConfigReturns(&config.LdapConfig{Enabled: false})
+				err := userManager.UpdateSpaceUsers()
+				Expect(err).ShouldNot(HaveOccurred())
 			})
+		})
 
-			It("update users where users are in uaac", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "ldap",
-				}
-				uaacUsers := make(map[string]string)
-				uaacUsers["user-1"] = "user-1"
-				uaacUsers["user-2"] = "user-2"
-				spaceUsers := make(map[string]string)
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID: "my-space-guid",
-					OrgGUID:   "my-org-guid",
-					Role:      "my-role",
-					Users:     []string{"user-1", "user-2"},
-				}
-
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-				mockCloudController.EXPECT().AddUserToOrg("user-1", "my-org-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToSpaceRole("user-1", "my-role", "my-space-guid").Return(nil)
-
-				mockCloudController.EXPECT().AddUserToOrg("user-2", "my-org-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToSpaceRole("user-2", "my-role", "my-space-guid").Return(nil)
-
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-
-				Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
-				_, ok := uaacUsers["user-1"]
-				Ω(ok).Should(BeTrue())
-				_, ok = uaacUsers["user-2"]
-				Ω(ok).Should(BeTrue())
+		Context("UpdateSpaceUsers", func() {
+			It("Should succeed", func() {
+				userMap := make(map[string]string)
+				userMap["test-user"] = "test-user-guid"
+				uaaFake.ListUsersReturns(userMap, nil)
+				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
+					config.OrgConfig{
+						Org: "test-org",
+					},
+				}, nil)
+				orgFake.FindOrgReturns(cfclient.Org{
+					Name: "test-org",
+					Guid: "test-org-guid",
+				}, nil)
+				ldapFake.LdapConfigReturns(&config.LdapConfig{Enabled: false})
+				err := userManager.UpdateOrgUsers()
+				Expect(err).ShouldNot(HaveOccurred())
 			})
-
-			It("update users where users are in uaac and in a space", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "ldap",
-				}
-				uaacUsers := make(map[string]string)
-				uaacUsers["user-1"] = "user-1"
-				uaacUsers["user-2"] = "user-2"
-				spaceUsers := make(map[string]string)
-				spaceUsers["user-1"] = "asfdsdf-1"
-				spaceUsers["user-2"] = "asdfsaf-2"
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID: "my-space-guid",
-					OrgGUID:   "my-org-guid",
-					Role:      "my-role",
-					Users:     []string{"USER-1", "user-2"},
-				}
-
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-
-				Ω(len(uaacUsers)).Should(BeEquivalentTo(2))
-				_, ok := uaacUsers["user-1"]
-				Ω(ok).Should(BeTrue())
-				_, ok = uaacUsers["user-2"]
-				Ω(ok).Should(BeTrue())
-			})
-
-			It("update users where users are not in uaac", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "ldap",
-				}
-				uaacUsers := make(map[string]string)
-				spaceUsers := make(map[string]string)
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID: "my-space-guid",
-					OrgGUID:   "my-org-guid",
-					Role:      "my-role",
-					Users:     []string{"user-1"},
-				}
-
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-
-				Ω(userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)).ShouldNot(Succeed())
-				Ω(len(uaacUsers)).Should(BeEquivalentTo(0))
-			})
-
-			It("remove users that in space but not in config", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "ldap",
-				}
-				uaacUsers := make(map[string]string)
-				spaceUsers := make(map[string]string)
-				spaceUsers["cwashburn"] = "cwashburn"
-				spaceUsers["cwashburn1"] = "cwashburn1"
-				spaceUsers["cwashburn2"] = "cwashburn2"
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID:   "my-space-guid",
-					OrgGUID:     "my-org-guid",
-					Role:        "my-role",
-					RemoveUsers: true,
-				}
-
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-				mockCloudController.EXPECT().RemoveCFUserByUserName("my-space-guid", "spaces", "cwashburn", "my-role").Return(nil)
-				mockCloudController.EXPECT().RemoveCFUserByUserName("my-space-guid", "spaces", "cwashburn1", "my-role").Return(nil)
-				mockCloudController.EXPECT().RemoveCFUserByUserName("my-space-guid", "spaces", "cwashburn2", "my-role").Return(nil)
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-			})
-
-			It("remove orphaned LDAP users while leaving existing group members - GH issue 33", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "https://saml.example.com",
-				}
-
-				uaacUsers := make(map[string]string)
-				uaacUsers["chris.a.washburn@example.com"] = "cwashburn-uaac-guid"
-				uaacUsers["joe.h.fitzy@example.com"] = "jfitzy-uaac-guid"
-				uaacUsers["alex.j.smith@example.com"] = "asmith-uaac-guid" // <-- user in uaac, but not ldap group
-
-				spaceUsers := make(map[string]string)
-				spaceUsers["chris.a.washburn@example.com"] = "cwashburn-space-user-guid"
-				spaceUsers["joe.h.fitzy@example.com"] = "jfitzy-space-user-guid"
-				spaceUsers["alex.j.smith@example.com"] = "asmith-space-user-guid" // <-- user in space, but not ldap group
-
-				updateUsersInput := UpdateUsersInput{
-					SpaceName:      "space-name",
-					SpaceGUID:      "space-guid",
-					OrgName:        "org-name",
-					OrgGUID:        "org-guid",
-					Role:           "space-role-name",
-					LdapGroupNames: []string{"ldap-group-name"},
-					RemoveUsers:    true,
-				}
-
-				ldapGroupUsers := []ldap.User{ldap.User{
-					UserDN: "CN=Washburn, Chris,OU=End Users,OU=Accounts,DC=add,DC=example,DC=com",
-					UserID: "u-cwashburn",
-					Email:  "Chris.A.Washburn@example.com",
-				}, ldap.User{
-					UserDN: "CN=Fitzy, Joe,OU=End Users,OU=Accounts,DC=ad,DC=example,DC=com",
-					UserID: "u-jfitzy",
-					Email:  "Joe.H.Fitzy@example.com",
-				}}
-
-				mockLdap.EXPECT().GetUserIDs(config, "ldap-group-name").Return(ldapGroupUsers, nil)
-
-				mockCloudController.EXPECT().GetCFUsers("space-guid", "spaces", "space-role-name").Return(spaceUsers, nil)
-				mockCloudController.EXPECT().RemoveCFUserByUserName("space-guid", "spaces", "alex.j.smith@example.com", "space-role-name").Return(nil)
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-			})
-
-			It("don't remove users that in space but not in config", func() {
-				config := &l.Config{
-					Enabled: true,
-					Origin:  "ldap",
-				}
-				uaacUsers := make(map[string]string)
-				spaceUsers := make(map[string]string)
-				spaceUsers["cwashburn"] = "cwashburn"
-				spaceUsers["cwashburn1"] = "cwashburn1"
-				spaceUsers["cwashburn2"] = "cwashburn2"
-				updateUsersInput := UpdateUsersInput{
-					SpaceGUID: "my-space-guid",
-					OrgGUID:   "my-org-guid",
-					Role:      "my-role",
-				}
-
-				mockCloudController.EXPECT().GetCFUsers("my-space-guid", "spaces", "my-role").Return(spaceUsers, nil)
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-			})
-
-			It("adding users to uaac based on saml", func() {
-				config := &l.Config{
-					Enabled: false,
-					Origin:  "https://saml.example.com",
-				}
-
-				uaacUsers := make(map[string]string)
-				uaacUsers["chris.a.washburn@example.com"] = "cwashburn-uaac-guid"
-				uaacUsers["joe.h.fitzy@example.com"] = "jfitzy-uaac-guid"
-
-				spaceUsers := make(map[string]string)
-				spaceUsers["chris.a.washburn@example.com"] = "cwashburn-space-user-guid"
-				spaceUsers["joe.h.fitzy@example.com"] = "jfitzy-space-user-guid"
-
-				updateUsersInput := UpdateUsersInput{
-					SpaceName:   "space-name",
-					SpaceGUID:   "space-guid",
-					OrgName:     "org-name",
-					OrgGUID:     "org-guid",
-					Role:        "space-role-name",
-					SamlUsers:   []string{"chris.a.washburn@example.com", "joe.h.fitzy@example.com", "test@test.com"},
-					RemoveUsers: true,
-				}
-
-				mockCloudController.EXPECT().GetCFUsers("space-guid", "spaces", "space-role-name").Return(spaceUsers, nil)
-				mockUaac.EXPECT().CreateExternalUser("test@test.com", "test@test.com", "test@test.com", "https://saml.example.com").Return(nil)
-				mockCloudController.EXPECT().AddUserToOrg("test@test.com", "org-guid").Return(nil)
-				mockCloudController.EXPECT().AddUserToSpaceRole("test@test.com", "space-role-name", "space-guid").Return(nil)
-				err := userManager.UpdateSpaceUsers(config, uaacUsers, updateUsersInput)
-				Ω(err).Should(BeNil())
-				Ω(uaacUsers).Should(HaveKey("test@test.com"))
-			})*/
 		})
 	})
 })

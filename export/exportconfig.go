@@ -295,7 +295,7 @@ func (im *DefaultImportManager) addOrgManagers(orgConfig *config.OrgConfig, user
 }
 
 func (im *DefaultImportManager) addBillingManagers(orgConfig *config.OrgConfig, userIDToUserMap map[string]uaa.User, orgGUID string) {
-	orgBillingMgrs, _ := im.UserManager.ListOrgBillingManager(orgGUID)
+	orgBillingMgrs, _ := im.UserManager.ListOrgBillingManagers(orgGUID)
 	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs), orgConfig.Org)
 	doAddUsers(orgBillingMgrs, &orgConfig.BillingManager.Users, &orgConfig.BillingManager.LDAPUsers, &orgConfig.BillingManager.SamlUsers, userIDToUserMap)
 }

@@ -179,7 +179,7 @@ func (m *DefaultManager) ListOrgAuditors(orgGUID string) (map[string]string, err
 	}
 	return m.userListToMap(users), nil
 }
-func (m *DefaultManager) ListOrgBillingManager(orgGUID string) (map[string]string, error) {
+func (m *DefaultManager) ListOrgBillingManagers(orgGUID string) (map[string]string, error) {
 	users, err := m.Client.ListOrgBillingManagers(orgGUID)
 	if err != nil {
 		return nil, err
@@ -235,13 +235,11 @@ func (m *DefaultManager) AssociateOrgManagerByUsername(orgGUID, placeholder, use
 func (m *DefaultManager) UpdateSpaceUsers() error {
 	uaaUsers, err := m.UAAMgr.ListUsers()
 	if err != nil {
-		lo.G.Error(err)
 		return err
 	}
 
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
-		lo.G.Error(err)
 		return err
 	}
 
@@ -317,13 +315,11 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers ma
 func (m *DefaultManager) UpdateOrgUsers() error {
 	uaacUsers, err := m.UAAMgr.ListUsers()
 	if err != nil {
-		lo.G.Error(err)
 		return err
 	}
 
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
-		lo.G.Error(err)
 		return err
 	}
 
@@ -350,7 +346,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[s
 			Users:          input.BillingManager.Users,
 			SamlUsers:      input.BillingManager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
-			ListUsers:      m.ListOrgBillingManager,
+			ListUsers:      m.ListOrgBillingManagers,
 			RemoveUser:     m.RemoveOrgBillingManagerByUsername,
 			AddUser:        m.AssociateOrgBillingManagerByUsername,
 		})

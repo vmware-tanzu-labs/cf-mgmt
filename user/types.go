@@ -26,7 +26,7 @@ type Manager interface {
 	ListSpaceDevelopers(spaceGUID string) (map[string]string, error)
 	ListSpaceManagers(spaceGUID string) (map[string]string, error)
 	ListOrgAuditors(orgGUID string) (map[string]string, error)
-	ListOrgBillingManager(orgGUID string) (map[string]string, error)
+	ListOrgBillingManagers(orgGUID string) (map[string]string, error)
 	ListOrgManagers(orgGUID string) (map[string]string, error)
 }
 
