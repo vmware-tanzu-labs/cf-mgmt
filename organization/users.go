@@ -86,7 +86,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 		if _, userExists := uaacUsers[lowerUserEmail]; !userExists {
 			lo.G.Info("User", userEmail, "doesn't exist in cloud foundry, so creating user")
 			if err = m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
-				lo.G.Error("Unable to create user", userEmail)
+				lo.G.Errorf("Unable to create user %s due to error %s", userEmail, err.Error())
 				return err
 			} else {
 				uaacUsers[userEmail] = userEmail
@@ -139,7 +139,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 		if _, userExists := uaacUsers[userID]; !userExists {
 			lo.G.Info("User", userID, "doesn't exist in cloud foundry, so creating user")
 			if err := m.UAAMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
-				lo.G.Error("Unable to create user", userID)
+				lo.G.Errorf("Unable to create user %s due to error %s", userID, err.Error())
 			} else {
 				uaacUsers[userID] = userID
 				if err := m.addUserToOrgAndRole(userID, orgGUID, role, orgName); err != nil {

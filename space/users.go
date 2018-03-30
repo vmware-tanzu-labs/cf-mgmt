@@ -88,7 +88,7 @@ func (m *UserManager) UpdateSpaceUsers(config *ldap.Config, uaaUsers map[string]
 		if _, userExists := uaaUsers[lowerUserEmail]; !userExists {
 			lo.G.Debug("User", userEmail, "doesn't exist in cloud foundry, so creating user")
 			if err = m.uaaMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
-				lo.G.Error("Unable to create user", userEmail)
+				lo.G.Errorf("Unable to create user [%s] due to error %s", userEmail, err.Error())
 				return err
 			} else {
 				uaaUsers[userEmail] = userEmail
@@ -143,7 +143,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, spaceGUID, orgGUID str
 		if _, userExists := uaaUsers[userID]; !userExists {
 			lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
 			if err := m.uaaMgr.CreateExternalUser(userID, user.Email, externalID, config.Origin); err != nil {
-				lo.G.Error("Unable to create user", userID)
+				lo.G.Errorf("Unable to create user [%s] due to error %s", userID, err.Error())
 			} else {
 				uaaUsers[userID] = userID
 				if err := m.addUserToOrgAndRole(userID, orgGUID, spaceGUID, role, orgName, spaceName); err != nil {
