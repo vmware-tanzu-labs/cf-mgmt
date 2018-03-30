@@ -79,7 +79,7 @@ func (m *DefaultManager) GetUserIDs(groupName string) ([]User, error) {
 
 	userDNList := groupEntry.GetAttributeValues(m.Config.GroupAttribute)
 	if len(userDNList) == 0 {
-		lo.G.Warningf("No users found under group: %s", m.Config.GroupAttribute)
+		lo.G.Warningf("No users found under group: %s", groupName)
 		return nil, nil
 	}
 

@@ -3,7 +3,6 @@ package uaa
 import (
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -136,8 +135,7 @@ func GetUAACToken(host, userID, secret string) (string, error) {
 //CreateExternalUser -
 func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, origin string) error {
 	if userName == "" || userEmail == "" || externalID == "" {
-		msg := fmt.Sprintf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID)
-		return errors.New(msg)
+		return fmt.Errorf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID)
 	}
 	if m.Peek {
 		lo.G.Infof("[dry-run]: successfully added user [%s]", userName)

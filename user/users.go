@@ -427,7 +427,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers, uaaUsers map[string]string, up
 				if _, userExists := uaaUsers[userID]; !userExists {
 					lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
 					if err := m.UAAMgr.CreateExternalUser(userID, userToUse.Email, userToUse.UserDN, config.Origin); err != nil {
-						lo.G.Error("Unable to create user", userID)
+						lo.G.Errorf("Unable to create user %s with error %s", userID, err.Error())
 						continue
 					} else {
 						uaaUsers[userID] = userID
