@@ -169,8 +169,7 @@ func (m *UserManager) getLdapUsers(config *ldap.Config, groupNames []string, use
 			if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
 				users = append(users, groupUsers...)
 			} else {
-				lo.G.Error(err)
-				return nil, err
+				lo.G.Warning(err)
 			}
 		}
 	}
@@ -180,8 +179,7 @@ func (m *UserManager) getLdapUsers(config *ldap.Config, groupNames []string, use
 				users = append(users, *ldapUser)
 			}
 		} else {
-			lo.G.Error(err)
-			return nil, err
+			lo.G.Warning(err)
 		}
 	}
 	return users, nil
