@@ -1,44 +1,29 @@
 package organization_test
 
-/*import (
+import (
 	"fmt"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotalservices/cf-mgmt/cloudcontroller"
-	cc "github.com/pivotalservices/cf-mgmt/cloudcontroller/mocks"
 	"github.com/pivotalservices/cf-mgmt/config"
-	ldap "github.com/pivotalservices/cf-mgmt/ldap/mocks"
 	. "github.com/pivotalservices/cf-mgmt/organization"
-	uaa "github.com/pivotalservices/cf-mgmt/uaa/mocks"
+	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 )
 
 var _ = Describe("given OrgManager", func() {
 	var (
-		ctrl                *gomock.Controller
-		mockCloudController *cc.MockManager
-		mockLdap            *ldap.MockManager
-		mockUaa             *uaa.MockManager
-		orgManager          DefaultOrgManager
+		fakeClient *orgfakes.FakeCFClient
+		orgManager DefaultManager
 	)
 
 	BeforeEach(func() {
-		ctrl = gomock.NewController(test)
-		mockCloudController = cc.NewMockManager(ctrl)
-		mockLdap = ldap.NewMockManager(ctrl)
-		mockUaa = uaa.NewMockManager(ctrl)
-		orgManager = DefaultOrgManager{
-			Cfg:             config.NewManager("./fixtures/config"),
-			CloudController: mockCloudController,
-			UAAMgr:          mockUaa,
-			LdapMgr:         mockLdap,
+		fakeClient = new(orgfakes.FakeCFClient)
+		orgManager = DefaultManager{
+			Cfg:    config.NewManager("./fixtures/config"),
+			Client: fakeClient,
+			Peek:   false,
 		}
-	})
-
-	AfterEach(func() {
-		ctrl.Finish()
 	})
 
 	Context("FindOrg()", func() {
@@ -51,23 +36,21 @@ var _ = Describe("given OrgManager", func() {
 					Name: "test2",
 				},
 			}
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			fakeClient.ListOrgsReturns(orgs, nil)
 			org, err := orgManager.FindOrg("test")
 			Ω(err).Should(BeNil())
 			Ω(org).ShouldNot(BeNil())
 			Ω(org.Name).Should(Equal("test"))
 		})
 	})
-
 	It("should return an error for unfound org", func() {
 		orgs := []cfclient.Org{}
-		mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+		fakeClient.ListOrgsReturns(orgs, nil)
 		_, err := orgManager.FindOrg("test")
 		Ω(err).ShouldNot(BeNil())
 	})
-
 	It("should return an error", func() {
-		mockCloudController.EXPECT().ListOrgs().Return(nil, fmt.Errorf("test"))
+		fakeClient.ListOrgsReturns(nil, fmt.Errorf("test"))
 		_, err := orgManager.FindOrg("test")
 		Ω(err).ShouldNot(BeNil())
 	})
@@ -80,7 +63,7 @@ var _ = Describe("given OrgManager", func() {
 					Guid: "theGUID",
 				},
 			}
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			fakeClient.ListOrgsReturns(orgs, nil)
 			guid, err := orgManager.GetOrgGUID("test")
 			Ω(err).Should(BeNil())
 			Ω(guid).ShouldNot(BeNil())
@@ -89,7 +72,7 @@ var _ = Describe("given OrgManager", func() {
 	})
 
 	It("should return an error", func() {
-		mockCloudController.EXPECT().ListOrgs().Return(nil, fmt.Errorf("test"))
+		fakeClient.ListOrgsReturns(nil, fmt.Errorf("test"))
 		guid, err := orgManager.GetOrgGUID("test")
 		Ω(err).ShouldNot(BeNil())
 		Ω(guid).Should(Equal(""))
@@ -98,21 +81,20 @@ var _ = Describe("given OrgManager", func() {
 	Context("CreateOrgs()", func() {
 		It("should create 2", func() {
 			orgs := []cfclient.Org{}
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().CreateOrg("test").Return(nil)
-			mockCloudController.EXPECT().CreateOrg("test2").Return(nil)
+			fakeClient.ListOrgsReturns(orgs, nil)
 			err := orgManager.CreateOrgs()
 			Ω(err).Should(BeNil())
+			Expect(fakeClient.CreateOrgCallCount()).Should(Equal(2))
 		})
 		It("should error on list orgs", func() {
-			mockCloudController.EXPECT().ListOrgs().Return(nil, fmt.Errorf("test"))
+			fakeClient.ListOrgsReturns(nil, fmt.Errorf("test"))
 			err := orgManager.CreateOrgs()
 			Ω(err).Should(HaveOccurred())
 		})
 		It("should error on create org", func() {
 			orgs := []cfclient.Org{}
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().CreateOrg("test").Return(fmt.Errorf("test"))
+			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeClient.CreateOrgReturns(cfclient.Org{}, fmt.Errorf("test"))
 			err := orgManager.CreateOrgs()
 			Ω(err).Should(HaveOccurred())
 		})
@@ -125,9 +107,10 @@ var _ = Describe("given OrgManager", func() {
 					Name: "test2",
 				},
 			}
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
+			fakeClient.ListOrgsReturns(orgs, nil)
 			err := orgManager.CreateOrgs()
 			Ω(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.CreateOrgCallCount()).Should(Equal(0))
 		})
 		It("should not create test2 org", func() {
 			orgs := []cfclient.Org{
@@ -135,10 +118,12 @@ var _ = Describe("given OrgManager", func() {
 					Name: "test",
 				},
 			}
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().CreateOrg("test2").Return(nil)
+			fakeClient.ListOrgsReturns(orgs, nil)
 			err := orgManager.CreateOrgs()
 			Ω(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.CreateOrgCallCount()).Should(Equal(1))
+			orgRequest := fakeClient.CreateOrgArgsForCall(0)
+			Expect(orgRequest.Name).Should(Equal("test2"))
 		})
 	})
 
@@ -166,458 +151,63 @@ var _ = Describe("given OrgManager", func() {
 					Guid: "redis-guid",
 				},
 			}
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().DeleteOrg("test2-guid").Return(nil)
+			fakeClient.ListOrgsReturns(orgs, nil)
 			err := orgManager.DeleteOrgs()
 			Ω(err).Should(BeNil())
+			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(1))
+			orgGUID, _, _ := fakeClient.DeleteOrgArgsForCall(0)
+			Expect(orgGUID).Should(Equal("test2-guid"))
 		})
 	})
 
-	Context("CreateQuotas()", func() {
-		var orgs []cfclient.Org
-		BeforeEach(func() {
-			orgManager.Cfg = config.NewManager("./fixtures/config")
+	Context("DeleteOrgByName()", func() {
+		var (
+			orgs []cfclient.Org
+		)
 
+		BeforeEach(func() {
 			orgs = []cfclient.Org{
-				{
-					Name: "test",
-					Guid: "testOrgGUID",
+				cfclient.Org{
+					Name: "system",
+					Guid: "system-guid",
 				},
-				{
+				cfclient.Org{
+					Name: "test",
+					Guid: "test-guid",
+				},
+				cfclient.Org{
 					Name: "test2",
-					Guid: "test2OrgGUID",
+					Guid: "test2-guid",
+				},
+				cfclient.Org{
+					Name: "redis-test-ORG-1-2017_10_04-20h06m33.481s",
+					Guid: "redis-guid",
 				},
 			}
 		})
 
-		It("should create 2 quotas", func() {
-			quotas := make(map[string]string)
-			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().CreateQuota(cloudcontroller.QuotaEntity{
-				Name:                    "test",
-				MemoryLimit:             10240,
-				InstanceMemoryLimit:     -1,
-				TotalRoutes:             10,
-				TotalServices:           -1,
-				PaidServicePlansAllowed: true,
-				AppInstanceLimit:        -1,
-				TotalReservedRoutePorts: 0,
-				TotalPrivateDomains:     -1,
-				TotalServiceKeys:        -1,
-			}).Return("testQuotaGUID", nil)
-			mockCloudController.EXPECT().AssignQuotaToOrg("testOrgGUID", "testQuotaGUID").Return(nil)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().CreateQuota(cloudcontroller.QuotaEntity{
-				Name:                    "test2",
-				MemoryLimit:             10240,
-				InstanceMemoryLimit:     -1,
-				TotalRoutes:             10,
-				TotalServices:           -1,
-				PaidServicePlansAllowed: true,
-				AppInstanceLimit:        -1,
-				TotalReservedRoutePorts: 0,
-				TotalPrivateDomains:     -1,
-				TotalServiceKeys:        -1,
-			}).Return("test2QuotaGUID", nil)
-			mockCloudController.EXPECT().AssignQuotaToOrg("test2OrgGUID", "test2QuotaGUID").Return(nil)
-			err := orgManager.CreateQuotas()
+		It("should delete 1", func() {
+			fakeClient.ListOrgsReturns(orgs, nil)
+			err := orgManager.DeleteOrgByName("test2")
 			Ω(err).Should(BeNil())
+			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(1))
+			orgGUID, _, _ := fakeClient.DeleteOrgArgsForCall(0)
+			Expect(orgGUID).Should(Equal("test2-guid"))
 		})
 
-		It("list quotas returns error", func() {
-			mockCloudController.EXPECT().ListAllOrgQuotas().Return(nil, fmt.Errorf("test"))
-			err := orgManager.CreateQuotas()
+		It("should error deleting org that doesn't exist", func() {
+			fakeClient.ListOrgsReturns(orgs, nil)
+			err := orgManager.DeleteOrgByName("foo")
 			Ω(err).Should(HaveOccurred())
+			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(0))
 		})
 
-		It("list orgs returns error", func() {
-			quotas := make(map[string]string)
-			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
-			mockCloudController.EXPECT().ListOrgs().Return(nil, fmt.Errorf("test"))
-			err := orgManager.CreateQuotas()
-			Ω(err).Should(HaveOccurred())
-		})
-
-		It("create quota returns error", func() {
-			quotas := make(map[string]string)
-			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().CreateQuota(cloudcontroller.QuotaEntity{
-				Name:                    "test",
-				MemoryLimit:             10240,
-				InstanceMemoryLimit:     -1,
-				TotalRoutes:             10,
-				TotalServices:           -1,
-				PaidServicePlansAllowed: true,
-				AppInstanceLimit:        -1,
-				TotalReservedRoutePorts: 0,
-				TotalPrivateDomains:     -1,
-				TotalServiceKeys:        -1,
-			}).Return("", fmt.Errorf("test"))
-			err := orgManager.CreateQuotas()
-			Ω(err).Should(HaveOccurred())
-		})
-
-		It("assign quota to org returns error", func() {
-			quotas := make(map[string]string)
-			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().CreateQuota(cloudcontroller.QuotaEntity{
-				Name:                    "test",
-				MemoryLimit:             10240,
-				InstanceMemoryLimit:     -1,
-				TotalRoutes:             10,
-				TotalServices:           -1,
-				PaidServicePlansAllowed: true,
-				AppInstanceLimit:        -1,
-				TotalReservedRoutePorts: 0,
-				TotalPrivateDomains:     -1,
-				TotalServiceKeys:        -1,
-			}).Return("testQuotaGUID", nil)
-			mockCloudController.EXPECT().AssignQuotaToOrg("testOrgGUID", "testQuotaGUID").Return(fmt.Errorf("test"))
-			err := orgManager.CreateQuotas()
-			Ω(err).Should(HaveOccurred())
-		})
-
-		It("should update 2 quotas", func() {
-			quotas := make(map[string]string)
-			quotas["test"] = "testQuotaGUID"
-			quotas["test2"] = "test2QuotaGUID"
-			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().UpdateQuota("testQuotaGUID", cloudcontroller.QuotaEntity{
-				Name:                    "test",
-				MemoryLimit:             10240,
-				InstanceMemoryLimit:     -1,
-				TotalRoutes:             10,
-				TotalServices:           -1,
-				PaidServicePlansAllowed: true,
-				AppInstanceLimit:        -1,
-				TotalReservedRoutePorts: 0,
-				TotalPrivateDomains:     -1,
-				TotalServiceKeys:        -1,
-			}).Return(nil)
-			mockCloudController.EXPECT().AssignQuotaToOrg("testOrgGUID", "testQuotaGUID").Return(nil)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().UpdateQuota("test2QuotaGUID", cloudcontroller.QuotaEntity{
-				Name:                    "test2",
-				MemoryLimit:             10240,
-				InstanceMemoryLimit:     -1,
-				TotalRoutes:             10,
-				TotalServices:           -1,
-				PaidServicePlansAllowed: true,
-				AppInstanceLimit:        -1,
-				TotalReservedRoutePorts: 0,
-				TotalPrivateDomains:     -1,
-				TotalServiceKeys:        -1,
-			}).Return(nil)
-			mockCloudController.EXPECT().AssignQuotaToOrg("test2OrgGUID", "test2QuotaGUID").Return(nil)
-			err := orgManager.CreateQuotas()
+		It("should not delete any org", func() {
+			orgManager.Peek = true
+			fakeClient.ListOrgsReturns(orgs, nil)
+			err := orgManager.DeleteOrgByName("test2")
 			Ω(err).Should(BeNil())
-		})
-
-		It("update quota errors", func() {
-			quotas := make(map[string]string)
-			quotas["test"] = "testQuotaGUID"
-			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().UpdateQuota("testQuotaGUID", cloudcontroller.QuotaEntity{
-				Name:                    "test",
-				MemoryLimit:             10240,
-				InstanceMemoryLimit:     -1,
-				TotalRoutes:             10,
-				TotalServices:           -1,
-				PaidServicePlansAllowed: true,
-				AppInstanceLimit:        -1,
-				TotalReservedRoutePorts: 0,
-				TotalPrivateDomains:     -1,
-				TotalServiceKeys:        -1,
-			}).Return(fmt.Errorf("test"))
-			err := orgManager.CreateQuotas()
-			Ω(err).Should(HaveOccurred())
-		})
-
-		It("assign org to quota errors", func() {
-			quotas := make(map[string]string)
-			quotas["test"] = "testQuotaGUID"
-			mockCloudController.EXPECT().ListAllOrgQuotas().Return(quotas, nil)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().UpdateQuota("testQuotaGUID", cloudcontroller.QuotaEntity{
-				Name:                    "test",
-				MemoryLimit:             10240,
-				InstanceMemoryLimit:     -1,
-				TotalRoutes:             10,
-				TotalServices:           -1,
-				PaidServicePlansAllowed: true,
-				AppInstanceLimit:        -1,
-				TotalReservedRoutePorts: 0,
-				TotalPrivateDomains:     -1,
-				TotalServiceKeys:        -1,
-			}).Return(nil)
-			mockCloudController.EXPECT().AssignQuotaToOrg("testOrgGUID", "testQuotaGUID").Return(fmt.Errorf("test"))
-			err := orgManager.CreateQuotas()
-			Ω(err).Should(HaveOccurred())
+			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(0))
 		})
 	})
-
-	Context("CreatePrivateDomains()", func() {
-		var orgs []cfclient.Org
-		BeforeEach(func() {
-			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains")
-
-			orgs = []cfclient.Org{
-				{
-					Name: "test",
-					Guid: "testOrgGUID",
-				},
-				{
-					Name: "test-2",
-					Guid: "testOtherOrgGUID",
-				},
-			}
-		})
-		It("should create 2 private domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			orgOwnedPrivateDomains := make(map[string]string)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
-			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test.com").Return("test.com.guid", nil)
-			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test2.com").Return("test2.com.guid", nil)
-			mockCloudController.EXPECT().ListOrgOwnedPrivateDomains("testOrgGUID").Return(orgOwnedPrivateDomains, nil)
-			mockCloudController.EXPECT().SharePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			err := orgManager.CreatePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-		It("should create no private domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test.com"] = cloudcontroller.PrivateDomainInfo{OrgGUID: "testOrgGUID"}
-			allPrivateDomains["test2.com"] = cloudcontroller.PrivateDomainInfo{OrgGUID: "testOrgGUID"}
-			orgPrivateDomains := make(map[string]string)
-			orgPrivateDomains["test.com"] = "test.com.guid"
-			orgPrivateDomains["test2.com"] = "test2.com.guid"
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
-			mockCloudController.EXPECT().ListOrgOwnedPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
-			mockCloudController.EXPECT().SharePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			err := orgManager.CreatePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-
-		It("should create 2 private domains and delete 2 domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test3.com"] = cloudcontroller.PrivateDomainInfo{OrgGUID: "testOrgGUID"}
-			allPrivateDomains["test4.com"] = cloudcontroller.PrivateDomainInfo{OrgGUID: "testOrgGUID"}
-			orgPrivateDomains := make(map[string]string)
-			orgPrivateDomains["test.com"] = "test.com.guid"
-			orgPrivateDomains["test2.com"] = "test2.com.guid"
-			orgPrivateDomains["test3.com"] = "test3.com.guid"
-			orgPrivateDomains["test4.com"] = "test4.com.guid"
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
-			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test.com").Return("test.com.guid", nil)
-			mockCloudController.EXPECT().CreatePrivateDomain("testOrgGUID", "test2.com").Return("test2.com.guid", nil)
-			mockCloudController.EXPECT().ListOrgOwnedPrivateDomains("testOrgGUID").Return(orgPrivateDomains, nil)
-			mockCloudController.EXPECT().DeletePrivateDomain("test3.com.guid").Return(nil)
-			mockCloudController.EXPECT().DeletePrivateDomain("test4.com.guid").Return(nil)
-			mockCloudController.EXPECT().SharePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			err := orgManager.CreatePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-		It("should error as private domain exists in other org", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test.com"] = cloudcontroller.PrivateDomainInfo{OrgGUID: "testOtherOrgGUID"}
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil)
-			mockCloudController.EXPECT().SharePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			err := orgManager.CreatePrivateDomains()
-			Ω(err).Should(Not(BeNil()))
-		})
-	})
-
-	Context("SharePrivateDomainsDeleteEnabled", func() {
-		var orgs []cfclient.Org
-		BeforeEach(func() {
-			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains")
-
-			orgs = []cfclient.Org{
-				{
-					Name: "test",
-					Guid: "testOrgGUID",
-				},
-				{
-					Name: "test-2",
-					Guid: "testOtherOrgGUID",
-				},
-			}
-		})
-		It("should error when private domain doesn't exist", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			orgSharedPrivateDomains := make(map[string]string)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(1)
-			err := orgManager.SharePrivateDomains()
-			Ω(err).Should(HaveOccurred())
-			Ω(err.Error()).Should(BeEquivalentTo("Private Domain [test-shared.com] is not defined"))
-		})
-		It("should share 2 private domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test-shared.comGUID"}
-			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test-shared2.comGUID"}
-			orgSharedPrivateDomains := make(map[string]string)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(2)
-			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test-shared.comGUID").Return(nil)
-			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test-shared2.comGUID").Return(nil)
-			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			err := orgManager.SharePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-		It("should share no private domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test-shared.comGUID"}
-			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test-shared2.comGUID"}
-			orgSharedPrivateDomains := make(map[string]string)
-			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
-			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(2)
-			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			err := orgManager.SharePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-		It("should unshare 2 domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
-			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
-			orgSharedPrivateDomains := make(map[string]string)
-			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
-			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
-			orgSharedPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
-			orgSharedPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(2)
-			mockCloudController.EXPECT().RemoveSharedPrivateDomain("testOrgGUID", "test.shared3.com.guid").Return(nil)
-			mockCloudController.EXPECT().RemoveSharedPrivateDomain("testOrgGUID", "test.shared4.com.guid").Return(nil)
-			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			err := orgManager.SharePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-		It("should share 2 domains and unshare 2 domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
-			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
-			allPrivateDomains["test-shared3.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared3.com.guid"}
-			allPrivateDomains["test-shared4.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared4.com.guid"}
-			orgSharedPrivateDomains := make(map[string]string)
-			orgSharedPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
-			orgSharedPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(2)
-			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test.shared.com.guid").Return(nil)
-			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test.shared2.com.guid").Return(nil)
-			mockCloudController.EXPECT().RemoveSharedPrivateDomain("testOrgGUID", "test.shared3.com.guid").Return(nil)
-			mockCloudController.EXPECT().RemoveSharedPrivateDomain("testOrgGUID", "test.shared4.com.guid").Return(nil)
-			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			mockCloudController.EXPECT().DeletePrivateDomain(gomock.Any().String()).Times(0)
-			err := orgManager.SharePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-	})
-	Context("SharePrivateDomainsDeleteDisabled", func() {
-		var orgs []cfclient.Org
-		BeforeEach(func() {
-			orgManager.Cfg = config.NewManager("./fixtures/config-private-domains-no-delete")
-
-			orgs = []cfclient.Org{
-				{
-					Name: "test",
-					Guid: "testOrgGUID",
-				},
-				{
-					Name: "test-2",
-					Guid: "testOtherOrgGUID",
-				},
-			}
-		})
-		It("should share 2 private domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
-			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
-			allPrivateDomains["test-shared3.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared3.com.guid"}
-			allPrivateDomains["test-shared4.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared4.com.guid"}
-			orgSharedPrivateDomains := make(map[string]string)
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test.shared.com.guid").Return(nil)
-			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test.shared2.com.guid").Return(nil)
-			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			err := orgManager.SharePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-		It("should share no private domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
-			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
-			allPrivateDomains["test-shared3.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared3.com.guid"}
-			allPrivateDomains["test-shared4.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared4.com.guid"}
-			orgSharedPrivateDomains := make(map[string]string)
-			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
-			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			err := orgManager.SharePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-		It("should NOT unshare 2 domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
-			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
-			allPrivateDomains["test-shared3.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared3.com.guid"}
-			allPrivateDomains["test-shared4.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared4.com.guid"}
-			orgSharedPrivateDomains := make(map[string]string)
-			orgSharedPrivateDomains["test-shared.com"] = "test.shared.com.guid"
-			orgSharedPrivateDomains["test-shared2.com"] = "test.shared2.com.guid"
-			orgSharedPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
-			orgSharedPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().RemoveSharedPrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			err := orgManager.SharePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-		It("should share 2 domains and NOT unshare 2 domains", func() {
-			allPrivateDomains := make(map[string]cloudcontroller.PrivateDomainInfo)
-			allPrivateDomains["test-shared.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared.com.guid"}
-			allPrivateDomains["test-shared2.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared2.com.guid"}
-			allPrivateDomains["test-shared3.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared3.com.guid"}
-			allPrivateDomains["test-shared4.com"] = cloudcontroller.PrivateDomainInfo{PrivateDomainGUID: "test.shared4.com.guid"}
-
-			orgSharedPrivateDomains := make(map[string]string)
-			orgSharedPrivateDomains["test-shared3.com"] = "test.shared3.com.guid"
-			orgSharedPrivateDomains["test-shared4.com"] = "test.shared4.com.guid"
-			mockCloudController.EXPECT().ListOrgs().Return(orgs, nil)
-			mockCloudController.EXPECT().ListAllPrivateDomains().Return(allPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().ListOrgSharedPrivateDomains("testOrgGUID").Return(orgSharedPrivateDomains, nil).Times(1)
-			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test.shared.com.guid").Return(nil)
-			mockCloudController.EXPECT().SharePrivateDomain("testOrgGUID", "test.shared2.com.guid").Return(nil)
-			mockCloudController.EXPECT().RemoveSharedPrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			mockCloudController.EXPECT().CreatePrivateDomain(gomock.Any().String(), gomock.Any().String()).Times(0)
-			mockCloudController.EXPECT().DeletePrivateDomain(gomock.Any().String()).Times(0)
-			err := orgManager.SharePrivateDomains()
-			Ω(err).Should(BeNil())
-		})
-
-	})
-
-})*/
+})

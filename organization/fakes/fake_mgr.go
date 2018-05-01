@@ -16,24 +16,6 @@ type FakeManager struct {
 		result1 []go_cfclient.Org
 		result2 error
 	}
-	ListOrgSharedPrivateDomainsStub        func(orgGUID string) (map[string]go_cfclient.Domain, error)
-	listOrgSharedPrivateDomainsMutex       sync.RWMutex
-	listOrgSharedPrivateDomainsArgsForCall []struct {
-		orgGUID string
-	}
-	listOrgSharedPrivateDomainsReturns struct {
-		result1 map[string]go_cfclient.Domain
-		result2 error
-	}
-	ListOrgOwnedPrivateDomainsStub        func(orgGUID string) (map[string]go_cfclient.Domain, error)
-	listOrgOwnedPrivateDomainsMutex       sync.RWMutex
-	listOrgOwnedPrivateDomainsArgsForCall []struct {
-		orgGUID string
-	}
-	listOrgOwnedPrivateDomainsReturns struct {
-		result1 map[string]go_cfclient.Domain
-		result2 error
-	}
 	FindOrgStub        func(orgName string) (go_cfclient.Org, error)
 	findOrgMutex       sync.RWMutex
 	findOrgArgsForCall []struct {
@@ -47,18 +29,6 @@ type FakeManager struct {
 	createOrgsMutex       sync.RWMutex
 	createOrgsArgsForCall []struct{}
 	createOrgsReturns     struct {
-		result1 error
-	}
-	CreatePrivateDomainsStub        func() error
-	createPrivateDomainsMutex       sync.RWMutex
-	createPrivateDomainsArgsForCall []struct{}
-	createPrivateDomainsReturns     struct {
-		result1 error
-	}
-	SharePrivateDomainsStub        func() error
-	sharePrivateDomainsMutex       sync.RWMutex
-	sharePrivateDomainsArgsForCall []struct{}
-	sharePrivateDomainsReturns     struct {
 		result1 error
 	}
 	DeleteOrgsStub        func() error
@@ -125,74 +95,6 @@ func (fake *FakeManager) ListOrgsReturns(result1 []go_cfclient.Org, result2 erro
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListOrgSharedPrivateDomains(orgGUID string) (map[string]go_cfclient.Domain, error) {
-	fake.listOrgSharedPrivateDomainsMutex.Lock()
-	fake.listOrgSharedPrivateDomainsArgsForCall = append(fake.listOrgSharedPrivateDomainsArgsForCall, struct {
-		orgGUID string
-	}{orgGUID})
-	fake.recordInvocation("ListOrgSharedPrivateDomains", []interface{}{orgGUID})
-	fake.listOrgSharedPrivateDomainsMutex.Unlock()
-	if fake.ListOrgSharedPrivateDomainsStub != nil {
-		return fake.ListOrgSharedPrivateDomainsStub(orgGUID)
-	} else {
-		return fake.listOrgSharedPrivateDomainsReturns.result1, fake.listOrgSharedPrivateDomainsReturns.result2
-	}
-}
-
-func (fake *FakeManager) ListOrgSharedPrivateDomainsCallCount() int {
-	fake.listOrgSharedPrivateDomainsMutex.RLock()
-	defer fake.listOrgSharedPrivateDomainsMutex.RUnlock()
-	return len(fake.listOrgSharedPrivateDomainsArgsForCall)
-}
-
-func (fake *FakeManager) ListOrgSharedPrivateDomainsArgsForCall(i int) string {
-	fake.listOrgSharedPrivateDomainsMutex.RLock()
-	defer fake.listOrgSharedPrivateDomainsMutex.RUnlock()
-	return fake.listOrgSharedPrivateDomainsArgsForCall[i].orgGUID
-}
-
-func (fake *FakeManager) ListOrgSharedPrivateDomainsReturns(result1 map[string]go_cfclient.Domain, result2 error) {
-	fake.ListOrgSharedPrivateDomainsStub = nil
-	fake.listOrgSharedPrivateDomainsReturns = struct {
-		result1 map[string]go_cfclient.Domain
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListOrgOwnedPrivateDomains(orgGUID string) (map[string]go_cfclient.Domain, error) {
-	fake.listOrgOwnedPrivateDomainsMutex.Lock()
-	fake.listOrgOwnedPrivateDomainsArgsForCall = append(fake.listOrgOwnedPrivateDomainsArgsForCall, struct {
-		orgGUID string
-	}{orgGUID})
-	fake.recordInvocation("ListOrgOwnedPrivateDomains", []interface{}{orgGUID})
-	fake.listOrgOwnedPrivateDomainsMutex.Unlock()
-	if fake.ListOrgOwnedPrivateDomainsStub != nil {
-		return fake.ListOrgOwnedPrivateDomainsStub(orgGUID)
-	} else {
-		return fake.listOrgOwnedPrivateDomainsReturns.result1, fake.listOrgOwnedPrivateDomainsReturns.result2
-	}
-}
-
-func (fake *FakeManager) ListOrgOwnedPrivateDomainsCallCount() int {
-	fake.listOrgOwnedPrivateDomainsMutex.RLock()
-	defer fake.listOrgOwnedPrivateDomainsMutex.RUnlock()
-	return len(fake.listOrgOwnedPrivateDomainsArgsForCall)
-}
-
-func (fake *FakeManager) ListOrgOwnedPrivateDomainsArgsForCall(i int) string {
-	fake.listOrgOwnedPrivateDomainsMutex.RLock()
-	defer fake.listOrgOwnedPrivateDomainsMutex.RUnlock()
-	return fake.listOrgOwnedPrivateDomainsArgsForCall[i].orgGUID
-}
-
-func (fake *FakeManager) ListOrgOwnedPrivateDomainsReturns(result1 map[string]go_cfclient.Domain, result2 error) {
-	fake.ListOrgOwnedPrivateDomainsStub = nil
-	fake.listOrgOwnedPrivateDomainsReturns = struct {
-		result1 map[string]go_cfclient.Domain
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeManager) FindOrg(orgName string) (go_cfclient.Org, error) {
 	fake.findOrgMutex.Lock()
 	fake.findOrgArgsForCall = append(fake.findOrgArgsForCall, struct {
@@ -248,56 +150,6 @@ func (fake *FakeManager) CreateOrgsCallCount() int {
 func (fake *FakeManager) CreateOrgsReturns(result1 error) {
 	fake.CreateOrgsStub = nil
 	fake.createOrgsReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeManager) CreatePrivateDomains() error {
-	fake.createPrivateDomainsMutex.Lock()
-	fake.createPrivateDomainsArgsForCall = append(fake.createPrivateDomainsArgsForCall, struct{}{})
-	fake.recordInvocation("CreatePrivateDomains", []interface{}{})
-	fake.createPrivateDomainsMutex.Unlock()
-	if fake.CreatePrivateDomainsStub != nil {
-		return fake.CreatePrivateDomainsStub()
-	} else {
-		return fake.createPrivateDomainsReturns.result1
-	}
-}
-
-func (fake *FakeManager) CreatePrivateDomainsCallCount() int {
-	fake.createPrivateDomainsMutex.RLock()
-	defer fake.createPrivateDomainsMutex.RUnlock()
-	return len(fake.createPrivateDomainsArgsForCall)
-}
-
-func (fake *FakeManager) CreatePrivateDomainsReturns(result1 error) {
-	fake.CreatePrivateDomainsStub = nil
-	fake.createPrivateDomainsReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeManager) SharePrivateDomains() error {
-	fake.sharePrivateDomainsMutex.Lock()
-	fake.sharePrivateDomainsArgsForCall = append(fake.sharePrivateDomainsArgsForCall, struct{}{})
-	fake.recordInvocation("SharePrivateDomains", []interface{}{})
-	fake.sharePrivateDomainsMutex.Unlock()
-	if fake.SharePrivateDomainsStub != nil {
-		return fake.SharePrivateDomainsStub()
-	} else {
-		return fake.sharePrivateDomainsReturns.result1
-	}
-}
-
-func (fake *FakeManager) SharePrivateDomainsCallCount() int {
-	fake.sharePrivateDomainsMutex.RLock()
-	defer fake.sharePrivateDomainsMutex.RUnlock()
-	return len(fake.sharePrivateDomainsArgsForCall)
-}
-
-func (fake *FakeManager) SharePrivateDomainsReturns(result1 error) {
-	fake.SharePrivateDomainsStub = nil
-	fake.sharePrivateDomainsReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -435,18 +287,10 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.listOrgsMutex.RLock()
 	defer fake.listOrgsMutex.RUnlock()
-	fake.listOrgSharedPrivateDomainsMutex.RLock()
-	defer fake.listOrgSharedPrivateDomainsMutex.RUnlock()
-	fake.listOrgOwnedPrivateDomainsMutex.RLock()
-	defer fake.listOrgOwnedPrivateDomainsMutex.RUnlock()
 	fake.findOrgMutex.RLock()
 	defer fake.findOrgMutex.RUnlock()
 	fake.createOrgsMutex.RLock()
 	defer fake.createOrgsMutex.RUnlock()
-	fake.createPrivateDomainsMutex.RLock()
-	defer fake.createPrivateDomainsMutex.RUnlock()
-	fake.sharePrivateDomainsMutex.RLock()
-	defer fake.sharePrivateDomainsMutex.RUnlock()
 	fake.deleteOrgsMutex.RLock()
 	defer fake.deleteOrgsMutex.RUnlock()
 	fake.getOrgGUIDMutex.RLock()

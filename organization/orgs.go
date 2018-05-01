@@ -1,7 +1,6 @@
 package organization
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 
@@ -175,10 +174,10 @@ func (m *DefaultManager) DeleteOrgByName(orgName string) error {
 				lo.G.Infof("[dry-run]: delete org %s", orgName)
 				return nil
 			}
-			m.DeleteOrg(org.Guid)
+			return m.DeleteOrg(org.Guid)
 		}
 	}
-	return errors.New(fmt.Sprintf("org[%s] not found", orgName))
+	return fmt.Errorf("org[%s] not found", orgName)
 }
 
 func (m *DefaultManager) UpdateOrg(orgGUID string, orgRequest cfclient.OrgRequest) (cfclient.Org, error) {
