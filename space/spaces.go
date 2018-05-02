@@ -97,7 +97,12 @@ func (m *DefaultManager) FindSpace(orgName, spaceName string) (cfclient.Space, e
 	return cfclient.Space{}, fmt.Errorf("space [%s] not found in org [%s]", spaceName, orgName)
 }
 
-func (m *DefaultManager) CreateSpace(spaceName, orgGUID string) error {
+func (m *DefaultManager) CreateSpace(spaceName, orgName, orgGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: create space %s for org %s", spaceName, orgName)
+		return nil
+	}
+	lo.G.Infof("create space %s for org %s", spaceName, orgName)
 	_, err := m.Client.CreateSpace(cfclient.SpaceRequest{
 		Name:             spaceName,
 		OrganizationGuid: orgGUID,
@@ -128,8 +133,7 @@ func (m *DefaultManager) CreateSpaces() error {
 				lo.G.Debugf("[%s] space already exists", spaceName)
 				continue
 			}
-			lo.G.Infof("Creating [%s] space in [%s] org", spaceName, input.Org)
-			if err = m.CreateSpace(spaceName, orgGUID); err != nil {
+			if err = m.CreateSpace(spaceName, input.Org, orgGUID); err != nil {
 				lo.G.Error(err)
 				return err
 			}

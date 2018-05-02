@@ -49,7 +49,6 @@ func (m *DefaultManager) CreateOrgs() error {
 			lo.G.Debugf("[%s] org already exists", org.Org)
 			continue
 		}
-		lo.G.Infof("Creating [%s] org", org.Org)
 		if err := m.CreateOrg(org.Org); err != nil {
 			return err
 		}
@@ -149,6 +148,7 @@ func (m *DefaultManager) CreateOrg(orgName string) error {
 		lo.G.Infof("[dry-run]: create org %s", orgName)
 		return nil
 	}
+	lo.G.Infof("create org %s", orgName)
 	_, err := m.Client.CreateOrg(cfclient.OrgRequest{
 		Name: orgName,
 	})
