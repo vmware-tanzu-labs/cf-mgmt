@@ -32,7 +32,7 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
 
 2. You can either setup your configuration by using
   - [init](docs/config/init/README.md) command from `cf-mgmt-config` if you are wanting to start with a blank configuration and add the config using `cf-mgmt-config` operations
-  - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.  *** NOTE: If your foundation uses ldap ensure you have updated the ldap.yml file to have the correct settings.***
+  - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.  **NOTE: If your foundation uses ldap ensure you have updated the ldap.yml file to have the correct settings.**
 
 3. [Generate the concourse pipeline](docs/config/generate-concourse-pipeline/README.md) using `cf-mgmt-config`
 
