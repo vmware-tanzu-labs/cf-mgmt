@@ -2,6 +2,48 @@
 
 Go automation for managing orgs, spaces, users (from ldap groups or internal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
 
+## Getting Started
+
+### Install
+
+Compiled [releases](https://github.com/pivotalservices/cf-mgmt/releases) are available on Github.
+Download the binary for your platform and place it somewhere on your path.
+Don't forget to `chmod +x` the file on Linux and macOS.
+
+### Create UAA Client
+
+cf-mgmt needs a uaa client to be able to interact with cloud controller and uaa for create, updating, deleting, and listing entities.  
+
+```
+uaac target uaa.<your system domain>
+uaac token client get admin -s <your uaa admin client secret>
+uaac client add cf-mgmt \
+  --name cf-mgmt \
+  --secret <client secret from cf-mgmt client> \
+  --authorized_grant_types client_credentials,refresh_token \
+  --authorities cloud_controller.admin,scim.read,scim.write
+```
+
+### Setup Configuration
+
+Navigate into a directory in which will become your git repository for cf-mgmt configuration
+
+1. Initialize git repository by either cloning a remote or using `git init`
+
+2. You can either setup your configuration by using
+  - [init](docs/config/init/README.md) command from `cf-mgmt-config` if you are wanting to start with a blank configuration and add the config using `cf-mgmt-config` operations
+  - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.  *** NOTE: If your foundation uses ldap ensure you have updated the ldap.yml file to have the correct settings.***
+
+3. [Generate the concourse pipeline](docs/config/generate-concourse-pipeline/README.md) using `cf-mgmt-config`
+
+4. Make sure you .gitingore the vars.yml file that is generated `echo vars.yml >> .gitignore`
+
+5. Ensure that cf-mgmt.sh is executable `chmod +x ci/tasks/cf-mgmt.sh`
+
+6. Commit and push your changes to your git repository
+
+7. fly your pipeline after you have filled in vars.yml
+
 ## Maintainer
 
 * [Caleb Washburn](https://github.com/calebwashburn)
@@ -9,14 +51,6 @@ Go automation for managing orgs, spaces, users (from ldap groups or internal sto
 ## Support
 
 cf-mgmt is a community supported cloud foundry add-on.  Opening issues for questions, feature requests and/or bugs is the best path to getting "support".  We strive to be active in keeping this tool working and meeting your needs in a timely fashion.
-
-## Install
-
-Compiled releases are available on Github.
-Download the binary for your platform and place it somewhere on your path.
-Don't forget to `chmod +x` the file on Linux and macOS.
-
-Alternatively, you may wish to build from source.
 
 ## Build from the source
 
