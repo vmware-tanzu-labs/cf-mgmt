@@ -101,7 +101,7 @@ jobs:
 - name: create-spaces
   plan:
   - get: config-repo
-    passed: [create-orgs]
+    passed: [create-orgs, update-org-users]
     trigger: true
   - task: create-spaces
     file: config-repo/ci/tasks/cf-mgmt.yml
