@@ -32,17 +32,22 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
 
 2. You can either setup your configuration by using
   - [init](docs/config/init/README.md) command from `cf-mgmt-config` if you are wanting to start with a blank configuration and add the config using `cf-mgmt-config` operations
-  - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.  **NOTE: If your foundation uses ldap ensure you have updated the ldap.yml file to have the correct settings.**
+  - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.
 
-3. [Generate the concourse pipeline](docs/config/generate-concourse-pipeline/README.md) using `cf-mgmt-config`
+3. *(optional)* Configure LDAP/SAML Options. If your foundation uses LDAP and/or SAML, you will need to configure ldap.yml with the correct values.
+	- [LDAP only config] (docs/config/README.md#ldap-configuration)
+	- [SAML with LDAP groups](docs/config/README.md#saml-configuration-with-ldap-group-lookups)
+	- [SAML only](docs/config/README.md#saml-configuration)
 
-4. Make sure you .gitingore the vars.yml file that is generated `echo vars.yml >> .gitignore`
+4. [Generate the concourse pipeline](docs/config/generate-concourse-pipeline/README.md) using `cf-mgmt-config`
 
-5. Ensure that cf-mgmt.sh is executable `chmod +x ci/tasks/cf-mgmt.sh`
+5. Make sure you .gitingore the vars.yml file that is generated `echo vars.yml >> .gitignore`
 
-6. Commit and push your changes to your git repository
+6. Ensure that cf-mgmt.sh is executable `chmod +x ci/tasks/cf-mgmt.sh`
 
-7. fly your pipeline after you have filled in vars.yml
+7. Commit and push your changes to your git repository
+
+8. fly your pipeline after you have filled in vars.yml
 
 ## Maintainer
 
