@@ -11,3 +11,8 @@ prepare-output
 vars.yml
 foo
 concourse-outputs
+cf-mgmt
+cf-mgmt-config
+ci/tasks/cf-mgmt.sh
+ci/tasks/cf-mgmt.yml
+pipeline.yml

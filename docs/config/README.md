@@ -9,7 +9,7 @@
 * [update-org](update-org/README.md)
 * [update-orgs](update-orgs/README.md)
 * [update-space](update-space/README.md)
-* [version ](version/README.md)
+* [version](version/README.md)
 
 #### Org Configuration
 There is a orgs.yml that contains list of orgs that will be created.  This should have a corresponding folder with name of the orgs cf-mgmt is managing. orgs.yml also can be configured with a list of protected orgs which would never be deleted when using the the `delete-orgs` command. An example of how orgs.yml could be configured is seen below.
@@ -262,3 +262,13 @@ userMailAttribute:
 groupSearchBase:
 groupAttribute:
 ```
+
+#### Logging
+
+By default there is little logging done when the pipeline is run. For more logging, you can set **log_level** in the vars file. The allowed values are, in order to ascending verbosity:
+
+* ERROR
+* WARNING
+* NOTICE
+* INFO
+* DEBUG

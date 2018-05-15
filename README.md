@@ -35,7 +35,7 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
   - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.
 
 3. *(optional)* Configure LDAP/SAML Options. If your foundation uses LDAP and/or SAML, you will need to configure ldap.yml with the correct values.
-	- [LDAP only config] (docs/config/README.md#ldap-configuration)
+	- [LDAP only config](docs/config/README.md#ldap-configuration)
 	- [SAML with LDAP groups](docs/config/README.md#saml-configuration-with-ldap-group-lookups)
 	- [SAML only](docs/config/README.md#saml-configuration)
 
@@ -43,11 +43,9 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
 
 5. Make sure you .gitingore the vars.yml file that is generated `echo vars.yml >> .gitignore`
 
-6. Ensure that cf-mgmt.sh is executable `chmod +x ci/tasks/cf-mgmt.sh`
+6. Commit and push your changes to your git repository
 
-7. Commit and push your changes to your git repository
-
-8. fly your pipeline after you have filled in vars.yml
+7. fly your pipeline after you have filled in vars.yml
 
 ## Maintainer
 

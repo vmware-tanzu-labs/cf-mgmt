@@ -5,10 +5,9 @@
 package mock_uaa
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	uaa "github.com/pivotalservices/cf-mgmt/uaa"
+	reflect "reflect"
 )
 
 // MockManager is a mock of Manager interface

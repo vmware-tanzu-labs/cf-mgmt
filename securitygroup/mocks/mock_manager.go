@@ -32,6 +32,18 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 	return m.recorder
 }
 
+// AssignDefaultSecurityGroups mocks base method
+func (m *MockManager) AssignDefaultSecurityGroups() error {
+	ret := m.ctrl.Call(m, "AssignDefaultSecurityGroups")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AssignDefaultSecurityGroups indicates an expected call of AssignDefaultSecurityGroups
+func (mr *MockManagerMockRecorder) AssignDefaultSecurityGroups() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignDefaultSecurityGroups", reflect.TypeOf((*MockManager)(nil).AssignDefaultSecurityGroups))
+}
+
 // CreateApplicationSecurityGroups mocks base method
 func (m *MockManager) CreateApplicationSecurityGroups() error {
 	ret := m.ctrl.Call(m, "CreateApplicationSecurityGroups")
