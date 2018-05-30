@@ -21,6 +21,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: create-orgs
 
 - name: create-security-groups
@@ -35,6 +36,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: create-security-groups
 
 - name: assign-default-security-groups
@@ -50,6 +52,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: assign-default-security-groups
 
 - name: delete-orgs
@@ -66,6 +69,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: delete-orgs
 
 - name: create-org-private-domains
@@ -81,6 +85,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: create-org-private-domains
 
 - name: share-org-private-domains
@@ -96,12 +101,13 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: share-org-private-domains
 
 - name: create-spaces
   plan:
   - get: config-repo
-    passed: [create-orgs]
+    passed: [create-orgs, update-org-users]
     trigger: true
   - task: create-spaces
     file: config-repo/ci/tasks/cf-mgmt.yml
@@ -112,6 +118,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       LDAP_PASSWORD: {{ldap_password}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: create-spaces
 
 - name: delete-spaces
@@ -129,6 +136,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: delete-spaces
 
 - name: update-spaces
@@ -144,6 +152,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: update-spaces
 
 - name: update-space-users
@@ -162,6 +171,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       LDAP_PASSWORD: {{ldap_password}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: update-space-users
 
 - name: update-space-quotas
@@ -177,6 +187,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: update-space-quotas
 
 - name: update-space-security-groups
@@ -192,6 +203,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: update-space-security-groups
 
 - name: update-org-users
@@ -210,6 +222,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
       LDAP_PASSWORD: {{ldap_password}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: update-org-users
 
 - name: update-org-quotas
@@ -225,6 +238,7 @@ jobs:
       PASSWORD: {{password}}
       CONFIG_DIR: ./config
       CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: update-org-quotas
 
 - name: isolation-segments
@@ -241,4 +255,5 @@ jobs:
       USER_ID: {{user_id}}
       CLIENT_SECRET: {{client_secret}}
       CONFIG_DIR: ./config
+      LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: isolation-segments
