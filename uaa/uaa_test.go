@@ -189,6 +189,26 @@ var _ = Describe("given uaa manager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
+		It("should successfully create user with complex dn", func() {
+			userName := "asdfasdfsadf"
+			userEmail := "caleb.washburn@test.com"
+			externalID := `CN=Washburn\, Caleb\, asdfasdfsadf\,OU=NO-HOME-USERS,OU=BU-USA,DC=1DC,DC=com`
+
+			server.AppendHandlers(
+				CombineHandlers(
+					VerifyContentType("application/json"),
+					VerifyRequest("POST", "/Users"),
+					VerifyBody([]byte(`{"emails":[{"value":"caleb.washburn@test.com"}],"externalId":"CN=Washburn, Caleb, asdfasdfsadf,OU=NO-HOME-USERS,OU=BU-USA,DC=1DC,DC=com","origin":"ldap","userName":"asdfasdfsadf"}`)),
+					VerifyHeader(http.Header{
+						"Authorization": []string{"BEARER basdfasdfd"},
+					}),
+					RespondWithJSONEncoded(http.StatusCreated, ""),
+				),
+			)
+			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
 
 		It("should peek", func() {
 			userName := "user"
