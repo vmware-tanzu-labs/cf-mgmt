@@ -141,7 +141,7 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 		return nil
 	}
 	url := fmt.Sprintf("%s/Users", m.Host)
-	payload := fmt.Sprintf(`{"userName":"%s","emails":[{"value":"%s"}],"origin":"%s","externalId":"%s"}`, userName, userEmail, origin, strings.Replace(externalID, "\\,", ",", 1))
+	payload := fmt.Sprintf(`{"userName":"%s","emails":[{"value":"%s"}],"origin":"%s","externalId":"%s"}`, userName, userEmail, origin, strings.Replace(externalID, "\\,", ",", -1))
 	if _, err := m.Http.Post(url, m.Token, payload); err != nil {
 		return err
 	}

@@ -34,6 +34,15 @@ userpassword: password
 homephone: 555-111-2222
 mail: cwashburn+cfmt2@testdomain.com
 
+dn: cn=Caleb\, Washburn\, A,ou=users,dc=pivotal,dc=org
+objectclass: inetOrgPerson
+cn: Caleb, Washburn, A
+sn: cWashburn
+uid: cwashburn3
+userpassword: password
+homephone: 555-111-2222
+mail: cwashburn+cfmt3@testdomain.com
+
 dn: cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org
 objectclass: inetOrgPerson
 cn: Caleb A. Washburn
