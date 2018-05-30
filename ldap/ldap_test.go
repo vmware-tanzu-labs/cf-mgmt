@@ -1,6 +1,7 @@
 package ldap_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -43,6 +44,15 @@ var _ = Describe("Ldap", func() {
 				entry, err := ldapManager.GetLdapUser(config, "cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
 				Ω(err).Should(BeNil())
 				Ω(entry).ShouldNot(BeNil())
+			})
+		})
+
+		Context("when cn with middle name", func() {
+			It("then it should return 1 Entry", func() {
+				entry, err := ldapManager.GetLdapUser(config, "cn=Caleb, Washburn, A,ou=users,dc=pivotal,dc=org")
+				Ω(err).Should(BeNil())
+				Ω(entry).ShouldNot(BeNil())
+				fmt.Println(entry.UserDN)
 			})
 		})
 		Context("when cn has a period", func() {
