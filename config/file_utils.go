@@ -1,10 +1,13 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"gopkg.in/yaml.v2"
 )
@@ -46,7 +49,11 @@ func LoadFile(configFile string, dataType interface{}) error {
 	if err != nil {
 		return err
 	}
-	return yaml.Unmarshal(data, dataType)
+	err = yaml.Unmarshal(data, dataType)
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("failed to parse yaml for file %s", configFile))
+	}
+	return nil
 }
 
 //WriteFileBytes -
