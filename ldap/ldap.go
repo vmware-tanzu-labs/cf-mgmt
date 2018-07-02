@@ -227,11 +227,18 @@ func (m *DefaultManager) getUserFilterWithDN(userDN string) string {
 
 func (m *DefaultManager) GetLdapUsers(groupNames []string, userList []string) ([]User, error) {
 	users := []User{}
+	uniqueUsers := make(map[string]string)
 	for _, groupName := range groupNames {
 		if groupName != "" {
 			lo.G.Debug("Finding LDAP user for group:", groupName)
 			if groupUsers, err := m.GetUserIDs(groupName); err == nil {
-				users = append(users, groupUsers...)
+				for _, user := range groupUsers {
+					if _, ok := uniqueUsers[user.Email]; !ok {
+						users = append(users, user)
+					} else {
+						lo.G.Debugf("User %v is already added to list", user)
+					}
+				}
 			} else {
 				lo.G.Error(err)
 				return nil, err
@@ -241,7 +248,11 @@ func (m *DefaultManager) GetLdapUsers(groupNames []string, userList []string) ([
 	for _, user := range userList {
 		if ldapUser, err := m.GetUser(user); err == nil {
 			if ldapUser != nil {
-				users = append(users, *ldapUser)
+				if _, ok := uniqueUsers[ldapUser.Email]; !ok {
+					users = append(users, *ldapUser)
+				} else {
+					lo.G.Debugf("User %v is already added to list", ldapUser)
+				}
 			}
 		} else {
 			lo.G.Error(err)
