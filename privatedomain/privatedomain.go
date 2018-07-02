@@ -32,16 +32,12 @@ func (m *DefaultManager) CreatePrivateDomains() error {
 		return err
 	}
 
-	orgs, err := m.OrgMgr.ListOrgs()
-	if err != nil {
-		return err
-	}
 	allPrivateDomains, err := m.ListAllPrivateDomains()
 	if err != nil {
 		return err
 	}
 	for _, orgConfig := range orgConfigs {
-		org, err := m.getOrg(orgs, orgConfig.Org)
+		org, err := m.OrgMgr.FindOrg(orgConfig.Org)
 		if err != nil {
 			return err
 		}
@@ -49,14 +45,14 @@ func (m *DefaultManager) CreatePrivateDomains() error {
 		for _, privateDomain := range orgConfig.PrivateDomains {
 			if existingPrivateDomain, ok := allPrivateDomains[privateDomain]; ok {
 				if org.Guid != existingPrivateDomain.OwningOrganizationGuid {
-					existingOrg, err := m.getOrg(orgs, existingPrivateDomain.OwningOrganizationGuid)
+					existingOrg, err := m.OrgMgr.FindOrgByGUID(existingPrivateDomain.OwningOrganizationGuid)
 					if err != nil {
 						return err
 					}
 					return fmt.Errorf("Private Domain %s already exists in org [%s]", privateDomain, existingOrg.Name)
 				}
 			} else {
-				privateDomain, err := m.CreatePrivateDomain(org, privateDomain)
+				privateDomain, err := m.CreatePrivateDomain(&org, privateDomain)
 				if err != nil {
 					return err
 				}
@@ -96,12 +92,8 @@ func (m *DefaultManager) SharePrivateDomains() error {
 	if err != nil {
 		return err
 	}
-	orgs, err := m.OrgMgr.ListOrgs()
-	if err != nil {
-		return err
-	}
 	for _, orgConfig := range orgConfigs {
-		org, err := m.getOrg(orgs, orgConfig.Org)
+		org, err := m.OrgMgr.FindOrg(orgConfig.Org)
 		if err != nil {
 			return err
 		}
@@ -114,7 +106,7 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		for _, privateDomainName := range orgConfig.SharedPrivateDomains {
 			if _, ok := orgSharedPrivateDomains[privateDomainName]; !ok {
 				if privateDomain, ok := privateDomains[privateDomainName]; ok {
-					err = m.SharePrivateDomain(org, privateDomain)
+					err = m.SharePrivateDomain(&org, privateDomain)
 					if err != nil {
 						return err
 					}
@@ -129,7 +121,7 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		if orgConfig.RemoveSharedPrivateDomains {
 			for existingPrivateDomain, privateDomain := range orgSharedPrivateDomains {
 				if _, ok := privateDomainMap[existingPrivateDomain]; !ok {
-					err = m.RemoveSharedPrivateDomain(org, privateDomain)
+					err = m.RemoveSharedPrivateDomain(&org, privateDomain)
 					if err != nil {
 						return err
 					}
@@ -229,13 +221,4 @@ func (m *DefaultManager) RemoveSharedPrivateDomain(org *cfclient.Org, domain cfc
 	}
 	lo.G.Infof("Unshare private domain %s for org %s", domain.Name, org.Name)
 	return m.Client.UnshareOrgPrivateDomain(org.Guid, domain.Guid)
-}
-
-func (m *DefaultManager) getOrg(orgs []cfclient.Org, orgName string) (*cfclient.Org, error) {
-	for _, org := range orgs {
-		if org.Name == orgName {
-			return &org, nil
-		}
-	}
-	return nil, fmt.Errorf("org %s does not exist", orgName)
 }

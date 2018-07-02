@@ -25,6 +25,15 @@ type FakeManager struct {
 		result1 go_cfclient.Org
 		result2 error
 	}
+	FindOrgByGUIDStub        func(orgGUID string) (go_cfclient.Org, error)
+	findOrgByGUIDMutex       sync.RWMutex
+	findOrgByGUIDArgsForCall []struct {
+		orgGUID string
+	}
+	findOrgByGUIDReturns struct {
+		result1 go_cfclient.Org
+		result2 error
+	}
 	CreateOrgsStub        func() error
 	createOrgsMutex       sync.RWMutex
 	createOrgsArgsForCall []struct{}
@@ -124,6 +133,40 @@ func (fake *FakeManager) FindOrgArgsForCall(i int) string {
 func (fake *FakeManager) FindOrgReturns(result1 go_cfclient.Org, result2 error) {
 	fake.FindOrgStub = nil
 	fake.findOrgReturns = struct {
+		result1 go_cfclient.Org
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) FindOrgByGUID(orgGUID string) (go_cfclient.Org, error) {
+	fake.findOrgByGUIDMutex.Lock()
+	fake.findOrgByGUIDArgsForCall = append(fake.findOrgByGUIDArgsForCall, struct {
+		orgGUID string
+	}{orgGUID})
+	fake.recordInvocation("FindOrgByGUID", []interface{}{orgGUID})
+	fake.findOrgByGUIDMutex.Unlock()
+	if fake.FindOrgByGUIDStub != nil {
+		return fake.FindOrgByGUIDStub(orgGUID)
+	} else {
+		return fake.findOrgByGUIDReturns.result1, fake.findOrgByGUIDReturns.result2
+	}
+}
+
+func (fake *FakeManager) FindOrgByGUIDCallCount() int {
+	fake.findOrgByGUIDMutex.RLock()
+	defer fake.findOrgByGUIDMutex.RUnlock()
+	return len(fake.findOrgByGUIDArgsForCall)
+}
+
+func (fake *FakeManager) FindOrgByGUIDArgsForCall(i int) string {
+	fake.findOrgByGUIDMutex.RLock()
+	defer fake.findOrgByGUIDMutex.RUnlock()
+	return fake.findOrgByGUIDArgsForCall[i].orgGUID
+}
+
+func (fake *FakeManager) FindOrgByGUIDReturns(result1 go_cfclient.Org, result2 error) {
+	fake.FindOrgByGUIDStub = nil
+	fake.findOrgByGUIDReturns = struct {
 		result1 go_cfclient.Org
 		result2 error
 	}{result1, result2}
@@ -289,6 +332,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.listOrgsMutex.RUnlock()
 	fake.findOrgMutex.RLock()
 	defer fake.findOrgMutex.RUnlock()
+	fake.findOrgByGUIDMutex.RLock()
+	defer fake.findOrgByGUIDMutex.RUnlock()
 	fake.createOrgsMutex.RLock()
 	defer fake.createOrgsMutex.RUnlock()
 	fake.deleteOrgsMutex.RLock()

@@ -42,11 +42,9 @@ var _ = Describe("given UserSpaces", func() {
 						PrivateDomains: []string{"test.com"},
 					},
 				}, nil)
-				orgFake.ListOrgsReturns([]cfclient.Org{
-					cfclient.Org{
-						Name: "test",
-						Guid: "test-guid",
-					},
+				orgFake.FindOrgReturns(cfclient.Org{
+					Name: "test",
+					Guid: "test-guid",
 				}, nil)
 			})
 			It("should succeed when no private domain doesn't exist", func() {
@@ -142,7 +140,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("should error listing orgs", func() {
-				orgFake.ListOrgsReturns(nil, errors.New("error"))
+				orgFake.FindOrgReturns(cfclient.Org{}, errors.New("org test does not exist"))
 				err := manager.CreatePrivateDomains()
 				Expect(err).Should(HaveOccurred())
 				Expect(client.CreateDomainCallCount()).Should(Equal(0))
@@ -156,7 +154,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("should error when org doesn't exist", func() {
-				orgFake.ListOrgsReturns(nil, nil)
+				orgFake.FindOrgReturns(cfclient.Org{}, errors.New("org test does not exist"))
 				err := manager.CreatePrivateDomains()
 				Expect(err).Should(HaveOccurred())
 				Expect(client.CreateDomainCallCount()).Should(Equal(0))
@@ -193,12 +191,11 @@ var _ = Describe("given UserSpaces", func() {
 						SharedPrivateDomains: []string{"test.com"},
 					},
 				}, nil)
-				orgFake.ListOrgsReturns([]cfclient.Org{
+				orgFake.FindOrgReturns(
 					cfclient.Org{
 						Name: "test2",
 						Guid: "test2-guid",
-					},
-				}, nil)
+					}, nil)
 			})
 			It("should succeed when private domain exists in other org", func() {
 				client.ListDomainsReturns([]cfclient.Domain{
@@ -328,7 +325,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("should error when org doesn't exist", func() {
-				orgFake.ListOrgsReturns(nil, nil)
+				orgFake.FindOrgReturns(cfclient.Org{}, errors.New("org test2 does not exist"))
 				err := manager.SharePrivateDomains()
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).Should(Equal("org test2 does not exist"))

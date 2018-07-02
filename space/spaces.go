@@ -94,6 +94,13 @@ func (m *DefaultManager) FindSpace(orgName, spaceName string) (cfclient.Space, e
 			return theSpace, nil
 		}
 	}
+	if m.Peek {
+		return cfclient.Space{
+			Name:             spaceName,
+			Guid:             fmt.Sprintf("%s-dry-run-space-guid", spaceName),
+			OrganizationGuid: fmt.Sprintf("%s-dry-run-org-guid", orgName),
+		}, nil
+	}
 	return cfclient.Space{}, fmt.Errorf("space [%s] not found in org [%s]", spaceName, orgName)
 }
 

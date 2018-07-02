@@ -8,6 +8,7 @@ import (
 type Manager interface {
 	ListOrgs() ([]cfclient.Org, error)
 	FindOrg(orgName string) (cfclient.Org, error)
+	FindOrgByGUID(orgGUID string) (cfclient.Org, error)
 	CreateOrgs() error
 	DeleteOrgs() error
 	GetOrgGUID(orgName string) (string, error)

@@ -130,7 +130,33 @@ func (m *DefaultManager) FindOrg(orgName string) (cfclient.Org, error) {
 			return theOrg, nil
 		}
 	}
+	if m.Peek {
+		return cfclient.Org{
+			Name: orgName,
+			Guid: fmt.Sprintf("%s-dry-run-org-guid", orgName),
+		}, nil
+	}
 	return cfclient.Org{}, fmt.Errorf("org %q not found", orgName)
+}
+
+//FindOrgByGUID -
+func (m *DefaultManager) FindOrgByGUID(orgGUID string) (cfclient.Org, error) {
+	orgs, err := m.ListOrgs()
+	if err != nil {
+		return cfclient.Org{}, err
+	}
+	for _, theOrg := range orgs {
+		if theOrg.Guid == orgGUID {
+			return theOrg, nil
+		}
+	}
+	if m.Peek {
+		return cfclient.Org{
+			Guid: orgGUID,
+			Name: fmt.Sprintf("%s-dry-run-org-name", orgGUID),
+		}, nil
+	}
+	return cfclient.Org{}, fmt.Errorf("org %q not found", orgGUID)
 }
 
 //ListOrgs : Returns all orgs in the given foundation
