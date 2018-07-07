@@ -2,6 +2,7 @@ package privatedomain
 
 import (
 	"fmt"
+	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -96,6 +97,10 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		org, err := m.OrgMgr.FindOrg(orgConfig.Org)
 		if err != nil {
 			return err
+		}
+
+		if m.Peek && strings.Contains(org.Guid, "dry-run-org-guid") {
+			return nil
 		}
 		orgSharedPrivateDomains, err := m.ListOrgSharedPrivateDomains(org.Guid)
 		if err != nil {

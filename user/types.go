@@ -12,9 +12,9 @@ type UpdateUsersInput struct {
 	SpaceName                                   string
 	OrgName                                     string
 	RemoveUsers                                 bool
-	ListUsers                                   func(guid string) (map[string]string, error)
-	AddUser                                     func(orgGUID, spaceGUID, userName string) error
-	RemoveUser                                  func(guid, userName string) error
+	ListUsers                                   func(updateUserInput UpdateUsersInput) (map[string]string, error)
+	AddUser                                     func(updateUserInput UpdateUsersInput, userName string) error
+	RemoveUser                                  func(updateUserInput UpdateUsersInput, userName string) error
 }
 
 // Manager - interface type encapsulating Update space users behavior

@@ -207,7 +207,7 @@ var _ = Describe("given UserSpaces", func() {
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
@@ -229,7 +229,7 @@ var _ = Describe("given UserSpaces", func() {
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
@@ -244,7 +244,7 @@ var _ = Describe("given UserSpaces", func() {
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).Should(HaveOccurred())
@@ -259,7 +259,7 @@ var _ = Describe("given UserSpaces", func() {
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				client.AssociateOrgUserByUsernameReturns(cfclient.Org{}, errors.New("error"))
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
@@ -282,7 +282,7 @@ var _ = Describe("given UserSpaces", func() {
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
@@ -304,7 +304,7 @@ var _ = Describe("given UserSpaces", func() {
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
@@ -319,7 +319,7 @@ var _ = Describe("given UserSpaces", func() {
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
@@ -339,7 +339,7 @@ var _ = Describe("given UserSpaces", func() {
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				uaaFake.CreateExternalUserReturns(errors.New("error"))
 				err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
@@ -356,7 +356,7 @@ var _ = Describe("given UserSpaces", func() {
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				client.AssociateOrgUserByUsernameReturns(cfclient.Org{}, errors.New("error"))
 				err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
@@ -382,7 +382,7 @@ var _ = Describe("given UserSpaces", func() {
 					LdapGroupNames: []string{},
 					SpaceGUID:      "space_guid",
 					OrgGUID:        "org_guid",
-					AddUser:        userManager.AssociateSpaceAuditorByUsername,
+					AddUser:        userManager.AssociateSpaceAuditor,
 				}
 
 				ldapFake.GetLdapUsersReturns([]ldap.User{
@@ -415,7 +415,7 @@ var _ = Describe("given UserSpaces", func() {
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				ldapFake.GetLdapUsersReturns([]ldap.User{
 					ldap.User{
@@ -437,7 +437,7 @@ var _ = Describe("given UserSpaces", func() {
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				ldapFake.GetLdapUsersReturns([]ldap.User{
 					ldap.User{
@@ -464,7 +464,7 @@ var _ = Describe("given UserSpaces", func() {
 					SamlUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				ldapFake.GetLdapUsersReturns([]ldap.User{
 					ldap.User{
@@ -488,7 +488,7 @@ var _ = Describe("given UserSpaces", func() {
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				ldapFake.GetLdapUsersReturns([]ldap.User{
 					ldap.User{
@@ -513,7 +513,7 @@ var _ = Describe("given UserSpaces", func() {
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
-					AddUser:   userManager.AssociateSpaceAuditorByUsername,
+					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				ldapFake.GetLdapUsersReturns(nil, errors.New("error"))
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
@@ -532,7 +532,7 @@ var _ = Describe("given UserSpaces", func() {
 					RemoveUsers: true,
 					SpaceGUID:   "space_guid",
 					OrgGUID:     "org_guid",
-					RemoveUser:  userManager.RemoveSpaceAuditorByUsername,
+					RemoveUser:  userManager.RemoveSpaceAuditor,
 				}
 
 				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
@@ -551,7 +551,7 @@ var _ = Describe("given UserSpaces", func() {
 					RemoveUsers: false,
 					SpaceGUID:   "space_guid",
 					OrgGUID:     "org_guid",
-					RemoveUser:  userManager.RemoveSpaceAuditorByUsername,
+					RemoveUser:  userManager.RemoveSpaceAuditor,
 				}
 
 				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
@@ -566,7 +566,7 @@ var _ = Describe("given UserSpaces", func() {
 					RemoveUsers: true,
 					SpaceGUID:   "space_guid",
 					OrgGUID:     "org_guid",
-					RemoveUser:  userManager.RemoveSpaceAuditorByUsername,
+					RemoveUser:  userManager.RemoveSpaceAuditor,
 				}
 				client.RemoveSpaceAuditorByUsernameReturns(errors.New("error"))
 				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
@@ -921,7 +921,7 @@ var _ = Describe("given UserSpaces", func() {
 		Context("AssociateOrgAuditorByUsername", func() {
 			It("Should succeed", func() {
 				client.AssociateOrgAuditorByUsernameReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "userName")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(client.AssociateOrgAuditorByUsernameCallCount()).To(Equal(1))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
@@ -936,7 +936,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should fail", func() {
 				client.AssociateOrgAuditorByUsernameReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "userName")
 				Expect(err).To(HaveOccurred())
 				Expect(client.AssociateOrgAuditorByUsernameCallCount()).To(Equal(1))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
@@ -951,7 +951,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should fail", func() {
 				client.AssociateOrgUserByUsernameReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "userName")
 				Expect(err).To(HaveOccurred())
 				Expect(client.AssociateOrgAuditorByUsernameCallCount()).To(Equal(0))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
@@ -964,7 +964,7 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should peek", func() {
 				userManager.Peek = true
 				client.AssociateOrgAuditorByUsernameReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgAuditorByUsername("orgGUID", "userName")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(client.AssociateOrgAuditorByUsernameCallCount()).To(Equal(0))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(0))
@@ -973,7 +973,7 @@ var _ = Describe("given UserSpaces", func() {
 		Context("AssociateOrgBillingManagerByUsername", func() {
 			It("Should succeed", func() {
 				client.AssociateOrgBillingManagerByUsernameReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "userName")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(client.AssociateOrgBillingManagerByUsernameCallCount()).To(Equal(1))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
@@ -988,7 +988,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should fail", func() {
 				client.AssociateOrgBillingManagerByUsernameReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "userName")
 				Expect(err).To(HaveOccurred())
 				Expect(client.AssociateOrgBillingManagerByUsernameCallCount()).To(Equal(1))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
@@ -1003,7 +1003,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should fail", func() {
 				client.AssociateOrgUserByUsernameReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "userName")
 				Expect(err).To(HaveOccurred())
 				Expect(client.AssociateOrgBillingManagerByUsernameCallCount()).To(Equal(0))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
@@ -1016,7 +1016,7 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should peek", func() {
 				userManager.Peek = true
 				client.AssociateOrgBillingManagerByUsernameReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgBillingManagerByUsername("orgGUID", "userName")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(client.AssociateOrgBillingManagerByUsernameCallCount()).To(Equal(0))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(0))
@@ -1026,7 +1026,7 @@ var _ = Describe("given UserSpaces", func() {
 		Context("AssociateOrgManagerByUsername", func() {
 			It("Should succeed", func() {
 				client.AssociateOrgManagerByUsernameReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgManagerByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgManagerByUsername("orgGUID", "userName")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(client.AssociateOrgManagerByUsernameCallCount()).To(Equal(1))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
@@ -1041,7 +1041,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should fail", func() {
 				client.AssociateOrgManagerByUsernameReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgManagerByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgManagerByUsername("orgGUID", "userName")
 				Expect(err).To(HaveOccurred())
 				Expect(client.AssociateOrgManagerByUsernameCallCount()).To(Equal(1))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
@@ -1056,7 +1056,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should fail", func() {
 				client.AssociateOrgUserByUsernameReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgManagerByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgManagerByUsername("orgGUID", "userName")
 				Expect(err).To(HaveOccurred())
 				Expect(client.AssociateOrgManagerByUsernameCallCount()).To(Equal(0))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(1))
@@ -1069,7 +1069,7 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should peek", func() {
 				userManager.Peek = true
 				client.AssociateOrgManagerByUsernameReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgManagerByUsername("orgGUID", "foo", "userName")
+				err := userManager.AssociateOrgManagerByUsername("orgGUID", "userName")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(client.AssociateOrgManagerByUsernameCallCount()).To(Equal(0))
 				Expect(client.AssociateOrgUserByUsernameCallCount()).To(Equal(0))
