@@ -7,6 +7,7 @@ import (
 )
 
 type Manager interface {
+	Apply() error
 	Ensure() error
 	Entitle() error
 	UpdateOrgs() error

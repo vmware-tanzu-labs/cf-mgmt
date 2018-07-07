@@ -12,19 +12,6 @@ func (c *IsolationSegmentsCommand) Execute([]string) error {
 		return err
 	}
 
-	u := cfMgmt.IsolationSegmentManager
-	if err := u.Ensure(); err != nil {
-		return err
-	}
-	if err := u.Entitle(); err != nil {
-		return err
-	}
-	if err := u.UpdateOrgs(); err != nil {
-		return err
-	}
-	if err := u.UpdateSpaces(); err != nil {
-		return err
-	}
+	return cfMgmt.IsolationSegmentManager.Apply()
 
-	return nil
 }

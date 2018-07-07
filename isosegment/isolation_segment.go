@@ -34,6 +34,22 @@ type Updater struct {
 	CleanUp bool
 }
 
+func (u *Updater) Apply() error {
+	if err := u.Ensure(); err != nil {
+		return err
+	}
+	if err := u.Entitle(); err != nil {
+		return err
+	}
+	if err := u.UpdateOrgs(); err != nil {
+		return err
+	}
+	if err := u.UpdateSpaces(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Ensure creates any isolation segments that do not yet exist,
 // and optionally removes unneeded isolation segments.
 func (u *Updater) Ensure() error {
