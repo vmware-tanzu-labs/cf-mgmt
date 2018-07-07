@@ -98,10 +98,6 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		if err != nil {
 			return err
 		}
-
-		if m.Peek && strings.Contains(org.Guid, "dry-run-org-guid") {
-			return nil
-		}
 		orgSharedPrivateDomains, err := m.ListOrgSharedPrivateDomains(org.Guid)
 		if err != nil {
 			return err
@@ -174,6 +170,9 @@ func (m *DefaultManager) SharePrivateDomain(org *cfclient.Org, domain cfclient.D
 
 func (m *DefaultManager) ListOrgSharedPrivateDomains(orgGUID string) (map[string]cfclient.Domain, error) {
 	orgSharedPrivateDomainMap := make(map[string]cfclient.Domain)
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return orgSharedPrivateDomainMap, nil
+	}
 	orgPrivateDomains, err := m.listOrgPrivateDomains(orgGUID)
 	if err != nil {
 		return nil, err

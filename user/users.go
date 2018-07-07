@@ -82,6 +82,9 @@ func (m *DefaultManager) RemoveSpaceManager(input UpdateUsersInput, userName str
 	return m.RemoveSpaceManagerByUsername(input.SpaceGUID, userName)
 }
 func (m *DefaultManager) ListSpaceAuditors(spaceGUID string) (map[string]string, error) {
+	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
+		return nil, nil
+	}
 	users, err := m.Client.ListSpaceAuditors(spaceGUID)
 	if err != nil {
 		return nil, err
@@ -89,6 +92,9 @@ func (m *DefaultManager) ListSpaceAuditors(spaceGUID string) (map[string]string,
 	return m.userListToMap(users), nil
 }
 func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string) (map[string]string, error) {
+	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
+		return nil, nil
+	}
 	users, err := m.Client.ListSpaceDevelopers(spaceGUID)
 	if err != nil {
 		return nil, err
@@ -96,6 +102,9 @@ func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string) (map[string]strin
 	return m.userListToMap(users), nil
 }
 func (m *DefaultManager) ListSpaceManagers(spaceGUID string) (map[string]string, error) {
+	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
+		return nil, nil
+	}
 	users, err := m.Client.ListSpaceManagers(spaceGUID)
 	if err != nil {
 		return nil, err
@@ -216,6 +225,9 @@ func (m *DefaultManager) RemoveOrgManager(input UpdateUsersInput, userName strin
 }
 
 func (m *DefaultManager) ListOrgAuditors(orgGUID string) (map[string]string, error) {
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return nil, nil
+	}
 	users, err := m.Client.ListOrgAuditors(orgGUID)
 	if err != nil {
 		return nil, err
@@ -223,6 +235,9 @@ func (m *DefaultManager) ListOrgAuditors(orgGUID string) (map[string]string, err
 	return m.userListToMap(users), nil
 }
 func (m *DefaultManager) ListOrgBillingManagers(orgGUID string) (map[string]string, error) {
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return nil, nil
+	}
 	users, err := m.Client.ListOrgBillingManagers(orgGUID)
 	if err != nil {
 		return nil, err
@@ -230,6 +245,9 @@ func (m *DefaultManager) ListOrgBillingManagers(orgGUID string) (map[string]stri
 	return m.userListToMap(users), nil
 }
 func (m *DefaultManager) ListOrgManagers(orgGUID string) (map[string]string, error) {
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return nil, nil
+	}
 	users, err := m.Client.ListOrgManagers(orgGUID)
 	if err != nil {
 		return nil, err
@@ -322,10 +340,6 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers ma
 		return err
 	}
 
-	if m.Peek && strings.Contains(space.Guid, "dry-run-space-guid") {
-		return nil
-	}
-
 	if err = m.SyncUsers(uaaUsers, UpdateUsersInput{
 		SpaceName:      space.Name,
 		SpaceGUID:      space.Guid,
@@ -404,10 +418,6 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[s
 	org, err := m.OrgMgr.FindOrg(input.Org)
 	if err != nil {
 		return err
-	}
-
-	if m.Peek && strings.Contains(org.Guid, "dry-run-org-guid") {
-		return nil
 	}
 
 	err = m.SyncUsers(
