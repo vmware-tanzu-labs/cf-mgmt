@@ -50,36 +50,26 @@ func (m *DefaultManager) InitializeLdap(ldapBindPassword string) error {
 	return nil
 }
 
-func (m *DefaultManager) RemoveSpaceAuditorByUsername(spaceGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from GUID %s with role %s", userName, spaceGUID, "Auditor")
-		return nil
-	}
-	return m.Client.RemoveSpaceAuditorByUsername(spaceGUID, userName)
-}
-func (m *DefaultManager) RemoveSpaceDeveloperByUsername(spaceGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from GUID %s with role %s", userName, spaceGUID, "Developer")
-		return nil
-	}
-	return m.Client.RemoveSpaceDeveloperByUsername(spaceGUID, userName)
-}
-func (m *DefaultManager) RemoveSpaceManagerByUsername(spaceGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from GUID %s with role %s", userName, spaceGUID, "Manager")
-		return nil
-	}
-	return m.Client.RemoveSpaceManagerByUsername(spaceGUID, userName)
-}
-
 func (m *DefaultManager) RemoveSpaceAuditor(input UpdateUsersInput, userName string) error {
-	return m.RemoveSpaceAuditorByUsername(input.SpaceGUID, userName)
+	if m.Peek {
+		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Auditor")
+		return nil
+	}
+	return m.Client.RemoveSpaceAuditorByUsername(input.SpaceGUID, userName)
 }
 func (m *DefaultManager) RemoveSpaceDeveloper(input UpdateUsersInput, userName string) error {
-	return m.RemoveSpaceDeveloperByUsername(input.SpaceGUID, userName)
+	if m.Peek {
+		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Developer")
+		return nil
+	}
+	return m.Client.RemoveSpaceDeveloperByUsername(input.SpaceGUID, userName)
 }
 func (m *DefaultManager) RemoveSpaceManager(input UpdateUsersInput, userName string) error {
-	return m.RemoveSpaceManagerByUsername(input.SpaceGUID, userName)
+	if m.Peek {
+		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Manager")
+		return nil
+	}
+	return m.Client.RemoveSpaceManagerByUsername(input.SpaceGUID, userName)
 }
 func (m *DefaultManager) ListSpaceAuditors(spaceGUID string) (map[string]string, error) {
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
@@ -122,11 +112,6 @@ func (m *DefaultManager) listSpaceManagers(input UpdateUsersInput) (map[string]s
 	return m.ListSpaceManagers(input.SpaceGUID)
 }
 
-func (m *DefaultManager) associateOrgUserByUsername(orgGUID, userName string) error {
-	_, err := m.Client.AssociateOrgUserByUsername(orgGUID, userName)
-	return err
-}
-
 func (m *DefaultManager) userListToMap(users []cfclient.User) map[string]string {
 	userMap := make(map[string]string)
 	for _, user := range users {
@@ -135,93 +120,75 @@ func (m *DefaultManager) userListToMap(users []cfclient.User) map[string]string 
 	return userMap
 }
 
-func (m *DefaultManager) AssociateSpaceAuditorByUsername(orgGUID, spaceGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: adding %s to role %s for spaceGUID %s", userName, "auditor", spaceGUID)
-		return nil
-	}
-	err := m.associateOrgUserByUsername(orgGUID, userName)
-	if err != nil {
-		return err
-	}
-	_, err = m.Client.AssociateSpaceAuditorByUsername(spaceGUID, userName)
-	return err
-}
-func (m *DefaultManager) AssociateSpaceDeveloperByUsername(orgGUID, spaceGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: adding %s to role %s for spaceGUID %s", userName, "developer", spaceGUID)
-		return nil
-	}
-	err := m.associateOrgUserByUsername(orgGUID, userName)
-	if err != nil {
-		return err
-	}
-	_, err = m.Client.AssociateSpaceDeveloperByUsername(spaceGUID, userName)
-	return err
-}
-func (m *DefaultManager) AssociateSpaceManagerByUsername(orgGUID, spaceGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: adding %s to role %s for spaceGUID %s", userName, "manager", spaceGUID)
-		return nil
-	}
-	err := m.associateOrgUserByUsername(orgGUID, userName)
-	if err != nil {
-		return err
-	}
-	_, err = m.Client.AssociateSpaceManagerByUsername(spaceGUID, userName)
-	return err
-}
-
 func (m *DefaultManager) AssociateSpaceAuditor(input UpdateUsersInput, userName string) error {
-	return m.AssociateSpaceAuditorByUsername(input.OrgGUID, input.SpaceGUID, userName)
+	err := m.AddUserToOrg(userName, input)
+	if err != nil {
+		return err
+	}
+	if m.Peek {
+		lo.G.Infof("[dry-run]: adding %s to role %s for org/space %s/%s", userName, "auditor", input.OrgName, input.SpaceName)
+		return nil
+	}
+
+	_, err = m.Client.AssociateSpaceAuditorByUsername(input.SpaceGUID, userName)
+	return err
 }
 func (m *DefaultManager) AssociateSpaceDeveloper(input UpdateUsersInput, userName string) error {
-	return m.AssociateSpaceDeveloperByUsername(input.OrgGUID, input.SpaceGUID, userName)
-}
-func (m *DefaultManager) AssociateSpaceManager(input UpdateUsersInput, userName string) error {
-	return m.AssociateSpaceManagerByUsername(input.OrgGUID, input.SpaceGUID, userName)
-}
-
-func (m *DefaultManager) AddUserToOrg(userName, orgGUID string) error {
+	err := m.AddUserToOrg(userName, input)
+	if err != nil {
+		return err
+	}
 	if m.Peek {
-		lo.G.Infof("[dry-run]: adding %s to orgGUID %s", userName, orgGUID)
+		lo.G.Infof("[dry-run]: adding %s to role %s for org/space %s/%s", userName, "developer", input.OrgName, input.SpaceName)
 		return nil
 	}
-	_, err := m.Client.AssociateOrgUserByUsername(orgGUID, userName)
+	_, err = m.Client.AssociateSpaceDeveloperByUsername(input.SpaceGUID, userName)
+	return err
+}
+func (m *DefaultManager) AssociateSpaceManager(input UpdateUsersInput, userName string) error {
+	err := m.AddUserToOrg(userName, input)
+	if err != nil {
+		return err
+	}
+	if m.Peek {
+		lo.G.Infof("[dry-run]: adding %s to role %s for org/space %s/%s", userName, "manager", input.OrgName, input.SpaceName)
+		return nil
+	}
+
+	_, err = m.Client.AssociateSpaceManagerByUsername(input.SpaceGUID, userName)
 	return err
 }
 
-func (m *DefaultManager) RemoveOrgAuditorByUsername(orgGUID, userName string) error {
+func (m *DefaultManager) AddUserToOrg(userName string, input UpdateUsersInput) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from GUID %s with role %s", userName, orgGUID, "auditor")
+		lo.G.Infof("[dry-run]: adding %s to org %s", userName, input.OrgName)
 		return nil
 	}
-	return m.Client.RemoveOrgAuditorByUsername(orgGUID, userName)
-}
-func (m *DefaultManager) RemoveOrgBillingManagerByUsername(orgGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from GUID %s with role %s", userName, orgGUID, "billing manager")
-		return nil
-	}
-	return m.Client.RemoveOrgBillingManagerByUsername(orgGUID, userName)
-}
-func (m *DefaultManager) RemoveOrgManagerByUsername(orgGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from GUID %s with role %s", userName, orgGUID, "manager")
-		return nil
-	}
-	return m.Client.RemoveOrgManagerByUsername(orgGUID, userName)
+	_, err := m.Client.AssociateOrgUserByUsername(input.OrgGUID, userName)
+	return err
 }
 
 func (m *DefaultManager) RemoveOrgAuditor(input UpdateUsersInput, userName string) error {
-	return m.RemoveOrgAuditorByUsername(input.OrgGUID, userName)
+	if m.Peek {
+		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "auditor")
+		return nil
+	}
+	return m.Client.RemoveOrgAuditorByUsername(input.OrgGUID, userName)
 }
 func (m *DefaultManager) RemoveOrgBillingManager(input UpdateUsersInput, userName string) error {
-	return m.RemoveOrgBillingManagerByUsername(input.OrgGUID, userName)
+	if m.Peek {
+		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "billing manager")
+		return nil
+	}
+	return m.Client.RemoveOrgBillingManagerByUsername(input.OrgGUID, userName)
 }
 
 func (m *DefaultManager) RemoveOrgManager(input UpdateUsersInput, userName string) error {
-	return m.RemoveOrgManagerByUsername(input.OrgGUID, userName)
+	if m.Peek {
+		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "manager")
+		return nil
+	}
+	return m.Client.RemoveOrgManagerByUsername(input.OrgGUID, userName)
 }
 
 func (m *DefaultManager) ListOrgAuditors(orgGUID string) (map[string]string, error) {
@@ -264,53 +231,45 @@ func (m *DefaultManager) listOrgManagers(input UpdateUsersInput) (map[string]str
 	return m.ListOrgManagers(input.OrgGUID)
 }
 
-func (m *DefaultManager) AssociateOrgAuditorByUsername(orgGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: Add User %s to role %s for org GUID %s", userName, "auditor", orgGUID)
-		return nil
-	}
-	err := m.AddUserToOrg(userName, orgGUID)
-	if err != nil {
-		return err
-	}
-	_, err = m.Client.AssociateOrgAuditorByUsername(orgGUID, userName)
-	return err
-}
-func (m *DefaultManager) AssociateOrgBillingManagerByUsername(orgGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: Add User %s to role %s for org GUID %s", userName, "billing manager", orgGUID)
-		return nil
-	}
-	err := m.AddUserToOrg(userName, orgGUID)
-	if err != nil {
-		return err
-	}
-	_, err = m.Client.AssociateOrgBillingManagerByUsername(orgGUID, userName)
-	return err
-}
-
-func (m *DefaultManager) AssociateOrgManagerByUsername(orgGUID, userName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: Add User %s to role %s for org GUID %s", userName, "manager", orgGUID)
-		return nil
-	}
-	err := m.AddUserToOrg(userName, orgGUID)
-	if err != nil {
-		return err
-	}
-	_, err = m.Client.AssociateOrgManagerByUsername(orgGUID, userName)
-	return err
-}
-
 func (m *DefaultManager) AssociateOrgAuditor(input UpdateUsersInput, userName string) error {
-	return m.AssociateOrgAuditorByUsername(input.OrgGUID, userName)
+	err := m.AddUserToOrg(userName, input)
+	if err != nil {
+		return err
+	}
+	if m.Peek {
+		lo.G.Infof("[dry-run]: Add User %s to role %s for org %s", userName, "auditor", input.OrgName)
+		return nil
+	}
+
+	_, err = m.Client.AssociateOrgAuditorByUsername(input.OrgGUID, userName)
+	return err
 }
 func (m *DefaultManager) AssociateOrgBillingManager(input UpdateUsersInput, userName string) error {
-	return m.AssociateOrgBillingManagerByUsername(input.OrgGUID, userName)
+	err := m.AddUserToOrg(userName, input)
+	if err != nil {
+		return err
+	}
+	if m.Peek {
+		lo.G.Infof("[dry-run]: Add User %s to role %s for org %s", userName, "billing manager", input.OrgName)
+		return nil
+	}
+
+	_, err = m.Client.AssociateOrgBillingManagerByUsername(input.OrgGUID, userName)
+	return err
 }
 
 func (m *DefaultManager) AssociateOrgManager(input UpdateUsersInput, userName string) error {
-	return m.AssociateOrgManagerByUsername(input.OrgGUID, userName)
+	err := m.AddUserToOrg(userName, input)
+	if err != nil {
+		return err
+	}
+	if m.Peek {
+		lo.G.Infof("[dry-run]: Add User %s to role %s for org %s", userName, "manager", input.OrgName)
+		return nil
+	}
+
+	_, err = m.Client.AssociateOrgManagerByUsername(input.OrgGUID, userName)
+	return err
 }
 
 //UpdateSpaceUsers -

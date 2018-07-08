@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organization"
@@ -170,9 +172,6 @@ func (m *DefaultManager) SharePrivateDomain(org *cfclient.Org, domain cfclient.D
 
 func (m *DefaultManager) ListOrgSharedPrivateDomains(orgGUID string) (map[string]cfclient.Domain, error) {
 	orgSharedPrivateDomainMap := make(map[string]cfclient.Domain)
-	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
-		return orgSharedPrivateDomainMap, nil
-	}
 	orgPrivateDomains, err := m.listOrgPrivateDomains(orgGUID)
 	if err != nil {
 		return nil, err
@@ -186,9 +185,12 @@ func (m *DefaultManager) ListOrgSharedPrivateDomains(orgGUID string) (map[string
 }
 
 func (m *DefaultManager) listOrgPrivateDomains(orgGUID string) ([]cfclient.Domain, error) {
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return nil, nil
+	}
 	privateDomains, err := m.Client.ListOrgPrivateDomains(orgGUID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "listOrgPrivateDomains")
 	}
 
 	lo.G.Debug("Total private domains returned :", len(privateDomains))

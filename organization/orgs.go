@@ -91,8 +91,7 @@ func (m *DefaultManager) DeleteOrgs() error {
 	}
 
 	for _, org := range orgsToDelete {
-		lo.G.Infof("Deleting [%s] org", org.Name)
-		if err := m.DeleteOrg(org.Guid); err != nil {
+		if err := m.DeleteOrg(org); err != nil {
 			return err
 		}
 	}
@@ -181,12 +180,13 @@ func (m *DefaultManager) CreateOrg(orgName string) error {
 	return err
 }
 
-func (m *DefaultManager) DeleteOrg(orgGUID string) error {
+func (m *DefaultManager) DeleteOrg(org cfclient.Org) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: delete org with GUID %s", orgGUID)
+		lo.G.Infof("[dry-run]: delete org %s", org.Name)
 		return nil
 	}
-	return m.Client.DeleteOrg(orgGUID, true, true)
+	lo.G.Infof("Deleting [%s] org", org.Name)
+	return m.Client.DeleteOrg(org.Guid, true, true)
 }
 
 func (m *DefaultManager) DeleteOrgByName(orgName string) error {
@@ -196,11 +196,7 @@ func (m *DefaultManager) DeleteOrgByName(orgName string) error {
 	}
 	for _, org := range orgs {
 		if org.Name == orgName {
-			if m.Peek {
-				lo.G.Infof("[dry-run]: delete org %s", orgName)
-				return nil
-			}
-			return m.DeleteOrg(org.Guid)
+			return m.DeleteOrg(org)
 		}
 	}
 	return fmt.Errorf("org[%s] not found", orgName)

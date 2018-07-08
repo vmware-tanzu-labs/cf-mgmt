@@ -70,7 +70,7 @@ func (m *DefaultManager) UpdateSpaces() error {
 
 func (m *DefaultManager) ListSpaces(orgGUID string) ([]cfclient.Space, error) {
 	spaces, err := m.Client.ListSpacesByQuery(url.Values{
-		"organization_guid": []string{orgGUID},
+		"q": []string{fmt.Sprintf("%s:%s", "organization_guid", orgGUID)},
 	})
 	if err != nil {
 		return nil, err
@@ -192,8 +192,7 @@ func (m *DefaultManager) DeleteSpaces() error {
 		}
 
 		for _, space := range spacesToDelete {
-			lo.G.Infof("Deleting [%s] space in org %s", space.Name, input.Org)
-			if err := m.DeleteSpace(space.Guid); err != nil {
+			if err := m.DeleteSpace(space, input.Org); err != nil {
 				return err
 			}
 		}
@@ -204,10 +203,11 @@ func (m *DefaultManager) DeleteSpaces() error {
 }
 
 //DeleteSpace - deletes a space based on GUID
-func (m *DefaultManager) DeleteSpace(spaceGUID string) error {
+func (m *DefaultManager) DeleteSpace(space cfclient.Space, orgName string) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: delete space with GUID %s", spaceGUID)
+		lo.G.Infof("[dry-run]: delete space with %s from org %s", space.Name, orgName)
 		return nil
 	}
-	return m.Client.DeleteSpace(spaceGUID, true, true)
+	lo.G.Infof("delete space with %s from org %s", space.Name, orgName)
+	return m.Client.DeleteSpace(space.Guid, true, true)
 }

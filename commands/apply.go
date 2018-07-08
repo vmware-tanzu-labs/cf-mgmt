@@ -15,6 +15,9 @@ func (c *ApplyCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
 	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
+		if err := cfMgmt.UserManager.InitializeLdap(c.LdapPassword); err != nil {
+			return err
+		}
 		fmt.Println("*********  Creating Orgs")
 		if err = cfMgmt.OrgManager.CreateOrgs(); err != nil {
 			return err
