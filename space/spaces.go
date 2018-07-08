@@ -33,12 +33,12 @@ type DefaultManager struct {
 	Peek   bool
 }
 
-func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, space cfclient.Space) error {
+func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, space cfclient.Space, orgName string) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: setting sshAllowed to %v for space %s", sshAllowed, space.Name)
+		lo.G.Infof("[dry-run]: setting sshAllowed to %v for org/space %s/%s", sshAllowed, orgName, space.Name)
 		return nil
 	}
-
+	lo.G.Infof("setting sshAllowed to %v for org/space %s/%s", sshAllowed, orgName, space.Name)
 	_, err := m.Client.UpdateSpace(space.Guid, cfclient.SpaceRequest{
 		Name:             space.Name,
 		AllowSSH:         sshAllowed,
@@ -60,7 +60,7 @@ func (m *DefaultManager) UpdateSpaces() error {
 		}
 		lo.G.Debug("Processing space", space.Name)
 		if input.AllowSSH != space.AllowSSH {
-			if err := m.UpdateSpaceSSH(input.AllowSSH, space); err != nil {
+			if err := m.UpdateSpaceSSH(input.AllowSSH, space, input.Org); err != nil {
 				return err
 			}
 		}

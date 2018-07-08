@@ -1,8 +1,8 @@
 hash: 91180e09a0584fdf631bad7f358914dce97ece1c17b3cf7b968656b6ed907910
-updated: 2018-05-31T12:35:00.30125-07:00
+updated: 2018-07-08T11:24:11.073562-05:00
 imports:
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: 6e4af798342ec4e316725fc07efd2a737fab087b
+  version: 75746eaaab4499db4887af3bb4218e1913ca65a9
 - name: github.com/cloudfoundry/gofileutils
   version: 4d0c80011a0f37da1711c184028bc40137cd45af
   subpackages:
@@ -10,11 +10,13 @@ imports:
 - name: github.com/go-ldap/ldap
   version: bb7a9ca6e4fbc2129e3db588a34bc970ffe811a9
 - name: github.com/golang/protobuf
-  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  version: 1325a051a2753cd67556b182843b1b693d0854cd
   subpackages:
   - proto
 - name: github.com/jessevdk/go-flags
   version: 96dc06278ce32a0e9d957d590bb987c81ee66407
+- name: github.com/Masterminds/semver
+  version: 3c560837130448941620d7694991d3ec440aefc0
 - name: github.com/moul/http2curl
   version: 9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d
 - name: github.com/op/go-logging
@@ -22,11 +24,11 @@ imports:
 - name: github.com/parnurzeal/gorequest
   version: 8e3aed27fe49f7fdc765dad067845f600fc984e8
 - name: github.com/pkg/errors
-  version: 2b3a18b5f0fb6b4f9190549597d3f962c02bc5eb
+  version: 816c9085562cd7ee03e7f8188a1cfd942858cded
 - name: github.com/xchapter7x/lo
   version: e33b245fc7a8186582208abc2458c2691bff681c
 - name: golang.org/x/net
-  version: 66aacef3dd8a676686c7ae3716979581e8b03c47
+  version: 32a936f46389aa10549d60bd7833e54b01685d09
   subpackages:
   - context
   - context/ctxhttp
@@ -35,12 +37,12 @@ imports:
   - html/charset
   - publicsuffix
 - name: golang.org/x/oauth2
-  version: 543e37812f10c46c622c9575afd7ad22f22a12ba
+  version: ef147856a6ddbb60760db74283d2424e98c87bff
   subpackages:
   - clientcredentials
   - internal
 - name: google.golang.org/appengine
-  version: 5bee14b453b4c71be47ec1781b0fa61c2ea182db
+  version: b1f26356af11148e710935ed1ac8a7f5702c7612
   subpackages:
   - internal
   - internal/base
@@ -52,10 +54,10 @@ imports:
 - name: gopkg.in/asn1-ber.v1
   version: 379148ca0225df7a432012b8df0355c2a2063ac0
 - name: gopkg.in/yaml.v2
-  version: a83829b6f1293c91addabc89d0571c246397bbf4
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 testImports:
 - name: github.com/maxbrunsfeld/counterfeiter
-  version: c1f2005ff133f81907ce72f3d20e1169799317fe
+  version: c1996179167e70f7a863c4d04dcaa6981109afed
 - name: github.com/onsi/ginkgo
   version: fa5fabab2a1bfbd924faf4c067d07ae414e2aedf
   subpackages:
@@ -94,11 +96,11 @@ testImports:
   - matchers/support/goraph/util
   - types
 - name: golang.org/x/sys
-  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
+  version: 3c6ecd8f22c6f40fbeec94c000a069d7d87c7624
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: 5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877
+  version: c0fe8dde8a10c9b32154bd9bdf080b8b3d635127
   subpackages:
   - encoding
   - encoding/charmap
