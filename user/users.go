@@ -161,7 +161,6 @@ func (m *DefaultManager) AssociateSpaceManager(input UpdateUsersInput, userName 
 
 func (m *DefaultManager) AddUserToOrg(userName string, input UpdateUsersInput) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: adding %s to org %s", userName, input.OrgName)
 		return nil
 	}
 	_, err := m.Client.AssociateOrgUserByUsername(input.OrgGUID, userName)
