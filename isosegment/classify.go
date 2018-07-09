@@ -40,22 +40,3 @@ func classify(desired []cfclient.IsolationSegment, current []cfclient.IsolationS
 
 	return classification{missing, extra}
 }
-
-// update accepts two actions:
-// 1. apply - run on every 'missing' segment in the classification
-// 2. cleanup - run on every 'extra' segment in the classification
-func (c classification) update(arg string, apply, cleanup func(s *cfclient.IsolationSegment, arg string) error) error {
-	for i := range c.missing {
-		err := apply(&c.missing[i], arg)
-		if err != nil {
-			return err
-		}
-	}
-	for i := range c.extra {
-		err := cleanup(&c.extra[i], arg)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}

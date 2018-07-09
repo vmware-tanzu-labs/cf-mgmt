@@ -33,7 +33,7 @@ var _ = Describe("Isolation Segments", func() {
 			})
 
 			It("fails", func() {
-				Expect(u.Ensure()).ShouldNot(Succeed())
+				Expect(u.Create()).ShouldNot(Succeed())
 			})
 		})
 
@@ -43,7 +43,7 @@ var _ = Describe("Isolation Segments", func() {
 			})
 
 			It("creates isolation segments", func() {
-				Expect(u.Ensure()).Should(Succeed())
+				Expect(u.Create()).Should(Succeed())
 				Expect(client.CreateIsolationSegmentCallCount()).Should(Equal(2))
 				var createdIsoSegments []string
 				createdIsoSegments = append(createdIsoSegments, client.CreateIsolationSegmentArgsForCall(0))
@@ -53,7 +53,7 @@ var _ = Describe("Isolation Segments", func() {
 
 			It("doesnt create isolation segments when DryRun is enabled", func() {
 				u.Peek = true
-				Ω(u.Ensure()).Should(Succeed())
+				Ω(u.Create()).Should(Succeed())
 				Expect(client.CreateIsolationSegmentCallCount()).Should(Equal(0))
 			})
 		})
@@ -67,7 +67,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "extra", GUID: "extra_guid"},
 				}
 				client.ListIsolationSegmentsReturns(seg, nil)
-				Ω(u.Ensure()).Should(Succeed())
+				Ω(u.Remove()).Should(Succeed())
 				Expect(client.DeleteIsolationSegmentByGUIDCallCount()).Should(Equal(2))
 				var deletedIsoSegments []string
 				deletedIsoSegments = append(deletedIsoSegments, client.DeleteIsolationSegmentByGUIDArgsForCall(0))
@@ -84,7 +84,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "extra", GUID: "extra_guid"},
 				}
 				client.ListIsolationSegmentsReturns(seg, nil)
-				Ω(u.Ensure()).Should(Succeed())
+				Ω(u.Remove()).Should(Succeed())
 				Expect(client.DeleteIsolationSegmentByGUIDCallCount()).Should(Equal(0))
 
 			})
@@ -99,7 +99,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "extra"},
 				}
 				client.ListIsolationSegmentsReturns(seg, nil)
-				Ω(u.Ensure()).Should(Succeed())
+				Ω(u.Remove()).Should(Succeed())
 				Expect(client.DeleteIsolationSegmentByGUIDCallCount()).Should(Equal(0))
 			})
 		})
@@ -115,7 +115,7 @@ var _ = Describe("Isolation Segments", func() {
 			})
 
 			It("creates no isolation segments", func() {
-				Ω(u.Ensure()).Should(Succeed())
+				Ω(u.Create()).Should(Succeed())
 				Expect(client.CreateIsolationSegmentCallCount()).Should(Equal(0))
 			})
 		})
@@ -127,7 +127,7 @@ var _ = Describe("Isolation Segments", func() {
 			})
 
 			It("creates isolation segments", func() {
-				Ω(u.Ensure()).Should(Succeed())
+				Ω(u.Create()).Should(Succeed())
 				Expect(client.CreateIsolationSegmentCallCount()).Should(Equal(2))
 				var createdIsoSegments []string
 				createdIsoSegments = append(createdIsoSegments, client.CreateIsolationSegmentArgsForCall(0))
@@ -198,7 +198,7 @@ var _ = Describe("Isolation Segments", func() {
 			})
 
 			It("revokes org2's access to the extra isolation segment when CleanUp is enabled", func() {
-				Ω(u.Entitle()).Should(Succeed())
+				Ω(u.Unentitle()).Should(Succeed())
 				Expect(client.RemoveIsolationSegmentFromOrgCallCount()).Should(Equal(1))
 				isoGUID, orgGUID := client.RemoveIsolationSegmentFromOrgArgsForCall(0)
 				Expect(isoGUID).Should(Equal("extra_guid"))
@@ -214,7 +214,6 @@ var _ = Describe("Isolation Segments", func() {
 			It("makes no changes when DryRun is enabled", func() {
 				u.Peek = true
 				Ω(u.Entitle()).Should(Succeed())
-				Expect(client.UpdateOrgCallCount()).Should(Equal(0))
 				Expect(client.RemoveIsolationSegmentFromOrgCallCount()).Should(Equal(0))
 			})
 		})
@@ -229,11 +228,10 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
 				Ω(u.UpdateOrgs()).Should(Succeed())
-				Expect(client.UpdateOrgCallCount()).Should(Equal(1))
-				orgGUID, orgRequest := client.UpdateOrgArgsForCall(0)
+				Expect(client.DefaultIsolationSegmentForOrgCallCount()).Should(Equal(1))
+				orgGUID, isoSegmentGUID := client.DefaultIsolationSegmentForOrgArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org1_guid"))
-				Expect(orgRequest.Name).Should(Equal("org1"))
-				Expect(orgRequest.DefaultIsolationSegmentGuid).Should(Equal("default_iso_guid"))
+				Expect(isoSegmentGUID).Should(Equal("default_iso_guid"))
 			})
 		})
 
@@ -242,17 +240,16 @@ var _ = Describe("Isolation Segments", func() {
 				u.Cfg = config.NewManager("./fixtures/0003")
 			})
 			It("sets isolation segments correctly", func() {
-				client.GetOrgByNameReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
+				client.GetOrgByNameReturns(cfclient.Org{Name: "org1", Guid: "org1_guid", DefaultIsolationSegmentGuid: "foo"}, nil)
 				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
 				Ω(u.UpdateOrgs()).Should(Succeed())
-				Expect(client.UpdateOrgCallCount()).Should(Equal(1))
-				orgGUID, orgRequest := client.UpdateOrgArgsForCall(0)
+				Expect(client.DefaultIsolationSegmentForOrgCallCount()).Should(Equal(0))
+				Expect(client.ResetDefaultIsolationSegmentForOrgCallCount()).Should(Equal(1))
+				orgGUID := client.ResetDefaultIsolationSegmentForOrgArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org1_guid"))
-				Expect(orgRequest.Name).Should(Equal("org1"))
-				Expect(orgRequest.DefaultIsolationSegmentGuid).Should(Equal(""))
 			})
 			Context("when DryRun is enabled", func() {
 				BeforeEach(func() {
@@ -261,7 +258,8 @@ var _ = Describe("Isolation Segments", func() {
 
 				It("does not modify org isolation segments", func() {
 					Ω(u.UpdateOrgs()).Should(Succeed())
-					Expect(client.UpdateOrgCallCount()).Should(Equal(0))
+					Expect(client.DefaultIsolationSegmentForOrgCallCount()).Should(Equal(0))
+					Expect(client.ResetDefaultIsolationSegmentForOrgCallCount()).Should(Equal(0))
 				})
 			})
 		})
@@ -273,7 +271,8 @@ var _ = Describe("Isolation Segments", func() {
 
 			It("does not modify org isolation segments", func() {
 				Ω(u.UpdateOrgs()).Should(Succeed())
-				Expect(client.UpdateOrgCallCount()).Should(Equal(0))
+				Expect(client.DefaultIsolationSegmentForOrgCallCount()).Should(Equal(0))
+				Expect(client.ResetDefaultIsolationSegmentForOrgCallCount()).Should(Equal(0))
 			})
 		})
 
@@ -285,7 +284,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
-				client.UpdateOrgReturns(cfclient.Org{}, errors.New("error"))
+				client.DefaultIsolationSegmentForOrgReturns(errors.New("error"))
 				Ω(u.UpdateOrgs()).ShouldNot(Succeed())
 			})
 		})
@@ -300,11 +299,10 @@ var _ = Describe("Isolation Segments", func() {
 				}, nil)
 				client.GetSpaceByNameReturns(cfclient.Space{Name: "org1space2", Guid: "space_guid"}, nil)
 				Ω(u.UpdateSpaces()).Should(Succeed())
-				Expect(client.UpdateSpaceCallCount()).Should(Equal(1))
-				spaceGUID, spaceRequest := client.UpdateSpaceArgsForCall(0)
+				Expect(client.IsolationSegmentForSpaceCallCount()).Should(Equal(1))
+				spaceGUID, isolationSegmentGUID := client.IsolationSegmentForSpaceArgsForCall(0)
 				Expect(spaceGUID).Should(Equal("space_guid"))
-				Expect(spaceRequest.Name).Should(Equal("org1space2"))
-				Expect(spaceRequest.IsolationSegmentGuid).Should(Equal("iso01_guid"))
+				Expect(isolationSegmentGUID).Should(Equal("iso01_guid"))
 			})
 		})
 
@@ -317,13 +315,11 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
-				client.GetSpaceByNameReturns(cfclient.Space{Name: "org1space2", Guid: "space_guid"}, nil)
+				client.GetSpaceByNameReturns(cfclient.Space{Name: "org1space2", Guid: "space_guid", IsolationSegmentGuid: "foo"}, nil)
 				Ω(u.UpdateSpaces()).Should(Succeed())
-				Expect(client.UpdateSpaceCallCount()).Should(Equal(1))
-				spaceGUID, spaceRequest := client.UpdateSpaceArgsForCall(0)
+				Expect(client.ResetIsolationSegmentForSpaceCallCount()).Should(Equal(1))
+				spaceGUID := client.ResetIsolationSegmentForSpaceArgsForCall(0)
 				Expect(spaceGUID).Should(Equal("space_guid"))
-				Expect(spaceRequest.Name).Should(Equal("org1space2"))
-				Expect(spaceRequest.IsolationSegmentGuid).Should(Equal(""))
 			})
 			Context("when DryRun is enabled", func() {
 				BeforeEach(func() {
@@ -332,7 +328,8 @@ var _ = Describe("Isolation Segments", func() {
 
 				It("does not modify space isolation segments", func() {
 					Ω(u.UpdateSpaces()).Should(Succeed())
-					Expect(client.UpdateSpaceCallCount()).Should(Equal(0))
+					Expect(client.IsolationSegmentForSpaceCallCount()).Should(Equal(0))
+					Expect(client.ResetIsolationSegmentForSpaceCallCount()).Should(Equal(0))
 				})
 			})
 		})
@@ -344,7 +341,8 @@ var _ = Describe("Isolation Segments", func() {
 
 			It("does not modify space isolation segments", func() {
 				Ω(u.UpdateSpaces()).Should(Succeed())
-				Expect(client.UpdateSpaceCallCount()).Should(Equal(0))
+				Expect(client.IsolationSegmentForSpaceCallCount()).Should(Equal(0))
+				Expect(client.ResetIsolationSegmentForSpaceCallCount()).Should(Equal(0))
 			})
 		})
 
@@ -356,7 +354,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
 				client.GetSpaceByNameReturns(cfclient.Space{Name: "org1space2", Guid: "space_guid"}, nil)
-				client.UpdateSpaceReturns(cfclient.Space{}, errors.New("error"))
+				client.IsolationSegmentForSpaceReturns(errors.New("error"))
 				Ω(u.UpdateSpaces()).ShouldNot(Succeed())
 			})
 		})

@@ -61,26 +61,6 @@ type FakeCFClient struct {
 		result1 go_cfclient.Org
 		result2 error
 	}
-	UpdateOrgStub        func(orgGUID string, orgRequest go_cfclient.OrgRequest) (go_cfclient.Org, error)
-	updateOrgMutex       sync.RWMutex
-	updateOrgArgsForCall []struct {
-		orgGUID    string
-		orgRequest go_cfclient.OrgRequest
-	}
-	updateOrgReturns struct {
-		result1 go_cfclient.Org
-		result2 error
-	}
-	UpdateSpaceStub        func(spaceGUID string, req go_cfclient.SpaceRequest) (go_cfclient.Space, error)
-	updateSpaceMutex       sync.RWMutex
-	updateSpaceArgsForCall []struct {
-		spaceGUID string
-		req       go_cfclient.SpaceRequest
-	}
-	updateSpaceReturns struct {
-		result1 go_cfclient.Space
-		result2 error
-	}
 	GetSpaceByNameStub        func(spaceName string, orgGuid string) (go_cfclient.Space, error)
 	getSpaceByNameMutex       sync.RWMutex
 	getSpaceByNameArgsForCall []struct {
@@ -125,6 +105,40 @@ type FakeCFClient struct {
 		spaceGUID            string
 	}
 	removeIsolationSegmentFromSpaceReturns struct {
+		result1 error
+	}
+	DefaultIsolationSegmentForOrgStub        func(orgGUID, isolationSegmentGUID string) error
+	defaultIsolationSegmentForOrgMutex       sync.RWMutex
+	defaultIsolationSegmentForOrgArgsForCall []struct {
+		orgGUID              string
+		isolationSegmentGUID string
+	}
+	defaultIsolationSegmentForOrgReturns struct {
+		result1 error
+	}
+	ResetDefaultIsolationSegmentForOrgStub        func(orgGUID string) error
+	resetDefaultIsolationSegmentForOrgMutex       sync.RWMutex
+	resetDefaultIsolationSegmentForOrgArgsForCall []struct {
+		orgGUID string
+	}
+	resetDefaultIsolationSegmentForOrgReturns struct {
+		result1 error
+	}
+	IsolationSegmentForSpaceStub        func(spaceGUID, isolationSegmentGUID string) error
+	isolationSegmentForSpaceMutex       sync.RWMutex
+	isolationSegmentForSpaceArgsForCall []struct {
+		spaceGUID            string
+		isolationSegmentGUID string
+	}
+	isolationSegmentForSpaceReturns struct {
+		result1 error
+	}
+	ResetIsolationSegmentForSpaceStub        func(spaceGUID string) error
+	resetIsolationSegmentForSpaceMutex       sync.RWMutex
+	resetIsolationSegmentForSpaceArgsForCall []struct {
+		spaceGUID string
+	}
+	resetIsolationSegmentForSpaceReturns struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
@@ -326,76 +340,6 @@ func (fake *FakeCFClient) GetOrgByNameReturns(result1 go_cfclient.Org, result2 e
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) UpdateOrg(orgGUID string, orgRequest go_cfclient.OrgRequest) (go_cfclient.Org, error) {
-	fake.updateOrgMutex.Lock()
-	fake.updateOrgArgsForCall = append(fake.updateOrgArgsForCall, struct {
-		orgGUID    string
-		orgRequest go_cfclient.OrgRequest
-	}{orgGUID, orgRequest})
-	fake.recordInvocation("UpdateOrg", []interface{}{orgGUID, orgRequest})
-	fake.updateOrgMutex.Unlock()
-	if fake.UpdateOrgStub != nil {
-		return fake.UpdateOrgStub(orgGUID, orgRequest)
-	} else {
-		return fake.updateOrgReturns.result1, fake.updateOrgReturns.result2
-	}
-}
-
-func (fake *FakeCFClient) UpdateOrgCallCount() int {
-	fake.updateOrgMutex.RLock()
-	defer fake.updateOrgMutex.RUnlock()
-	return len(fake.updateOrgArgsForCall)
-}
-
-func (fake *FakeCFClient) UpdateOrgArgsForCall(i int) (string, go_cfclient.OrgRequest) {
-	fake.updateOrgMutex.RLock()
-	defer fake.updateOrgMutex.RUnlock()
-	return fake.updateOrgArgsForCall[i].orgGUID, fake.updateOrgArgsForCall[i].orgRequest
-}
-
-func (fake *FakeCFClient) UpdateOrgReturns(result1 go_cfclient.Org, result2 error) {
-	fake.UpdateOrgStub = nil
-	fake.updateOrgReturns = struct {
-		result1 go_cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) UpdateSpace(spaceGUID string, req go_cfclient.SpaceRequest) (go_cfclient.Space, error) {
-	fake.updateSpaceMutex.Lock()
-	fake.updateSpaceArgsForCall = append(fake.updateSpaceArgsForCall, struct {
-		spaceGUID string
-		req       go_cfclient.SpaceRequest
-	}{spaceGUID, req})
-	fake.recordInvocation("UpdateSpace", []interface{}{spaceGUID, req})
-	fake.updateSpaceMutex.Unlock()
-	if fake.UpdateSpaceStub != nil {
-		return fake.UpdateSpaceStub(spaceGUID, req)
-	} else {
-		return fake.updateSpaceReturns.result1, fake.updateSpaceReturns.result2
-	}
-}
-
-func (fake *FakeCFClient) UpdateSpaceCallCount() int {
-	fake.updateSpaceMutex.RLock()
-	defer fake.updateSpaceMutex.RUnlock()
-	return len(fake.updateSpaceArgsForCall)
-}
-
-func (fake *FakeCFClient) UpdateSpaceArgsForCall(i int) (string, go_cfclient.SpaceRequest) {
-	fake.updateSpaceMutex.RLock()
-	defer fake.updateSpaceMutex.RUnlock()
-	return fake.updateSpaceArgsForCall[i].spaceGUID, fake.updateSpaceArgsForCall[i].req
-}
-
-func (fake *FakeCFClient) UpdateSpaceReturns(result1 go_cfclient.Space, result2 error) {
-	fake.UpdateSpaceStub = nil
-	fake.updateSpaceReturns = struct {
-		result1 go_cfclient.Space
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeCFClient) GetSpaceByName(spaceName string, orgGuid string) (go_cfclient.Space, error) {
 	fake.getSpaceByNameMutex.Lock()
 	fake.getSpaceByNameArgsForCall = append(fake.getSpaceByNameArgsForCall, struct {
@@ -567,6 +511,140 @@ func (fake *FakeCFClient) RemoveIsolationSegmentFromSpaceReturns(result1 error) 
 	}{result1}
 }
 
+func (fake *FakeCFClient) DefaultIsolationSegmentForOrg(orgGUID string, isolationSegmentGUID string) error {
+	fake.defaultIsolationSegmentForOrgMutex.Lock()
+	fake.defaultIsolationSegmentForOrgArgsForCall = append(fake.defaultIsolationSegmentForOrgArgsForCall, struct {
+		orgGUID              string
+		isolationSegmentGUID string
+	}{orgGUID, isolationSegmentGUID})
+	fake.recordInvocation("DefaultIsolationSegmentForOrg", []interface{}{orgGUID, isolationSegmentGUID})
+	fake.defaultIsolationSegmentForOrgMutex.Unlock()
+	if fake.DefaultIsolationSegmentForOrgStub != nil {
+		return fake.DefaultIsolationSegmentForOrgStub(orgGUID, isolationSegmentGUID)
+	} else {
+		return fake.defaultIsolationSegmentForOrgReturns.result1
+	}
+}
+
+func (fake *FakeCFClient) DefaultIsolationSegmentForOrgCallCount() int {
+	fake.defaultIsolationSegmentForOrgMutex.RLock()
+	defer fake.defaultIsolationSegmentForOrgMutex.RUnlock()
+	return len(fake.defaultIsolationSegmentForOrgArgsForCall)
+}
+
+func (fake *FakeCFClient) DefaultIsolationSegmentForOrgArgsForCall(i int) (string, string) {
+	fake.defaultIsolationSegmentForOrgMutex.RLock()
+	defer fake.defaultIsolationSegmentForOrgMutex.RUnlock()
+	return fake.defaultIsolationSegmentForOrgArgsForCall[i].orgGUID, fake.defaultIsolationSegmentForOrgArgsForCall[i].isolationSegmentGUID
+}
+
+func (fake *FakeCFClient) DefaultIsolationSegmentForOrgReturns(result1 error) {
+	fake.DefaultIsolationSegmentForOrgStub = nil
+	fake.defaultIsolationSegmentForOrgReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeCFClient) ResetDefaultIsolationSegmentForOrg(orgGUID string) error {
+	fake.resetDefaultIsolationSegmentForOrgMutex.Lock()
+	fake.resetDefaultIsolationSegmentForOrgArgsForCall = append(fake.resetDefaultIsolationSegmentForOrgArgsForCall, struct {
+		orgGUID string
+	}{orgGUID})
+	fake.recordInvocation("ResetDefaultIsolationSegmentForOrg", []interface{}{orgGUID})
+	fake.resetDefaultIsolationSegmentForOrgMutex.Unlock()
+	if fake.ResetDefaultIsolationSegmentForOrgStub != nil {
+		return fake.ResetDefaultIsolationSegmentForOrgStub(orgGUID)
+	} else {
+		return fake.resetDefaultIsolationSegmentForOrgReturns.result1
+	}
+}
+
+func (fake *FakeCFClient) ResetDefaultIsolationSegmentForOrgCallCount() int {
+	fake.resetDefaultIsolationSegmentForOrgMutex.RLock()
+	defer fake.resetDefaultIsolationSegmentForOrgMutex.RUnlock()
+	return len(fake.resetDefaultIsolationSegmentForOrgArgsForCall)
+}
+
+func (fake *FakeCFClient) ResetDefaultIsolationSegmentForOrgArgsForCall(i int) string {
+	fake.resetDefaultIsolationSegmentForOrgMutex.RLock()
+	defer fake.resetDefaultIsolationSegmentForOrgMutex.RUnlock()
+	return fake.resetDefaultIsolationSegmentForOrgArgsForCall[i].orgGUID
+}
+
+func (fake *FakeCFClient) ResetDefaultIsolationSegmentForOrgReturns(result1 error) {
+	fake.ResetDefaultIsolationSegmentForOrgStub = nil
+	fake.resetDefaultIsolationSegmentForOrgReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeCFClient) IsolationSegmentForSpace(spaceGUID string, isolationSegmentGUID string) error {
+	fake.isolationSegmentForSpaceMutex.Lock()
+	fake.isolationSegmentForSpaceArgsForCall = append(fake.isolationSegmentForSpaceArgsForCall, struct {
+		spaceGUID            string
+		isolationSegmentGUID string
+	}{spaceGUID, isolationSegmentGUID})
+	fake.recordInvocation("IsolationSegmentForSpace", []interface{}{spaceGUID, isolationSegmentGUID})
+	fake.isolationSegmentForSpaceMutex.Unlock()
+	if fake.IsolationSegmentForSpaceStub != nil {
+		return fake.IsolationSegmentForSpaceStub(spaceGUID, isolationSegmentGUID)
+	} else {
+		return fake.isolationSegmentForSpaceReturns.result1
+	}
+}
+
+func (fake *FakeCFClient) IsolationSegmentForSpaceCallCount() int {
+	fake.isolationSegmentForSpaceMutex.RLock()
+	defer fake.isolationSegmentForSpaceMutex.RUnlock()
+	return len(fake.isolationSegmentForSpaceArgsForCall)
+}
+
+func (fake *FakeCFClient) IsolationSegmentForSpaceArgsForCall(i int) (string, string) {
+	fake.isolationSegmentForSpaceMutex.RLock()
+	defer fake.isolationSegmentForSpaceMutex.RUnlock()
+	return fake.isolationSegmentForSpaceArgsForCall[i].spaceGUID, fake.isolationSegmentForSpaceArgsForCall[i].isolationSegmentGUID
+}
+
+func (fake *FakeCFClient) IsolationSegmentForSpaceReturns(result1 error) {
+	fake.IsolationSegmentForSpaceStub = nil
+	fake.isolationSegmentForSpaceReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeCFClient) ResetIsolationSegmentForSpace(spaceGUID string) error {
+	fake.resetIsolationSegmentForSpaceMutex.Lock()
+	fake.resetIsolationSegmentForSpaceArgsForCall = append(fake.resetIsolationSegmentForSpaceArgsForCall, struct {
+		spaceGUID string
+	}{spaceGUID})
+	fake.recordInvocation("ResetIsolationSegmentForSpace", []interface{}{spaceGUID})
+	fake.resetIsolationSegmentForSpaceMutex.Unlock()
+	if fake.ResetIsolationSegmentForSpaceStub != nil {
+		return fake.ResetIsolationSegmentForSpaceStub(spaceGUID)
+	} else {
+		return fake.resetIsolationSegmentForSpaceReturns.result1
+	}
+}
+
+func (fake *FakeCFClient) ResetIsolationSegmentForSpaceCallCount() int {
+	fake.resetIsolationSegmentForSpaceMutex.RLock()
+	defer fake.resetIsolationSegmentForSpaceMutex.RUnlock()
+	return len(fake.resetIsolationSegmentForSpaceArgsForCall)
+}
+
+func (fake *FakeCFClient) ResetIsolationSegmentForSpaceArgsForCall(i int) string {
+	fake.resetIsolationSegmentForSpaceMutex.RLock()
+	defer fake.resetIsolationSegmentForSpaceMutex.RUnlock()
+	return fake.resetIsolationSegmentForSpaceArgsForCall[i].spaceGUID
+}
+
+func (fake *FakeCFClient) ResetIsolationSegmentForSpaceReturns(result1 error) {
+	fake.ResetIsolationSegmentForSpaceStub = nil
+	fake.resetIsolationSegmentForSpaceReturns = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -582,10 +660,6 @@ func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	defer fake.getIsolationSegmentByGUIDMutex.RUnlock()
 	fake.getOrgByNameMutex.RLock()
 	defer fake.getOrgByNameMutex.RUnlock()
-	fake.updateOrgMutex.RLock()
-	defer fake.updateOrgMutex.RUnlock()
-	fake.updateSpaceMutex.RLock()
-	defer fake.updateSpaceMutex.RUnlock()
 	fake.getSpaceByNameMutex.RLock()
 	defer fake.getSpaceByNameMutex.RUnlock()
 	fake.addIsolationSegmentToOrgMutex.RLock()
@@ -596,6 +670,14 @@ func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	defer fake.addIsolationSegmentToSpaceMutex.RUnlock()
 	fake.removeIsolationSegmentFromSpaceMutex.RLock()
 	defer fake.removeIsolationSegmentFromSpaceMutex.RUnlock()
+	fake.defaultIsolationSegmentForOrgMutex.RLock()
+	defer fake.defaultIsolationSegmentForOrgMutex.RUnlock()
+	fake.resetDefaultIsolationSegmentForOrgMutex.RLock()
+	defer fake.resetDefaultIsolationSegmentForOrgMutex.RUnlock()
+	fake.isolationSegmentForSpaceMutex.RLock()
+	defer fake.isolationSegmentForSpaceMutex.RUnlock()
+	fake.resetIsolationSegmentForSpaceMutex.RLock()
+	defer fake.resetIsolationSegmentForSpaceMutex.RUnlock()
 	return fake.invocations
 }
 

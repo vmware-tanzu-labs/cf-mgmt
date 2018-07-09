@@ -8,8 +8,10 @@ import (
 
 type Manager interface {
 	Apply() error
-	Ensure() error
+	Create() error
+	Remove() error
 	Entitle() error
+	Unentitle() error
 	UpdateOrgs() error
 	UpdateSpaces() error
 	ListIsolationSegments() ([]cfclient.IsolationSegment, error)
@@ -22,11 +24,13 @@ type CFClient interface {
 	DeleteIsolationSegmentByGUID(guid string) error
 	GetIsolationSegmentByGUID(guid string) (*cfclient.IsolationSegment, error)
 	GetOrgByName(name string) (cfclient.Org, error)
-	UpdateOrg(orgGUID string, orgRequest cfclient.OrgRequest) (cfclient.Org, error)
-	UpdateSpace(spaceGUID string, req cfclient.SpaceRequest) (cfclient.Space, error)
 	GetSpaceByName(spaceName string, orgGuid string) (cfclient.Space, error)
 	AddIsolationSegmentToOrg(isolationSegmentGUID, orgGUID string) error
 	RemoveIsolationSegmentFromOrg(isolationSegmentGUID, orgGUID string) error
 	AddIsolationSegmentToSpace(isolationSegmentGUID, spaceGUID string) error
 	RemoveIsolationSegmentFromSpace(isolationSegmentGUID, spaceGUID string) error
+	DefaultIsolationSegmentForOrg(orgGUID, isolationSegmentGUID string) error
+	ResetDefaultIsolationSegmentForOrg(orgGUID string) error
+	IsolationSegmentForSpace(spaceGUID, isolationSegmentGUID string) error
+	ResetIsolationSegmentForSpace(spaceGUID string) error
 }

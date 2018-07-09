@@ -35,7 +35,7 @@ type Updater struct {
 }
 
 func (u *Updater) Apply() error {
-	if err := u.Ensure(); err != nil {
+	if err := u.Create(); err != nil {
 		return err
 	}
 	if err := u.Entitle(); err != nil {
@@ -47,12 +47,17 @@ func (u *Updater) Apply() error {
 	if err := u.UpdateSpaces(); err != nil {
 		return err
 	}
+	if err := u.Unentitle(); err != nil {
+		return err
+	}
+	if err := u.Remove(); err != nil {
+		return err
+	}
 	return nil
 }
 
-// Ensure creates any isolation segments that do not yet exist,
-// and optionally removes unneeded isolation segments.
-func (u *Updater) Ensure() error {
+// Create creates any isolation segments that do not yet exist,
+func (u *Updater) Create() error {
 	desired, err := u.allDesiredSegments()
 	if err != nil {
 		return err
@@ -63,7 +68,114 @@ func (u *Updater) Ensure() error {
 	}
 
 	c := classify(desired, current)
-	return c.update("", u.create, u.delete)
+	for i := range c.missing {
+		err := u.create(&c.missing[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Create creates any isolation segments that do not yet exist,
+func (u *Updater) Remove() error {
+	desired, err := u.allDesiredSegments()
+	if err != nil {
+		return err
+	}
+	current, err := u.Client.ListIsolationSegments()
+	if err != nil {
+		return err
+	}
+
+	c := classify(desired, current)
+	for i := range c.extra {
+		err := u.delete(&c.extra[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (u *Updater) Unentitle() error {
+	spaces, err := u.Cfg.GetSpaceConfigs()
+	if err != nil {
+		return err
+	}
+
+	orgs, err := u.Cfg.GetOrgConfigs()
+	if err != nil {
+		return err
+	}
+
+	isolationSegmentsMap, err := u.isolationSegmentMap()
+	if err != nil {
+		return err
+	}
+
+	// build up a list of segments required by each org (grouped by org name)
+	// this includes segments used by all of the orgs spaces, as well as the
+	// org's default segment
+	sm := make(map[string][]*cfclient.IsolationSegment)
+	for _, space := range spaces {
+		org, err := u.Client.GetOrgByName(space.Org)
+		if err != nil {
+			return err
+		}
+		if s := space.IsoSegment; s != "" {
+			if isosegment, ok := isolationSegmentsMap[s]; ok {
+				sm[org.Guid] = append(sm[org.Guid], &isosegment)
+			} else {
+				if !u.Peek {
+					return fmt.Errorf("Isolation segment [%s] does not exist", s)
+				}
+			}
+		} else {
+			sm[org.Guid] = append(sm[org.Guid], nil)
+		}
+	}
+	for _, orgConfig := range orgs {
+		org, err := u.Client.GetOrgByName(orgConfig.Org)
+		if err != nil {
+			return err
+		}
+		if s := orgConfig.DefaultIsoSegment; s != "" {
+			if isosegment, ok := isolationSegmentsMap[s]; ok {
+				sm[org.Guid] = append(sm[org.Guid], &isosegment)
+			} else {
+				if !u.Peek {
+					return fmt.Errorf("Isolation segment [%s] does not exist", s)
+				}
+			}
+		} else {
+			sm[org.Guid] = append(sm[org.Guid], nil)
+		}
+	}
+
+	for orgGUID, segments := range sm {
+		orgIsolationSegments, err := u.Client.ListIsolationSegmentsByQuery(url.Values{
+			"organization_guids": []string{orgGUID},
+		})
+		if err != nil {
+			return err
+		}
+
+		var desiredSegments []cfclient.IsolationSegment
+		for _, segment := range segments {
+			if segment != nil {
+				desiredSegments = append(desiredSegments, *segment)
+			}
+		}
+		c := classify(desiredSegments, orgIsolationSegments)
+		for i := range c.extra {
+			err := u.revoke(&c.extra[i], orgGUID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Entitle ensures that each org is entitled to the isolation segments it needs to use.
@@ -95,7 +207,9 @@ func (u *Updater) Entitle() error {
 				}
 				sm[org.Guid] = append(sm[org.Guid], isosegment)
 			} else {
-				return fmt.Errorf("Isolation segment [%s] does not exist", s)
+				if !u.Peek {
+					return fmt.Errorf("Isolation segment [%s] does not exist", s)
+				}
 			}
 		}
 	}
@@ -108,7 +222,9 @@ func (u *Updater) Entitle() error {
 			if isosegment, ok := isolationSegmentsMap[s]; ok {
 				sm[org.Guid] = append(sm[org.Guid], isosegment)
 			} else {
-				return fmt.Errorf("Isolation segment [%s] does not exist", s)
+				if !u.Peek {
+					return fmt.Errorf("Isolation segment [%s] does not exist", s)
+				}
 			}
 		}
 	}
@@ -122,9 +238,11 @@ func (u *Updater) Entitle() error {
 		}
 
 		c := classify(desiredSegments, orgIsolationSegments)
-		err = c.update(orgGUID, u.entitle, u.revoke)
-		if err != nil {
-			return err
+		for i := range c.missing {
+			err := u.entitle(&c.missing[i], orgGUID)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -138,14 +256,6 @@ func (u *Updater) UpdateOrgs() error {
 		return err
 	}
 	for _, oc := range ocs {
-		if u.Peek {
-			if oc.DefaultIsoSegment != "" {
-				lo.G.Infof("[dry-run]: set default isolation segment for org %s to %s", oc.Org, oc.DefaultIsoSegment)
-			} else {
-				lo.G.Infof("[dry-run]: reset default isolation segment for org %s", oc.Org)
-			}
-			continue
-		}
 		org, err := u.Client.GetOrgByName(oc.Org)
 		if err != nil {
 			return err
@@ -159,13 +269,31 @@ func (u *Updater) UpdateOrgs() error {
 		if err != nil {
 			return err
 		}
-		orgRequest := cfclient.OrgRequest{
-			Name: org.Name,
-			DefaultIsolationSegmentGuid: isolationSegmentGUID,
-		}
-		_, err = u.Client.UpdateOrg(org.Guid, orgRequest)
-		if err != nil {
-			return err
+
+		if org.DefaultIsolationSegmentGuid != isolationSegmentGUID {
+			if u.Peek {
+				if isolationSegmentGUID != "" {
+					lo.G.Infof("[dry-run]: set default isolation segment for org %s to %s", oc.Org, oc.DefaultIsoSegment)
+				} else {
+					lo.G.Infof("[dry-run]: reset default isolation segment for org %s", oc.Org)
+				}
+				continue
+			}
+
+			if isolationSegmentGUID != "" {
+				lo.G.Infof("set default isolation segment for org %s to %s", oc.Org, oc.DefaultIsoSegment)
+				err = u.Client.DefaultIsolationSegmentForOrg(org.Guid, isolationSegmentGUID)
+				if err != nil {
+					return err
+				}
+			} else {
+				lo.G.Infof("reset default isolation segment for org %s", oc.Org)
+				err = u.Client.ResetDefaultIsolationSegmentForOrg(org.Guid)
+				if err != nil {
+					return err
+				}
+			}
+
 		}
 	}
 	return nil
@@ -178,7 +306,11 @@ func (u *Updater) getIsolationSegmentGUID(isolationSegmentName string, isolation
 	if isosegment, ok := isolationSegmentMap[isolationSegmentName]; ok {
 		return isosegment.GUID, nil
 	} else {
-		return "", fmt.Errorf("Isolation Segment [%s] not found", isolationSegmentName)
+		if u.Peek {
+			return fmt.Sprintf("%s-dry-run-isosegment-guid", isolationSegmentName), nil
+		} else {
+			return "", fmt.Errorf("Isolation Segment [%s] not found", isolationSegmentName)
+		}
 	}
 }
 
@@ -195,14 +327,6 @@ func (u *Updater) UpdateSpaces() error {
 		return err
 	}
 	for _, sc := range scs {
-		if u.Peek {
-			if sc.IsoSegment != "" {
-				lo.G.Infof("[dry-run]: set isolation segment for space %s to %s (org %s)", sc.Space, sc.IsoSegment, sc.Org)
-			} else {
-				lo.G.Infof("[dry-run]: reset isolation segment for space %s (org %s)", sc.Space, sc.Org)
-			}
-			continue
-		}
 		org, err := u.Client.GetOrgByName(sc.Org)
 		if err != nil {
 			return err
@@ -215,30 +339,46 @@ func (u *Updater) UpdateSpaces() error {
 		if err != nil {
 			return err
 		}
+		if space.IsolationSegmentGuid != isolationSegmentGUID {
+			if u.Peek {
+				if sc.IsoSegment != "" {
+					lo.G.Infof("[dry-run]: set isolation segment for space %s to %s (org %s)", sc.Space, sc.IsoSegment, sc.Org)
+				} else {
+					lo.G.Infof("[dry-run]: reset isolation segment for space %s (org %s)", sc.Space, sc.Org)
+				}
+				continue
+			}
+			if sc.IsoSegment != "" {
+				lo.G.Infof("set isolation segment for space %s to %s (org %s)", sc.Space, sc.IsoSegment, sc.Org)
+				err = u.Client.IsolationSegmentForSpace(space.Guid, isolationSegmentGUID)
+				if err != nil {
+					return err
+				}
+			} else {
+				lo.G.Infof("reset isolation segment for space %s (org %s)", sc.Space, sc.Org)
+				err = u.Client.ResetIsolationSegmentForSpace(space.Guid)
+				if err != nil {
+					return err
+				}
+			}
+		}
 
-		spaceRequest := cfclient.SpaceRequest{
-			Name:                 space.Name,
-			OrganizationGuid:     org.Guid,
-			IsolationSegmentGuid: isolationSegmentGUID,
-		}
-		_, err = u.Client.UpdateSpace(space.Guid, spaceRequest)
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
 
-func (u *Updater) create(s *cfclient.IsolationSegment, _ string) error {
+func (u *Updater) create(s *cfclient.IsolationSegment) error {
 	if u.Peek {
 		lo.G.Info("[dry-run]: create segment", s.Name)
 		return nil
 	}
+
+	lo.G.Info("create segment", s.Name)
 	_, err := u.Client.CreateIsolationSegment(s.Name)
 	return err
 }
 
-func (u *Updater) delete(s *cfclient.IsolationSegment, _ string) error {
+func (u *Updater) delete(s *cfclient.IsolationSegment) error {
 	if !u.CleanUp {
 		return nil
 	}
@@ -258,6 +398,7 @@ func (u *Updater) entitle(s *cfclient.IsolationSegment, orgGUID string) error {
 		lo.G.Infof("[dry-run]: entitle org %s to iso segment %s", orgGUID, s.Name)
 		return nil
 	}
+	lo.G.Infof("entitle org %s to iso segment %s", orgGUID, s.Name)
 	return u.Client.AddIsolationSegmentToOrg(s.GUID, orgGUID)
 }
 
@@ -269,6 +410,7 @@ func (u *Updater) revoke(s *cfclient.IsolationSegment, orgGUID string) error {
 		lo.G.Infof("[dry-run]: revoke iso segment %s from org %s", s.Name, orgGUID)
 		return nil
 	}
+	lo.G.Infof("revoke iso segment %s (%s) from org %s", s.Name, s.GUID, orgGUID)
 	return u.Client.RemoveIsolationSegmentFromOrg(s.GUID, orgGUID)
 }
 

@@ -1,8 +1,8 @@
 hash: 91180e09a0584fdf631bad7f358914dce97ece1c17b3cf7b968656b6ed907910
-updated: 2018-07-08T11:24:11.073562-05:00
+updated: 2018-07-09T14:57:56.975532-05:00
 imports:
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: 75746eaaab4499db4887af3bb4218e1913ca65a9
+  version: 49319a4a0c6f8b3f09af84053d0200cbf8523c17
 - name: github.com/cloudfoundry/gofileutils
   version: 4d0c80011a0f37da1711c184028bc40137cd45af
   subpackages:
@@ -28,7 +28,7 @@ imports:
 - name: github.com/xchapter7x/lo
   version: e33b245fc7a8186582208abc2458c2691bff681c
 - name: golang.org/x/net
-  version: 32a936f46389aa10549d60bd7833e54b01685d09
+  version: c21de06aaf072cea07f3a65d6970e5c7d8b6cd6d
   subpackages:
   - context
   - context/ctxhttp
@@ -96,11 +96,11 @@ testImports:
   - matchers/support/goraph/util
   - types
 - name: golang.org/x/sys
-  version: 3c6ecd8f22c6f40fbeec94c000a069d7d87c7624
+  version: 1b2967e3c290b7c545b3db0deeda16e9be4f98a2
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: c0fe8dde8a10c9b32154bd9bdf080b8b3d635127
+  version: 0605a8320aceb4207a5fb3521281e17ec2075476
   subpackages:
   - encoding
   - encoding/charmap
