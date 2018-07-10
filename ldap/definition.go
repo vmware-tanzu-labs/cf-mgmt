@@ -1,6 +1,7 @@
 package ldap
 
 //go:generate mockgen -destination mocks/mock_manager.go "github.com/pivotalservices/cf-mgmt/ldap" Manager
+//go:generate counterfeiter -o fakes/fake_mgr.go types.go Manager
 
 // golang/mock doesn't support vendored dependencies:
 // https://github.com/golang/mock/issues/30

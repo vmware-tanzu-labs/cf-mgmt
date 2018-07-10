@@ -5,9 +5,9 @@
 package mock_ldap
 
 import (
-	ldap "github.com/go-ldap/ldap"
 	gomock "github.com/golang/mock/gomock"
-	ldap0 "github.com/pivotalservices/cf-mgmt/ldap"
+	ldap "github.com/pivotalservices/cf-mgmt/ldap"
+	ldap0 "github.com/go-ldap/ldap"
 	reflect "reflect"
 )
 
@@ -35,9 +35,9 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 }
 
 // GetConfig mocks base method
-func (m *MockManager) GetConfig(arg0, arg1 string) (*ldap0.Config, error) {
+func (m *MockManager) GetConfig(arg0, arg1 string) (*ldap.Config, error) {
 	ret := m.ctrl.Call(m, "GetConfig", arg0, arg1)
-	ret0, _ := ret[0].(*ldap0.Config)
+	ret0, _ := ret[0].(*ldap.Config)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -48,9 +48,9 @@ func (mr *MockManagerMockRecorder) GetConfig(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // GetLdapUser mocks base method
-func (m *MockManager) GetLdapUser(arg0 *ldap0.Config, arg1 string) (*ldap0.User, error) {
+func (m *MockManager) GetLdapUser(arg0 *ldap.Config, arg1 string) (*ldap.User, error) {
 	ret := m.ctrl.Call(m, "GetLdapUser", arg0, arg1)
-	ret0, _ := ret[0].(*ldap0.User)
+	ret0, _ := ret[0].(*ldap.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -61,9 +61,9 @@ func (mr *MockManagerMockRecorder) GetLdapUser(arg0, arg1 interface{}) *gomock.C
 }
 
 // GetUser mocks base method
-func (m *MockManager) GetUser(arg0 *ldap0.Config, arg1 string) (*ldap0.User, error) {
+func (m *MockManager) GetUser(arg0 *ldap.Config, arg1 string) (*ldap.User, error) {
 	ret := m.ctrl.Call(m, "GetUser", arg0, arg1)
-	ret0, _ := ret[0].(*ldap0.User)
+	ret0, _ := ret[0].(*ldap.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -74,9 +74,9 @@ func (mr *MockManagerMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call 
 }
 
 // GetUserIDs mocks base method
-func (m *MockManager) GetUserIDs(arg0 *ldap0.Config, arg1 string) ([]ldap0.User, error) {
+func (m *MockManager) GetUserIDs(arg0 *ldap.Config, arg1 string) ([]ldap.User, error) {
 	ret := m.ctrl.Call(m, "GetUserIDs", arg0, arg1)
-	ret0, _ := ret[0].([]ldap0.User)
+	ret0, _ := ret[0].([]ldap.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -87,9 +87,9 @@ func (mr *MockManagerMockRecorder) GetUserIDs(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // LdapConnection mocks base method
-func (m *MockManager) LdapConnection(arg0 *ldap0.Config) (*ldap.Conn, error) {
+func (m *MockManager) LdapConnection(arg0 *ldap.Config) (*ldap0.Conn, error) {
 	ret := m.ctrl.Call(m, "LdapConnection", arg0)
-	ret0, _ := ret[0].(*ldap.Conn)
+	ret0, _ := ret[0].(*ldap0.Conn)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

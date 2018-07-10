@@ -53,7 +53,7 @@ func (m *UserManager) UpdateOrgUsers(config *ldap.Config, uaacUsers map[string]s
 	}
 	if config.Enabled {
 		var ldapUsers []ldap.User
-		ldapUsers, err = m.getLdapUsers(config, updateUsersInput.LdapGroupNames, updateUsersInput.LdapUsers)
+		ldapUsers, err = m.GetLdapUsers(config, updateUsersInput.LdapGroupNames, updateUsersInput.LdapUsers)
 		if err != nil {
 			return err
 		}
@@ -159,7 +159,7 @@ func (m *UserManager) updateLdapUser(config *ldap.Config, orgGUID string,
 	return nil
 }
 
-func (m *UserManager) getLdapUsers(config *ldap.Config, groupNames []string, userList []string) ([]ldap.User, error) {
+func (m *UserManager) GetLdapUsers(config *ldap.Config, groupNames []string, userList []string) ([]ldap.User, error) {
 	uniqueUsers := make(map[string]string)
 	users := []ldap.User{}
 	for _, groupName := range groupNames {
@@ -167,10 +167,11 @@ func (m *UserManager) getLdapUsers(config *ldap.Config, groupNames []string, use
 			lo.G.Debug("Finding LDAP user for group:", groupName)
 			if groupUsers, err := m.LdapMgr.GetUserIDs(config, groupName); err == nil {
 				for _, user := range groupUsers {
-					if _, ok := uniqueUsers[user.Email]; !ok {
+					if _, ok := uniqueUsers[strings.ToLower(user.UserDN)]; !ok {
 						users = append(users, user)
+						uniqueUsers[strings.ToLower(user.UserDN)] = user.UserDN
 					} else {
-						lo.G.Debugf("User %v is already added to list", user)
+						lo.G.Debugf("User %v+ is already added to list", user)
 					}
 				}
 			} else {
@@ -181,10 +182,11 @@ func (m *UserManager) getLdapUsers(config *ldap.Config, groupNames []string, use
 	for _, user := range userList {
 		if ldapUser, err := m.LdapMgr.GetUser(config, user); err == nil {
 			if ldapUser != nil {
-				if _, ok := uniqueUsers[ldapUser.Email]; !ok {
+				if _, ok := uniqueUsers[strings.ToLower(ldapUser.UserDN)]; !ok {
 					users = append(users, *ldapUser)
+					uniqueUsers[strings.ToLower(ldapUser.UserDN)] = ldapUser.UserDN
 				} else {
-					lo.G.Debugf("User %v is already added to list", ldapUser)
+					lo.G.Debugf("User %v+ is already added to list", ldapUser)
 				}
 			}
 		} else {
