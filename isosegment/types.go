@@ -23,8 +23,6 @@ type CFClient interface {
 	CreateIsolationSegment(name string) (*cfclient.IsolationSegment, error)
 	DeleteIsolationSegmentByGUID(guid string) error
 	GetIsolationSegmentByGUID(guid string) (*cfclient.IsolationSegment, error)
-	GetOrgByName(name string) (cfclient.Org, error)
-	GetSpaceByName(spaceName string, orgGuid string) (cfclient.Space, error)
 	AddIsolationSegmentToOrg(isolationSegmentGUID, orgGUID string) error
 	RemoveIsolationSegmentFromOrg(isolationSegmentGUID, orgGUID string) error
 	AddIsolationSegmentToSpace(isolationSegmentGUID, spaceGUID string) error

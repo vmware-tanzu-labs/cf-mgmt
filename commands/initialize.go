@@ -89,7 +89,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
 	cfMgmt.QuotaManager = quota.NewManager(client, cfMgmt.SpaceManager, cfMgmt.OrgManager, cfg, peek)
 	cfMgmt.PrivateDomainManager = privatedomain.NewManager(client, cfMgmt.OrgManager, cfg, peek)
-	if isoSegmentManager, err := isosegment.NewManager(client, cfg, peek); err == nil {
+	if isoSegmentManager, err := isosegment.NewManager(client, cfg, cfMgmt.OrgManager, cfMgmt.SpaceManager, peek); err == nil {
 		cfMgmt.IsolationSegmentManager = isoSegmentManager
 	} else {
 		return nil, err

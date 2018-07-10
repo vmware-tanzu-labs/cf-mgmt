@@ -4,23 +4,29 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/pkg/errors"
+
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/xchapter7x/lo"
 )
 
 //NewManager -
-func NewManager(client CFClient, cfg config.Reader, peek bool) (Manager, error) {
+func NewManager(client CFClient, cfg config.Reader, orgManager organization.Manager, spaceManager space.Manager, peek bool) (Manager, error) {
 	globalCfg, err := cfg.GetGlobalConfig()
 	if err != nil {
 		return nil, err
 	}
 
 	return &Updater{
-		Cfg:     cfg,
-		Client:  client,
-		Peek:    peek,
-		CleanUp: globalCfg.EnableDeleteIsolationSegments,
+		Cfg:          cfg,
+		Client:       client,
+		OrgManager:   orgManager,
+		SpaceManager: spaceManager,
+		Peek:         peek,
+		CleanUp:      globalCfg.EnableDeleteIsolationSegments,
 	}, nil
 }
 
@@ -28,28 +34,36 @@ func NewManager(client CFClient, cfg config.Reader, peek bool) (Manager, error) 
 // Updaters should always be created with NewUpdater.  It is save to modify Updater's
 // exported fields after creation.
 type Updater struct {
-	Cfg     config.Reader
-	Client  CFClient
-	Peek    bool
-	CleanUp bool
+	Cfg          config.Reader
+	Client       CFClient
+	OrgManager   organization.Manager
+	SpaceManager space.Manager
+	Peek         bool
+	CleanUp      bool
 }
 
 func (u *Updater) Apply() error {
+	lo.G.Debugf("Creating iso segments")
 	if err := u.Create(); err != nil {
 		return err
 	}
+	lo.G.Debugf("entitling iso segments")
 	if err := u.Entitle(); err != nil {
 		return err
 	}
+	lo.G.Debugf("update orgs")
 	if err := u.UpdateOrgs(); err != nil {
 		return err
 	}
+	lo.G.Debugf("update spaces")
 	if err := u.UpdateSpaces(); err != nil {
 		return err
 	}
+	lo.G.Debugf("unentitling iso segments")
 	if err := u.Unentitle(); err != nil {
 		return err
 	}
+	lo.G.Debugf("removing iso segments")
 	if err := u.Remove(); err != nil {
 		return err
 	}
@@ -119,9 +133,9 @@ func (u *Updater) Unentitle() error {
 	// org's default segment
 	sm := make(map[string][]*cfclient.IsolationSegment)
 	for _, space := range spaces {
-		org, err := u.Client.GetOrgByName(space.Org)
+		org, err := u.OrgManager.FindOrg(space.Org)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "finding org for space configs")
 		}
 		if s := space.IsoSegment; s != "" {
 			if isosegment, ok := isolationSegmentsMap[s]; ok {
@@ -136,9 +150,9 @@ func (u *Updater) Unentitle() error {
 		}
 	}
 	for _, orgConfig := range orgs {
-		org, err := u.Client.GetOrgByName(orgConfig.Org)
+		org, err := u.OrgManager.FindOrg(orgConfig.Org)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "finding org for org configs")
 		}
 		if s := orgConfig.DefaultIsoSegment; s != "" {
 			if isosegment, ok := isolationSegmentsMap[s]; ok {
@@ -201,9 +215,9 @@ func (u *Updater) Entitle() error {
 	for _, space := range spaces {
 		if s := space.IsoSegment; s != "" {
 			if isosegment, ok := isolationSegmentsMap[s]; ok {
-				org, err := u.Client.GetOrgByName(space.Org)
+				org, err := u.OrgManager.FindOrg(space.Org)
 				if err != nil {
-					return err
+					return errors.Wrap(err, "finding org for space configs in entitle")
 				}
 				sm[org.Guid] = append(sm[org.Guid], isosegment)
 			} else {
@@ -215,9 +229,9 @@ func (u *Updater) Entitle() error {
 	}
 	for _, orgConfig := range orgs {
 		if s := orgConfig.DefaultIsoSegment; s != "" {
-			org, err := u.Client.GetOrgByName(orgConfig.Org)
+			org, err := u.OrgManager.FindOrg(orgConfig.Org)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "finding org for org configs in entitle")
 			}
 			if isosegment, ok := isolationSegmentsMap[s]; ok {
 				sm[org.Guid] = append(sm[org.Guid], isosegment)
@@ -256,9 +270,9 @@ func (u *Updater) UpdateOrgs() error {
 		return err
 	}
 	for _, oc := range ocs {
-		org, err := u.Client.GetOrgByName(oc.Org)
+		org, err := u.OrgManager.FindOrg(oc.Org)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "finding org for org configs in update orgs")
 		}
 		isolationSegmentMap, err := u.isolationSegmentMap()
 		if err != nil {
@@ -327,11 +341,7 @@ func (u *Updater) UpdateSpaces() error {
 		return err
 	}
 	for _, sc := range scs {
-		org, err := u.Client.GetOrgByName(sc.Org)
-		if err != nil {
-			return err
-		}
-		space, err := u.Client.GetSpaceByName(sc.Space, org.Guid)
+		space, err := u.SpaceManager.FindSpace(sc.Org, sc.Space)
 		if err != nil {
 			return err
 		}
