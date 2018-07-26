@@ -124,6 +124,25 @@ A recent change to mockgen broke code generation so you must re-build this using
 And then run `go generate $(glide nv)` from the project directory, or `go generate .`
 from a specific directory.
 
+### Command Usage
+```
+Usage:
+  main [OPTIONS] create-spaces [create-spaces-OPTIONS]
+
+Help Options:
+  -h, --help               Show this help message
+
+[create-spaces command options]
+  --config-dir=    Name of the config directory (default: config) [$CONFIG_DIR]
+  --system-domain= system domain [$SYSTEM_DOMAIN]
+  --user-id=       user id that has privileges to create/update/delete users, orgs and spaces [$USER_ID]
+  --password=      password for user account [optional if client secret is provided] [$PASSWORD]
+  --client-secret= secret for user account that has sufficient privileges to create/update/delete users,
+                   orgs and spaces] [$CLIENT_SECRET]
+  --ldap-password= LDAP password for binding [$LDAP_PASSWORD]
+  --peek           Preview entities to change without modifying. [$PEEK]
+```
+
 ## Contributing
 
 PRs are always welcome or open issues if you are experiencing an issue and will do my best to address issues in timely fashion.
