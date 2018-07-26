@@ -31,7 +31,7 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
 1. Initialize git repository by either cloning a remote or using `git init`
 
 2. You can either setup your configuration by using
-  - [init](docs/config/init/README.md) command from `cf-mgmt-config` if you are wanting to start with a blank configuration and add the config using `cf-mgmt-config` operations
+  - [init](docs/config/init/README.md) command from cf-mgmt-config if you are wanting to start with a blank configuration and add the config using cf-mgmt-config operations
   - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.
 
 3. *(optional)* Configure LDAP/SAML Options. If your foundation uses LDAP and/or SAML, you will need to configure ldap.yml with the correct values.
@@ -39,7 +39,7 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
 	- [SAML with LDAP groups](docs/config/README.md#saml-configuration-with-ldap-group-lookups)
 	- [SAML only](docs/config/README.md#saml-configuration)
 
-4. [Generate the concourse pipeline](docs/config/generate-concourse-pipeline/README.md) using `cf-mgmt-config`
+4. [Generate the concourse pipeline](docs/config/generate-concourse-pipeline/README.md) using cf-mgmt-config
 
 5. Make sure you .gitingore the vars.yml file that is generated `echo vars.yml >> .gitignore`
 
