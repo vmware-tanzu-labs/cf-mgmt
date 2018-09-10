@@ -2,6 +2,26 @@
 
 Go automation for managing orgs, spaces, users (from ldap groups or internal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
 
+# New Major Release Information
+There has been major refactoring to internals of cf-mgmt to remove duplicate code that is not supported by go-cfclient library.  This release SHOULD be backward compatible but wanting to make community aware of a major change.  This will be released as the latest tag on dockerhub.  If you experience any problems you can revert your cf-mgmt to use the previously released version with tag `0.0.91`.
+
+This can be done by modifying you cf-mgmt.yml concourse task with the following:
+
+```
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: {repository: pivotalservices/cf-mgmt, tag: "0.0.91"}
+
+inputs:
+  - name: config-repo
+
+run:
+  path: config-repo/ci/tasks/cf-mgmt.sh
+```
+
 ## Getting Started
 
 ### Install
