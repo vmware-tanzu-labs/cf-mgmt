@@ -226,37 +226,37 @@ func (m *DefaultManager) getUserFilterWithDN(userDN string) string {
 }
 
 func (m *DefaultManager) GetLdapUsers(groupNames []string, userList []string) ([]User, error) {
-	users := []User{}
 	uniqueUsers := make(map[string]string)
+	users := []User{}
 	for _, groupName := range groupNames {
 		if groupName != "" {
 			lo.G.Debug("Finding LDAP user for group:", groupName)
 			if groupUsers, err := m.GetUserIDs(groupName); err == nil {
 				for _, user := range groupUsers {
-					if _, ok := uniqueUsers[user.Email]; !ok {
+					if _, ok := uniqueUsers[strings.ToLower(user.UserDN)]; !ok {
 						users = append(users, user)
+						uniqueUsers[strings.ToLower(user.UserDN)] = user.UserDN
 					} else {
-						lo.G.Debugf("User %v is already added to list", user)
+						lo.G.Debugf("User %+v is already added to list", user)
 					}
 				}
 			} else {
-				lo.G.Error(err)
-				return nil, err
+				lo.G.Warning(err)
 			}
 		}
 	}
 	for _, user := range userList {
 		if ldapUser, err := m.GetUser(user); err == nil {
 			if ldapUser != nil {
-				if _, ok := uniqueUsers[ldapUser.Email]; !ok {
+				if _, ok := uniqueUsers[strings.ToLower(ldapUser.UserDN)]; !ok {
 					users = append(users, *ldapUser)
+					uniqueUsers[strings.ToLower(ldapUser.UserDN)] = ldapUser.UserDN
 				} else {
-					lo.G.Debugf("User %v is already added to list", ldapUser)
+					lo.G.Debugf("User %+v is already added to list", ldapUser)
 				}
 			}
 		} else {
-			lo.G.Error(err)
-			return nil, err
+			lo.G.Warning(err)
 		}
 	}
 	return users, nil
