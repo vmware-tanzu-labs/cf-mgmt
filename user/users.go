@@ -10,6 +10,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
+	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
 
@@ -55,6 +56,7 @@ func (m *DefaultManager) RemoveSpaceAuditor(input UpdateUsersInput, userName str
 		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Auditor")
 		return nil
 	}
+	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Auditor")
 	return m.Client.RemoveSpaceAuditorByUsername(input.SpaceGUID, userName)
 }
 func (m *DefaultManager) RemoveSpaceDeveloper(input UpdateUsersInput, userName string) error {
@@ -62,6 +64,7 @@ func (m *DefaultManager) RemoveSpaceDeveloper(input UpdateUsersInput, userName s
 		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Developer")
 		return nil
 	}
+	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Developer")
 	return m.Client.RemoveSpaceDeveloperByUsername(input.SpaceGUID, userName)
 }
 func (m *DefaultManager) RemoveSpaceManager(input UpdateUsersInput, userName string) error {
@@ -69,6 +72,7 @@ func (m *DefaultManager) RemoveSpaceManager(input UpdateUsersInput, userName str
 		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Manager")
 		return nil
 	}
+	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Manager")
 	return m.Client.RemoveSpaceManagerByUsername(input.SpaceGUID, userName)
 }
 func (m *DefaultManager) ListSpaceAuditors(spaceGUID string) (map[string]string, error) {
@@ -103,13 +107,25 @@ func (m *DefaultManager) ListSpaceManagers(spaceGUID string) (map[string]string,
 }
 
 func (m *DefaultManager) listSpaceAuditors(input UpdateUsersInput) (map[string]string, error) {
-	return m.ListSpaceAuditors(input.SpaceGUID)
+	roleUsers, err := m.ListSpaceAuditors(input.SpaceGUID)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-auditor", roleUsers)
+	}
+	return roleUsers, err
 }
 func (m *DefaultManager) listSpaceDevelopers(input UpdateUsersInput) (map[string]string, error) {
-	return m.ListSpaceDevelopers(input.SpaceGUID)
+	roleUsers, err := m.ListSpaceDevelopers(input.SpaceGUID)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-developer", roleUsers)
+	}
+	return roleUsers, err
 }
 func (m *DefaultManager) listSpaceManagers(input UpdateUsersInput) (map[string]string, error) {
-	return m.ListSpaceManagers(input.SpaceGUID)
+	roleUsers, err := m.ListSpaceManagers(input.SpaceGUID)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-manager", roleUsers)
+	}
+	return roleUsers, err
 }
 
 func (m *DefaultManager) userListToMap(users []cfclient.User) map[string]string {
@@ -130,6 +146,7 @@ func (m *DefaultManager) AssociateSpaceAuditor(input UpdateUsersInput, userName 
 		return nil
 	}
 
+	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "auditor", input.OrgName, input.SpaceName)
 	_, err = m.Client.AssociateSpaceAuditorByUsername(input.SpaceGUID, userName)
 	return err
 }
@@ -142,6 +159,7 @@ func (m *DefaultManager) AssociateSpaceDeveloper(input UpdateUsersInput, userNam
 		lo.G.Infof("[dry-run]: adding %s to role %s for org/space %s/%s", userName, "developer", input.OrgName, input.SpaceName)
 		return nil
 	}
+	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "developer", input.OrgName, input.SpaceName)
 	_, err = m.Client.AssociateSpaceDeveloperByUsername(input.SpaceGUID, userName)
 	return err
 }
@@ -155,6 +173,7 @@ func (m *DefaultManager) AssociateSpaceManager(input UpdateUsersInput, userName 
 		return nil
 	}
 
+	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "manager", input.OrgName, input.SpaceName)
 	_, err = m.Client.AssociateSpaceManagerByUsername(input.SpaceGUID, userName)
 	return err
 }
@@ -172,6 +191,7 @@ func (m *DefaultManager) RemoveOrgAuditor(input UpdateUsersInput, userName strin
 		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "auditor")
 		return nil
 	}
+	lo.G.Infof("removing user %s from org %s with role %s", userName, input.OrgName, "auditor")
 	return m.Client.RemoveOrgAuditorByUsername(input.OrgGUID, userName)
 }
 func (m *DefaultManager) RemoveOrgBillingManager(input UpdateUsersInput, userName string) error {
@@ -179,6 +199,7 @@ func (m *DefaultManager) RemoveOrgBillingManager(input UpdateUsersInput, userNam
 		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "billing manager")
 		return nil
 	}
+	lo.G.Infof("removing user %s from org %s with role %s", userName, input.OrgName, "billing manager")
 	return m.Client.RemoveOrgBillingManagerByUsername(input.OrgGUID, userName)
 }
 
@@ -187,6 +208,7 @@ func (m *DefaultManager) RemoveOrgManager(input UpdateUsersInput, userName strin
 		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "manager")
 		return nil
 	}
+	lo.G.Infof("removing user %s from org %s with role %s", userName, input.OrgName, "manager")
 	return m.Client.RemoveOrgManagerByUsername(input.OrgGUID, userName)
 }
 
@@ -221,13 +243,25 @@ func (m *DefaultManager) ListOrgManagers(orgGUID string) (map[string]string, err
 	return m.userListToMap(users), nil
 }
 func (m *DefaultManager) listOrgAuditors(input UpdateUsersInput) (map[string]string, error) {
-	return m.ListOrgAuditors(input.OrgGUID)
+	roleUsers, err := m.ListOrgAuditors(input.OrgGUID)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-auditor", roleUsers)
+	}
+	return roleUsers, err
 }
 func (m *DefaultManager) listOrgBillingManagers(input UpdateUsersInput) (map[string]string, error) {
-	return m.ListOrgBillingManagers(input.OrgGUID)
+	roleUsers, err := m.ListOrgBillingManagers(input.OrgGUID)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-billing-manager", roleUsers)
+	}
+	return roleUsers, err
 }
 func (m *DefaultManager) listOrgManagers(input UpdateUsersInput) (map[string]string, error) {
-	return m.ListOrgManagers(input.OrgGUID)
+	roleUsers, err := m.ListOrgManagers(input.OrgGUID)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-manager", roleUsers)
+	}
+	return roleUsers, err
 }
 
 func (m *DefaultManager) AssociateOrgAuditor(input UpdateUsersInput, userName string) error {
@@ -240,6 +274,7 @@ func (m *DefaultManager) AssociateOrgAuditor(input UpdateUsersInput, userName st
 		return nil
 	}
 
+	lo.G.Infof("Add User %s to role %s for org %s", userName, "auditor", input.OrgName)
 	_, err = m.Client.AssociateOrgAuditorByUsername(input.OrgGUID, userName)
 	return err
 }
@@ -253,6 +288,7 @@ func (m *DefaultManager) AssociateOrgBillingManager(input UpdateUsersInput, user
 		return nil
 	}
 
+	lo.G.Infof("Add User %s to role %s for org %s", userName, "billing manager", input.OrgName)
 	_, err = m.Client.AssociateOrgBillingManagerByUsername(input.OrgGUID, userName)
 	return err
 }
@@ -267,6 +303,7 @@ func (m *DefaultManager) AssociateOrgManager(input UpdateUsersInput, userName st
 		return nil
 	}
 
+	lo.G.Infof("Add User %s to role %s for org %s", userName, "manager", input.OrgName)
 	_, err = m.Client.AssociateOrgManagerByUsername(input.OrgGUID, userName)
 	return err
 }
@@ -295,7 +332,7 @@ func (m *DefaultManager) UpdateSpaceUsers() error {
 func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers map[string]string) error {
 	space, err := m.SpaceMgr.FindSpace(input.Org, input.Space)
 	if err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("Error finding space for org %s, space %s", input.Org, input.Space))
 	}
 
 	if err = m.SyncUsers(uaaUsers, UpdateUsersInput{
@@ -312,7 +349,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers ma
 		RemoveUser:     m.RemoveSpaceDeveloper,
 		AddUser:        m.AssociateSpaceDeveloper,
 	}); err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "developer"))
 	}
 
 	if err = m.SyncUsers(uaaUsers,
@@ -330,7 +367,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers ma
 			RemoveUser:     m.RemoveSpaceManager,
 			AddUser:        m.AssociateSpaceManager,
 		}); err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "manager"))
 	}
 	if err = m.SyncUsers(uaaUsers,
 		UpdateUsersInput{
@@ -347,7 +384,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers ma
 			RemoveUser:     m.RemoveSpaceAuditor,
 			AddUser:        m.AssociateSpaceAuditor,
 		}); err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "auditor"))
 	}
 	return nil
 }
@@ -392,7 +429,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[s
 			AddUser:        m.AssociateOrgBillingManager,
 		})
 	if err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s role %s", input.Org, "billing_managers"))
 	}
 
 	err = m.SyncUsers(
@@ -409,10 +446,10 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[s
 			AddUser:        m.AssociateOrgAuditor,
 		})
 	if err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s role %s", input.Org, "org-auditors"))
 	}
 
-	return m.SyncUsers(
+	err = m.SyncUsers(
 		uaacUsers, UpdateUsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
@@ -425,6 +462,12 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[s
 			RemoveUser:     m.RemoveOrgManager,
 			AddUser:        m.AssociateOrgManager,
 		})
+
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s role %s", input.Org, "org-manager"))
+	}
+
+	return nil
 }
 
 //SyncUsers
@@ -433,8 +476,6 @@ func (m *DefaultManager) SyncUsers(uaaUsers map[string]string, updateUsersInput 
 	if err != nil {
 		return err
 	}
-
-	lo.G.Debugf("RoleUsers before: %v", roleUsers)
 	if err := m.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
 		return err
 	}
@@ -447,7 +488,6 @@ func (m *DefaultManager) SyncUsers(uaaUsers map[string]string, updateUsersInput 
 	if err := m.RemoveUsers(roleUsers, updateUsersInput); err != nil {
 		return err
 	}
-	lo.G.Debugf("RoleUsers after: %v", roleUsers)
 	return nil
 }
 
@@ -458,7 +498,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers, uaaUsers map[string]string, up
 		if err != nil {
 			return err
 		}
-		lo.G.Debugf("LdapUsers: %v", ldapUsers)
+		lo.G.Debugf("LdapUsers: %+v", ldapUsers)
 		for _, inputUser := range ldapUsers {
 			userToUse := m.UpdateUserInfo(inputUser)
 			config := m.LdapMgr.LdapConfig()
@@ -530,11 +570,6 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers, uaaUsers map[string]string, up
 
 func (m *DefaultManager) RemoveUsers(roleUsers map[string]string, updateUsersInput UpdateUsersInput) error {
 	if updateUsersInput.RemoveUsers {
-		if updateUsersInput.SpaceName == "" {
-			lo.G.Debugf("Deleting users for org: %s", updateUsersInput.OrgName)
-		} else {
-			lo.G.Debugf("Deleting users for org/space: %s/%s", updateUsersInput.OrgName, updateUsersInput.SpaceName)
-		}
 		for roleUser, _ := range roleUsers {
 			if err := updateUsersInput.RemoveUser(updateUsersInput, roleUser); err != nil {
 				return err

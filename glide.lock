@@ -1,5 +1,5 @@
-hash: 91180e09a0584fdf631bad7f358914dce97ece1c17b3cf7b968656b6ed907910
-updated: 2018-07-09T14:57:56.975532-05:00
+hash: b9cd466d6142efedebd3c1a84c844ca47b837825855d36e473e3246866bf6bb1
+updated: 2018-09-11T14:36:21.323093-07:00
 imports:
 - name: github.com/cloudfoundry-community/go-cfclient
   version: 49319a4a0c6f8b3f09af84053d0200cbf8523c17
@@ -24,7 +24,7 @@ imports:
 - name: github.com/parnurzeal/gorequest
   version: 8e3aed27fe49f7fdc765dad067845f600fc984e8
 - name: github.com/pkg/errors
-  version: 816c9085562cd7ee03e7f8188a1cfd942858cded
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/xchapter7x/lo
   version: e33b245fc7a8186582208abc2458c2691bff681c
 - name: golang.org/x/net
@@ -56,10 +56,17 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 testImports:
+- name: github.com/hpcloud/tail
+  version: a1dbeea552b7c8df4b542c66073e393de198a800
+  subpackages:
+  - ratelimiter
+  - util
+  - watch
+  - winfile
 - name: github.com/maxbrunsfeld/counterfeiter
   version: c1996179167e70f7a863c4d04dcaa6981109afed
 - name: github.com/onsi/ginkgo
-  version: fa5fabab2a1bfbd924faf4c067d07ae414e2aedf
+  version: 3774a09d95489ccaa16032e0770d08ea77ba6184
   subpackages:
   - config
   - internal/codelocation
@@ -75,11 +82,9 @@ testImports:
   - internal/writer
   - reporters
   - reporters/stenographer
-  - reporters/stenographer/support/go-colorable
-  - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 62bff4df71bdbc266561a0caee19f0594b17c240
+  version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
   subpackages:
   - format
   - gbytes
@@ -119,3 +124,7 @@ testImports:
   - language
   - runes
   - transform
+- name: gopkg.in/fsnotify/fsnotify.v1
+  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+- name: gopkg.in/tomb.v1
+  version: c131134a1947e9afd9cecfe11f4c6dff0732ae58
