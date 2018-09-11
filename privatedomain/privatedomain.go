@@ -2,6 +2,7 @@ package privatedomain
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -105,7 +106,8 @@ func (m *DefaultManager) SharePrivateDomains() error {
 			return err
 		}
 
-		privateDomainMap := make(map[string]string)
+		lo.G.Debugf("Org %s Shared Domains %+v", orgConfig.Org, reflect.ValueOf(orgSharedPrivateDomains).MapKeys())
+
 		for _, privateDomainName := range orgConfig.SharedPrivateDomains {
 			if _, ok := orgSharedPrivateDomains[privateDomainName]; !ok {
 				if privateDomain, ok := privateDomains[privateDomainName]; ok {
@@ -113,22 +115,21 @@ func (m *DefaultManager) SharePrivateDomains() error {
 					if err != nil {
 						return err
 					}
-					orgSharedPrivateDomains[privateDomain.Name] = privateDomain
-					privateDomainMap[privateDomainName] = privateDomainName
 				} else {
 					return fmt.Errorf("Private Domain [%s] is not defined", privateDomainName)
 				}
+			} else {
+				lo.G.Debugf("Org %s already contains shared private domain %s", orgConfig.Org, privateDomainName)
+				delete(orgSharedPrivateDomains, privateDomainName)
 			}
 		}
 
 		if orgConfig.RemoveSharedPrivateDomains {
-			for existingPrivateDomain, privateDomain := range orgSharedPrivateDomains {
-				if _, ok := privateDomainMap[existingPrivateDomain]; !ok {
-					err = m.RemoveSharedPrivateDomain(&org, privateDomain)
-					if err != nil {
-						return err
-					}
-					delete(orgSharedPrivateDomains, privateDomain.Name)
+			lo.G.Debugf("Org %s Shared Domains to be removed %+v", orgConfig.Org, reflect.ValueOf(orgSharedPrivateDomains).MapKeys())
+			for _, privateDomain := range orgSharedPrivateDomains {
+				err = m.RemoveSharedPrivateDomain(&org, privateDomain)
+				if err != nil {
+					return err
 				}
 			}
 		} else {

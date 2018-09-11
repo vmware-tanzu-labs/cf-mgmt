@@ -255,6 +255,26 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(domainGUID).Should(Equal("test.com-guid"))
 			})
 
+			It("should do nothing when no new shared private domains", func() {
+				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
+					config.OrgConfig{
+						Org:                        "test2",
+						SharedPrivateDomains:       []string{"test.com"},
+						RemoveSharedPrivateDomains: true,
+					},
+				}, nil)
+				client.ListDomainsReturns([]cfclient.Domain{
+					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				}, nil)
+				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
+					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				}, nil)
+				err := manager.SharePrivateDomains()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.UnshareOrgPrivateDomainCallCount()).Should(Equal(0))
+
+			})
+
 			It("should succeed unsharing private domain and sharing a private domain", func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
 					config.OrgConfig{
