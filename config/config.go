@@ -8,7 +8,7 @@ var DefaultProtectedOrgs = []string{
 	"p-spring-cloud-services",
 	"splunk-nozzle-org",
 	"redis-test-ORG*",
-    "appdynamics-org",
+	"appdynamics-org",
 }
 
 // Manager can read and write the cf-mgmt configuration.
