@@ -37,7 +37,8 @@ type OrgQuota struct {
 	TotalPrivateDomains     string `long:"total-private-domains" description:"Total Private Domain capacity for an Org"`
 	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Org"`
 	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Org"`
-	AppInstanceLimit        string `long:"app-instance-limit" description:"Total Service Keys capacity for an Org"`
+	AppInstanceLimit        string `long:"app-instance-limit" description:"App Instance Limit an Org"`
+	AppTaskLimit            string `long:"app-task-limit" description:"App Task Limit an Org"`
 }
 
 type SpaceQuota struct {
@@ -50,7 +51,8 @@ type SpaceQuota struct {
 	TotalPrivateDomains     string `long:"total-private-domains" description:"Total Private Domain capacity for an Space"`
 	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Space"`
 	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Space"`
-	AppInstanceLimit        string `long:"app-instance-limit" description:"Total Service Keys capacity for an Space"`
+	AppInstanceLimit        string `long:"app-instance-limit" description:"App Instance Limit for a space"`
+	AppTaskLimit            string `long:"app-task-limit" description:"App Task Limit for a space"`
 }
 
 func updateUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, userRole *UserRole, errorString *string) {
@@ -148,6 +150,7 @@ func updateOrgQuotaConfig(orgConfig *config.OrgConfig, orgQuota OrgQuota, errorS
 	convertToInt("total-reserved-route-ports", &orgConfig.TotalReservedRoutePorts, orgQuota.TotalReservedRoutePorts, errorString)
 	convertToInt("total-service-keys", &orgConfig.TotalServiceKeys, orgQuota.TotalServiceKeys, errorString)
 	convertToInt("app-instance-limit", &orgConfig.AppInstanceLimit, orgQuota.AppInstanceLimit, errorString)
+	convertToInt("app-task-limit", &orgConfig.AppTaskLimit, orgQuota.AppTaskLimit, errorString)
 }
 
 func updateSpaceQuotaConfig(spaceConfig *config.SpaceConfig, spaceQuota SpaceQuota, errorString *string) {
@@ -161,6 +164,7 @@ func updateSpaceQuotaConfig(spaceConfig *config.SpaceConfig, spaceQuota SpaceQuo
 	convertToInt("total-reserved-route-ports", &spaceConfig.TotalReservedRoutePorts, spaceQuota.TotalReservedRoutePorts, errorString)
 	convertToInt("total-service-keys", &spaceConfig.TotalServiceKeys, spaceQuota.TotalServiceKeys, errorString)
 	convertToInt("app-instance-limit", &spaceConfig.AppInstanceLimit, spaceQuota.AppInstanceLimit, errorString)
+	convertToInt("app-task-limit", &spaceConfig.AppTaskLimit, spaceQuota.AppTaskLimit, errorString)
 }
 
 func validateASGsExist(configuredASGs []config.ASGConfig, asgs []string, errorString *string) {
