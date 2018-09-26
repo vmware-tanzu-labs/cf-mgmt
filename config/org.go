@@ -26,6 +26,7 @@ type OrgConfig struct {
 	TotalReservedRoutePorts    int      `yaml:"total_reserved_route_ports"`
 	TotalServiceKeys           int      `yaml:"total_service_keys"`
 	AppInstanceLimit           int      `yaml:"app_instance_limit"`
+	AppTaskLimit               int      `yaml:"app_task_limit"`
 	DefaultIsoSegment          string   `yaml:"default_isolation_segment"`
 }
 

@@ -35,6 +35,7 @@ type SpaceConfig struct {
 	TotalReservedRoutePorts int      `yaml:"total_reserved_route_ports"`
 	TotalServiceKeys        int      `yaml:"total_service_keys"`
 	AppInstanceLimit        int      `yaml:"app_instance_limit"`
+	AppTaskLimit            int      `yaml:"app_task_limit"`
 	IsoSegment              string   `yaml:"isolation_segment"`
 	ASGs                    []string `yaml:"named-security-groups"`
 }

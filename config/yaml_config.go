@@ -88,6 +88,7 @@ func (m *yamlManager) GetOrgConfigs() ([]OrgConfig, error) {
 	}
 	result := make([]OrgConfig, len(files))
 	for i, f := range files {
+		result[i].AppTaskLimit = -1
 		result[i].AppInstanceLimit = -1
 		result[i].TotalReservedRoutePorts = 0
 		result[i].TotalPrivateDomains = -1
@@ -147,6 +148,7 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 	result := make([]SpaceConfig, len(files))
 	for i, f := range files {
 		result[i].AppInstanceLimit = -1
+		result[i].AppTaskLimit = -1
 		result[i].TotalReservedRoutePorts = 0
 		result[i].TotalPrivateDomains = -1
 		result[i].TotalServiceKeys = -1

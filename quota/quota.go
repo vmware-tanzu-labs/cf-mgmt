@@ -60,6 +60,7 @@ func (m *DefaultManager) CreateSpaceQuotas() error {
 			TotalReservedRoutePorts: input.TotalReservedRoutePorts,
 			TotalServiceKeys:        input.TotalServiceKeys,
 			AppInstanceLimit:        input.AppInstanceLimit,
+			AppTaskLimit:            input.AppTaskLimit,
 		}
 		var spaceQuota cfclient.SpaceQuota
 		var ok bool
@@ -98,6 +99,7 @@ func (m *DefaultManager) hasSpaceQuotaChanged(quota cfclient.SpaceQuota, newQuot
 		TotalReservedRoutePorts: quota.TotalReservedRoutePorts,
 		TotalServiceKeys:        quota.TotalServiceKeys,
 		AppInstanceLimit:        quota.AppInstanceLimit,
+		AppTaskLimit:            quota.AppTaskLimit,
 	}
 	if quoteRequest == newQuota {
 		return false
@@ -189,6 +191,7 @@ func (m *DefaultManager) CreateOrgQuotas() error {
 			TotalReservedRoutePorts: input.TotalReservedRoutePorts,
 			TotalServiceKeys:        input.TotalServiceKeys,
 			AppInstanceLimit:        input.AppInstanceLimit,
+			AppTaskLimit:            input.AppTaskLimit,
 		}
 		var orgQuota cfclient.OrgQuota
 		var ok bool
@@ -226,6 +229,7 @@ func (m *DefaultManager) hasOrgQuotaChanged(quota cfclient.OrgQuota, newQuota cf
 		TotalReservedRoutePorts: quota.TotalReservedRoutePorts,
 		TotalServiceKeys:        quota.TotalServiceKeys,
 		AppInstanceLimit:        quota.AppInstanceLimit,
+		AppTaskLimit:            quota.AppTaskLimit,
 	}
 	if quoteRequest == newQuota {
 		return false
