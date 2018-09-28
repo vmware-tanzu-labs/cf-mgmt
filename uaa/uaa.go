@@ -16,12 +16,7 @@ import (
 //Manager -
 type Manager interface {
 	//Returns a map keyed and valued by user id. User id is converted to lowercase
-	ListUsers() (map[string]string, error)
-
-	// Returns a map keyed by userid and value as User struct.
-	// Return an empty map if an error occurs or if there are no users found
-	UsersByID() (map[string]User, error)
-
+	ListUsers() (map[string]*User, error)
 	CreateExternalUser(userName, userEmail, externalID, origin string) (err error)
 }
 
@@ -35,9 +30,25 @@ type UserList struct {
 
 //User -
 type User struct {
-	ID       string `json:"id"`
-	UserName string `json:"userName"`
-	Origin   string `json:"origin"`
+	ID         string      `json:"id"`
+	UserName   string      `json:"userName"`
+	ExternalID string      `json:"externalId"`
+	Origin     string      `json:"origin"`
+	Emails     []UserEmail `json:"emails"`
+}
+
+func (u *User) PrimaryEmail() string {
+	for _, email := range u.Emails {
+		if email.Primary {
+			return email.Value
+		}
+	}
+	return ""
+}
+
+type UserEmail struct {
+	Value   string `json:"value"`
+	Primary bool   `json:"primary"`
 }
 
 //Token -
@@ -151,27 +162,14 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 }
 
 //ListUsers - Returns a map containing username as key and user guid as value
-func (m *DefaultUAAManager) ListUsers() (map[string]string, error) {
-	userIDMap := make(map[string]string)
+func (m *DefaultUAAManager) ListUsers() (map[string]*User, error) {
+	userIDMap := make(map[string]*User)
 	usersList, err := m.getUsers()
 	if err != nil {
 		return nil, err
 	}
 	for _, user := range usersList.Users {
-		userIDMap[strings.ToLower(user.UserName)] = user.ID
-	}
-	return userIDMap, nil
-}
-
-// UsersByID returns a map of Users keyed by ID.
-func (m *DefaultUAAManager) UsersByID() (userIDMap map[string]User, err error) {
-	userIDMap = make(map[string]User)
-	userList, err := m.getUsers()
-	if err != nil {
-		return nil, err
-	}
-	for _, user := range userList.Users {
-		userIDMap[strings.ToLower(user.UserName)] = user
+		userIDMap[strings.ToLower(user.UserName)] = &user
 	}
 	return userIDMap, nil
 }

@@ -12,6 +12,7 @@ import (
 	ldapfakes "github.com/pivotalservices/cf-mgmt/ldap/fakes"
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
+	"github.com/pivotalservices/cf-mgmt/uaa"
 	uaafakes "github.com/pivotalservices/cf-mgmt/uaa/fakes"
 	. "github.com/pivotalservices/cf-mgmt/user"
 	"github.com/pivotalservices/cf-mgmt/user/fakes"
@@ -207,8 +208,8 @@ var _ = Describe("given UserSpaces", func() {
 		Context("SyncInternalUsers", func() {
 			It("Should add internal user to role", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
-				uaaUsers["test"] = "test"
+				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers["test"] = &uaa.User{UserName: "test"}
 				updateUsersInput := UpdateUsersInput{
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
@@ -229,8 +230,8 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should not add existing internal user to role", func() {
 				roleUsers := make(map[string]string)
 				roleUsers["test"] = "test"
-				uaaUsers := make(map[string]string)
-				uaaUsers["test"] = "test"
+				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers["test"] = &uaa.User{UserName: "test"}
 				updateUsersInput := UpdateUsersInput{
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
@@ -245,7 +246,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should error when user doesn't exist in uaa", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
+				uaaUsers := make(map[string]*uaa.User)
 				updateUsersInput := UpdateUsersInput{
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
@@ -259,8 +260,8 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should return error", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
-				uaaUsers["test"] = "test"
+				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers["test"] = &uaa.User{UserName: "test"}
 				updateUsersInput := UpdateUsersInput{
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
@@ -282,8 +283,8 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should add saml user to role", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
-				uaaUsers["test@test.com"] = "test@test.com"
+				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers["test@test.com"] = &uaa.User{UserName: "test@test.com"}
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -304,8 +305,8 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should not add existing saml user to role", func() {
 				roleUsers := make(map[string]string)
 				roleUsers["test@test.com"] = "test@test.com"
-				uaaUsers := make(map[string]string)
-				uaaUsers["test@test.com"] = "test@test.com"
+				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers["test@test.com"] = &uaa.User{UserName: "test@test.com"}
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -320,7 +321,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should create external user when user doesn't exist in uaa", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
+				uaaUsers := make(map[string]*uaa.User)
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -340,7 +341,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should not error when create external user errors", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
+				uaaUsers := make(map[string]*uaa.User)
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -356,8 +357,8 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should return error", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
-				uaaUsers["test@test.com"] = "test@test.com"
+				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers["test@test.com"] = &uaa.User{UserName: "test@test.com"}
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -381,8 +382,8 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should add ldap user to role", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
-				uaaUsers["test_ldap"] = "test_ldap"
+				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers["test_ldap"] = &uaa.User{UserName: "test_ldap"}
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers:      []string{"test_ldap"},
 					LdapGroupNames: []string{},
@@ -415,8 +416,8 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should not add existing ldap user to role", func() {
 				roleUsers := make(map[string]string)
 				roleUsers["test_ldap"] = "test_ldap"
-				uaaUsers := make(map[string]string)
-				uaaUsers["test_ldap"] = "test_ldap"
+				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers["test_ldap"] = &uaa.User{UserName: "test_ldap"}
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
@@ -438,7 +439,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should create external user when user doesn't exist in uaa", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
+				uaaUsers := make(map[string]*uaa.User)
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
@@ -465,7 +466,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should not error when create external user errors", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
+				uaaUsers := make(map[string]*uaa.User)
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
@@ -488,8 +489,8 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should return error", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
-				uaaUsers["test_ldap"] = "test_ldap"
+				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers["test_ldap"] = &uaa.User{UserName: "test_ldap"}
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
@@ -513,8 +514,8 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should return error", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]string)
-				uaaUsers["test_ldap"] = "test_ldap"
+				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers["test_ldap"] = &uaa.User{UserName: "test_ldap"}
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
@@ -1102,8 +1103,8 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("UpdateSpaceUsers", func() {
 			It("Should succeed", func() {
-				userMap := make(map[string]string)
-				userMap["test-user"] = "test-user-guid"
+				userMap := make(map[string]*uaa.User)
+				userMap["test-user"] = &uaa.User{UserName: "test-user-guid"}
 				uaaFake.ListUsersReturns(userMap, nil)
 				fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
 					config.SpaceConfig{
@@ -1124,8 +1125,8 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("UpdateSpaceUsers", func() {
 			It("Should succeed", func() {
-				userMap := make(map[string]string)
-				userMap["test-user"] = "test-user-guid"
+				userMap := make(map[string]*uaa.User)
+				userMap["test-user"] = &uaa.User{UserName: "test-user-guid"}
 				uaaFake.ListUsersReturns(userMap, nil)
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
 					config.OrgConfig{

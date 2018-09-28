@@ -329,7 +329,7 @@ func (m *DefaultManager) UpdateSpaceUsers() error {
 	return nil
 }
 
-func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers map[string]string) error {
+func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers map[string]*uaa.User) error {
 	space, err := m.SpaceMgr.FindSpace(input.Org, input.Space)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error finding space for org %s, space %s", input.Org, input.Space))
@@ -409,7 +409,7 @@ func (m *DefaultManager) UpdateOrgUsers() error {
 	return nil
 }
 
-func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[string]string) error {
+func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[string]*uaa.User) error {
 	org, err := m.OrgMgr.FindOrg(input.Org)
 	if err != nil {
 		return err
@@ -471,7 +471,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[s
 }
 
 //SyncUsers
-func (m *DefaultManager) SyncUsers(uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncUsers(uaaUsers map[string]*uaa.User, updateUsersInput UpdateUsersInput) error {
 	roleUsers, err := updateUsersInput.ListUsers(updateUsersInput)
 	if err != nil {
 		return err
@@ -491,7 +491,7 @@ func (m *DefaultManager) SyncUsers(uaaUsers map[string]string, updateUsersInput 
 	return nil
 }
 
-func (m *DefaultManager) SyncLdapUsers(roleUsers, uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map[string]*uaa.User, updateUsersInput UpdateUsersInput) error {
 	config := m.LdapMgr.LdapConfig()
 	if config.Enabled {
 		ldapUsers, err := m.LdapMgr.GetLdapUsers(updateUsersInput.LdapGroupNames, updateUsersInput.LdapUsers)
@@ -511,7 +511,12 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers, uaaUsers map[string]string, up
 						lo.G.Errorf("Unable to create user %s with error %s", userID, err.Error())
 						continue
 					} else {
-						uaaUsers[userID] = userID
+						uaaUsers[userID] = &uaa.User{
+							UserName:   userID,
+							ExternalID: userToUse.UserDN,
+							Origin:     config.Origin,
+							Emails:     []uaa.UserEmail{uaa.UserEmail{Value: userToUse.Email, Primary: true}},
+						}
 					}
 				}
 				if err := updateUsersInput.AddUser(updateUsersInput, userID); err != nil {
@@ -527,7 +532,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers, uaaUsers map[string]string, up
 	return nil
 }
 
-func (m *DefaultManager) SyncInternalUsers(roleUsers, uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncInternalUsers(roleUsers map[string]string, uaaUsers map[string]*uaa.User, updateUsersInput UpdateUsersInput) error {
 	for _, userID := range updateUsersInput.Users {
 		lowerUserID := strings.ToLower(userID)
 		if _, userExists := uaaUsers[lowerUserID]; !userExists {
@@ -544,7 +549,7 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers, uaaUsers map[string]string
 	return nil
 }
 
-func (m *DefaultManager) SyncSamlUsers(roleUsers, uaaUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncSamlUsers(roleUsers map[string]string, uaaUsers map[string]*uaa.User, updateUsersInput UpdateUsersInput) error {
 	config := m.LdapMgr.LdapConfig()
 	for _, userEmail := range updateUsersInput.SamlUsers {
 		lowerUserEmail := strings.ToLower(userEmail)
@@ -554,7 +559,12 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers, uaaUsers map[string]string, up
 				lo.G.Error("Unable to create user", userEmail)
 				continue
 			} else {
-				uaaUsers[userEmail] = userEmail
+				uaaUsers[userEmail] = &uaa.User{
+					UserName:   userEmail,
+					Emails:     []uaa.UserEmail{uaa.UserEmail{Value: userEmail, Primary: true}},
+					ExternalID: userEmail,
+					Origin:     config.Origin,
+				}
 			}
 		}
 		if _, ok := roleUsers[lowerUserEmail]; !ok {

@@ -8,18 +8,11 @@ import (
 )
 
 type FakeManager struct {
-	ListUsersStub        func() (map[string]string, error)
+	ListUsersStub        func() (map[string]*uaa.User, error)
 	listUsersMutex       sync.RWMutex
 	listUsersArgsForCall []struct{}
 	listUsersReturns     struct {
-		result1 map[string]string
-		result2 error
-	}
-	UsersByIDStub        func() (map[string]uaa.User, error)
-	usersByIDMutex       sync.RWMutex
-	usersByIDArgsForCall []struct{}
-	usersByIDReturns     struct {
-		result1 map[string]uaa.User
+		result1 map[string]*uaa.User
 		result2 error
 	}
 	CreateExternalUserStub        func(userName, userEmail, externalID, origin string) (err error)
@@ -37,7 +30,7 @@ type FakeManager struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeManager) ListUsers() (map[string]string, error) {
+func (fake *FakeManager) ListUsers() (map[string]*uaa.User, error) {
 	fake.listUsersMutex.Lock()
 	fake.listUsersArgsForCall = append(fake.listUsersArgsForCall, struct{}{})
 	fake.recordInvocation("ListUsers", []interface{}{})
@@ -55,36 +48,10 @@ func (fake *FakeManager) ListUsersCallCount() int {
 	return len(fake.listUsersArgsForCall)
 }
 
-func (fake *FakeManager) ListUsersReturns(result1 map[string]string, result2 error) {
+func (fake *FakeManager) ListUsersReturns(result1 map[string]*uaa.User, result2 error) {
 	fake.ListUsersStub = nil
 	fake.listUsersReturns = struct {
-		result1 map[string]string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) UsersByID() (map[string]uaa.User, error) {
-	fake.usersByIDMutex.Lock()
-	fake.usersByIDArgsForCall = append(fake.usersByIDArgsForCall, struct{}{})
-	fake.recordInvocation("UsersByID", []interface{}{})
-	fake.usersByIDMutex.Unlock()
-	if fake.UsersByIDStub != nil {
-		return fake.UsersByIDStub()
-	} else {
-		return fake.usersByIDReturns.result1, fake.usersByIDReturns.result2
-	}
-}
-
-func (fake *FakeManager) UsersByIDCallCount() int {
-	fake.usersByIDMutex.RLock()
-	defer fake.usersByIDMutex.RUnlock()
-	return len(fake.usersByIDArgsForCall)
-}
-
-func (fake *FakeManager) UsersByIDReturns(result1 map[string]uaa.User, result2 error) {
-	fake.UsersByIDStub = nil
-	fake.usersByIDReturns = struct {
-		result1 map[string]uaa.User
+		result1 map[string]*uaa.User
 		result2 error
 	}{result1, result2}
 }
@@ -130,8 +97,6 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.listUsersMutex.RLock()
 	defer fake.listUsersMutex.RUnlock()
-	fake.usersByIDMutex.RLock()
-	defer fake.usersByIDMutex.RUnlock()
 	fake.createExternalUserMutex.RLock()
 	defer fake.createExternalUserMutex.RUnlock()
 	return fake.invocations

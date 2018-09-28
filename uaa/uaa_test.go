@@ -153,6 +153,8 @@ var _ = Describe("given uaa manager", func() {
 			Ω(len(users)).Should(Equal(8))
 			Ω(keys).Should(ConsistOf("foo4", "admin", "user", "cwashburn", "foo", "foo1", "foo2", "foo3"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(3))
+
+			//	Ω(users).Should(Equal(8))
 		})
 		It("should return an error", func() {
 			server.AppendHandlers(

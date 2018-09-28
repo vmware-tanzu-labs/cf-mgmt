@@ -52,7 +52,7 @@ type DefaultImportManager struct {
 //Entries part of excludedOrgs and excludedSpaces are not included in the import
 func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, excludedSpaces map[string]string) error {
 	//Get all the users from the foundation
-	userIDToUserMap, err := im.UAAMgr.UsersByID()
+	userIDToUserMap, err := im.UAAMgr.ListUsers()
 	if err != nil {
 		lo.G.Error("Unable to retrieve users")
 		return err
@@ -276,55 +276,55 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	return cc.QuotaEntity{}
 }*/
 
-func (im *DefaultImportManager) addOrgUsers(orgConfig *config.OrgConfig, userIDToUserMap map[string]uaa.User, orgGUID string) {
+func (im *DefaultImportManager) addOrgUsers(orgConfig *config.OrgConfig, userIDToUserMap map[string]*uaa.User, orgGUID string) {
 	im.addOrgManagers(orgConfig, userIDToUserMap, orgGUID)
 	im.addBillingManagers(orgConfig, userIDToUserMap, orgGUID)
 	im.addOrgAuditors(orgConfig, userIDToUserMap, orgGUID)
 }
 
-func (im *DefaultImportManager) addSpaceUsers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
+func (im *DefaultImportManager) addSpaceUsers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]*uaa.User, spaceGUID string) {
 	im.addSpaceDevelopers(spaceConfig, userIDToUserMap, spaceGUID)
 	im.addSpaceManagers(spaceConfig, userIDToUserMap, spaceGUID)
 	im.addSpaceAuditors(spaceConfig, userIDToUserMap, spaceGUID)
 }
 
-func (im *DefaultImportManager) addOrgManagers(orgConfig *config.OrgConfig, userIDToUserMap map[string]uaa.User, orgGUID string) {
+func (im *DefaultImportManager) addOrgManagers(orgConfig *config.OrgConfig, userIDToUserMap map[string]*uaa.User, orgGUID string) {
 	orgMgrs, _ := im.UserManager.ListOrgManagers(orgGUID)
 	lo.G.Debugf("Found %d Org Managers for Org: %s", len(orgMgrs), orgConfig.Org)
 	doAddUsers(orgMgrs, &orgConfig.Manager.Users, &orgConfig.Manager.LDAPUsers, &orgConfig.Manager.SamlUsers, userIDToUserMap)
 }
 
-func (im *DefaultImportManager) addBillingManagers(orgConfig *config.OrgConfig, userIDToUserMap map[string]uaa.User, orgGUID string) {
+func (im *DefaultImportManager) addBillingManagers(orgConfig *config.OrgConfig, userIDToUserMap map[string]*uaa.User, orgGUID string) {
 	orgBillingMgrs, _ := im.UserManager.ListOrgBillingManagers(orgGUID)
 	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs), orgConfig.Org)
 	doAddUsers(orgBillingMgrs, &orgConfig.BillingManager.Users, &orgConfig.BillingManager.LDAPUsers, &orgConfig.BillingManager.SamlUsers, userIDToUserMap)
 }
 
-func (im *DefaultImportManager) addOrgAuditors(orgConfig *config.OrgConfig, userIDToUserMap map[string]uaa.User, orgGUID string) {
+func (im *DefaultImportManager) addOrgAuditors(orgConfig *config.OrgConfig, userIDToUserMap map[string]*uaa.User, orgGUID string) {
 	orgAuditors, _ := im.UserManager.ListOrgAuditors(orgGUID)
 	lo.G.Debugf("Found %d Org Auditors for Org: %s", len(orgAuditors), orgConfig.Org)
 	doAddUsers(orgAuditors, &orgConfig.Auditor.Users, &orgConfig.Auditor.LDAPUsers, &orgConfig.Auditor.SamlUsers, userIDToUserMap)
 }
 
-func (im *DefaultImportManager) addSpaceManagers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
+func (im *DefaultImportManager) addSpaceManagers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]*uaa.User, spaceGUID string) {
 	spaceMgrs, _ := im.UserManager.ListSpaceManagers(spaceGUID)
 	lo.G.Debugf("Found %d Space Managers for Org: %s and  Space:  %s", len(spaceMgrs), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceMgrs, &spaceConfig.Manager.Users, &spaceConfig.Manager.LDAPUsers, &spaceConfig.Manager.SamlUsers, userIDToUserMap)
 }
 
-func (im *DefaultImportManager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
+func (im *DefaultImportManager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]*uaa.User, spaceGUID string) {
 	spaceDevs, _ := im.UserManager.ListSpaceDevelopers(spaceGUID)
 	lo.G.Debugf("Found %d Space Developers for Org: %s and  Space:  %s", len(spaceDevs), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceDevs, &spaceConfig.Developer.Users, &spaceConfig.Developer.LDAPUsers, &spaceConfig.Developer.SamlUsers, userIDToUserMap)
 }
 
-func (im *DefaultImportManager) addSpaceAuditors(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]uaa.User, spaceGUID string) {
+func (im *DefaultImportManager) addSpaceAuditors(spaceConfig *config.SpaceConfig, userIDToUserMap map[string]*uaa.User, spaceGUID string) {
 	spaceAuditors, _ := im.UserManager.ListSpaceAuditors(spaceGUID)
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceAuditors, &spaceConfig.Auditor.Users, &spaceConfig.Auditor.LDAPUsers, &spaceConfig.Auditor.SamlUsers, userIDToUserMap)
 }
 
-func doAddUsers(cfUsers map[string]string, uaaUsers *[]string, ldapUsers *[]string, samlUsers *[]string, userIDToUserMap map[string]uaa.User) {
+func doAddUsers(cfUsers map[string]string, uaaUsers *[]string, ldapUsers *[]string, samlUsers *[]string, userIDToUserMap map[string]*uaa.User) {
 	for cfUser := range cfUsers {
 		if usr, ok := userIDToUserMap[cfUser]; ok {
 			if usr.Origin == "uaa" {

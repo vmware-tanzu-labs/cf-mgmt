@@ -14,8 +14,8 @@
       },
       "emails": [
         {
-          "value": "admin",
-          "primary": false
+          "value": "admin@foo.com",
+          "primary": true
         }
       ],
       "groups": [
@@ -178,8 +178,8 @@
       },
       "emails": [
         {
-          "value": "user",
-          "primary": false
+          "value": "user@foo.com",
+          "primary": true
         }
       ],
       "groups": [
@@ -285,8 +285,8 @@
       },
       "emails": [
         {
-          "value": "cwashburn",
-          "primary": false
+          "value": "cwashburn@foo.com",
+          "primary": true
         }
       ],
       "groups": [

@@ -14,8 +14,8 @@
       },
       "emails": [
         {
-          "value": "foo",
-          "primary": false
+          "value": "foo@foo.com",
+          "primary": true
         }
       ],
       "groups": [
@@ -121,8 +121,8 @@
       },
       "emails": [
         {
-          "value": "foo1",
-          "primary": false
+          "value": "foo1@foo.com",
+          "primary": true
         }
       ],
       "groups": [
@@ -228,8 +228,8 @@
       },
       "emails": [
         {
-          "value": "foo2",
-          "primary": false
+          "value": "foo2@foo.com",
+          "primary": true
         }
       ],
       "groups": [
