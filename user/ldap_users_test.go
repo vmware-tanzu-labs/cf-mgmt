@@ -25,7 +25,6 @@ var _ = Describe("given UserSpaces", func() {
 		ldapFake    *ldapfakes.FakeManager
 		uaaFake     *uaafakes.FakeManager
 		fakeReader  *configfakes.FakeReader
-		userList    []cfclient.User
 		spaceFake   *spacefakes.FakeManager
 		orgFake     *orgfakes.FakeManager
 	)
@@ -48,16 +47,6 @@ var _ = Describe("given UserSpaces", func() {
 				OrgMgr:     orgFake,
 				Peek:       false,
 				LdapConfig: &config.LdapConfig{Origin: "ldap"}}
-			userList = []cfclient.User{
-				cfclient.User{
-					Username: "hello",
-					Guid:     "world",
-				},
-				cfclient.User{
-					Username: "hello2",
-					Guid:     "world2",
-				},
-			}
 		})
 		Context("SyncLdapUsers", func() {
 			BeforeEach(func() {
