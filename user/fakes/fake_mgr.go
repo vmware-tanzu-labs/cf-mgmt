@@ -16,6 +16,12 @@ type FakeManager struct {
 	initializeLdapReturns struct {
 		result1 error
 	}
+	DeinitializeLdapStub        func() error
+	deinitializeLdapMutex       sync.RWMutex
+	deinitializeLdapArgsForCall []struct{}
+	deinitializeLdapReturns     struct {
+		result1 error
+	}
 	UpdateSpaceUsersStub        func() error
 	updateSpaceUsersMutex       sync.RWMutex
 	updateSpaceUsersArgsForCall []struct{}
@@ -115,6 +121,31 @@ func (fake *FakeManager) InitializeLdapArgsForCall(i int) string {
 func (fake *FakeManager) InitializeLdapReturns(result1 error) {
 	fake.InitializeLdapStub = nil
 	fake.initializeLdapReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) DeinitializeLdap() error {
+	fake.deinitializeLdapMutex.Lock()
+	fake.deinitializeLdapArgsForCall = append(fake.deinitializeLdapArgsForCall, struct{}{})
+	fake.recordInvocation("DeinitializeLdap", []interface{}{})
+	fake.deinitializeLdapMutex.Unlock()
+	if fake.DeinitializeLdapStub != nil {
+		return fake.DeinitializeLdapStub()
+	} else {
+		return fake.deinitializeLdapReturns.result1
+	}
+}
+
+func (fake *FakeManager) DeinitializeLdapCallCount() int {
+	fake.deinitializeLdapMutex.RLock()
+	defer fake.deinitializeLdapMutex.RUnlock()
+	return len(fake.deinitializeLdapArgsForCall)
+}
+
+func (fake *FakeManager) DeinitializeLdapReturns(result1 error) {
+	fake.DeinitializeLdapStub = nil
+	fake.deinitializeLdapReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -378,6 +409,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.initializeLdapMutex.RLock()
 	defer fake.initializeLdapMutex.RUnlock()
+	fake.deinitializeLdapMutex.RLock()
+	defer fake.deinitializeLdapMutex.RUnlock()
 	fake.updateSpaceUsersMutex.RLock()
 	defer fake.updateSpaceUsersMutex.RUnlock()
 	fake.updateOrgUsersMutex.RLock()

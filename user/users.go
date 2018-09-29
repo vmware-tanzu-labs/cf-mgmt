@@ -30,25 +30,18 @@ func NewManager(
 		UAAMgr:   uaaMgr,
 		Cfg:      cfg,
 	}
+
 }
 
 type DefaultManager struct {
-	Client   CFClient
-	Cfg      config.Reader
-	SpaceMgr space.Manager
-	OrgMgr   organization.Manager
-	LdapMgr  ldap.Manager
-	UAAMgr   uaa.Manager
-	Peek     bool
-}
-
-func (m *DefaultManager) InitializeLdap(ldapBindPassword string) error {
-	ldapMgr, err := ldap.NewManager(m.Cfg, ldapBindPassword)
-	if err != nil {
-		return err
-	}
-	m.LdapMgr = ldapMgr
-	return nil
+	Client     CFClient
+	Cfg        config.Reader
+	SpaceMgr   space.Manager
+	OrgMgr     organization.Manager
+	UAAMgr     uaa.Manager
+	Peek       bool
+	LdapMgr    ldap.Manager
+	LdapConfig *config.LdapConfig
 }
 
 func (m *DefaultManager) RemoveSpaceAuditor(input UpdateUsersInput, userName string) error {
@@ -476,6 +469,7 @@ func (m *DefaultManager) SyncUsers(uaaUsers map[string]*uaa.User, updateUsersInp
 	if err != nil {
 		return err
 	}
+
 	if err := m.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
 		return err
 	}
@@ -487,47 +481,6 @@ func (m *DefaultManager) SyncUsers(uaaUsers map[string]*uaa.User, updateUsersInp
 	}
 	if err := m.RemoveUsers(roleUsers, updateUsersInput); err != nil {
 		return err
-	}
-	return nil
-}
-
-func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map[string]*uaa.User, updateUsersInput UpdateUsersInput) error {
-	config := m.LdapMgr.LdapConfig()
-	if config.Enabled {
-		ldapUsers, err := m.LdapMgr.GetLdapUsers(updateUsersInput.LdapGroupNames, updateUsersInput.LdapUsers)
-		if err != nil {
-			return err
-		}
-		lo.G.Debugf("LdapUsers: %+v", ldapUsers)
-		for _, inputUser := range ldapUsers {
-			userToUse := m.UpdateUserInfo(inputUser)
-			config := m.LdapMgr.LdapConfig()
-			userID := userToUse.UserID
-			if _, ok := roleUsers[userID]; !ok {
-				lo.G.Debugf("User[%s] not found in: %v", userID, roleUsers)
-				if _, userExists := uaaUsers[userID]; !userExists {
-					lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
-					if err := m.UAAMgr.CreateExternalUser(userID, userToUse.Email, userToUse.UserDN, config.Origin); err != nil {
-						lo.G.Errorf("Unable to create user %s with error %s", userID, err.Error())
-						continue
-					} else {
-						uaaUsers[userID] = &uaa.User{
-							UserName:   userID,
-							ExternalID: userToUse.UserDN,
-							Origin:     config.Origin,
-							Emails:     []uaa.UserEmail{uaa.UserEmail{Value: userToUse.Email, Primary: true}},
-						}
-					}
-				}
-				if err := updateUsersInput.AddUser(updateUsersInput, userID); err != nil {
-					return err
-				}
-			} else {
-				delete(roleUsers, userID)
-			}
-		}
-	} else {
-		lo.G.Debug("Skipping LDAP sync as LDAP is disabled (enable by updating config/ldap.yml)")
 	}
 	return nil
 }
@@ -550,12 +503,11 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers map[string]string, uaaUsers
 }
 
 func (m *DefaultManager) SyncSamlUsers(roleUsers map[string]string, uaaUsers map[string]*uaa.User, updateUsersInput UpdateUsersInput) error {
-	config := m.LdapMgr.LdapConfig()
 	for _, userEmail := range updateUsersInput.SamlUsers {
 		lowerUserEmail := strings.ToLower(userEmail)
 		if _, userExists := uaaUsers[lowerUserEmail]; !userExists {
 			lo.G.Debug("User", userEmail, "doesn't exist in cloud foundry, so creating user")
-			if err := m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, config.Origin); err != nil {
+			if err := m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, m.LdapConfig.Origin); err != nil {
 				lo.G.Error("Unable to create user", userEmail)
 				continue
 			} else {
@@ -563,7 +515,7 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers map[string]string, uaaUsers map
 					UserName:   userEmail,
 					Emails:     []uaa.UserEmail{uaa.UserEmail{Value: userEmail, Primary: true}},
 					ExternalID: userEmail,
-					Origin:     config.Origin,
+					Origin:     m.LdapConfig.Origin,
 				}
 			}
 		}
@@ -595,23 +547,25 @@ func (m *DefaultManager) RemoveUsers(roleUsers map[string]string, updateUsersInp
 	return nil
 }
 
-func (m *DefaultManager) UpdateUserInfo(user ldap.User) ldap.User {
-	config := m.LdapMgr.LdapConfig()
-	userID := strings.ToLower(user.UserID)
-	externalID := user.UserDN
-	email := user.Email
-	if config.Origin != "ldap" {
-		userID = strings.ToLower(user.Email)
-		externalID = user.Email
-	} else {
-		if email == "" {
-			email = fmt.Sprintf("%s@user.from.ldap.cf", userID)
+func (m *DefaultManager) InitializeLdap(ldapBindPassword string) error {
+	ldapConfig, err := m.Cfg.LdapConfig(ldapBindPassword)
+	if err != nil {
+		return err
+	}
+	m.LdapConfig = ldapConfig
+	if m.LdapConfig.Enabled {
+		ldapMgr, err := ldap.NewManager(ldapConfig)
+		if err != nil {
+			return err
 		}
+		m.LdapMgr = ldapMgr
 	}
+	return nil
+}
 
-	return ldap.User{
-		UserID: userID,
-		UserDN: externalID,
-		Email:  email,
+func (m *DefaultManager) DeinitializeLdap() error {
+	if m.LdapMgr != nil {
+		m.LdapMgr.Close()
 	}
+	return nil
 }

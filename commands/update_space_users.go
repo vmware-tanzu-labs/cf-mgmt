@@ -12,6 +12,7 @@ func (c *UpdateSpaceUsersCommand) Execute([]string) error {
 		if err := cfMgmt.UserManager.InitializeLdap(c.LdapPassword); err != nil {
 			return err
 		}
+		defer cfMgmt.UserManager.DeinitializeLdap()
 		return cfMgmt.UserManager.UpdateSpaceUsers()
 	}
 	return nil

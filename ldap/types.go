@@ -1,23 +1,21 @@
 package ldap
 
 import (
-	l "github.com/go-ldap/ldap"
 	"github.com/pivotalservices/cf-mgmt/config"
 )
 
 //Manager -
 type Manager interface {
-	GetUserIDs(groupName string) (users []User, err error)
-	GetUser(userID string) (*User, error)
-	GetLdapUser(userDN string) (*User, error)
-	LdapConnection() (*l.Conn, error)
-	GetLdapUsers(groupNames []string, userList []string) ([]User, error)
-	LdapConfig() *config.LdapConfig
+	GetUserDNs(groupName string) ([]string, error)
+	GetUserByID(userID string) (*User, error)
+	GetUserByDN(userDN string) (*User, error)
+	Close()
 }
 
 //DefaultManager -
 type DefaultManager struct {
-	Config *config.LdapConfig
+	Config     *config.LdapConfig
+	Connection Connection
 }
 
 //User -

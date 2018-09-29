@@ -20,6 +20,7 @@ type UpdateUsersInput struct {
 // Manager - interface type encapsulating Update space users behavior
 type Manager interface {
 	InitializeLdap(ldapBindPassword string) error
+	DeinitializeLdap() error
 	UpdateSpaceUsers() error
 	UpdateOrgUsers() error
 	ListSpaceAuditors(spaceGUID string) (map[string]string, error)

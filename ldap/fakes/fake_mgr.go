@@ -4,279 +4,173 @@ package fakes
 import (
 	"sync"
 
-	ldapgo_ldap "github.com/go-ldap/ldap"
-	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 )
 
 type FakeManager struct {
-	GetUserIDsStub        func(groupName string) (users []ldap.User, err error)
-	getUserIDsMutex       sync.RWMutex
-	getUserIDsArgsForCall []struct {
+	GetUserDNsStub        func(groupName string) ([]string, error)
+	getUserDNsMutex       sync.RWMutex
+	getUserDNsArgsForCall []struct {
 		groupName string
 	}
-	getUserIDsReturns struct {
-		result1 []ldap.User
+	getUserDNsReturns struct {
+		result1 []string
 		result2 error
 	}
-	GetUserStub        func(userID string) (*ldap.User, error)
-	getUserMutex       sync.RWMutex
-	getUserArgsForCall []struct {
+	GetUserByIDStub        func(userID string) (*ldap.User, error)
+	getUserByIDMutex       sync.RWMutex
+	getUserByIDArgsForCall []struct {
 		userID string
 	}
-	getUserReturns struct {
+	getUserByIDReturns struct {
 		result1 *ldap.User
 		result2 error
 	}
-	GetLdapUserStub        func(userDN string) (*ldap.User, error)
-	getLdapUserMutex       sync.RWMutex
-	getLdapUserArgsForCall []struct {
+	GetUserByDNStub        func(userDN string) (*ldap.User, error)
+	getUserByDNMutex       sync.RWMutex
+	getUserByDNArgsForCall []struct {
 		userDN string
 	}
-	getLdapUserReturns struct {
+	getUserByDNReturns struct {
 		result1 *ldap.User
 		result2 error
 	}
-	LdapConnectionStub        func() (*ldapgo_ldap.Conn, error)
-	ldapConnectionMutex       sync.RWMutex
-	ldapConnectionArgsForCall []struct{}
-	ldapConnectionReturns     struct {
-		result1 *ldapgo_ldap.Conn
-		result2 error
-	}
-	GetLdapUsersStub        func(groupNames []string, userList []string) ([]ldap.User, error)
-	getLdapUsersMutex       sync.RWMutex
-	getLdapUsersArgsForCall []struct {
-		groupNames []string
-		userList   []string
-	}
-	getLdapUsersReturns struct {
-		result1 []ldap.User
-		result2 error
-	}
-	LdapConfigStub        func() *config.LdapConfig
-	ldapConfigMutex       sync.RWMutex
-	ldapConfigArgsForCall []struct{}
-	ldapConfigReturns     struct {
-		result1 *config.LdapConfig
-	}
+	CloseStub        func()
+	closeMutex       sync.RWMutex
+	closeArgsForCall []struct{}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeManager) GetUserIDs(groupName string) (users []ldap.User, err error) {
-	fake.getUserIDsMutex.Lock()
-	fake.getUserIDsArgsForCall = append(fake.getUserIDsArgsForCall, struct {
+func (fake *FakeManager) GetUserDNs(groupName string) ([]string, error) {
+	fake.getUserDNsMutex.Lock()
+	fake.getUserDNsArgsForCall = append(fake.getUserDNsArgsForCall, struct {
 		groupName string
 	}{groupName})
-	fake.recordInvocation("GetUserIDs", []interface{}{groupName})
-	fake.getUserIDsMutex.Unlock()
-	if fake.GetUserIDsStub != nil {
-		return fake.GetUserIDsStub(groupName)
+	fake.recordInvocation("GetUserDNs", []interface{}{groupName})
+	fake.getUserDNsMutex.Unlock()
+	if fake.GetUserDNsStub != nil {
+		return fake.GetUserDNsStub(groupName)
 	} else {
-		return fake.getUserIDsReturns.result1, fake.getUserIDsReturns.result2
+		return fake.getUserDNsReturns.result1, fake.getUserDNsReturns.result2
 	}
 }
 
-func (fake *FakeManager) GetUserIDsCallCount() int {
-	fake.getUserIDsMutex.RLock()
-	defer fake.getUserIDsMutex.RUnlock()
-	return len(fake.getUserIDsArgsForCall)
+func (fake *FakeManager) GetUserDNsCallCount() int {
+	fake.getUserDNsMutex.RLock()
+	defer fake.getUserDNsMutex.RUnlock()
+	return len(fake.getUserDNsArgsForCall)
 }
 
-func (fake *FakeManager) GetUserIDsArgsForCall(i int) string {
-	fake.getUserIDsMutex.RLock()
-	defer fake.getUserIDsMutex.RUnlock()
-	return fake.getUserIDsArgsForCall[i].groupName
+func (fake *FakeManager) GetUserDNsArgsForCall(i int) string {
+	fake.getUserDNsMutex.RLock()
+	defer fake.getUserDNsMutex.RUnlock()
+	return fake.getUserDNsArgsForCall[i].groupName
 }
 
-func (fake *FakeManager) GetUserIDsReturns(result1 []ldap.User, result2 error) {
-	fake.GetUserIDsStub = nil
-	fake.getUserIDsReturns = struct {
-		result1 []ldap.User
+func (fake *FakeManager) GetUserDNsReturns(result1 []string, result2 error) {
+	fake.GetUserDNsStub = nil
+	fake.getUserDNsReturns = struct {
+		result1 []string
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) GetUser(userID string) (*ldap.User, error) {
-	fake.getUserMutex.Lock()
-	fake.getUserArgsForCall = append(fake.getUserArgsForCall, struct {
+func (fake *FakeManager) GetUserByID(userID string) (*ldap.User, error) {
+	fake.getUserByIDMutex.Lock()
+	fake.getUserByIDArgsForCall = append(fake.getUserByIDArgsForCall, struct {
 		userID string
 	}{userID})
-	fake.recordInvocation("GetUser", []interface{}{userID})
-	fake.getUserMutex.Unlock()
-	if fake.GetUserStub != nil {
-		return fake.GetUserStub(userID)
+	fake.recordInvocation("GetUserByID", []interface{}{userID})
+	fake.getUserByIDMutex.Unlock()
+	if fake.GetUserByIDStub != nil {
+		return fake.GetUserByIDStub(userID)
 	} else {
-		return fake.getUserReturns.result1, fake.getUserReturns.result2
+		return fake.getUserByIDReturns.result1, fake.getUserByIDReturns.result2
 	}
 }
 
-func (fake *FakeManager) GetUserCallCount() int {
-	fake.getUserMutex.RLock()
-	defer fake.getUserMutex.RUnlock()
-	return len(fake.getUserArgsForCall)
+func (fake *FakeManager) GetUserByIDCallCount() int {
+	fake.getUserByIDMutex.RLock()
+	defer fake.getUserByIDMutex.RUnlock()
+	return len(fake.getUserByIDArgsForCall)
 }
 
-func (fake *FakeManager) GetUserArgsForCall(i int) string {
-	fake.getUserMutex.RLock()
-	defer fake.getUserMutex.RUnlock()
-	return fake.getUserArgsForCall[i].userID
+func (fake *FakeManager) GetUserByIDArgsForCall(i int) string {
+	fake.getUserByIDMutex.RLock()
+	defer fake.getUserByIDMutex.RUnlock()
+	return fake.getUserByIDArgsForCall[i].userID
 }
 
-func (fake *FakeManager) GetUserReturns(result1 *ldap.User, result2 error) {
-	fake.GetUserStub = nil
-	fake.getUserReturns = struct {
+func (fake *FakeManager) GetUserByIDReturns(result1 *ldap.User, result2 error) {
+	fake.GetUserByIDStub = nil
+	fake.getUserByIDReturns = struct {
 		result1 *ldap.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) GetLdapUser(userDN string) (*ldap.User, error) {
-	fake.getLdapUserMutex.Lock()
-	fake.getLdapUserArgsForCall = append(fake.getLdapUserArgsForCall, struct {
+func (fake *FakeManager) GetUserByDN(userDN string) (*ldap.User, error) {
+	fake.getUserByDNMutex.Lock()
+	fake.getUserByDNArgsForCall = append(fake.getUserByDNArgsForCall, struct {
 		userDN string
 	}{userDN})
-	fake.recordInvocation("GetLdapUser", []interface{}{userDN})
-	fake.getLdapUserMutex.Unlock()
-	if fake.GetLdapUserStub != nil {
-		return fake.GetLdapUserStub(userDN)
+	fake.recordInvocation("GetUserByDN", []interface{}{userDN})
+	fake.getUserByDNMutex.Unlock()
+	if fake.GetUserByDNStub != nil {
+		return fake.GetUserByDNStub(userDN)
 	} else {
-		return fake.getLdapUserReturns.result1, fake.getLdapUserReturns.result2
+		return fake.getUserByDNReturns.result1, fake.getUserByDNReturns.result2
 	}
 }
 
-func (fake *FakeManager) GetLdapUserCallCount() int {
-	fake.getLdapUserMutex.RLock()
-	defer fake.getLdapUserMutex.RUnlock()
-	return len(fake.getLdapUserArgsForCall)
+func (fake *FakeManager) GetUserByDNCallCount() int {
+	fake.getUserByDNMutex.RLock()
+	defer fake.getUserByDNMutex.RUnlock()
+	return len(fake.getUserByDNArgsForCall)
 }
 
-func (fake *FakeManager) GetLdapUserArgsForCall(i int) string {
-	fake.getLdapUserMutex.RLock()
-	defer fake.getLdapUserMutex.RUnlock()
-	return fake.getLdapUserArgsForCall[i].userDN
+func (fake *FakeManager) GetUserByDNArgsForCall(i int) string {
+	fake.getUserByDNMutex.RLock()
+	defer fake.getUserByDNMutex.RUnlock()
+	return fake.getUserByDNArgsForCall[i].userDN
 }
 
-func (fake *FakeManager) GetLdapUserReturns(result1 *ldap.User, result2 error) {
-	fake.GetLdapUserStub = nil
-	fake.getLdapUserReturns = struct {
+func (fake *FakeManager) GetUserByDNReturns(result1 *ldap.User, result2 error) {
+	fake.GetUserByDNStub = nil
+	fake.getUserByDNReturns = struct {
 		result1 *ldap.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) LdapConnection() (*ldapgo_ldap.Conn, error) {
-	fake.ldapConnectionMutex.Lock()
-	fake.ldapConnectionArgsForCall = append(fake.ldapConnectionArgsForCall, struct{}{})
-	fake.recordInvocation("LdapConnection", []interface{}{})
-	fake.ldapConnectionMutex.Unlock()
-	if fake.LdapConnectionStub != nil {
-		return fake.LdapConnectionStub()
-	} else {
-		return fake.ldapConnectionReturns.result1, fake.ldapConnectionReturns.result2
+func (fake *FakeManager) Close() {
+	fake.closeMutex.Lock()
+	fake.closeArgsForCall = append(fake.closeArgsForCall, struct{}{})
+	fake.recordInvocation("Close", []interface{}{})
+	fake.closeMutex.Unlock()
+	if fake.CloseStub != nil {
+		fake.CloseStub()
 	}
 }
 
-func (fake *FakeManager) LdapConnectionCallCount() int {
-	fake.ldapConnectionMutex.RLock()
-	defer fake.ldapConnectionMutex.RUnlock()
-	return len(fake.ldapConnectionArgsForCall)
-}
-
-func (fake *FakeManager) LdapConnectionReturns(result1 *ldapgo_ldap.Conn, result2 error) {
-	fake.LdapConnectionStub = nil
-	fake.ldapConnectionReturns = struct {
-		result1 *ldapgo_ldap.Conn
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) GetLdapUsers(groupNames []string, userList []string) ([]ldap.User, error) {
-	var groupNamesCopy []string
-	if groupNames != nil {
-		groupNamesCopy = make([]string, len(groupNames))
-		copy(groupNamesCopy, groupNames)
-	}
-	var userListCopy []string
-	if userList != nil {
-		userListCopy = make([]string, len(userList))
-		copy(userListCopy, userList)
-	}
-	fake.getLdapUsersMutex.Lock()
-	fake.getLdapUsersArgsForCall = append(fake.getLdapUsersArgsForCall, struct {
-		groupNames []string
-		userList   []string
-	}{groupNamesCopy, userListCopy})
-	fake.recordInvocation("GetLdapUsers", []interface{}{groupNamesCopy, userListCopy})
-	fake.getLdapUsersMutex.Unlock()
-	if fake.GetLdapUsersStub != nil {
-		return fake.GetLdapUsersStub(groupNames, userList)
-	} else {
-		return fake.getLdapUsersReturns.result1, fake.getLdapUsersReturns.result2
-	}
-}
-
-func (fake *FakeManager) GetLdapUsersCallCount() int {
-	fake.getLdapUsersMutex.RLock()
-	defer fake.getLdapUsersMutex.RUnlock()
-	return len(fake.getLdapUsersArgsForCall)
-}
-
-func (fake *FakeManager) GetLdapUsersArgsForCall(i int) ([]string, []string) {
-	fake.getLdapUsersMutex.RLock()
-	defer fake.getLdapUsersMutex.RUnlock()
-	return fake.getLdapUsersArgsForCall[i].groupNames, fake.getLdapUsersArgsForCall[i].userList
-}
-
-func (fake *FakeManager) GetLdapUsersReturns(result1 []ldap.User, result2 error) {
-	fake.GetLdapUsersStub = nil
-	fake.getLdapUsersReturns = struct {
-		result1 []ldap.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) LdapConfig() *config.LdapConfig {
-	fake.ldapConfigMutex.Lock()
-	fake.ldapConfigArgsForCall = append(fake.ldapConfigArgsForCall, struct{}{})
-	fake.recordInvocation("LdapConfig", []interface{}{})
-	fake.ldapConfigMutex.Unlock()
-	if fake.LdapConfigStub != nil {
-		return fake.LdapConfigStub()
-	} else {
-		return fake.ldapConfigReturns.result1
-	}
-}
-
-func (fake *FakeManager) LdapConfigCallCount() int {
-	fake.ldapConfigMutex.RLock()
-	defer fake.ldapConfigMutex.RUnlock()
-	return len(fake.ldapConfigArgsForCall)
-}
-
-func (fake *FakeManager) LdapConfigReturns(result1 *config.LdapConfig) {
-	fake.LdapConfigStub = nil
-	fake.ldapConfigReturns = struct {
-		result1 *config.LdapConfig
-	}{result1}
+func (fake *FakeManager) CloseCallCount() int {
+	fake.closeMutex.RLock()
+	defer fake.closeMutex.RUnlock()
+	return len(fake.closeArgsForCall)
 }
 
 func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getUserIDsMutex.RLock()
-	defer fake.getUserIDsMutex.RUnlock()
-	fake.getUserMutex.RLock()
-	defer fake.getUserMutex.RUnlock()
-	fake.getLdapUserMutex.RLock()
-	defer fake.getLdapUserMutex.RUnlock()
-	fake.ldapConnectionMutex.RLock()
-	defer fake.ldapConnectionMutex.RUnlock()
-	fake.getLdapUsersMutex.RLock()
-	defer fake.getLdapUsersMutex.RUnlock()
-	fake.ldapConfigMutex.RLock()
-	defer fake.ldapConfigMutex.RUnlock()
+	fake.getUserDNsMutex.RLock()
+	defer fake.getUserDNsMutex.RUnlock()
+	fake.getUserByIDMutex.RLock()
+	defer fake.getUserByIDMutex.RUnlock()
+	fake.getUserByDNMutex.RLock()
+	defer fake.getUserByDNMutex.RUnlock()
+	fake.closeMutex.RLock()
+	defer fake.closeMutex.RUnlock()
 	return fake.invocations
 }
 

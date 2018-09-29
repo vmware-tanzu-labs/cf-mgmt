@@ -1,135 +1,233 @@
 package ldap_test
 
 import (
-	"io/ioutil"
-	"os"
-	"strconv"
+	"errors"
 
-	"github.com/pivotalservices/cf-mgmt/config"
-	. "github.com/pivotalservices/cf-mgmt/ldap"
-
+	l "github.com/go-ldap/ldap"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/ldap"
+	"github.com/pivotalservices/cf-mgmt/ldap/fakes"
 )
 
 var _ = Describe("Ldap", func() {
-	var ldapManager Manager
 	Describe("given a ldap manager", func() {
+		var ldapManager ldap.Manager
+		var connection *fakes.FakeConnection
+		var ldapConfig *config.LdapConfig
 		BeforeEach(func() {
-			var host string
-			var port int
-			if os.Getenv("LDAP_PORT_389_TCP_ADDR") == "" {
-				host = "127.0.0.1"
-				port = 389
-			} else {
-				host = os.Getenv("LDAP_PORT_389_TCP_ADDR")
-				port, _ = strconv.Atoi(os.Getenv("LDAP_PORT_389_TCP_PORT"))
+			ldapConfig = &config.LdapConfig{
+				Origin:            "ldap",
+				GroupAttribute:    "member",
+				UserNameAttribute: "uid",
+				UserMailAttribute: "mail",
 			}
-			ldapManager = &DefaultManager{
-				Config: &config.LdapConfig{
-					BindDN:            "cn=admin,dc=pivotal,dc=org",
-					BindPassword:      "password",
-					UserSearchBase:    "dc=pivotal,dc=org",
-					UserNameAttribute: "uid",
-					UserMailAttribute: "mail",
-					GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
-					GroupAttribute:    "member",
-					LdapHost:          host,
-					LdapPort:          port,
-				},
-			}
+			connection = &fakes.FakeConnection{}
+			ldapManager = &ldap.DefaultManager{Config: ldapConfig, Connection: connection}
 		})
-		Context("when cn with special characters", func() {
-			It("then it should return 1 Entry", func() {
-				entry, err := ldapManager.GetLdapUser("cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
-				Ω(err).Should(BeNil())
-				Ω(entry).ShouldNot(BeNil())
+		Context("GetUserByID()", func() {
+			It("should return specified user", func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{
+						&l.Entry{
+							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
+							Attributes: []*l.EntryAttribute{
+								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+							}},
+					},
+				}, nil)
+				user, err := ldapManager.GetUserByID("cwashburn")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(user).ShouldNot(BeNil())
+				Expect(user.Email).Should(BeEquivalentTo("cwashburn@foo.com"))
+				Expect(user.UserID).Should(BeEquivalentTo("cwashburn"))
+				Expect(user.UserDN).Should(BeEquivalentTo("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
 			})
-		})
-		Context("when cn has a period", func() {
-			It("then it should return 1 Entry", func() {
-				entry, err := ldapManager.GetLdapUser("cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org")
-				Ω(err).Should(BeNil())
-				Ω(entry).ShouldNot(BeNil())
+
+			It("should return nil user when multiple entries found", func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{
+						&l.Entry{
+							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
+							Attributes: []*l.EntryAttribute{
+								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+							}},
+						&l.Entry{
+							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
+							Attributes: []*l.EntryAttribute{
+								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+							}},
+					},
+				}, nil)
+				user, err := ldapManager.GetUserByID("cwashburn")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(user).Should(BeNil())
 			})
-		})
-		Context("when called with a valid group", func() {
-			It("then it should return 5 users", func() {
-				users, err := ldapManager.GetUserIDs("space_developers")
-				Ω(err).Should(BeNil())
-				Ω(len(users)).Should(Equal(5))
-			})
-		})
-		Context("when called with a valid group with special characters", func() {
-			It("then it should return 4 users", func() {
-				users, err := ldapManager.GetUserIDs("special (char) group,name")
-				Ω(err).Should(BeNil())
-				Ω(len(users)).Should(Equal(4))
-			})
-		})
-		Context("GetUser()", func() {
-			It("then it should return 1 user", func() {
-				user, err := ldapManager.GetUser("cwashburn")
-				Ω(err).Should(BeNil())
-				Ω(user).ShouldNot(BeNil())
-				Ω(user.UserID).Should(Equal("cwashburn"))
-				Ω(user.UserDN).Should(Equal("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
-				Ω(user.Email).Should(Equal("cwashburn+cfmt@testdomain.com"))
+
+			It("should return error when search fails", func() {
+				connection.SearchReturns(nil, errors.New("Error searching"))
+				_, err := ldapManager.GetUserByID("cwashburn")
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).Should(BeEquivalentTo("Error searching"))
 			})
 		})
 
-		Describe("given a ldap manager with userObjectClass", func() {
-			BeforeEach(func() {
-				var host string
-				var port int
-				if os.Getenv("LDAP_PORT_389_TCP_ADDR") == "" {
-					host = "127.0.0.1"
-					port = 389
-				} else {
-					host = os.Getenv("LDAP_PORT_389_TCP_ADDR")
-					port, _ = strconv.Atoi(os.Getenv("LDAP_PORT_389_TCP_PORT"))
-				}
-				ldapManager = &DefaultManager{
-					Config: &config.LdapConfig{
-						BindDN:            "cn=admin,dc=pivotal,dc=org",
-						BindPassword:      "password",
-						UserSearchBase:    "dc=pivotal,dc=org",
-						UserNameAttribute: "uid",
-						UserMailAttribute: "mail",
-						GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
-						GroupAttribute:    "member",
-						LdapHost:          host,
-						LdapPort:          port,
-						UserObjectClass:   "inetOrgPerson",
+		Context("GetUserByDN()", func() {
+			It("should return specified user", func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{
+						&l.Entry{
+							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
+							Attributes: []*l.EntryAttribute{
+								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								&l.EntryAttribute{Name: "uid", Values: []string{"cwashburn"}},
+							}},
 					},
-				}
+				}, nil)
+				user, err := ldapManager.GetUserByDN("cn=cwashburn,ou=users,dc=pivotal,dc=org")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(user).ShouldNot(BeNil())
+				Expect(user.Email).Should(BeEquivalentTo("cwashburn@foo.com"))
+				Expect(user.UserID).Should(BeEquivalentTo("cwashburn"))
+				Expect(user.UserDN).Should(BeEquivalentTo("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
+
+				searchRequest := connection.SearchArgsForCall(0)
+				Expect(searchRequest.Filter).Should(BeEquivalentTo("(cn=cwashburn)"))
 			})
-			Context("when cn with special characters", func() {
-				It("then it should return 1 Entry", func() {
-					entry, err := ldapManager.GetLdapUser("cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
-					Ω(err).Should(BeNil())
-					Ω(entry).ShouldNot(BeNil())
-				})
+
+			It(`should return specified user when \, is in dn`, func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{
+						&l.Entry{
+							DN: `cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org`,
+							Attributes: []*l.EntryAttribute{
+								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								&l.EntryAttribute{Name: "uid", Values: []string{"cwashburn"}},
+							}},
+					},
+				}, nil)
+				user, err := ldapManager.GetUserByDN(`cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org`)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(user).ShouldNot(BeNil())
+				Expect(user.Email).Should(BeEquivalentTo("cwashburn@foo.com"))
+				Expect(user.UserID).Should(BeEquivalentTo("cwashburn"))
+				Expect(user.UserDN).Should(BeEquivalentTo(`cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org`))
+
+				searchRequest := connection.SearchArgsForCall(0)
+				Expect(searchRequest.Filter).Should(BeEquivalentTo("(cn=Washburn, Caleb)"))
 			})
-			Context("GetUser()", func() {
-				It("then it should return 1 user", func() {
-					user, err := ldapManager.GetUser("cwashburn")
-					Ω(err).Should(BeNil())
-					Ω(user).ShouldNot(BeNil())
-					Ω(user.UserID).Should(Equal("cwashburn"))
-					Ω(user.UserDN).Should(Equal("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
-					Ω(user.Email).Should(Equal("cwashburn+cfmt@testdomain.com"))
-				})
+
+			It("should return specified user when space is in dn", func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{
+						&l.Entry{
+							DN: "cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org",
+							Attributes: []*l.EntryAttribute{
+								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								&l.EntryAttribute{Name: "uid", Values: []string{"cwashburn"}},
+							}},
+					},
+				}, nil)
+				user, err := ldapManager.GetUserByDN("cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(user).ShouldNot(BeNil())
+				Expect(user.Email).Should(BeEquivalentTo("cwashburn@foo.com"))
+				Expect(user.UserID).Should(BeEquivalentTo("cwashburn"))
+				Expect(user.UserDN).Should(BeEquivalentTo("cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org"))
+
+				searchRequest := connection.SearchArgsForCall(0)
+				Expect(searchRequest.Filter).Should(BeEquivalentTo("(cn=Caleb A. Washburn)"))
+			})
+
+			It("should return nil user when multiple entries found", func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{
+						&l.Entry{
+							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
+							Attributes: []*l.EntryAttribute{
+								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								&l.EntryAttribute{Name: "uid", Values: []string{"cwashburn"}},
+							}},
+						&l.Entry{
+							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
+							Attributes: []*l.EntryAttribute{
+								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								&l.EntryAttribute{Name: "uid", Values: []string{"cwashburn"}},
+							}},
+					},
+				}, nil)
+				user, err := ldapManager.GetUserByDN("cn=cwashburn,ou=users,dc=pivotal,dc=org")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(user).Should(BeNil())
+			})
+
+			It("should return error when search fails", func() {
+				connection.SearchReturns(nil, errors.New("Error searching"))
+				_, err := ldapManager.GetUserByDN("cn=cwashburn,ou=users,dc=pivotal,dc=org")
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).Should(BeEquivalentTo("Error searching"))
+			})
+
+			It("should return error when invalid cn", func() {
+				_, err := ldapManager.GetUserByDN("cwashburn")
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).Should(BeEquivalentTo("cannot find CN for user DN: cwashburn"))
+				Expect(connection.SearchCallCount()).Should(Equal(0))
 			})
 		})
-		Context("GetLdapUser()", func() {
-			It("then it should return 1 user", func() {
-				data, _ := ioutil.ReadFile("./fixtures/user1.txt")
-				user, err := ldapManager.GetLdapUser(string(data))
-				Ω(err).Should(BeNil())
-				Ω(user).ShouldNot(BeNil())
-				Ω(user.UserID).Should(Equal("cwashburn2"))
-				Ω(user.Email).Should(Equal("cwashburn+cfmt2@testdomain.com"))
+		Context("GetUserDNs()", func() {
+			It("should return users for specified group", func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{
+						&l.Entry{
+							Attributes: []*l.EntryAttribute{
+								&l.EntryAttribute{Name: "member", Values: []string{"cn=cwashburn,ou=users,dc=pivotal,dc=org", "cn=cwashburn1,ou=users,dc=pivotal,dc=org", `cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org`}},
+							}},
+					},
+				}, nil)
+				users, err := ldapManager.GetUserDNs("group1")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(users)).Should(Equal(3))
+				Expect(users).Should(ConsistOf([]string{"cn=cwashburn,ou=users,dc=pivotal,dc=org", "cn=cwashburn1,ou=users,dc=pivotal,dc=org", `cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org`}))
+			})
+
+			It("should return empty list when group is not found", func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{},
+				}, nil)
+				users, err := ldapManager.GetUserDNs("group1")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(users)).Should(Equal(0))
+			})
+
+			It("should return empty list when group has no users", func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{
+						&l.Entry{},
+					},
+				}, nil)
+				users, err := ldapManager.GetUserDNs("group1")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(users)).Should(Equal(0))
+			})
+			It("should return empty list when multiple groups are found", func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{
+						&l.Entry{},
+						&l.Entry{},
+					},
+				}, nil)
+				users, err := ldapManager.GetUserDNs("group1")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(users)).Should(Equal(0))
+			})
+
+			It("should return error when search fails", func() {
+				connection.SearchReturns(nil, errors.New("Error searching"))
+				_, err := ldapManager.GetUserDNs("group1")
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).Should(BeEquivalentTo("Error searching"))
 			})
 		})
 	})

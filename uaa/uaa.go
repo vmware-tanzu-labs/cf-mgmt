@@ -163,15 +163,18 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 
 //ListUsers - Returns a map containing username as key and user guid as value
 func (m *DefaultUAAManager) ListUsers() (map[string]*User, error) {
-	userIDMap := make(map[string]*User)
+	userMap := make(map[string]*User)
 	usersList, err := m.getUsers()
 	if err != nil {
 		return nil, err
 	}
 	for _, user := range usersList.Users {
-		userIDMap[strings.ToLower(user.UserName)] = &user
+		userMap[strings.ToLower(user.UserName)] = &user
+		if user.ExternalID != "" {
+			userMap[strings.ToLower(user.ExternalID)] = &user
+		}
 	}
-	return userIDMap, nil
+	return userMap, nil
 }
 
 //TODO Anwar - Make this API use pagination

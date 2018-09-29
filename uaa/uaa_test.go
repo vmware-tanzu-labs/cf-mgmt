@@ -150,8 +150,8 @@ var _ = Describe("given uaa manager", func() {
 			for k := range users {
 				keys = append(keys, k)
 			}
-			Ω(len(users)).Should(Equal(8))
-			Ω(keys).Should(ConsistOf("foo4", "admin", "user", "cwashburn", "foo", "foo1", "foo2", "foo3"))
+			Ω(len(users)).Should(Equal(9))
+			Ω(keys).Should(ConsistOf("foo4", "admin", "user", "cwashburn", "foo", "foo1", "foo2", "foo3", "cn=admin"))
 			Ω(server.ReceivedRequests()).Should(HaveLen(3))
 
 			//	Ω(users).Should(Equal(8))
