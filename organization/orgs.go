@@ -3,6 +3,7 @@ package organization
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -48,8 +49,10 @@ func (m *DefaultManager) CreateOrgs() error {
 		if doesOrgExist(org.Org, currentOrgs) {
 			lo.G.Debugf("[%s] org already exists", org.Org)
 			continue
+		} else {
+			lo.G.Debugf("[%s] org doesn't exist in list [%v]", org.Org, desiredOrgs)
 		}
-		if err := m.CreateOrg(org.Org); err != nil {
+		if err := m.CreateOrg(org.Org, m.orgNames(currentOrgs)); err != nil {
 			return err
 		}
 	}
@@ -111,7 +114,7 @@ func shouldDeleteOrg(orgName string, protectedOrgs []string) bool {
 
 func doesOrgExist(orgName string, orgs []cfclient.Org) bool {
 	for _, org := range orgs {
-		if org.Name == orgName {
+		if strings.EqualFold(org.Name, orgName) {
 			return true
 		}
 	}
@@ -168,7 +171,16 @@ func (m *DefaultManager) ListOrgs() ([]cfclient.Org, error) {
 	return orgs, nil
 }
 
-func (m *DefaultManager) CreateOrg(orgName string) error {
+func (m *DefaultManager) orgNames(orgs []cfclient.Org) []string {
+	var orgNames []string
+	for _, org := range orgs {
+		orgNames = append(orgNames, org.Name)
+	}
+
+	return orgNames
+}
+
+func (m *DefaultManager) CreateOrg(orgName string, currentOrgs []string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: create org %s", orgName)
 		return nil

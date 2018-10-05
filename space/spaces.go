@@ -3,6 +3,7 @@ package space
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -139,6 +140,8 @@ func (m *DefaultManager) CreateSpaces() error {
 			if m.doesSpaceExist(spaces, spaceName) {
 				lo.G.Debugf("[%s] space already exists", spaceName)
 				continue
+			} else {
+				lo.G.Debugf("[%s] space doesn't exist in [%v]", spaceName, input.Spaces)
 			}
 			if err = m.CreateSpace(spaceName, input.Org, orgGUID); err != nil {
 				lo.G.Error(err)
@@ -151,7 +154,7 @@ func (m *DefaultManager) CreateSpaces() error {
 
 func (m *DefaultManager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
 	for _, space := range spaces {
-		if space.Name == spaceName {
+		if strings.EqualFold(space.Name, spaceName) {
 			return true
 		}
 	}
