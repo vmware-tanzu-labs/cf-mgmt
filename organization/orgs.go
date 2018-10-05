@@ -182,10 +182,10 @@ func (m *DefaultManager) orgNames(orgs []cfclient.Org) []string {
 
 func (m *DefaultManager) CreateOrg(orgName string, currentOrgs []string) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: create org %s", orgName)
+		lo.G.Infof("[dry-run]: create org %s as it doesn't exist in %v", orgName, currentOrgs)
 		return nil
 	}
-	lo.G.Infof("create org %s", orgName)
+	lo.G.Infof("create org %s as it doesn't exist in %v", orgName, currentOrgs)
 	_, err := m.Client.CreateOrg(cfclient.OrgRequest{
 		Name: orgName,
 	})
