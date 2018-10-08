@@ -63,7 +63,7 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers map[string]*uaa.User, updateUsers
 				ldapUsers = append(ldapUsers, ldap.User{
 					UserID: uaaUser.UserName,
 					UserDN: userDN,
-					Email:  uaaUser.PrimaryEmail(),
+					Email:  uaaUser.Email(),
 				})
 			} else {
 				user, err := m.LdapMgr.GetUserByDN(userDN)
@@ -82,7 +82,7 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers map[string]*uaa.User, updateUsers
 			ldapUsers = append(ldapUsers, ldap.User{
 				UserID: userID,
 				UserDN: uaaUser.ExternalID,
-				Email:  uaaUser.PrimaryEmail(),
+				Email:  uaaUser.Email(),
 			})
 		} else {
 			user, err := m.LdapMgr.GetUserByID(userID)

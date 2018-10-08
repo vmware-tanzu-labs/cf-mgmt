@@ -37,11 +37,14 @@ type User struct {
 	Emails     []UserEmail `json:"emails"`
 }
 
-func (u *User) PrimaryEmail() string {
+func (u *User) Email() string {
 	for _, email := range u.Emails {
 		if email.Primary {
 			return email.Value
 		}
+	}
+	if len(u.Emails) > 0 {
+		return u.Emails[0].Value
 	}
 	return ""
 }
