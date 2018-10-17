@@ -26,7 +26,6 @@ type CFMgmt struct {
 	PrivateDomainManager    privatedomain.Manager
 	ConfigManager           config.Updater
 	ConfigDirectory         string
-	UaacToken               string
 	SystemDomain            string
 	SecurityGroupManager    securitygroup.Manager
 	IsolationSegmentManager isosegment.Manager
@@ -49,36 +48,37 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	}
 
 	cfg := config.NewManager(baseCommand.ConfigDirectory)
-	var cfToken, uaacToken string
 	var err error
 	cfMgmt := &CFMgmt{}
 	cfMgmt.ConfigDirectory = baseCommand.ConfigDirectory
 	cfMgmt.SystemDomain = baseCommand.SystemDomain
 	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
 
-	uaaHost := fmt.Sprintf("https://uaa.%s", cfMgmt.SystemDomain)
-	if uaacToken, err = uaa.GetUAACToken(uaaHost, baseCommand.UserID, baseCommand.ClientSecret); err != nil {
+	uaaMgr, err := uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.ClientSecret, peek)
+	if err != nil {
 		return nil, err
 	}
-	cfMgmt.UaacToken = uaacToken
-	cfMgmt.UAAManager = uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, uaacToken, peek)
+	cfMgmt.UAAManager = uaaMgr
 
+	var c *cfclient.Config
 	if baseCommand.Password != "" {
 		lo.G.Warning("Password parameter is deprecated, create uaa client and client-secret instead")
-		if cfToken, err = uaa.GetCFToken(uaaHost, baseCommand.UserID, baseCommand.Password); err != nil {
-			return nil, err
+		c = &cfclient.Config{
+			ApiAddress:        fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
+			SkipSslValidation: true,
+			Username:          baseCommand.UserID,
+			Password:          baseCommand.Password,
+			UserAgent:         fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION),
 		}
 	} else {
-		cfToken = uaacToken
+		c = &cfclient.Config{
+			ApiAddress:        fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
+			SkipSslValidation: true,
+			ClientID:          baseCommand.UserID,
+			ClientSecret:      baseCommand.ClientSecret,
+			UserAgent:         fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION),
+		}
 	}
-
-	c := &cfclient.Config{
-		ApiAddress:        fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
-		SkipSslValidation: true,
-		Token:             cfToken,
-		UserAgent:         fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION),
-	}
-
 	client, err := cfclient.NewClient(c)
 	if err != nil {
 		return nil, err

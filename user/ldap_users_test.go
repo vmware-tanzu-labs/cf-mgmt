@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	uaaclient "github.com/cloudfoundry-community/go-uaa"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -12,7 +13,6 @@ import (
 	ldapfakes "github.com/pivotalservices/cf-mgmt/ldap/fakes"
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
-	"github.com/pivotalservices/cf-mgmt/uaa"
 	uaafakes "github.com/pivotalservices/cf-mgmt/uaa/fakes"
 	. "github.com/pivotalservices/cf-mgmt/user"
 	"github.com/pivotalservices/cf-mgmt/user/fakes"
@@ -57,8 +57,8 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should add ldap user to role", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaa.User)
-				uaaUsers["test_ldap"] = &uaa.User{UserName: "test_ldap"}
+				uaaUsers := make(map[string]*uaaclient.User)
+				uaaUsers["test_ldap"] = &uaaclient.User{Username: "test_ldap"}
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers:      []string{"test_ldap"},
 					LdapGroupNames: []string{},
@@ -90,8 +90,8 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should add ldap group member to role", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaa.User)
-				uaaUsers["test_ldap"] = &uaa.User{UserName: "test_ldap"}
+				uaaUsers := make(map[string]*uaaclient.User)
+				uaaUsers["test_ldap"] = &uaaclient.User{Username: "test_ldap"}
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers:      []string{},
 					LdapGroupNames: []string{"test_group"},
@@ -125,8 +125,8 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should not add existing ldap user to role", func() {
 				roleUsers := make(map[string]string)
 				roleUsers["test_ldap"] = "test_ldap"
-				uaaUsers := make(map[string]*uaa.User)
-				uaaUsers["test_ldap"] = &uaa.User{UserName: "test_ldap"}
+				uaaUsers := make(map[string]*uaaclient.User)
+				uaaUsers["test_ldap"] = &uaaclient.User{Username: "test_ldap"}
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
@@ -148,7 +148,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should create external user when user doesn't exist in uaa", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers := make(map[string]*uaaclient.User)
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
@@ -175,7 +175,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should not error when create external user errors", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers := make(map[string]*uaaclient.User)
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
@@ -198,8 +198,8 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should return error", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaa.User)
-				uaaUsers["test_ldap"] = &uaa.User{UserName: "test_ldap"}
+				uaaUsers := make(map[string]*uaaclient.User)
+				uaaUsers["test_ldap"] = &uaaclient.User{Username: "test_ldap"}
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
@@ -223,8 +223,8 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should not query ldap if user exists in UAA", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaa.User)
-				uaaUsers["test_ldap"] = &uaa.User{UserName: "test_ldap"}
+				uaaUsers := make(map[string]*uaaclient.User)
+				uaaUsers["test_ldap"] = &uaaclient.User{Username: "test_ldap"}
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
@@ -241,8 +241,8 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should not query ldap if user exists in UAA", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaa.User)
-				uaaUsers["cn=test_ldap"] = &uaa.User{UserName: "test_ldap"}
+				uaaUsers := make(map[string]*uaaclient.User)
+				uaaUsers["cn=test_ldap"] = &uaaclient.User{Username: "test_ldap"}
 				updateUsersInput := UpdateUsersInput{
 					LdapGroupNames: []string{"test_group"},
 					SpaceGUID:      "space_guid",
@@ -260,7 +260,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should return error", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaa.User)
+				uaaUsers := make(map[string]*uaaclient.User)
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",

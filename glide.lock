@@ -1,12 +1,18 @@
-hash: b9cd466d6142efedebd3c1a84c844ca47b837825855d36e473e3246866bf6bb1
-updated: 2018-09-11T14:36:21.323093-07:00
+hash: 608d6f627a4ce19f8ee548a8db1b67af5c132d9111d0a3d97e4482f4915ad3af
+updated: 2018-10-17T11:19:31.854929-07:00
 imports:
 - name: github.com/cloudfoundry-community/go-cfclient
   version: 49319a4a0c6f8b3f09af84053d0200cbf8523c17
+- name: github.com/cloudfoundry-community/go-uaa
+  version: 06d965ffc8f595a3e739463e280b78eb6204ff3d
+  subpackages:
+  - passwordcredentials
 - name: github.com/cloudfoundry/gofileutils
   version: 4d0c80011a0f37da1711c184028bc40137cd45af
   subpackages:
   - fileutils
+- name: github.com/fatih/color
+  version: 3f9d52f7176a6927daacff70a3e8d1dc2025c53e
 - name: github.com/go-ldap/ldap
   version: bb7a9ca6e4fbc2129e3db588a34bc970ffe811a9
 - name: github.com/golang/protobuf
@@ -17,12 +23,12 @@ imports:
   version: 96dc06278ce32a0e9d957d590bb987c81ee66407
 - name: github.com/Masterminds/semver
   version: 3c560837130448941620d7694991d3ec440aefc0
-- name: github.com/moul/http2curl
-  version: 9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d
+- name: github.com/mattn/go-colorable
+  version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
+- name: github.com/mattn/go-isatty
+  version: 3fb116b820352b7f0c281308a4d6250c22d94e27
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9
-- name: github.com/parnurzeal/gorequest
-  version: 8e3aed27fe49f7fdc765dad067845f600fc984e8
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/xchapter7x/lo
@@ -35,12 +41,15 @@ imports:
   - html
   - html/atom
   - html/charset
-  - publicsuffix
 - name: golang.org/x/oauth2
   version: ef147856a6ddbb60760db74283d2424e98c87bff
   subpackages:
   - clientcredentials
   - internal
+- name: golang.org/x/sys
+  version: 1b2967e3c290b7c545b3db0deeda16e9be4f98a2
+  subpackages:
+  - unix
 - name: google.golang.org/appengine
   version: b1f26356af11148e710935ed1ac8a7f5702c7612
   subpackages:
@@ -65,6 +74,8 @@ testImports:
   - winfile
 - name: github.com/maxbrunsfeld/counterfeiter
   version: c1996179167e70f7a863c4d04dcaa6981109afed
+- name: github.com/moul/http2curl
+  version: 9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d
 - name: github.com/onsi/ginkgo
   version: 3774a09d95489ccaa16032e0770d08ea77ba6184
   subpackages:
@@ -82,6 +93,8 @@ testImports:
   - internal/writer
   - reporters
   - reporters/stenographer
+  - reporters/stenographer/support/go-colorable
+  - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
   version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
@@ -89,7 +102,6 @@ testImports:
   - format
   - gbytes
   - gexec
-  - ghttp
   - internal/assertion
   - internal/asyncassertion
   - internal/oraclematcher
@@ -100,10 +112,6 @@ testImports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
-- name: golang.org/x/sys
-  version: 1b2967e3c290b7c545b3db0deeda16e9be4f98a2
-  subpackages:
-  - unix
 - name: golang.org/x/text
   version: 0605a8320aceb4207a5fb3521281e17ec2075476
   subpackages:

@@ -12,6 +12,8 @@ import (
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
+
+	uaaclient "github.com/cloudfoundry-community/go-uaa"
 )
 
 // NewManager -
@@ -322,7 +324,7 @@ func (m *DefaultManager) UpdateSpaceUsers() error {
 	return nil
 }
 
-func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers map[string]*uaa.User) error {
+func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers map[string]*uaaclient.User) error {
 	space, err := m.SpaceMgr.FindSpace(input.Org, input.Space)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error finding space for org %s, space %s", input.Org, input.Space))
@@ -402,7 +404,7 @@ func (m *DefaultManager) UpdateOrgUsers() error {
 	return nil
 }
 
-func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[string]*uaa.User) error {
+func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[string]*uaaclient.User) error {
 	org, err := m.OrgMgr.FindOrg(input.Org)
 	if err != nil {
 		return err
@@ -464,7 +466,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[s
 }
 
 //SyncUsers
-func (m *DefaultManager) SyncUsers(uaaUsers map[string]*uaa.User, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncUsers(uaaUsers map[string]*uaaclient.User, updateUsersInput UpdateUsersInput) error {
 	roleUsers, err := updateUsersInput.ListUsers(updateUsersInput)
 	if err != nil {
 		return err
@@ -485,7 +487,7 @@ func (m *DefaultManager) SyncUsers(uaaUsers map[string]*uaa.User, updateUsersInp
 	return nil
 }
 
-func (m *DefaultManager) SyncInternalUsers(roleUsers map[string]string, uaaUsers map[string]*uaa.User, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncInternalUsers(roleUsers map[string]string, uaaUsers map[string]*uaaclient.User, updateUsersInput UpdateUsersInput) error {
 	for _, userID := range updateUsersInput.Users {
 		lowerUserID := strings.ToLower(userID)
 		if _, userExists := uaaUsers[lowerUserID]; !userExists {
@@ -502,7 +504,7 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers map[string]string, uaaUsers
 	return nil
 }
 
-func (m *DefaultManager) SyncSamlUsers(roleUsers map[string]string, uaaUsers map[string]*uaa.User, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncSamlUsers(roleUsers map[string]string, uaaUsers map[string]*uaaclient.User, updateUsersInput UpdateUsersInput) error {
 	for _, userEmail := range updateUsersInput.SamlUsers {
 		lowerUserEmail := strings.ToLower(userEmail)
 		if _, userExists := uaaUsers[lowerUserEmail]; !userExists {
@@ -511,9 +513,9 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers map[string]string, uaaUsers map
 				lo.G.Error("Unable to create user", userEmail)
 				continue
 			} else {
-				uaaUsers[userEmail] = &uaa.User{
-					UserName:   userEmail,
-					Emails:     []uaa.UserEmail{uaa.UserEmail{Value: userEmail, Primary: true}},
+				uaaUsers[userEmail] = &uaaclient.User{
+					Username:   userEmail,
+					Emails:     []uaaclient.Email{uaaclient.Email{Value: userEmail}},
 					ExternalID: userEmail,
 					Origin:     m.LdapConfig.Origin,
 				}
