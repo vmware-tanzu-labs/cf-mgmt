@@ -2,6 +2,7 @@
 package fakes
 
 import (
+	"net/url"
 	"sync"
 
 	go_cfclient "github.com/cloudfoundry-community/go-cfclient"
@@ -194,6 +195,24 @@ type FakeCFClient struct {
 	}
 	associateOrgBillingManagerByUsernameReturns struct {
 		result1 go_cfclient.Org
+		result2 error
+	}
+	ListOrgUsersStub        func(orgGUID string) ([]go_cfclient.User, error)
+	listOrgUsersMutex       sync.RWMutex
+	listOrgUsersArgsForCall []struct {
+		orgGUID string
+	}
+	listOrgUsersReturns struct {
+		result1 []go_cfclient.User
+		result2 error
+	}
+	ListSpacesByQueryStub        func(query url.Values) ([]go_cfclient.Space, error)
+	listSpacesByQueryMutex       sync.RWMutex
+	listSpacesByQueryArgsForCall []struct {
+		query url.Values
+	}
+	listSpacesByQueryReturns struct {
+		result1 []go_cfclient.Space
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -887,6 +906,74 @@ func (fake *FakeCFClient) AssociateOrgBillingManagerByUsernameReturns(result1 go
 	}{result1, result2}
 }
 
+func (fake *FakeCFClient) ListOrgUsers(orgGUID string) ([]go_cfclient.User, error) {
+	fake.listOrgUsersMutex.Lock()
+	fake.listOrgUsersArgsForCall = append(fake.listOrgUsersArgsForCall, struct {
+		orgGUID string
+	}{orgGUID})
+	fake.recordInvocation("ListOrgUsers", []interface{}{orgGUID})
+	fake.listOrgUsersMutex.Unlock()
+	if fake.ListOrgUsersStub != nil {
+		return fake.ListOrgUsersStub(orgGUID)
+	} else {
+		return fake.listOrgUsersReturns.result1, fake.listOrgUsersReturns.result2
+	}
+}
+
+func (fake *FakeCFClient) ListOrgUsersCallCount() int {
+	fake.listOrgUsersMutex.RLock()
+	defer fake.listOrgUsersMutex.RUnlock()
+	return len(fake.listOrgUsersArgsForCall)
+}
+
+func (fake *FakeCFClient) ListOrgUsersArgsForCall(i int) string {
+	fake.listOrgUsersMutex.RLock()
+	defer fake.listOrgUsersMutex.RUnlock()
+	return fake.listOrgUsersArgsForCall[i].orgGUID
+}
+
+func (fake *FakeCFClient) ListOrgUsersReturns(result1 []go_cfclient.User, result2 error) {
+	fake.ListOrgUsersStub = nil
+	fake.listOrgUsersReturns = struct {
+		result1 []go_cfclient.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFClient) ListSpacesByQuery(query url.Values) ([]go_cfclient.Space, error) {
+	fake.listSpacesByQueryMutex.Lock()
+	fake.listSpacesByQueryArgsForCall = append(fake.listSpacesByQueryArgsForCall, struct {
+		query url.Values
+	}{query})
+	fake.recordInvocation("ListSpacesByQuery", []interface{}{query})
+	fake.listSpacesByQueryMutex.Unlock()
+	if fake.ListSpacesByQueryStub != nil {
+		return fake.ListSpacesByQueryStub(query)
+	} else {
+		return fake.listSpacesByQueryReturns.result1, fake.listSpacesByQueryReturns.result2
+	}
+}
+
+func (fake *FakeCFClient) ListSpacesByQueryCallCount() int {
+	fake.listSpacesByQueryMutex.RLock()
+	defer fake.listSpacesByQueryMutex.RUnlock()
+	return len(fake.listSpacesByQueryArgsForCall)
+}
+
+func (fake *FakeCFClient) ListSpacesByQueryArgsForCall(i int) url.Values {
+	fake.listSpacesByQueryMutex.RLock()
+	defer fake.listSpacesByQueryMutex.RUnlock()
+	return fake.listSpacesByQueryArgsForCall[i].query
+}
+
+func (fake *FakeCFClient) ListSpacesByQueryReturns(result1 []go_cfclient.Space, result2 error) {
+	fake.ListSpacesByQueryStub = nil
+	fake.listSpacesByQueryReturns = struct {
+		result1 []go_cfclient.Space
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -930,6 +1017,10 @@ func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	defer fake.associateOrgManagerByUsernameMutex.RUnlock()
 	fake.associateOrgBillingManagerByUsernameMutex.RLock()
 	defer fake.associateOrgBillingManagerByUsernameMutex.RUnlock()
+	fake.listOrgUsersMutex.RLock()
+	defer fake.listOrgUsersMutex.RUnlock()
+	fake.listSpacesByQueryMutex.RLock()
+	defer fake.listSpacesByQueryMutex.RUnlock()
 	return fake.invocations
 }
 

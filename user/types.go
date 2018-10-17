@@ -1,6 +1,8 @@
 package user
 
 import (
+	"net/url"
+
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
@@ -23,6 +25,7 @@ type Manager interface {
 	DeinitializeLdap() error
 	UpdateSpaceUsers() error
 	UpdateOrgUsers() error
+	CleanupOrgUsers() error
 	ListSpaceAuditors(spaceGUID string) (map[string]string, error)
 	ListSpaceDevelopers(spaceGUID string) (map[string]string, error)
 	ListSpaceManagers(spaceGUID string) (map[string]string, error)
@@ -53,4 +56,7 @@ type CFClient interface {
 	AssociateOrgAuditorByUsername(orgGUID, name string) (cfclient.Org, error)
 	AssociateOrgManagerByUsername(orgGUID, name string) (cfclient.Org, error)
 	AssociateOrgBillingManagerByUsername(orgGUID, name string) (cfclient.Org, error)
+
+	ListOrgUsers(orgGUID string) ([]cfclient.User, error)
+	ListSpacesByQuery(query url.Values) ([]cfclient.Space, error)
 }

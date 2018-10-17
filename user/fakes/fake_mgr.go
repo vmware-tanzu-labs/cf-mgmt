@@ -34,6 +34,12 @@ type FakeManager struct {
 	updateOrgUsersReturns     struct {
 		result1 error
 	}
+	CleanupOrgUsersStub        func() error
+	cleanupOrgUsersMutex       sync.RWMutex
+	cleanupOrgUsersArgsForCall []struct{}
+	cleanupOrgUsersReturns     struct {
+		result1 error
+	}
 	ListSpaceAuditorsStub        func(spaceGUID string) (map[string]string, error)
 	listSpaceAuditorsMutex       sync.RWMutex
 	listSpaceAuditorsArgsForCall []struct {
@@ -196,6 +202,31 @@ func (fake *FakeManager) UpdateOrgUsersCallCount() int {
 func (fake *FakeManager) UpdateOrgUsersReturns(result1 error) {
 	fake.UpdateOrgUsersStub = nil
 	fake.updateOrgUsersReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) CleanupOrgUsers() error {
+	fake.cleanupOrgUsersMutex.Lock()
+	fake.cleanupOrgUsersArgsForCall = append(fake.cleanupOrgUsersArgsForCall, struct{}{})
+	fake.recordInvocation("CleanupOrgUsers", []interface{}{})
+	fake.cleanupOrgUsersMutex.Unlock()
+	if fake.CleanupOrgUsersStub != nil {
+		return fake.CleanupOrgUsersStub()
+	} else {
+		return fake.cleanupOrgUsersReturns.result1
+	}
+}
+
+func (fake *FakeManager) CleanupOrgUsersCallCount() int {
+	fake.cleanupOrgUsersMutex.RLock()
+	defer fake.cleanupOrgUsersMutex.RUnlock()
+	return len(fake.cleanupOrgUsersArgsForCall)
+}
+
+func (fake *FakeManager) CleanupOrgUsersReturns(result1 error) {
+	fake.CleanupOrgUsersStub = nil
+	fake.cleanupOrgUsersReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -415,6 +446,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.updateSpaceUsersMutex.RUnlock()
 	fake.updateOrgUsersMutex.RLock()
 	defer fake.updateOrgUsersMutex.RUnlock()
+	fake.cleanupOrgUsersMutex.RLock()
+	defer fake.cleanupOrgUsersMutex.RUnlock()
 	fake.listSpaceAuditorsMutex.RLock()
 	defer fake.listSpaceAuditorsMutex.RUnlock()
 	fake.listSpaceDevelopersMutex.RLock()

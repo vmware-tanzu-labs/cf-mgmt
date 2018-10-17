@@ -18,6 +18,7 @@ type CfMgmtCommand struct {
 	DeleteOrgsCommand                DeleteOrgsCommand                `command:"delete-orgs" description:"deletes orgs not in the configuration"`
 	UpdateOrgQuotasCommand           UpdateOrgQuotasCommand           `command:"update-org-quotas" description:"updates org quotas"`
 	UpdateOrgUsersCommand            UpdateOrgUsersCommand            `command:"update-org-users" description:"update org user roles"`
+	CleanupOrgUsersCommand           CleanupOrgUsersCommand           `command:"cleanup-org-users" description:"removes any users from org that don't have a role"`
 	CreateSpacesCommand              CreateSpacesCommand              `command:"create-spaces" description:"creates spaces in configuration"`
 	DeleteSpacesCommand              DeleteSpacesCommand              `command:"delete-spaces" description:"deletes spaces not in configurtion"`
 	UpdateSpacesCommand              UpdateSpacesCommand              `command:"update-spaces" description:"enables/disables ssh access at space level"`

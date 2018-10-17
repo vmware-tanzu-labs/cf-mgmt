@@ -47,6 +47,7 @@ Prior to v0.0.66 a **password** was also needed as you had to provide both a uaa
 * [isolation-segments](isolation-segments/README.md)
 * [update-org-quotas](update-org-quotas/README.md)
 * [update-org-users](update-org-users/README.md)
+* [cleanup-org-users](cleanup-org-users/README.md)
 * [update-space-quotas](update-space-quotas/README.md)
 * [update-space-security-groups](update-space-security-groups/README.md)
 * [update-space-users](update-space-users/README.md)

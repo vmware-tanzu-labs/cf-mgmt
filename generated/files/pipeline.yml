@@ -257,3 +257,21 @@ jobs:
       CONFIG_DIR: ./config
       LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: isolation-segments
+
+- name: cleanup-org-users
+  plan:
+  - get: config-repo
+    passed: [update-org-users,update-space-users]
+    trigger: true
+  - get: 15m
+    trigger: true
+  - task: cleanup-org-users
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
+      CF_MGMT_COMMAND: cleanup-org-users

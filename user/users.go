@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
@@ -400,8 +401,126 @@ func (m *DefaultManager) UpdateOrgUsers() error {
 		if err := m.updateOrgUsers(&input, uaacUsers); err != nil {
 			return err
 		}
+
+	}
+
+	return nil
+}
+
+//CleanupOrgUsers -
+func (m *DefaultManager) CleanupOrgUsers() error {
+	orgConfigs, err := m.Cfg.GetOrgConfigs()
+	if err != nil {
+		return err
+	}
+
+	for _, input := range orgConfigs {
+		if err := m.cleanupOrgUsers(&input); err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+func (m *DefaultManager) cleanupOrgUsers(input *config.OrgConfig) error {
+	org, err := m.OrgMgr.FindOrg(input.Org)
+	if err != nil {
+		return err
+	}
+	orgUsers, err := m.Client.ListOrgUsers(org.Guid)
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("Error listing org users for org %s", input.Org))
+	}
+
+	usersInRoles, err := m.usersInOrgRoles(org.Name, org.Guid)
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("Error usersInOrgRoles for org %s", input.Org))
+	}
+
+	lo.G.Debugf("Users In Roles %+v", usersInRoles)
+
+	for _, orgUser := range orgUsers {
+		if _, ok := usersInRoles[strings.ToLower(orgUser.Username)]; !ok {
+			if m.Peek {
+				lo.G.Infof("[dry-run]: Removing User %s from org %s", orgUser.Username, input.Org)
+				continue
+			}
+
+			lo.G.Infof("Removing User %s from org %s", orgUser.Username, input.Org)
+			err := m.Client.RemoveOrgUserByUsername(org.Guid, orgUser.Username)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string) (map[string]string, error) {
+	userMap := make(map[string]string)
+
+	orgAuditors, err := m.ListOrgAuditors(orgGUID)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Error listing org auditors for org %s", orgName))
+	}
+	m.appendToMap(userMap, orgAuditors)
+
+	orgManagers, err := m.ListOrgManagers(orgGUID)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Error listing org managers for org %s", orgName))
+	}
+	m.appendToMap(userMap, orgManagers)
+
+	orgBillingManagers, err := m.ListOrgBillingManagers(orgGUID)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Error listing org billing managers for org %s", orgName))
+	}
+	m.appendToMap(userMap, orgBillingManagers)
+
+	spaces, err := m.listSpaces(orgGUID)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Error listing spaces for org %s", orgName))
+	}
+	for _, space := range spaces {
+		spaceAuditors, err := m.ListSpaceAuditors(space.Guid)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("Error listing space auditors for org/space %s/%s", orgName, space.Name))
+		}
+		m.appendToMap(userMap, spaceAuditors)
+
+		spaceDevelopers, err := m.ListSpaceAuditors(space.Guid)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("Error listing space developers for org/space %s/%s", orgName, space.Name))
+		}
+		m.appendToMap(userMap, spaceDevelopers)
+
+		spaceManagers, err := m.ListSpaceManagers(space.Guid)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("Error listing space managers for org/space %s/%s", orgName, space.Name))
+		}
+		m.appendToMap(userMap, spaceManagers)
+	}
+
+	return userMap, nil
+}
+
+func (m *DefaultManager) appendToMap(source, append map[string]string) {
+	for userName, GUID := range append {
+		source[userName] = GUID
+	}
+}
+
+func (m *DefaultManager) listSpaces(orgGUID string) ([]cfclient.Space, error) {
+	spaces, err := m.Client.ListSpacesByQuery(url.Values{
+		"q": []string{fmt.Sprintf("%s:%s", "organization_guid", orgGUID)},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return spaces, err
+
 }
 
 func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[string]*uaaclient.User) error {
