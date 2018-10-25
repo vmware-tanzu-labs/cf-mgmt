@@ -2,7 +2,6 @@ package organization
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
@@ -75,7 +74,6 @@ func (m *DefaultManager) DeleteOrgs() error {
 	for _, orgName := range orgsConfig.Orgs {
 		configuredOrgs[orgName] = true
 	}
-	protectedOrgs := append(config.DefaultProtectedOrgs, orgsConfig.ProtectedOrgs...)
 
 	orgs, err := m.ListOrgs()
 	if err != nil {
@@ -85,7 +83,7 @@ func (m *DefaultManager) DeleteOrgs() error {
 	orgsToDelete := make([]cfclient.Org, 0)
 	for _, org := range orgs {
 		if _, exists := configuredOrgs[org.Name]; !exists {
-			if shouldDeleteOrg(org.Name, protectedOrgs) {
+			if !Matches(org.Name, orgsConfig.ProtectedOrgList()) {
 				orgsToDelete = append(orgsToDelete, org)
 			} else {
 				lo.G.Infof("Protected org [%s] - will not be deleted", org.Name)
@@ -100,16 +98,6 @@ func (m *DefaultManager) DeleteOrgs() error {
 	}
 
 	return nil
-}
-
-func shouldDeleteOrg(orgName string, protectedOrgs []string) bool {
-	for _, protectedOrgName := range protectedOrgs {
-		match, _ := regexp.MatchString(protectedOrgName, orgName)
-		if match {
-			return false
-		}
-	}
-	return true
 }
 
 func doesOrgExist(orgName string, orgs []cfclient.Org) bool {

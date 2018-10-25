@@ -11,6 +11,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/privatedomain"
 	"github.com/pivotalservices/cf-mgmt/quota"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
+	"github.com/pivotalservices/cf-mgmt/serviceaccess"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/pivotalservices/cf-mgmt/user"
@@ -29,6 +30,7 @@ type CFMgmt struct {
 	SystemDomain            string
 	SecurityGroupManager    securitygroup.Manager
 	IsolationSegmentManager isosegment.Manager
+	ServiceAccessManager    *serviceaccess.Manager
 }
 
 type Initialize struct {
@@ -94,5 +96,6 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	} else {
 		return nil, err
 	}
+	cfMgmt.ServiceAccessManager = serviceaccess.NewManager(client, cfMgmt.OrgManager, cfg, peek)
 	return cfMgmt, nil
 }

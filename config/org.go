@@ -4,30 +4,31 @@ import "strings"
 
 // OrgConfig describes configuration for an org.
 type OrgConfig struct {
-	Org                        string   `yaml:"org"`
-	BillingManagerGroup        string   `yaml:"org-billingmanager-group,omitempty"`
-	ManagerGroup               string   `yaml:"org-manager-group,omitempty"`
-	AuditorGroup               string   `yaml:"org-auditor-group,omitempty"`
-	BillingManager             UserMgmt `yaml:"org-billingmanager"`
-	Manager                    UserMgmt `yaml:"org-manager"`
-	Auditor                    UserMgmt `yaml:"org-auditor"`
-	PrivateDomains             []string `yaml:"private-domains"`
-	RemovePrivateDomains       bool     `yaml:"enable-remove-private-domains"`
-	SharedPrivateDomains       []string `yaml:"shared-private-domains"`
-	RemoveSharedPrivateDomains bool     `yaml:"enable-remove-shared-private-domains"`
-	EnableOrgQuota             bool     `yaml:"enable-org-quota"`
-	MemoryLimit                int      `yaml:"memory-limit"`
-	InstanceMemoryLimit        int      `yaml:"instance-memory-limit"`
-	TotalRoutes                int      `yaml:"total-routes"`
-	TotalServices              int      `yaml:"total-services"`
-	PaidServicePlansAllowed    bool     `yaml:"paid-service-plans-allowed"`
-	RemoveUsers                bool     `yaml:"enable-remove-users"`
-	TotalPrivateDomains        int      `yaml:"total_private_domains"`
-	TotalReservedRoutePorts    int      `yaml:"total_reserved_route_ports"`
-	TotalServiceKeys           int      `yaml:"total_service_keys"`
-	AppInstanceLimit           int      `yaml:"app_instance_limit"`
-	AppTaskLimit               int      `yaml:"app_task_limit"`
-	DefaultIsoSegment          string   `yaml:"default_isolation_segment"`
+	Org                        string              `yaml:"org"`
+	BillingManagerGroup        string              `yaml:"org-billingmanager-group,omitempty"`
+	ManagerGroup               string              `yaml:"org-manager-group,omitempty"`
+	AuditorGroup               string              `yaml:"org-auditor-group,omitempty"`
+	BillingManager             UserMgmt            `yaml:"org-billingmanager"`
+	Manager                    UserMgmt            `yaml:"org-manager"`
+	Auditor                    UserMgmt            `yaml:"org-auditor"`
+	PrivateDomains             []string            `yaml:"private-domains"`
+	RemovePrivateDomains       bool                `yaml:"enable-remove-private-domains"`
+	SharedPrivateDomains       []string            `yaml:"shared-private-domains"`
+	RemoveSharedPrivateDomains bool                `yaml:"enable-remove-shared-private-domains"`
+	EnableOrgQuota             bool                `yaml:"enable-org-quota"`
+	MemoryLimit                int                 `yaml:"memory-limit"`
+	InstanceMemoryLimit        int                 `yaml:"instance-memory-limit"`
+	TotalRoutes                int                 `yaml:"total-routes"`
+	TotalServices              int                 `yaml:"total-services"`
+	PaidServicePlansAllowed    bool                `yaml:"paid-service-plans-allowed"`
+	RemoveUsers                bool                `yaml:"enable-remove-users"`
+	TotalPrivateDomains        int                 `yaml:"total_private_domains"`
+	TotalReservedRoutePorts    int                 `yaml:"total_reserved_route_ports"`
+	TotalServiceKeys           int                 `yaml:"total_service_keys"`
+	AppInstanceLimit           int                 `yaml:"app_instance_limit"`
+	AppTaskLimit               int                 `yaml:"app_task_limit"`
+	DefaultIsoSegment          string              `yaml:"default_isolation_segment"`
+	ServiceAccess              map[string][]string `yaml:"service-access"`
 }
 
 // Orgs contains cf-mgmt configuration for all orgs.
@@ -35,6 +36,21 @@ type Orgs struct {
 	Orgs             []string `yaml:"orgs"`
 	EnableDeleteOrgs bool     `yaml:"enable-delete-orgs"`
 	ProtectedOrgs    []string `yaml:"protected_orgs"`
+}
+
+func (o *Orgs) ProtectedOrgList() []string {
+	var allOrgNames []string
+	uniqueNames := make(map[string]string)
+	allOrgNames = append(o.ProtectedOrgs, DefaultProtectedOrgs...)
+	for _, orgName := range allOrgNames {
+		uniqueNames[orgName] = orgName
+	}
+	var returnList []string
+	for _, name := range uniqueNames {
+		returnList = append(returnList, name)
+	}
+
+	return returnList
 }
 
 // Contains determines whether an org is present in a list of orgs.

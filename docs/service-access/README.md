@@ -1,23 +1,24 @@
 &larr; [back to Commands](../README.md)
 
-# `cf-mgmt cleanup-org-users`
+# `cf-mgmt service-access`
 
-`cleanup-org-users` command will:
-
-- will remove from any managed org any user that is not is a org or space role but was associated with the org previously
+`service-access` command will:
+- disable public access on all services
+- enable access to all plans for any org that is in `protected-orgs`
+- will enable access for a given service and plan(s) based on configuration
 
 Included with v1.0.7+
 
 ## Command Usage
 
 ```
-error: Usage:
-  main [OPTIONS] cleanup-org-users [cleanup-org-users-OPTIONS]
+Usage:
+  cf-mgmt [OPTIONS] service-access [service-access-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message
 
-[cleanup-org-users command options]
+[service-access command options]
   --config-dir=    Name of the config directory (default: config) [$CONFIG_DIR]
   --system-domain= system domain [$SYSTEM_DOMAIN]
   --user-id=       user id that has privileges to create/update/delete users, orgs and spaces [$USER_ID]

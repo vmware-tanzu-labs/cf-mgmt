@@ -52,6 +52,7 @@ Prior to v0.0.66 a **password** was also needed as you had to provide both a uaa
 * [update-space-security-groups](update-space-security-groups/README.md)
 * [update-space-users](update-space-users/README.md)
 * [update-spaces](update-spaces/README.md)
+* [service-access](service-access/README.md)
 * [version](version/README.md)
 
 # Features

@@ -27,6 +27,7 @@ type CfMgmtCommand struct {
 	CreateSpaceSecurityGroupsCommand CreateSpaceSecurityGroupsCommand `command:"update-space-security-groups" description:"updates space specific security groups"`
 	IsolationSegmentsCommand         IsolationSegmentsCommand         `command:"isolation-segments" description:"assigns isolations segments to orgs and spaces"`
 	SharePrivateDomainsCommand       SharePrivateDomainsCommand       `command:"share-org-private-domains" description:"shares an existing private domain with the specified org"`
+	ServiceAccessCommand             ServiceAccessCommand             `command:"service-access" description:"enables/disables service access for orgs"`
 	ApplyCommand                     ApplyCommand                     `command:"apply" description:"applies the configuration to your target foundation"`
 }
 

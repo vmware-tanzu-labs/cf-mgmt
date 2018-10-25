@@ -116,6 +116,11 @@ enable-remove-users: true/false
 # added in 0.0.64+ which will remove users from roles if not configured in cf-mgmt
 private-domains: ["test.com", "test2.com"]
 enable-remove-private-domains: true/false
+
+# added in 1.0.7+ which allows configuration of service access
+service-access:
+  p-mysql: ["small","large"]
+  p-rabbit: ["*"]
 ```
 
 #### Space Configuration
