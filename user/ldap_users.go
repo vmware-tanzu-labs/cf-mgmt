@@ -99,6 +99,9 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers map[string]*uaaclient.User, updat
 
 func Email(u *uaaclient.User) string {
 	for _, email := range u.Emails {
+		if email.Primary == nil {
+			continue
+		}
 		if *email.Primary {
 			return email.Value
 		}
