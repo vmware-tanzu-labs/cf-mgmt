@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	uaaclient "github.com/cloudfoundry-community/go-uaa"
 	"github.com/pivotalservices/cf-mgmt/ldap"
+	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
-func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map[string]*uaaclient.User, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map[string]uaa.User, updateUsersInput UpdateUsersInput) error {
 	if m.LdapConfig.Enabled {
 		ldapUsers, err := m.GetLDAPUsers(uaaUsers, updateUsersInput)
 		if err != nil {
@@ -27,11 +27,11 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map
 						lo.G.Errorf("Unable to create user %s with error %s", userID, err.Error())
 						continue
 					} else {
-						uaaUser := &uaaclient.User{
+						uaaUser := uaa.User{
 							Username:   userID,
 							ExternalID: userToUse.UserDN,
 							Origin:     m.LdapConfig.Origin,
-							Emails:     []uaaclient.Email{uaaclient.Email{Value: userToUse.Email}},
+							Email:      userToUse.Email,
 						}
 						uaaUsers[userID] = uaaUser
 						uaaUsers[userToUse.UserDN] = uaaUser
@@ -41,6 +41,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map
 					return err
 				}
 			} else {
+				lo.G.Debugf("User[%s] found in role", userID)
 				delete(roleUsers, userID)
 			}
 		}
@@ -50,7 +51,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map
 	return nil
 }
 
-func (m *DefaultManager) GetLDAPUsers(uaaUsers map[string]*uaaclient.User, updateUsersInput UpdateUsersInput) ([]ldap.User, error) {
+func (m *DefaultManager) GetLDAPUsers(uaaUsers map[string]uaa.User, updateUsersInput UpdateUsersInput) ([]ldap.User, error) {
 	var ldapUsers []ldap.User
 	for _, groupName := range updateUsersInput.LdapGroupNames {
 		userDNList, err := m.LdapMgr.GetUserDNs(groupName)
@@ -58,12 +59,13 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers map[string]*uaaclient.User, updat
 			return nil, err
 		}
 		for _, userDN := range userDNList {
+			lo.G.Debugf("Checking for userDN %s", userDN)
 			if uaaUser, ok := uaaUsers[strings.ToLower(userDN)]; ok {
-				lo.G.Debugf("UserDN [%s] found in UAA, skipping ldap lookup", userDN)
+				lo.G.Debugf("UserDN [%s] found in UAA as [%s], skipping ldap lookup", userDN, uaaUser.Username)
 				ldapUsers = append(ldapUsers, ldap.User{
 					UserID: uaaUser.Username,
 					UserDN: userDN,
-					Email:  Email(uaaUser),
+					Email:  uaaUser.Email,
 				})
 			} else {
 				user, err := m.LdapMgr.GetUserByDN(userDN)
@@ -82,7 +84,7 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers map[string]*uaaclient.User, updat
 			ldapUsers = append(ldapUsers, ldap.User{
 				UserID: userID,
 				UserDN: uaaUser.ExternalID,
-				Email:  Email(uaaUser),
+				Email:  uaaUser.Email,
 			})
 		} else {
 			user, err := m.LdapMgr.GetUserByID(userID)
@@ -95,21 +97,6 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers map[string]*uaaclient.User, updat
 		}
 	}
 	return ldapUsers, nil
-}
-
-func Email(u *uaaclient.User) string {
-	for _, email := range u.Emails {
-		if email.Primary == nil {
-			continue
-		}
-		if *email.Primary {
-			return email.Value
-		}
-	}
-	if len(u.Emails) > 0 {
-		return u.Emails[0].Value
-	}
-	return ""
 }
 
 func (m *DefaultManager) UpdateUserInfo(user ldap.User) ldap.User {

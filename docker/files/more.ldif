@@ -47,10 +47,10 @@ dn: cn=special\, (char) - username,ou=users,dc=pivotal,dc=org
 objectclass: inetOrgPerson
 cn: special, (char) - username
 sn: Washburn
-uid: cwashburn3
+uid: cwashburn4
 userpassword: password
 homephone: 555-111-2222
-mail: cwashburn+cfmt3@testdomain.com
+mail: cwashburn+cfmt4@testdomain.com
 
 dn: cn=space_developers,ou=groups,dc=pivotal,dc=org
 objectClass: groupOfNames

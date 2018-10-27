@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	uaaclient "github.com/cloudfoundry-community/go-uaa"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -13,6 +12,7 @@ import (
 	ldapfakes "github.com/pivotalservices/cf-mgmt/ldap/fakes"
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
+	"github.com/pivotalservices/cf-mgmt/uaa"
 	uaafakes "github.com/pivotalservices/cf-mgmt/uaa/fakes"
 	. "github.com/pivotalservices/cf-mgmt/user"
 	"github.com/pivotalservices/cf-mgmt/user/fakes"
@@ -207,8 +207,8 @@ var _ = Describe("given UserSpaces", func() {
 		Context("SyncInternalUsers", func() {
 			It("Should add internal user to role", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaaclient.User)
-				uaaUsers["test"] = &uaaclient.User{Username: "test"}
+				uaaUsers := make(map[string]uaa.User)
+				uaaUsers["test"] = uaa.User{Username: "test"}
 				updateUsersInput := UpdateUsersInput{
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
@@ -229,8 +229,8 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should not add existing internal user to role", func() {
 				roleUsers := make(map[string]string)
 				roleUsers["test"] = "test"
-				uaaUsers := make(map[string]*uaaclient.User)
-				uaaUsers["test"] = &uaaclient.User{Username: "test"}
+				uaaUsers := make(map[string]uaa.User)
+				uaaUsers["test"] = uaa.User{Username: "test"}
 				updateUsersInput := UpdateUsersInput{
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
@@ -245,7 +245,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should error when user doesn't exist in uaa", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaaclient.User)
+				uaaUsers := make(map[string]uaa.User)
 				updateUsersInput := UpdateUsersInput{
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
@@ -259,8 +259,8 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should return error", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaaclient.User)
-				uaaUsers["test"] = &uaaclient.User{Username: "test"}
+				uaaUsers := make(map[string]uaa.User)
+				uaaUsers["test"] = uaa.User{Username: "test"}
 				updateUsersInput := UpdateUsersInput{
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
@@ -282,8 +282,8 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should add saml user to role", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaaclient.User)
-				uaaUsers["test@test.com"] = &uaaclient.User{Username: "test@test.com"}
+				uaaUsers := make(map[string]uaa.User)
+				uaaUsers["test@test.com"] = uaa.User{Username: "test@test.com"}
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -304,8 +304,8 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should not add existing saml user to role", func() {
 				roleUsers := make(map[string]string)
 				roleUsers["test@test.com"] = "test@test.com"
-				uaaUsers := make(map[string]*uaaclient.User)
-				uaaUsers["test@test.com"] = &uaaclient.User{Username: "test@test.com"}
+				uaaUsers := make(map[string]uaa.User)
+				uaaUsers["test@test.com"] = uaa.User{Username: "test@test.com"}
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -320,7 +320,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should create external user when user doesn't exist in uaa", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaaclient.User)
+				uaaUsers := make(map[string]uaa.User)
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -340,7 +340,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should not error when create external user errors", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaaclient.User)
+				uaaUsers := make(map[string]uaa.User)
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -356,8 +356,8 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should return error", func() {
 				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]*uaaclient.User)
-				uaaUsers["test@test.com"] = &uaaclient.User{Username: "test@test.com"}
+				uaaUsers := make(map[string]uaa.User)
+				uaaUsers["test@test.com"] = uaa.User{Username: "test@test.com"}
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -944,8 +944,8 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("UpdateSpaceUsers", func() {
 			It("Should succeed", func() {
-				userMap := make(map[string]*uaaclient.User)
-				userMap["test-user"] = &uaaclient.User{Username: "test-user-guid"}
+				userMap := make(map[string]uaa.User)
+				userMap["test-user"] = uaa.User{Username: "test-user-guid"}
 				uaaFake.ListUsersReturns(userMap, nil)
 				fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
 					config.SpaceConfig{
@@ -966,8 +966,8 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("UpdateSpaceUsers", func() {
 			It("Should succeed", func() {
-				userMap := make(map[string]*uaaclient.User)
-				userMap["test-user"] = &uaaclient.User{Username: "test-user-guid"}
+				userMap := make(map[string]uaa.User)
+				userMap["test-user"] = uaa.User{Username: "test-user-guid"}
 				uaaFake.ListUsersReturns(userMap, nil)
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
 					config.OrgConfig{

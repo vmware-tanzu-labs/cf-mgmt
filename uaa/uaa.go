@@ -18,19 +18,21 @@ type uaa interface {
 //Manager -
 type Manager interface {
 	//Returns a map keyed and valued by user id. User id is converted to lowercase
-	ListUsers() (map[string]*uaaclient.User, error)
+	ListUsers() (map[string]User, error)
 	CreateExternalUser(userName, userEmail, externalID, origin string) (err error)
-}
-
-//Token -
-type Token struct {
-	AccessToken string `json:"access_token"`
 }
 
 //DefaultUAAManager -
 type DefaultUAAManager struct {
 	Peek   bool
 	Client uaa
+}
+
+type User struct {
+	Username   string
+	ExternalID string
+	Email      string
+	Origin     string
 }
 
 //NewDefaultUAAManager -
@@ -71,8 +73,8 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 }
 
 //ListUsers - Returns a map containing username as key and user guid as value
-func (m *DefaultUAAManager) ListUsers() (map[string]*uaaclient.User, error) {
-	userMap := make(map[string]*uaaclient.User)
+func (m *DefaultUAAManager) ListUsers() (map[string]User, error) {
+	userMap := make(map[string]User)
 	lo.G.Debug("Getting users from Cloud Foundry")
 	users, err := m.Client.ListAllUsers("", "", "", "")
 	if err != nil {
@@ -80,10 +82,33 @@ func (m *DefaultUAAManager) ListUsers() (map[string]*uaaclient.User, error) {
 	}
 	lo.G.Debugf("Found %d users in the CF instance", len(users))
 	for _, user := range users {
-		userMap[strings.ToLower(user.Username)] = &user
+		lo.G.Debugf("Adding %s to userMap for userID %s", strings.ToLower(user.Username), user.Username)
+		uaaUser := User{
+			Username:   user.Username,
+			ExternalID: user.ExternalID,
+			Email:      Email(user),
+			Origin:     user.Origin,
+		}
+		userMap[strings.ToLower(user.Username)] = uaaUser
 		if user.ExternalID != "" {
-			userMap[strings.ToLower(user.ExternalID)] = &user
+			lo.G.Debugf("Adding %s to userMap for userID %s", strings.ToLower(user.ExternalID), user.Username)
+			userMap[strings.ToLower(user.ExternalID)] = uaaUser
 		}
 	}
 	return userMap, nil
+}
+
+func Email(u uaaclient.User) string {
+	for _, email := range u.Emails {
+		if email.Primary == nil {
+			continue
+		}
+		if *email.Primary {
+			return email.Value
+		}
+	}
+	if len(u.Emails) > 0 {
+		return u.Emails[0].Value
+	}
+	return ""
 }

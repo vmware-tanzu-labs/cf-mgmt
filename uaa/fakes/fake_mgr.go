@@ -4,16 +4,15 @@ package fakes
 import (
 	"sync"
 
-	go_uaa "github.com/cloudfoundry-community/go-uaa"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 )
 
 type FakeManager struct {
-	ListUsersStub        func() (map[string]*go_uaa.User, error)
+	ListUsersStub        func() (map[string]uaa.User, error)
 	listUsersMutex       sync.RWMutex
 	listUsersArgsForCall []struct{}
 	listUsersReturns     struct {
-		result1 map[string]*go_uaa.User
+		result1 map[string]uaa.User
 		result2 error
 	}
 	CreateExternalUserStub        func(userName, userEmail, externalID, origin string) (err error)
@@ -31,7 +30,7 @@ type FakeManager struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeManager) ListUsers() (map[string]*go_uaa.User, error) {
+func (fake *FakeManager) ListUsers() (map[string]uaa.User, error) {
 	fake.listUsersMutex.Lock()
 	fake.listUsersArgsForCall = append(fake.listUsersArgsForCall, struct{}{})
 	fake.recordInvocation("ListUsers", []interface{}{})
@@ -49,10 +48,10 @@ func (fake *FakeManager) ListUsersCallCount() int {
 	return len(fake.listUsersArgsForCall)
 }
 
-func (fake *FakeManager) ListUsersReturns(result1 map[string]*go_uaa.User, result2 error) {
+func (fake *FakeManager) ListUsersReturns(result1 map[string]uaa.User, result2 error) {
 	fake.ListUsersStub = nil
 	fake.listUsersReturns = struct {
-		result1 map[string]*go_uaa.User
+		result1 map[string]uaa.User
 		result2 error
 	}{result1, result2}
 }
