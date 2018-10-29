@@ -28,6 +28,16 @@ type Manager struct {
 }
 
 func (m *Manager) Apply() error {
+	globalCfg, err := m.Cfg.GetGlobalConfig()
+	if err != nil {
+		return err
+	}
+
+	if !globalCfg.EnableServiceAccess {
+		lo.G.Debug("Service Access is not enabled.  Set enable-service-access: true in cf-mgmt.yml")
+		return nil
+	}
+
 	serviceInfo, err := m.ListServiceInfo()
 	if err != nil {
 		return err
