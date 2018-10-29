@@ -77,13 +77,13 @@ var _ = Describe("Serviceaccess", func() {
 		It("Should remove 1 visibility", func() {
 			serviceInfo := &ServiceInfo{}
 			servicePlanInfo := serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-			servicePlanInfo.AddOrg("system-org-guid", cfclient.ServicePlanVisibility{Guid: "visibility-guid", OrganizationGuid: "unknown_org_guid"})
+			servicePlanInfo.AddOrg("system-org-guid", cfclient.ServicePlanVisibility{ServicePlanGuid: "service-plan-guid", OrganizationGuid: "unknown_org_guid"})
 
 			err := manager.RemoveUnknownVisibilites(serviceInfo)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgCallCount()).To(Equal(1))
 			visibilityGUID, orgGUID, async := fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgArgsForCall(0)
-			Expect(visibilityGUID).To(Equal("visibility-guid"))
+			Expect(visibilityGUID).To(Equal("service-plan-guid"))
 			Expect(orgGUID).To(Equal("unknown_org_guid"))
 			Expect(async).To(Equal(false))
 		})
@@ -266,15 +266,15 @@ var _ = Describe("Serviceaccess", func() {
 			Expect(servicesPlanInfo).ToNot(BeNil())
 
 			for i, service := range servicesToReturn {
-				for _, planName := range []string{"small", "large"} {
-					plan, err := servicesPlanInfo.GetPlan(service.Label, planName)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(plan).ToNot(BeNil())
+				plans, err := servicesPlanInfo.GetPlans(service.Label, []string{"small", "large"})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(len(plans)).To(Equal(2))
+				for range plans {
+					args := fakeCFClient.ListServicePlansByQueryArgsForCall(i)
+					Expect(args).To(BeEquivalentTo(url.Values{
+						"q": []string{fmt.Sprintf("%s:%s", "service_guid", service.Guid)},
+					}))
 				}
-				args := fakeCFClient.ListServicePlansByQueryArgsForCall(i)
-				Expect(args).To(BeEquivalentTo(url.Values{
-					"q": []string{fmt.Sprintf("%s:%s", "service_guid", service.Guid)},
-				}))
 			}
 
 		})
