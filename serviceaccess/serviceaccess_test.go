@@ -31,6 +31,7 @@ var _ = Describe("Serviceaccess", func() {
 
 	Context("Apply", func() {
 		It("Should succeed", func() {
+			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{EnableServiceAccess: true}, nil)
 			servicesToReturn := []cfclient.Service{
 				cfclient.Service{Label: "p-mysql", Guid: "p-mysql-guid"},
 			}
@@ -69,12 +70,6 @@ var _ = Describe("Serviceaccess", func() {
 			servicePlanGUID, orgGUID = fakeCFClient.CreateServicePlanVisibilityArgsForCall(1)
 			Expect(servicePlanGUID).To(Equal("small-guid"))
 			Expect(orgGUID).To(Equal("test-org-guid"))
-			servicePlanGUID, orgGUID, _ = fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgArgsForCall(0)
-			Expect(servicePlanGUID).To(Equal("org1-visibility-guid"))
-			Expect(orgGUID).To(Equal("org1-guid"))
-			servicePlanGUID, orgGUID, _ = fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgArgsForCall(1)
-			Expect(servicePlanGUID).To(Equal("org2-visibility-guid"))
-			Expect(orgGUID).To(Equal("org2-guid"))
 		})
 	})
 
