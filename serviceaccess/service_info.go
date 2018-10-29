@@ -2,6 +2,7 @@ package serviceaccess
 
 import (
 	"fmt"
+	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
@@ -54,17 +55,35 @@ func (s *ServiceInfo) AddPlan(serviceName string, servicePlan cfclient.ServicePl
 	return servicePlanInfo
 }
 
-func (s *ServiceInfo) GetPlan(serviceName, planName string) (*ServicePlanInfo, error) {
+func (s *ServiceInfo) GetPlans(serviceName string, planNames []string) ([]*ServicePlanInfo, error) {
 	plans, ok := s.m[serviceName]
 	if !ok {
 		return nil, fmt.Errorf("Service %s does not exist", serviceName)
 	}
-
-	plan, ok := plans[planName]
-	if !ok {
-		return nil, fmt.Errorf("Plan %s does not exist for service %s", planName, serviceName)
+	var servicePlans []*ServicePlanInfo
+	for planName, plan := range plans {
+		if Matches(planName, planNames) {
+			servicePlans = append(servicePlans, plan)
+		}
 	}
-	return plan, nil
+
+	if len(servicePlans) == 0 {
+		return nil, fmt.Errorf("No plans for for service %s with expected plans %v", serviceName, planNames)
+	}
+
+	return servicePlans, nil
+}
+
+func Matches(planName string, planList []string) bool {
+	for _, name := range planList {
+		if name == "*" {
+			return true
+		}
+		if strings.EqualFold(planName, name) {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *ServiceInfo) AllPlans() map[string][]*ServicePlanInfo {

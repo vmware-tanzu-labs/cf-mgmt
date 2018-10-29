@@ -34,7 +34,7 @@ func (m *Manager) Apply() error {
 	}
 
 	if !globalCfg.EnableServiceAccess {
-		lo.G.Debug("Service Access is not enabled.  Set enable-service-access: true in cf-mgmt.yml")
+		lo.G.Info("Service Access is not enabled.  Set enable-service-access: true in cf-mgmt.yml")
 		return nil
 	}
 
@@ -78,11 +78,11 @@ func (m *Manager) RemoveUnknownVisibilites(serviceInfo *ServiceInfo) error {
 		for _, plan := range servicePlan {
 			for _, visibility := range plan.ListVisibilities() {
 				if m.Peek {
-					lo.G.Infof("[dry-run]: removing plan %s for service %s to org guid %s", plan.Name, servicePlanName, visibility.OrganizationGuid)
+					lo.G.Infof("[dry-run]: removing plan %s for service %s to org with guid %s", plan.Name, servicePlanName, visibility.OrganizationGuid)
 					continue
 				}
-				lo.G.Infof("removing plan %s for service %s to org guid %s", plan.Name, servicePlanName, visibility.OrganizationGuid)
-				err := m.Client.DeleteServicePlanVisibilityByPlanAndOrg(visibility.Guid, visibility.OrganizationGuid, false)
+				lo.G.Infof("removing plan %s for service %s to org with guid %s", plan.Name, servicePlanName, visibility.OrganizationGuid)
+				err := m.Client.DeleteServicePlanVisibilityByPlanAndOrg(visibility.ServicePlanGuid, visibility.OrganizationGuid, false)
 				if err != nil {
 					return err
 				}
@@ -174,19 +174,18 @@ func (m *Manager) EnableOrgServiceAccess(serviceInfo *ServiceInfo, orgConfigs []
 				return err
 			}
 			for serviceName, plans := range orgConfig.ServiceAccess {
-				for _, planName := range plans {
-					servicePlan, err := serviceInfo.GetPlan(serviceName, planName)
-					if err != nil {
-						lo.G.Warning(err.Error())
-						continue
-					}
-
+				servicePlans, err := serviceInfo.GetPlans(serviceName, plans)
+				if err != nil {
+					lo.G.Warning(err.Error())
+					continue
+				}
+				for _, servicePlan := range servicePlans {
 					if !servicePlan.OrgHasAccess(org.Guid) {
 						if m.Peek {
-							lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", planName, serviceName, org.Name)
+							lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
 							continue
 						}
-						lo.G.Infof("adding plan %s for service %s to org %s", planName, serviceName, org.Name)
+						lo.G.Infof("adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
 						_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.Guid)
 						if err != nil {
 							return err
