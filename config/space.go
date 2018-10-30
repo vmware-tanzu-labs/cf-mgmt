@@ -2,6 +2,8 @@ package config
 
 import (
 	"strings"
+
+	"github.com/xchapter7x/lo"
 )
 
 // Spaces describes cf-mgmt config for all spaces.
@@ -15,6 +17,7 @@ type Spaces struct {
 type SpaceConfig struct {
 	Org                     string   `yaml:"org"`
 	Space                   string   `yaml:"space"`
+	OriginalSpace           string   `yaml:"original-space,omitempty"`
 	Developer               UserMgmt `yaml:"space-developer"`
 	Manager                 UserMgmt `yaml:"space-manager"`
 	Auditor                 UserMgmt `yaml:"space-auditor"`
@@ -49,6 +52,19 @@ func (s *Spaces) Contains(spaceName string) bool {
 		}
 	}
 	return false
+}
+
+func (s *Spaces) Replace(originalSpaceName, newSpaceName string) {
+	lo.G.Debugf("Replacing %s with %s in space list", originalSpaceName, newSpaceName)
+	var newList []string
+	for _, spaceName := range s.Spaces {
+		if !strings.EqualFold(spaceName, originalSpaceName) {
+			newList = append(newList, spaceName)
+		} else {
+			lo.G.Debugf("Removing %s from space list", originalSpaceName)
+		}
+	}
+	s.Spaces = append(newList, newSpaceName)
 }
 
 func (i *SpaceConfig) GetDeveloperGroups() []string {

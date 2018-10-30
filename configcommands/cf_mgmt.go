@@ -13,6 +13,7 @@ type CfMgmtConfigCommand struct {
 	AddASGToConfigurationCommand     AddASGToConfigurationCommand     `command:"add-asg" description:"add a named asg to configuration"`
 	UpdateOrgsConfigurationCommand   UpdateOrgsConfigurationCommand   `command:"update-orgs" description:"updates orgs.yml"`
 	RenameOrgConfigurationCommand    RenameOrgConfigurationCommand    `command:"rename-org" description:"renames an org"`
+	RenameSpaceConfigurationCommand  RenameSpaceConfigurationCommand  `command:"rename-space" description:"renames a space for a given org"`
 }
 
 var CfMgmtConfig CfMgmtConfigCommand

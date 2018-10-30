@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
+	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
 
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 	"github.com/pivotalservices/cf-mgmt/space"
@@ -21,14 +22,16 @@ var _ = Describe("given SpaceManager", func() {
 		fakeOrgMgr   *orgfakes.FakeManager
 		fakeClient   *spacefakes.FakeCFClient
 		spaceManager space.DefaultManager
+		fakeReader   *configfakes.FakeReader
 	)
 
 	BeforeEach(func() {
 		fakeUaa = new(uaafakes.FakeManager)
 		fakeOrgMgr = new(orgfakes.FakeManager)
 		fakeClient = new(spacefakes.FakeCFClient)
+		fakeReader = new(configfakes.FakeReader)
 		spaceManager = space.DefaultManager{
-			Cfg:    config.NewManager("./fixtures/config"),
+			Cfg:    fakeReader,
 			Client: fakeClient,
 			UAAMgr: fakeUaa,
 			OrgMgr: fakeOrgMgr,
@@ -77,9 +80,15 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("CreateSpaces()", func() {
 		BeforeEach(func() {
-			spaceManager.Cfg = config.NewManager("./fixtures/config")
+			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+				config.SpaceConfig{
+					Space: "space1",
+				},
+				config.SpaceConfig{
+					Space: "space2",
+				},
+			}, nil)
 		})
-
 		It("should create 2 spaces", func() {
 			spaces := []cfclient.Space{}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
@@ -117,11 +126,43 @@ var _ = Describe("given SpaceManager", func() {
 			fakeOrgMgr.GetOrgGUIDReturns("", errors.New("error1"))
 			Expect(spaceManager.CreateSpaces()).ShouldNot(Succeed())
 		})
+
+		It("should rename a space", func() {
+			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+				config.SpaceConfig{
+					Space:         "new-space1",
+					OriginalSpace: "space1",
+				},
+			}, nil)
+			spaces := []cfclient.Space{
+				{
+					Name:             "space1",
+					Guid:             "space1-guid",
+					OrganizationGuid: "testOrgGUID",
+				},
+			}
+			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+
+			Expect(spaceManager.CreateSpaces()).Should(Succeed())
+			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(1))
+			spaceGUID, spaceRequest := fakeClient.UpdateSpaceArgsForCall(0)
+			Expect(spaceGUID).Should(Equal("space1-guid"))
+			Expect(spaceRequest.Name).Should(Equal("new-space1"))
+			Expect(spaceRequest.OrganizationGuid).Should(Equal("testOrgGUID"))
+		})
 	})
 
 	Context("UpdateSpaces()", func() {
-
+		BeforeEach(func() {
+			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+				config.SpaceConfig{
+					Space:    "space1",
+					AllowSSH: true,
+				},
+			}, nil)
+		})
 		It("should turn on allow ssh", func() {
+
 			spaces := []cfclient.Space{
 				{
 					Name:             "space1",
@@ -203,9 +244,13 @@ var _ = Describe("given SpaceManager", func() {
 
 	Context("DeleteSpaces()", func() {
 		BeforeEach(func() {
-			spaceManager.Cfg = config.NewManager("./fixtures/config-delete")
+			fakeReader.SpacesReturns([]config.Spaces{
+				config.Spaces{
+					Spaces:             []string{"space1", "space2"},
+					EnableDeleteSpaces: true,
+				},
+			}, nil)
 		})
-
 		It("should delete 1", func() {
 			spaces := []cfclient.Space{
 				cfclient.Space{

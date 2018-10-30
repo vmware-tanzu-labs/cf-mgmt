@@ -10,6 +10,7 @@
 * [update-orgs](update-orgs/README.md)
 * [update-space](update-space/README.md)
 * [rename-org](rename-org/README.md)
+* [rename-space](rename-space/README.md)
 * [version ](version/README.md)
 
 #### Org Configuration

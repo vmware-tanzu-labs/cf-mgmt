@@ -222,6 +222,17 @@ func (m *yamlManager) RenameOrgConfig(orgConfig *OrgConfig) error {
 	return m.SaveOrgConfig(orgConfig)
 }
 
+func (m *yamlManager) RenameSpaceConfig(spaceConfig *SpaceConfig) error {
+	newDirectory := path.Join(m.ConfigDir, spaceConfig.Org, spaceConfig.Space)
+	originalDirectory := path.Join(m.ConfigDir, spaceConfig.Org, spaceConfig.OriginalSpace)
+
+	err := RenameDirectory(originalDirectory, newDirectory)
+	if err != nil {
+		return err
+	}
+	return m.SaveSpaceConfig(spaceConfig)
+}
+
 func (m *yamlManager) GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, error) {
 	targetPath := path.Join(m.ConfigDir, orgName, spaceName)
 	files, err := FindFiles(targetPath, "spaceConfig.yml")

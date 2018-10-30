@@ -1,7 +1,6 @@
 package configcommands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -29,11 +28,6 @@ func (c *RenameOrgConfigurationCommand) Execute(args []string) error {
 	orgSpaces, err := c.ConfigManager.OrgSpaces(c.OrgName)
 	if err != nil {
 		return err
-	}
-	errorString := ""
-
-	if errorString != "" {
-		return errors.New(errorString)
 	}
 
 	orgConfig.Org = c.NewOrgName

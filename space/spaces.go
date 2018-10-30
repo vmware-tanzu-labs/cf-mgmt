@@ -118,17 +118,33 @@ func (m *DefaultManager) CreateSpace(spaceName, orgName, orgGUID string) error {
 	return err
 }
 
-//CreateSpaces -
-func (m *DefaultManager) CreateSpaces() error {
-	configSpaceList, err := m.Cfg.Spaces()
+func (m *DefaultManager) RenameSpace(originalSpaceName, spaceName, orgName string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: rename space %s for org %s to %s", originalSpaceName, orgName, spaceName)
+		return nil
+	}
+	lo.G.Infof("rename space %s for org %s to %s", originalSpaceName, orgName, spaceName)
+
+	space, err := m.FindSpace(orgName, originalSpaceName)
 	if err != nil {
 		return err
 	}
-	for _, input := range configSpaceList {
-		if len(input.Spaces) == 0 {
-			continue
-		}
-		orgGUID, err := m.OrgMgr.GetOrgGUID(input.Org)
+	_, err = m.Client.UpdateSpace(space.Guid, cfclient.SpaceRequest{
+		Name:             spaceName,
+		OrganizationGuid: space.OrganizationGuid,
+	})
+	return err
+}
+
+//CreateSpaces -
+func (m *DefaultManager) CreateSpaces() error {
+
+	configSpaceList, err := m.Cfg.GetSpaceConfigs()
+	if err != nil {
+		return err
+	}
+	for _, space := range configSpaceList {
+		orgGUID, err := m.OrgMgr.GetOrgGUID(space.Org)
 		if err != nil {
 			return err
 		}
@@ -136,23 +152,38 @@ func (m *DefaultManager) CreateSpaces() error {
 		if err != nil {
 			continue
 		}
-		for _, spaceName := range input.Spaces {
-			if m.doesSpaceExist(spaces, spaceName) {
-				lo.G.Debugf("[%s] space already exists", spaceName)
-				continue
-			} else {
-				lo.G.Debugf("[%s] space doesn't exist in [%v]", spaceName, input.Spaces)
-			}
-			if err = m.CreateSpace(spaceName, input.Org, orgGUID); err != nil {
-				lo.G.Error(err)
+
+		if m.doesSpaceExist(spaces, space.Space) {
+			lo.G.Debugf("[%s] space already exists in org [%s]", space.Space, space.Org)
+			continue
+		} else if doesSpaceExistFromRename(space.OriginalSpace, spaces) {
+			lo.G.Debugf("renamed space [%s] already exists as [%s]", space.Space, space.OriginalSpace)
+			if err := m.RenameSpace(space.OriginalSpace, space.Space, space.Org); err != nil {
 				return err
 			}
+			continue
+		} else {
+			lo.G.Debugf("[%s] space doesn't exist in [%v]", space.Space, spaces)
 		}
+		if err = m.CreateSpace(space.Space, space.Org, orgGUID); err != nil {
+			lo.G.Error(err)
+			return err
+		}
+
 	}
 	return nil
 }
 
 func (m *DefaultManager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
+	for _, space := range spaces {
+		if strings.EqualFold(space.Name, spaceName) {
+			return true
+		}
+	}
+	return false
+}
+
+func doesSpaceExistFromRename(spaceName string, spaces []cfclient.Space) bool {
 	for _, space := range spaces {
 		if strings.EqualFold(space.Name, spaceName) {
 			return true

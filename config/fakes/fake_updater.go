@@ -99,6 +99,14 @@ type FakeUpdater struct {
 	renameOrgConfigReturns struct {
 		result1 error
 	}
+	RenameSpaceConfigStub        func(spaceConfig *config.SpaceConfig) error
+	renameSpaceConfigMutex       sync.RWMutex
+	renameSpaceConfigArgsForCall []struct {
+		spaceConfig *config.SpaceConfig
+	}
+	renameSpaceConfigReturns struct {
+		result1 error
+	}
 	DeleteOrgConfigStub        func(orgName string) error
 	deleteOrgConfigMutex       sync.RWMutex
 	deleteOrgConfigArgsForCall []struct {
@@ -511,6 +519,39 @@ func (fake *FakeUpdater) RenameOrgConfigReturns(result1 error) {
 	}{result1}
 }
 
+func (fake *FakeUpdater) RenameSpaceConfig(spaceConfig *config.SpaceConfig) error {
+	fake.renameSpaceConfigMutex.Lock()
+	fake.renameSpaceConfigArgsForCall = append(fake.renameSpaceConfigArgsForCall, struct {
+		spaceConfig *config.SpaceConfig
+	}{spaceConfig})
+	fake.recordInvocation("RenameSpaceConfig", []interface{}{spaceConfig})
+	fake.renameSpaceConfigMutex.Unlock()
+	if fake.RenameSpaceConfigStub != nil {
+		return fake.RenameSpaceConfigStub(spaceConfig)
+	} else {
+		return fake.renameSpaceConfigReturns.result1
+	}
+}
+
+func (fake *FakeUpdater) RenameSpaceConfigCallCount() int {
+	fake.renameSpaceConfigMutex.RLock()
+	defer fake.renameSpaceConfigMutex.RUnlock()
+	return len(fake.renameSpaceConfigArgsForCall)
+}
+
+func (fake *FakeUpdater) RenameSpaceConfigArgsForCall(i int) *config.SpaceConfig {
+	fake.renameSpaceConfigMutex.RLock()
+	defer fake.renameSpaceConfigMutex.RUnlock()
+	return fake.renameSpaceConfigArgsForCall[i].spaceConfig
+}
+
+func (fake *FakeUpdater) RenameSpaceConfigReturns(result1 error) {
+	fake.RenameSpaceConfigStub = nil
+	fake.renameSpaceConfigReturns = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeUpdater) DeleteOrgConfig(orgName string) error {
 	fake.deleteOrgConfigMutex.Lock()
 	fake.deleteOrgConfigArgsForCall = append(fake.deleteOrgConfigArgsForCall, struct {
@@ -669,6 +710,8 @@ func (fake *FakeUpdater) Invocations() map[string][][]interface{} {
 	defer fake.saveOrgConfigMutex.RUnlock()
 	fake.renameOrgConfigMutex.RLock()
 	defer fake.renameOrgConfigMutex.RUnlock()
+	fake.renameSpaceConfigMutex.RLock()
+	defer fake.renameSpaceConfigMutex.RUnlock()
 	fake.deleteOrgConfigMutex.RLock()
 	defer fake.deleteOrgConfigMutex.RUnlock()
 	fake.deleteSpaceConfigMutex.RLock()
