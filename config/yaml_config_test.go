@@ -143,16 +143,17 @@ var _ = Describe("CF-Mgmt Config", func() {
 			orgConfig := &config.OrgConfig{
 				Org: orgName,
 			}
+			spaces := &config.Spaces{Org: orgName}
 			BeforeEach(func() {
 				tempDir, err = ioutil.TempDir("", "cf-mgmt")
 				Ω(err).ShouldNot(HaveOccurred())
 				configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
 				configManager.CreateConfigIfNotExists("ldap")
-				addError := configManager.AddOrgToConfig(orgConfig)
+				addError := configManager.AddOrgToConfig(orgConfig, spaces)
 				Ω(addError).ShouldNot(HaveOccurred())
 				addError = configManager.AddOrgToConfig(&config.OrgConfig{
 					Org: "sdfasdfdf",
-				})
+				}, &config.Spaces{Org: "sdfasdfdf"})
 				Ω(addError).ShouldNot(HaveOccurred())
 			})
 			AfterEach(func() {
@@ -270,6 +271,10 @@ var _ = Describe("CF-Mgmt Config", func() {
 				orgConfig := &config.OrgConfig{
 					Org: orgName,
 				}
+				spaces := &config.Spaces{
+					Org:                orgName,
+					EnableDeleteSpaces: true,
+				}
 				spaceConfig := &config.SpaceConfig{
 					Org:   orgName,
 					Space: spaceName,
@@ -279,7 +284,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 					Ω(err).ShouldNot(HaveOccurred())
 					configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
 					configManager.CreateConfigIfNotExists("ldap")
-					addError := configManager.AddOrgToConfig(orgConfig)
+					addError := configManager.AddOrgToConfig(orgConfig, spaces)
 					Ω(addError).ShouldNot(HaveOccurred())
 					addError = configManager.AddSpaceToConfig(spaceConfig)
 					Ω(addError).ShouldNot(HaveOccurred())
@@ -320,6 +325,9 @@ var _ = Describe("CF-Mgmt Config", func() {
 				It("should succeed adding an org that doesn't exist", func() {
 					err := configManager.AddOrgToConfig(&config.OrgConfig{
 						Org: "foo",
+					}, &config.Spaces{
+						Org:                "foo",
+						EnableDeleteSpaces: true,
 					})
 					Ω(err).ShouldNot(HaveOccurred())
 					orgs, err := configManager.Orgs()
@@ -331,11 +339,11 @@ var _ = Describe("CF-Mgmt Config", func() {
 				It("should fail adding an org with different case", func() {
 					err := configManager.AddOrgToConfig(&config.OrgConfig{
 						Org: "foo",
-					})
+					}, &config.Spaces{Org: "foo"})
 					Ω(err).ShouldNot(HaveOccurred())
 					err = configManager.AddOrgToConfig(&config.OrgConfig{
 						Org: "Foo",
-					})
+					}, &config.Spaces{Org: "Foo"})
 					Ω(err).Should(HaveOccurred())
 					orgs, err := configManager.Orgs()
 					Ω(err).ShouldNot(HaveOccurred())
@@ -354,7 +362,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 					configManager.CreateConfigIfNotExists("ldap")
 					err := configManager.AddOrgToConfig(&config.OrgConfig{
 						Org: "foo",
-					})
+					}, &config.Spaces{Org: "foo"})
 					Ω(err).ShouldNot(HaveOccurred())
 				})
 				AfterEach(func() {

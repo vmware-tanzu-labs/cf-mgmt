@@ -24,5 +24,6 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 		RemoveUsers:          true,
 		RemovePrivateDomains: true,
 	}
-	return config.NewManager(c.ConfigDirectory).AddOrgToConfig(orgConfig)
+	spacesConfig := &config.Spaces{Org: orgConfig.Org, EnableDeleteSpaces: true}
+	return config.NewManager(c.ConfigDirectory).AddOrgToConfig(orgConfig, spacesConfig)
 }

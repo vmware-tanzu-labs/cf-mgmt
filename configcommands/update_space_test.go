@@ -6,20 +6,20 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/config/fakes"
 
-	"github.com/pivotalservices/cf-mgmt/config/configfakes"
 	. "github.com/pivotalservices/cf-mgmt/configcommands"
 )
 
 var _ = Describe("given update orgs config command", func() {
 	var (
-		mockConfig    *configfakes.FakeManager
+		mockConfig    *fakes.FakeManager
 		configuration UpdateSpaceConfigurationCommand
 	)
 	orgName := "foo"
 	spaceName := "bar"
 	BeforeEach(func() {
-		mockConfig = new(configfakes.FakeManager)
+		mockConfig = new(fakes.FakeManager)
 		configuration = UpdateSpaceConfigurationCommand{
 			OrgName:       orgName,
 			SpaceName:     spaceName,

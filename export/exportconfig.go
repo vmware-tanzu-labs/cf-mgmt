@@ -167,7 +167,8 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		for privatedomain, _ := range privatedomains {
 			orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, privatedomain)
 		}
-		configMgr.AddOrgToConfig(orgConfig)
+		spacesConfig := &config.Spaces{Org: orgConfig.Org, EnableDeleteSpaces: true}
+		configMgr.AddOrgToConfig(orgConfig, spacesConfig)
 
 		lo.G.Infof("Done creating org %s", orgConfig.Org)
 		lo.G.Infof("Listing spaces for org %s", orgConfig.Org)

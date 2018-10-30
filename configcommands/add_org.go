@@ -21,6 +21,7 @@ type AddOrgToConfigurationCommand struct {
 	ServiceAccess           struct {
 		ServiceNames []string `long:"service" description:"Service Name to add, specify multiple times"`
 	} `group:"service-access"`
+	EnableRemoveSpaces string `long:"enable-remove-spaces" description:"Enable removing spaces" choice:"true" choice:"false"`
 }
 
 //Execute - adds a named org to the configuration
@@ -51,11 +52,13 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 		orgConfig.ServiceAccess[service] = []string{"*"}
 	}
 
+	orgSpaces := &config.Spaces{Org: orgConfig.Org, EnableDeleteSpaces: true}
+	convertToBool("enable-remove-spaces", &orgSpaces.EnableDeleteSpaces, c.EnableRemoveSpaces, &errorString)
 	if errorString != "" {
 		return errors.New(errorString)
 	}
 
-	if err := config.NewManager(c.ConfigDirectory).AddOrgToConfig(orgConfig); err != nil {
+	if err := config.NewManager(c.ConfigDirectory).AddOrgToConfig(orgConfig, orgSpaces); err != nil {
 		return err
 	}
 	fmt.Println(fmt.Sprintf("The org [%s] has been added", c.OrgName))
