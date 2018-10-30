@@ -34,6 +34,9 @@ This will contain a orgConfig.yml and folder for each space.  Each orgConfig.yml
 # org name
 org: test
 
+# added in 1.0.9+ to allow renaming orgs
+original-org: foo
+
 org-billingmanager:
   # list of ldap users that will be created in cf and given billing manager role
   ldap_users:
@@ -141,6 +144,9 @@ org: test
 # space name
 space: space1
 
+# added in 1.0.9+ to allow renaming spaces
+original-space: old-space1
+
 # if cf ssh is allowed for space
 allow-ssh: yes
 
@@ -227,6 +233,9 @@ enable-security-group: false
 
 # added in 0.0.48+ which will remove users from roles if not configured in cf-mgmt
 enable-remove-users: true/false
+
+# allowing security groups to be applied that are defined globally
+named-security-groups: []
 ```
 
 #### Space Default Configuration
