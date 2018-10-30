@@ -12,6 +12,7 @@ type CfMgmtConfigCommand struct {
 	DeleteSpaceConfigurationCommand  DeleteSpaceConfigurationCommand  `command:"delete-space" description:"deletes space configuration"`
 	AddASGToConfigurationCommand     AddASGToConfigurationCommand     `command:"add-asg" description:"add a named asg to configuration"`
 	UpdateOrgsConfigurationCommand   UpdateOrgsConfigurationCommand   `command:"update-orgs" description:"updates orgs.yml"`
+	RenameOrgConfigurationCommand    RenameOrgConfigurationCommand    `command:"rename-org" description:"renames an org"`
 }
 
 var CfMgmtConfig CfMgmtConfigCommand

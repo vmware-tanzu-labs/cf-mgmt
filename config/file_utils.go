@@ -62,3 +62,8 @@ func WriteFile(configFile string, dataType interface{}) error {
 	}
 	return WriteFileBytes(configFile, data)
 }
+
+//RenameDirectory -
+func RenameDirectory(originalDirectory, newDirectory string) error {
+	return os.Rename(originalDirectory, newDirectory)
+}

@@ -211,17 +211,32 @@ func (m *yamlManager) SaveOrgConfig(orgConfig *OrgConfig) error {
 	return WriteFile(filepath.Join(m.ConfigDir, orgConfig.Org, "orgConfig.yml"), orgConfig)
 }
 
-func (m *yamlManager) GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, error) {
-	configs, err := m.GetSpaceConfigs()
+func (m *yamlManager) RenameOrgConfig(orgConfig *OrgConfig) error {
+	newDirectory := fmt.Sprintf("%s/%s", m.ConfigDir, orgConfig.Org)
+	originalDirectory := fmt.Sprintf("%s/%s", m.ConfigDir, orgConfig.OriginalOrg)
+
+	err := RenameDirectory(originalDirectory, newDirectory)
 	if err != nil {
+		return err
+	}
+	return m.SaveOrgConfig(orgConfig)
+}
+
+func (m *yamlManager) GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, error) {
+	targetPath := path.Join(m.ConfigDir, orgName, spaceName)
+	files, err := FindFiles(targetPath, "spaceConfig.yml")
+	if err != nil {
+		return nil, fmt.Errorf("Space [%s] not found in org [%s] config", spaceName, orgName)
+	}
+	if len(files) != 1 {
+		return nil, fmt.Errorf("Space [%s] not found in org [%s] config", spaceName, orgName)
+	}
+
+	result := &SpaceConfig{}
+	if err = LoadFile(files[0], &result); err != nil {
 		return nil, err
 	}
-	for _, config := range configs {
-		if config.Org == orgName && config.Space == spaceName {
-			return &config, nil
-		}
-	}
-	return nil, fmt.Errorf("Space [%s] not found in org [%s] config", spaceName, orgName)
+	return result, nil
 }
 
 func (m *yamlManager) SaveSpaceConfig(spaceConfig *SpaceConfig) error {

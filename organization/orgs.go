@@ -48,6 +48,12 @@ func (m *DefaultManager) CreateOrgs() error {
 		if doesOrgExist(org.Org, currentOrgs) {
 			lo.G.Debugf("[%s] org already exists", org.Org)
 			continue
+		} else if doesOrgExistFromRename(org.OriginalOrg, currentOrgs) {
+			lo.G.Debugf("renamed org [%s] already exists as [%s]", org.Org, org.OriginalOrg)
+			if err := m.RenameOrg(org.OriginalOrg, org.Org); err != nil {
+				return err
+			}
+			continue
 		} else {
 			lo.G.Debugf("[%s] org doesn't exist in list [%v]", org.Org, desiredOrgs)
 		}
@@ -101,6 +107,14 @@ func (m *DefaultManager) DeleteOrgs() error {
 }
 
 func doesOrgExist(orgName string, orgs []cfclient.Org) bool {
+	for _, org := range orgs {
+		if strings.EqualFold(org.Name, orgName) {
+			return true
+		}
+	}
+	return false
+}
+func doesOrgExistFromRename(orgName string, orgs []cfclient.Org) bool {
 	for _, org := range orgs {
 		if strings.EqualFold(org.Name, orgName) {
 			return true
@@ -176,6 +190,22 @@ func (m *DefaultManager) CreateOrg(orgName string, currentOrgs []string) error {
 	lo.G.Infof("create org %s as it doesn't exist in %v", orgName, currentOrgs)
 	_, err := m.Client.CreateOrg(cfclient.OrgRequest{
 		Name: orgName,
+	})
+	return err
+}
+
+func (m *DefaultManager) RenameOrg(originalOrgName, newOrgName string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: renaming org %s to %s", originalOrgName, newOrgName)
+		return nil
+	}
+	lo.G.Infof("renaming org %s to %s", originalOrgName, newOrgName)
+	org, err := m.FindOrg(originalOrgName)
+	if err != nil {
+		return err
+	}
+	_, err = m.Client.UpdateOrg(org.Guid, cfclient.OrgRequest{
+		Name: newOrgName,
 	})
 	return err
 }
