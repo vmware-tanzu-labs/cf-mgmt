@@ -5,6 +5,7 @@
 `update-org` command allows updating any property except name of org within orgConfig.yml
 - quotas
 - user/role mappings
+- service access
 
 ## Command Usage
 ```
@@ -69,4 +70,8 @@ auditor:
   --auditor-saml-user-to-remove=               SAML user to remove, specify multiple times
   --auditor-ldap-group=                        Group to add, specify multiple times
   --auditor-ldap-group-to-remove=              Group to remove, specify multiple times
+service-access:
+  --service=                                  Service Name to add
+  --plans=                                    plans to add, empty list will add all plans
+  --service-to-remove=                        name of service to remove
 ```

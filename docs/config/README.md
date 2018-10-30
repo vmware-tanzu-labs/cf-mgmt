@@ -117,7 +117,7 @@ enable-remove-users: true/false
 private-domains: ["test.com", "test2.com"]
 enable-remove-private-domains: true/false
 
-# added in 1.0.7+ which allows configuration of service access
+# added in 1.0.9+ which allows configuration of service access
 service-access:
   p-mysql: ["small","large"]
   p-rabbit: ["*"]
