@@ -8,10 +8,11 @@ import (
 )
 
 type FakeManager struct {
-	AddOrgToConfigStub        func(orgConfig *config.OrgConfig) error
+	AddOrgToConfigStub        func(orgConfig *config.OrgConfig, spaces *config.Spaces) error
 	addOrgToConfigMutex       sync.RWMutex
 	addOrgToConfigArgsForCall []struct {
 		orgConfig *config.OrgConfig
+		spaces    *config.Spaces
 	}
 	addOrgToConfigReturns struct {
 		result1 error
@@ -220,15 +221,16 @@ type FakeManager struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeManager) AddOrgToConfig(orgConfig *config.OrgConfig) error {
+func (fake *FakeManager) AddOrgToConfig(orgConfig *config.OrgConfig, spaces *config.Spaces) error {
 	fake.addOrgToConfigMutex.Lock()
 	fake.addOrgToConfigArgsForCall = append(fake.addOrgToConfigArgsForCall, struct {
 		orgConfig *config.OrgConfig
-	}{orgConfig})
-	fake.recordInvocation("AddOrgToConfig", []interface{}{orgConfig})
+		spaces    *config.Spaces
+	}{orgConfig, spaces})
+	fake.recordInvocation("AddOrgToConfig", []interface{}{orgConfig, spaces})
 	fake.addOrgToConfigMutex.Unlock()
 	if fake.AddOrgToConfigStub != nil {
-		return fake.AddOrgToConfigStub(orgConfig)
+		return fake.AddOrgToConfigStub(orgConfig, spaces)
 	} else {
 		return fake.addOrgToConfigReturns.result1
 	}
@@ -240,10 +242,10 @@ func (fake *FakeManager) AddOrgToConfigCallCount() int {
 	return len(fake.addOrgToConfigArgsForCall)
 }
 
-func (fake *FakeManager) AddOrgToConfigArgsForCall(i int) *config.OrgConfig {
+func (fake *FakeManager) AddOrgToConfigArgsForCall(i int) (*config.OrgConfig, *config.Spaces) {
 	fake.addOrgToConfigMutex.RLock()
 	defer fake.addOrgToConfigMutex.RUnlock()
-	return fake.addOrgToConfigArgsForCall[i].orgConfig
+	return fake.addOrgToConfigArgsForCall[i].orgConfig, fake.addOrgToConfigArgsForCall[i].spaces
 }
 
 func (fake *FakeManager) AddOrgToConfigReturns(result1 error) {

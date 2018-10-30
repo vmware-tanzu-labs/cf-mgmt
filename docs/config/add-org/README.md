@@ -19,6 +19,7 @@ Help Options:
   --private-domain=                         Private Domain(s) to add, specify multiple times
   --shared-private-domain=                  Shared Private Domain(s) to add, specify multiple times
   --default-isolation-segment=              Default isolation segment for org
+  --enable-remove-spaces=[true|false]       Enable removing spaces
 
 quota:
   --enable-org-quota=[true|false]           Enable the Org Quota in the config

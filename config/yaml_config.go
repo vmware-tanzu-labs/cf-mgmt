@@ -294,7 +294,7 @@ func (m *yamlManager) SaveOrgs(orgs *Orgs) error {
 }
 
 // AddOrgToConfig adds an organization to the cf-mgmt configuration.
-func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
+func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig, spaces *Spaces) error {
 	orgList, err := m.Orgs()
 	if err != nil {
 		return err
@@ -313,10 +313,7 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 		return err
 	}
 	m.SaveOrgConfig(orgConfig)
-	return m.SaveOrgSpaces(&Spaces{
-		Org:                orgName,
-		EnableDeleteSpaces: true,
-	})
+	return m.SaveOrgSpaces(spaces)
 }
 
 // AddSpaceToConfig adds a space to the cf-mgmt configuration, so long as a
