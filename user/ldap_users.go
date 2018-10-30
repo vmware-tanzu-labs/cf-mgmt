@@ -6,6 +6,7 @@ import (
 
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaa"
+	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
 
@@ -38,7 +39,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map
 					}
 				}
 				if err := updateUsersInput.AddUser(updateUsersInput, userID); err != nil {
-					return err
+					return errors.Wrap(err, fmt.Sprintf("User %s", userID))
 				}
 			} else {
 				lo.G.Debugf("User[%s] found in role", userID)
