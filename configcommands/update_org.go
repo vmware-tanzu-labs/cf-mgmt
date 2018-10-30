@@ -10,21 +10,22 @@ import (
 type UpdateOrgConfigurationCommand struct {
 	ConfigManager config.Manager
 	BaseConfigCommand
-	OrgName                          string   `long:"org" description:"Org name" required:"true"`
-	PrivateDomains                   []string `long:"private-domain" description:"Private Domain(s) to add, specify multiple times"`
-	PrivateDomainsToRemove           []string `long:"private-domain-to-remove" description:"Private Domain(s) to remove, specify multiple times"`
-	EnableRemovePrivateDomains       string   `long:"enable-remove-private-domains" description:"Enable removing private domains" choice:"true" choice:"false"`
-	SharedPrivateDomains             []string `long:"shared-private-domain" description:"Shared Private Domain(s) to add, specify multiple times"`
-	SharedPrivateDomainsToRemove     []string `long:"shared-private-domain-to-remove" description:"Shared Private Domain(s) to remove, specify multiple times"`
-	EnableRemoveSharedPrivateDomains string   `long:"enable-remove-shared-private-domains" description:"Enable removing shared private domains" choice:"true" choice:"false"`
-	EnableRemoveSpaces               string   `long:"enable-remove-spaces" description:"Enable removing spaces" choice:"true" choice:"false"`
-	DefaultIsolationSegment          string   `long:"default-isolation-segment" description:"Default isolation segment for org" `
-	ClearDefaultIsolationSegment     bool     `long:"clear-default-isolation-segment" description:"Sets the default isolation segment to blank"`
-	EnableRemoveUsers                string   `long:"enable-remove-users" description:"Enable removing users from the org" choice:"true" choice:"false"`
-	Quota                            OrgQuota `group:"quota"`
-	BillingManager                   UserRole `group:"billing-manager" namespace:"billing-manager"`
-	Manager                          UserRole `group:"manager" namespace:"manager"`
-	Auditor                          UserRole `group:"auditor" namespace:"auditor"`
+	OrgName                          string        `long:"org" description:"Org name" required:"true"`
+	PrivateDomains                   []string      `long:"private-domain" description:"Private Domain(s) to add, specify multiple times"`
+	PrivateDomainsToRemove           []string      `long:"private-domain-to-remove" description:"Private Domain(s) to remove, specify multiple times"`
+	EnableRemovePrivateDomains       string        `long:"enable-remove-private-domains" description:"Enable removing private domains" choice:"true" choice:"false"`
+	SharedPrivateDomains             []string      `long:"shared-private-domain" description:"Shared Private Domain(s) to add, specify multiple times"`
+	SharedPrivateDomainsToRemove     []string      `long:"shared-private-domain-to-remove" description:"Shared Private Domain(s) to remove, specify multiple times"`
+	EnableRemoveSharedPrivateDomains string        `long:"enable-remove-shared-private-domains" description:"Enable removing shared private domains" choice:"true" choice:"false"`
+	EnableRemoveSpaces               string        `long:"enable-remove-spaces" description:"Enable removing spaces" choice:"true" choice:"false"`
+	DefaultIsolationSegment          string        `long:"default-isolation-segment" description:"Default isolation segment for org" `
+	ClearDefaultIsolationSegment     bool          `long:"clear-default-isolation-segment" description:"Sets the default isolation segment to blank"`
+	EnableRemoveUsers                string        `long:"enable-remove-users" description:"Enable removing users from the org" choice:"true" choice:"false"`
+	Quota                            OrgQuota      `group:"quota"`
+	BillingManager                   UserRole      `group:"billing-manager" namespace:"billing-manager"`
+	Manager                          UserRole      `group:"manager" namespace:"manager"`
+	Auditor                          UserRole      `group:"auditor" namespace:"auditor"`
+	ServiceAccess                    ServiceAccess `group:"service-access"`
 }
 
 //Execute - updates org configuration`
@@ -57,6 +58,18 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 
 	updateOrgQuotaConfig(orgConfig, c.Quota, &errorString)
 	c.updateUsers(orgConfig, &errorString)
+
+	if c.ServiceAccess.ServiceNameToRemove != "" {
+		delete(orgConfig.ServiceAccess, c.ServiceAccess.ServiceNameToRemove)
+	}
+
+	if c.ServiceAccess.ServiceName != "" {
+		if len(c.ServiceAccess.Plans) > 0 {
+			orgConfig.ServiceAccess[c.ServiceAccess.ServiceName] = c.ServiceAccess.Plans
+		} else {
+			orgConfig.ServiceAccess[c.ServiceAccess.ServiceName] = []string{"*"}
+		}
+	}
 
 	if errorString != "" {
 		return errors.New(errorString)

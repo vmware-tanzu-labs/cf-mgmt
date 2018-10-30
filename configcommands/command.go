@@ -27,6 +27,16 @@ type UserRoleAdd struct {
 	LDAPGroups []string `long:"ldap-group" description:"Group to add, specify multiple times"`
 }
 
+type ServiceAccess struct {
+	ServiceAccessAdd
+	ServiceNameToRemove string `long:"service-to-remove" description:"name of service to remove"`
+}
+
+type ServiceAccessAdd struct {
+	ServiceName string   `long:"service" description:"Service Name to add"`
+	Plans       []string `long:"plans" description:"plans to add, empty list will add all plans"`
+}
+
 type OrgQuota struct {
 	EnableOrgQuota          string `long:"enable-org-quota" description:"Enable the Org Quota in the config" choice:"true" choice:"false"`
 	MemoryLimit             string `long:"memory-limit" description:"An Org's memory limit in Megabytes"`
