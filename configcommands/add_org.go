@@ -18,6 +18,9 @@ type AddOrgToConfigurationCommand struct {
 	BillingManager          UserRoleAdd `group:"billing-manager" namespace:"billing-manager"`
 	Manager                 UserRoleAdd `group:"manager" namespace:"manager"`
 	Auditor                 UserRoleAdd `group:"auditor" namespace:"auditor"`
+	ServiceAccess           struct {
+		ServiceNames []string `long:"service" description:"Service Name to add, specify multiple times"`
+	} `group:"service-access"`
 }
 
 //Execute - adds a named org to the configuration
@@ -42,6 +45,11 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 
 	updateOrgQuotaConfig(orgConfig, c.Quota, &errorString)
 	c.updateUsers(orgConfig, &errorString)
+
+	orgConfig.ServiceAccess = make(map[string][]string)
+	for _, service := range c.ServiceAccess.ServiceNames {
+		orgConfig.ServiceAccess[service] = []string{"*"}
+	}
 
 	if errorString != "" {
 		return errors.New(errorString)
