@@ -297,7 +297,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 				AfterEach(func() {
 					os.RemoveAll(tempDir)
 				})
-				It("should succeed", func() {
+				It("should fail to find space", func() {
 					err := configManager.DeleteSpaceConfig(orgName, spaceName)
 					Ω(err).ShouldNot(HaveOccurred())
 					spaces, err := configManager.OrgSpaces(orgName)
@@ -305,7 +305,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 					Ω(spaces.Spaces).ShouldNot(ConsistOf(spaceName))
 					_, err = configManager.GetSpaceConfig(orgName, spaceName)
 					Ω(err).Should(HaveOccurred())
-					Ω(err.Error()).Should(BeEquivalentTo("Space [bar] not found in org [foo] config"))
+					Ω(err.Error()).Should(Equal("Space [bar] not found in org [foo] config"))
 				})
 			})
 

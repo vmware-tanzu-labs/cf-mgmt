@@ -30,6 +30,7 @@ type Updater interface {
 	SaveOrgSpaces(spaces *Spaces) error
 	SaveSpaceConfig(spaceConfig *SpaceConfig) error
 	SaveOrgConfig(orgConfig *OrgConfig) error
+	RenameOrgConfig(orgConfig *OrgConfig) error
 
 	DeleteOrgConfig(orgName string) error
 	DeleteSpaceConfig(orgName, spaceName string) error

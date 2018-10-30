@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
+	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
 	. "github.com/pivotalservices/cf-mgmt/organization"
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 )
@@ -15,12 +16,14 @@ var _ = Describe("given OrgManager", func() {
 	var (
 		fakeClient *orgfakes.FakeCFClient
 		orgManager DefaultManager
+		fakeReader *configfakes.FakeReader
 	)
 
 	BeforeEach(func() {
 		fakeClient = new(orgfakes.FakeCFClient)
+		fakeReader = new(configfakes.FakeReader)
 		orgManager = DefaultManager{
-			Cfg:    config.NewManager("./fixtures/config"),
+			Cfg:    fakeReader,
 			Client: fakeClient,
 			Peek:   false,
 		}
@@ -79,6 +82,12 @@ var _ = Describe("given OrgManager", func() {
 	})
 
 	Context("CreateOrgs()", func() {
+		BeforeEach(func() {
+			fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
+				config.OrgConfig{Org: "test"},
+				config.OrgConfig{Org: "test2"},
+			}, nil)
+		})
 		It("should create 2", func() {
 			orgs := []cfclient.Org{}
 			fakeClient.ListOrgsReturns(orgs, nil)
@@ -112,7 +121,7 @@ var _ = Describe("given OrgManager", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.CreateOrgCallCount()).Should(Equal(0))
 		})
-		It("should not create test2 org", func() {
+		It("should create test2 org", func() {
 			orgs := []cfclient.Org{
 				{
 					Name: "test",
@@ -124,6 +133,30 @@ var _ = Describe("given OrgManager", func() {
 			Expect(fakeClient.CreateOrgCallCount()).Should(Equal(1))
 			orgRequest := fakeClient.CreateOrgArgsForCall(0)
 			Expect(orgRequest.Name).Should(Equal("test2"))
+		})
+		It("should not create org if renamed from an org that exists", func() {
+			fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
+				config.OrgConfig{Org: "test"},
+				config.OrgConfig{Org: "new-org", OriginalOrg: "test2"},
+			}, nil)
+			orgs := []cfclient.Org{
+				{
+					Name: "test",
+					Guid: "test-guid",
+				},
+				{
+					Name: "test2",
+					Guid: "test2-guid",
+				},
+			}
+			fakeClient.ListOrgsReturns(orgs, nil)
+			err := orgManager.CreateOrgs()
+			Ω(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.CreateOrgCallCount()).Should(Equal(0))
+			Expect(fakeClient.UpdateOrgCallCount()).Should(Equal(1))
+			orgGUID, orgRequest := fakeClient.UpdateOrgArgsForCall(0)
+			Expect(orgGUID).To(Equal("test2-guid"))
+			Expect(orgRequest.Name).To(Equal("new-org"))
 		})
 	})
 

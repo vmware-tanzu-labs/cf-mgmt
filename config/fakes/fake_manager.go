@@ -91,6 +91,14 @@ type FakeManager struct {
 	saveOrgConfigReturns struct {
 		result1 error
 	}
+	RenameOrgConfigStub        func(orgConfig *config.OrgConfig) error
+	renameOrgConfigMutex       sync.RWMutex
+	renameOrgConfigArgsForCall []struct {
+		orgConfig *config.OrgConfig
+	}
+	renameOrgConfigReturns struct {
+		result1 error
+	}
 	DeleteOrgConfigStub        func(orgName string) error
 	deleteOrgConfigMutex       sync.RWMutex
 	deleteOrgConfigArgsForCall []struct {
@@ -559,6 +567,39 @@ func (fake *FakeManager) SaveOrgConfigArgsForCall(i int) *config.OrgConfig {
 func (fake *FakeManager) SaveOrgConfigReturns(result1 error) {
 	fake.SaveOrgConfigStub = nil
 	fake.saveOrgConfigReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) RenameOrgConfig(orgConfig *config.OrgConfig) error {
+	fake.renameOrgConfigMutex.Lock()
+	fake.renameOrgConfigArgsForCall = append(fake.renameOrgConfigArgsForCall, struct {
+		orgConfig *config.OrgConfig
+	}{orgConfig})
+	fake.recordInvocation("RenameOrgConfig", []interface{}{orgConfig})
+	fake.renameOrgConfigMutex.Unlock()
+	if fake.RenameOrgConfigStub != nil {
+		return fake.RenameOrgConfigStub(orgConfig)
+	} else {
+		return fake.renameOrgConfigReturns.result1
+	}
+}
+
+func (fake *FakeManager) RenameOrgConfigCallCount() int {
+	fake.renameOrgConfigMutex.RLock()
+	defer fake.renameOrgConfigMutex.RUnlock()
+	return len(fake.renameOrgConfigArgsForCall)
+}
+
+func (fake *FakeManager) RenameOrgConfigArgsForCall(i int) *config.OrgConfig {
+	fake.renameOrgConfigMutex.RLock()
+	defer fake.renameOrgConfigMutex.RUnlock()
+	return fake.renameOrgConfigArgsForCall[i].orgConfig
+}
+
+func (fake *FakeManager) RenameOrgConfigReturns(result1 error) {
+	fake.RenameOrgConfigStub = nil
+	fake.renameOrgConfigReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -1064,6 +1105,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.saveSpaceConfigMutex.RUnlock()
 	fake.saveOrgConfigMutex.RLock()
 	defer fake.saveOrgConfigMutex.RUnlock()
+	fake.renameOrgConfigMutex.RLock()
+	defer fake.renameOrgConfigMutex.RUnlock()
 	fake.deleteOrgConfigMutex.RLock()
 	defer fake.deleteOrgConfigMutex.RUnlock()
 	fake.deleteSpaceConfigMutex.RLock()

@@ -74,6 +74,15 @@ type FakeManager struct {
 		result1 go_cfclient.Org
 		result2 error
 	}
+	RenameOrgStub        func(originalOrgName, newOrgName string) error
+	renameOrgMutex       sync.RWMutex
+	renameOrgArgsForCall []struct {
+		originalOrgName string
+		newOrgName      string
+	}
+	renameOrgReturns struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -325,6 +334,40 @@ func (fake *FakeManager) GetOrgByGUIDReturns(result1 go_cfclient.Org, result2 er
 	}{result1, result2}
 }
 
+func (fake *FakeManager) RenameOrg(originalOrgName string, newOrgName string) error {
+	fake.renameOrgMutex.Lock()
+	fake.renameOrgArgsForCall = append(fake.renameOrgArgsForCall, struct {
+		originalOrgName string
+		newOrgName      string
+	}{originalOrgName, newOrgName})
+	fake.recordInvocation("RenameOrg", []interface{}{originalOrgName, newOrgName})
+	fake.renameOrgMutex.Unlock()
+	if fake.RenameOrgStub != nil {
+		return fake.RenameOrgStub(originalOrgName, newOrgName)
+	} else {
+		return fake.renameOrgReturns.result1
+	}
+}
+
+func (fake *FakeManager) RenameOrgCallCount() int {
+	fake.renameOrgMutex.RLock()
+	defer fake.renameOrgMutex.RUnlock()
+	return len(fake.renameOrgArgsForCall)
+}
+
+func (fake *FakeManager) RenameOrgArgsForCall(i int) (string, string) {
+	fake.renameOrgMutex.RLock()
+	defer fake.renameOrgMutex.RUnlock()
+	return fake.renameOrgArgsForCall[i].originalOrgName, fake.renameOrgArgsForCall[i].newOrgName
+}
+
+func (fake *FakeManager) RenameOrgReturns(result1 error) {
+	fake.RenameOrgStub = nil
+	fake.renameOrgReturns = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -344,6 +387,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.updateOrgMutex.RUnlock()
 	fake.getOrgByGUIDMutex.RLock()
 	defer fake.getOrgByGUIDMutex.RUnlock()
+	fake.renameOrgMutex.RLock()
+	defer fake.renameOrgMutex.RUnlock()
 	return fake.invocations
 }
 

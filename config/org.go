@@ -1,10 +1,15 @@
 package config
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/xchapter7x/lo"
+)
 
 // OrgConfig describes configuration for an org.
 type OrgConfig struct {
 	Org                        string              `yaml:"org"`
+	OriginalOrg                string              `yaml:"original-org"`
 	BillingManagerGroup        string              `yaml:"org-billingmanager-group,omitempty"`
 	ManagerGroup               string              `yaml:"org-manager-group,omitempty"`
 	AuditorGroup               string              `yaml:"org-auditor-group,omitempty"`
@@ -51,6 +56,19 @@ func (o *Orgs) ProtectedOrgList() []string {
 	}
 
 	return returnList
+}
+
+func (o *Orgs) Replace(originalOrgName, newOrgName string) {
+	lo.G.Debugf("Replacing %s with %s in org list", originalOrgName, newOrgName)
+	var newList []string
+	for _, orgName := range o.Orgs {
+		if !strings.EqualFold(orgName, originalOrgName) {
+			newList = append(newList, orgName)
+		} else {
+			lo.G.Debugf("Removing %s from org list", originalOrgName)
+		}
+	}
+	o.Orgs = append(newList, newOrgName)
 }
 
 // Contains determines whether an org is present in a list of orgs.
