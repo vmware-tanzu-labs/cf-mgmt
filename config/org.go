@@ -9,7 +9,7 @@ import (
 // OrgConfig describes configuration for an org.
 type OrgConfig struct {
 	Org                        string              `yaml:"org"`
-	OriginalOrg                string              `yaml:"original-org"`
+	OriginalOrg                string              `yaml:"original-org,omitempty"`
 	BillingManagerGroup        string              `yaml:"org-billingmanager-group,omitempty"`
 	ManagerGroup               string              `yaml:"org-manager-group,omitempty"`
 	AuditorGroup               string              `yaml:"org-auditor-group,omitempty"`

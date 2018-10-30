@@ -161,11 +161,11 @@ var _ = Describe("given OrgManager", func() {
 	})
 
 	Context("DeleteOrgs()", func() {
-		BeforeEach(func() {
-			orgManager.Cfg = config.NewManager("./fixtures/config-delete")
-		})
-
 		It("should delete 1", func() {
+			fakeReader.OrgsReturns(&config.Orgs{
+				EnableDeleteOrgs: true,
+				Orgs:             []string{"test"},
+			}, nil)
 			orgs := []cfclient.Org{
 				cfclient.Org{
 					Name: "system",
