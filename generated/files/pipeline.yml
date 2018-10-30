@@ -88,6 +88,22 @@ jobs:
       LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: create-org-private-domains
 
+- name: service-access
+  plan:
+  - get: config-repo
+    passed: [create-orgs]
+    trigger: true
+  - task: service-access
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
+      CF_MGMT_COMMAND: service-access
+
 - name: share-org-private-domains
   plan:
   - get: config-repo
