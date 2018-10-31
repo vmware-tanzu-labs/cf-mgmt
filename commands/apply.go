@@ -96,6 +96,11 @@ func (c *ApplyCommand) Execute([]string) error {
 		return err
 	}
 
+	fmt.Println("*********  Service Access")
+	if err = cfMgmt.ServiceAccessManager.Apply(); err != nil {
+		return err
+	}
+
 	fmt.Println("*********  Cleanup Org Users")
 	if err = cfMgmt.UserManager.CleanupOrgUsers(); err != nil {
 		return err

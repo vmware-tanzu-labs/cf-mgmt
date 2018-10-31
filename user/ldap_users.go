@@ -10,7 +10,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map[string]uaa.User, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers map[string]uaa.User, updateUsersInput UpdateUsersInput) error {
 	if m.LdapConfig.Enabled {
 		ldapUsers, err := m.GetLDAPUsers(uaaUsers, updateUsersInput)
 		if err != nil {
@@ -20,7 +20,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map
 		for _, inputUser := range ldapUsers {
 			userToUse := m.UpdateUserInfo(inputUser)
 			userID := userToUse.UserID
-			if _, ok := roleUsers[userID]; !ok {
+			if !roleUsers.HasUserForOrigin(userID, "ldap") {
 				lo.G.Debugf("User[%s] not found in: %v", userID, roleUsers)
 				if _, userExists := uaaUsers[userID]; !userExists {
 					lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
@@ -43,7 +43,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map
 				}
 			} else {
 				lo.G.Debugf("User[%s] found in role", userID)
-				delete(roleUsers, userID)
+				roleUsers.RemoveUserForOrigin(userID, "ldap")
 			}
 		}
 	} else {

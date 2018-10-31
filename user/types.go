@@ -4,6 +4,7 @@ import (
 	"net/url"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/pivotalservices/cf-mgmt/uaa"
 )
 
 // UpdateSpaceUserInput
@@ -14,9 +15,18 @@ type UpdateUsersInput struct {
 	SpaceName                                   string
 	OrgName                                     string
 	RemoveUsers                                 bool
-	ListUsers                                   func(updateUserInput UpdateUsersInput) (map[string]string, error)
+	ListUsers                                   func(updateUserInput UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error)
 	AddUser                                     func(updateUserInput UpdateUsersInput, userName, origin string) error
 	RemoveUser                                  func(updateUserInput UpdateUsersInput, userName, origin string) error
+}
+
+type RoleUsers struct {
+	users map[string]map[string]RoleUser
+}
+type RoleUser struct {
+	UserName string
+	//GUID     string
+	Origin string
 }
 
 // Manager - interface type encapsulating Update space users behavior
@@ -26,12 +36,12 @@ type Manager interface {
 	UpdateSpaceUsers() error
 	UpdateOrgUsers() error
 	CleanupOrgUsers() error
-	ListSpaceAuditors(spaceGUID string) (map[string]string, error)
-	ListSpaceDevelopers(spaceGUID string) (map[string]string, error)
-	ListSpaceManagers(spaceGUID string) (map[string]string, error)
-	ListOrgAuditors(orgGUID string) (map[string]string, error)
-	ListOrgBillingManagers(orgGUID string) (map[string]string, error)
-	ListOrgManagers(orgGUID string) (map[string]string, error)
+	ListSpaceAuditors(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
+	ListSpaceDevelopers(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
+	ListSpaceManagers(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
+	ListOrgAuditors(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
+	ListOrgBillingManagers(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
+	ListOrgManagers(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
 }
 
 type CFClient interface {

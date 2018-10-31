@@ -25,7 +25,6 @@ var _ = Describe("given UserSpaces", func() {
 		ldapFake    *ldapfakes.FakeManager
 		uaaFake     *uaafakes.FakeManager
 		fakeReader  *configfakes.FakeReader
-		userList    []cfclient.User
 		spaceFake   *spacefakes.FakeManager
 		orgFake     *orgfakes.FakeManager
 	)
@@ -48,16 +47,6 @@ var _ = Describe("given UserSpaces", func() {
 				OrgMgr:     orgFake,
 				Peek:       false,
 				LdapConfig: &config.LdapConfig{Origin: "ldap"}}
-			userList = []cfclient.User{
-				cfclient.User{
-					Username: "hello",
-					Guid:     "world",
-				},
-				cfclient.User{
-					Username: "hello2",
-					Guid:     "world2",
-				},
-			}
 		})
 
 		Context("Success", func() {
@@ -87,39 +76,6 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(spaceGUID).To(Equal("foo"))
 				Expect(userName).To(Equal("bar"))
 				Expect(origin).Should(Equal("uaa"))
-			})
-			It("Should succeed on ListSpaceAuditors", func() {
-				client.ListSpaceAuditorsReturns(userList, nil)
-				users, err := userManager.ListSpaceAuditors("foo")
-				Expect(err).NotTo(HaveOccurred())
-				Expect(len(users)).Should(Equal(2))
-				Expect(users).Should(HaveKeyWithValue("hello", "world"))
-				Expect(users).Should(HaveKeyWithValue("hello2", "world2"))
-				Expect(client.ListSpaceAuditorsCallCount()).To(Equal(1))
-				spaceGUID := client.ListSpaceAuditorsArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
-			})
-			It("Should succeed on ListSpaceDevelopers", func() {
-				client.ListSpaceDevelopersReturns(userList, nil)
-				users, err := userManager.ListSpaceDevelopers("foo")
-				Expect(err).NotTo(HaveOccurred())
-				Expect(len(users)).Should(Equal(2))
-				Expect(users).Should(HaveKeyWithValue("hello", "world"))
-				Expect(users).Should(HaveKeyWithValue("hello2", "world2"))
-				Expect(client.ListSpaceDevelopersCallCount()).To(Equal(1))
-				spaceGUID := client.ListSpaceDevelopersArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
-			})
-			It("Should succeed on ListSpaceManagers", func() {
-				client.ListSpaceManagersReturns(userList, nil)
-				users, err := userManager.ListSpaceManagers("foo")
-				Expect(err).NotTo(HaveOccurred())
-				Expect(len(users)).Should(Equal(2))
-				Expect(users).Should(HaveKeyWithValue("hello", "world"))
-				Expect(users).Should(HaveKeyWithValue("hello2", "world2"))
-				Expect(client.ListSpaceManagersCallCount()).To(Equal(1))
-				spaceGUID := client.ListSpaceManagersArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
 			})
 
 			It("Should succeed on AssociateSpaceAuditorByUsernameAndOrigin", func() {
@@ -213,10 +169,19 @@ var _ = Describe("given UserSpaces", func() {
 		})
 
 		Context("SyncInternalUsers", func() {
+			var roleUsers *RoleUsers
+			var uaaUsers map[string]uaa.User
+			BeforeEach(func() {
+				uaaUsers = make(map[string]uaa.User)
+				uaaUsers["test"] = uaa.User{Username: "test", Origin: "uaa"}
+				uaaUsers["test-id"] = uaa.User{Username: "test", Origin: "uaa"}
+				uaaUsers["test-existing-id"] = uaa.User{Username: "test-existing", Origin: "uaa"}
+				uaaUsers["test-existing"] = uaa.User{Username: "test-existing", Origin: "uaa"}
+				roleUsers, _ = NewRoleUsers([]cfclient.User{
+					cfclient.User{Username: "test-existing", Guid: "test-existing-id"},
+				}, uaaUsers)
+			})
 			It("Should add internal user to role", func() {
-				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]uaa.User)
-				uaaUsers["test"] = uaa.User{Username: "test"}
 				updateUsersInput := UpdateUsersInput{
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
@@ -237,40 +202,30 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("Should not add existing internal user to role", func() {
-				roleUsers := make(map[string]string)
-				roleUsers["test"] = "test"
-				uaaUsers := make(map[string]uaa.User)
-				uaaUsers["test"] = uaa.User{Username: "test"}
 				updateUsersInput := UpdateUsersInput{
-					Users:     []string{"test"},
+					Users:     []string{"test-existing"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(roleUsers).ShouldNot(HaveKey("test"))
 				Expect(client.AssociateOrgUserByUsernameAndOriginCallCount()).Should(Equal(0))
 				Expect(client.AssociateSpaceAuditorByUsernameAndOriginCallCount()).Should(Equal(0))
 			})
 			It("Should error when user doesn't exist in uaa", func() {
-				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]uaa.User)
 				updateUsersInput := UpdateUsersInput{
-					Users:     []string{"test"},
+					Users:     []string{"test2"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).Should(Equal("user test doesn't exist in cloud foundry, so must add internal user first"))
+				Expect(err.Error()).Should(Equal("user test2 doesn't exist in cloud foundry, so must add internal user first"))
 			})
 
 			It("Should return error", func() {
-				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]uaa.User)
-				uaaUsers["test"] = uaa.User{Username: "test"}
 				updateUsersInput := UpdateUsersInput{
 					Users:     []string{"test"},
 					SpaceGUID: "space_guid",
@@ -287,37 +242,43 @@ var _ = Describe("given UserSpaces", func() {
 		})
 
 		Context("SyncSamlUsers", func() {
+			var roleUsers *RoleUsers
+			var uaaUsers map[string]uaa.User
 			BeforeEach(func() {
 				userManager.LdapConfig = &config.LdapConfig{Origin: "saml_origin"}
+				uaaUsers = map[string]uaa.User{
+					"test-id":       uaa.User{Username: "test@test.com", Origin: "saml_origin"},
+					"test@test.com": uaa.User{Username: "test@test.com", Origin: "saml_origin"},
+				}
+				roleUsers, _ = NewRoleUsers(
+					[]cfclient.User{
+						cfclient.User{Username: "test@test.com", Guid: "test-id"},
+					},
+					uaaUsers,
+				)
 			})
 			It("Should add saml user to role", func() {
-				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]uaa.User)
-				uaaUsers["test@test.com"] = uaa.User{Username: "test@test.com"}
 				updateUsersInput := UpdateUsersInput{
-					SamlUsers: []string{"test@test.com"},
+					SamlUsers: []string{"test@test2.com"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.AssociateOrgUserByUsernameAndOriginCallCount()).Should(Equal(1))
 				orgGUID, userName, origin := client.AssociateOrgUserByUsernameAndOriginArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org_guid"))
-				Expect(userName).Should(Equal("test@test.com"))
+				Expect(userName).Should(Equal("test@test2.com"))
 				Expect(origin).Should(Equal("saml_origin"))
 
 				spaceGUID, userName, origin := client.AssociateSpaceAuditorByUsernameAndOriginArgsForCall(0)
 				Expect(spaceGUID).Should(Equal("space_guid"))
-				Expect(userName).Should(Equal("test@test.com"))
+				Expect(userName).Should(Equal("test@test2.com"))
 				Expect(origin).Should(Equal("saml_origin"))
 			})
 
 			It("Should not add existing saml user to role", func() {
-				roleUsers := make(map[string]string)
-				roleUsers["test@test.com"] = "test@test.com"
-				uaaUsers := make(map[string]uaa.User)
-				uaaUsers["test@test.com"] = uaa.User{Username: "test@test.com"}
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -326,33 +287,29 @@ var _ = Describe("given UserSpaces", func() {
 				}
 				err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(roleUsers).ShouldNot(HaveKey("test@test.com"))
+				Expect(roleUsers.HasUser("test@test.com")).Should(BeFalse())
+				Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(0))
 				Expect(client.AssociateOrgUserByUsernameAndOriginCallCount()).Should(Equal(0))
 				Expect(client.AssociateSpaceAuditorByUsernameAndOriginCallCount()).Should(Equal(0))
 			})
 			It("Should create external user when user doesn't exist in uaa", func() {
-				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]uaa.User)
 				updateUsersInput := UpdateUsersInput{
-					SamlUsers: []string{"test@test.com"},
+					SamlUsers: []string{"test@test2.com"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(uaaUsers).Should(HaveKey("test@test.com"))
 				Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(1))
 				arg1, arg2, arg3, origin := uaaFake.CreateExternalUserArgsForCall(0)
-				Expect(arg1).Should(Equal("test@test.com"))
-				Expect(arg2).Should(Equal("test@test.com"))
-				Expect(arg3).Should(Equal("test@test.com"))
+				Expect(arg1).Should(Equal("test@test2.com"))
+				Expect(arg2).Should(Equal("test@test2.com"))
+				Expect(arg3).Should(Equal("test@test2.com"))
 				Expect(origin).Should(Equal("saml_origin"))
 			})
 
 			It("Should not error when create external user errors", func() {
-				roleUsers := make(map[string]string)
-				uaaUsers := make(map[string]uaa.User)
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -360,14 +317,16 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   userManager.AssociateSpaceAuditor,
 				}
 				uaaFake.CreateExternalUserReturns(errors.New("error"))
-				err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
+				err := userManager.SyncSamlUsers(roleUsers, nil, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(uaaUsers).ShouldNot(HaveKey("test@test.com"))
 				Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(1))
 			})
 
 			It("Should return error", func() {
-				roleUsers := make(map[string]string)
+				roleUsers := &RoleUsers{}
+				roleUsers.AddUsers([]RoleUser{
+					RoleUser{UserName: "test"},
+				})
 				uaaUsers := make(map[string]uaa.User)
 				uaaUsers["test@test.com"] = uaa.User{Username: "test@test.com"}
 				updateUsersInput := UpdateUsersInput{
@@ -385,19 +344,16 @@ var _ = Describe("given UserSpaces", func() {
 		})
 
 		Context("Remove Users", func() {
-			var uaaUsers map[string]uaa.User
+			var roleUsers *RoleUsers
 			BeforeEach(func() {
-				uaaUsers = make(map[string]uaa.User)
-				uaaUser := uaa.User{
-					Username: "test",
-					Origin:   "uaa",
-				}
-				uaaUsers["test"] = uaaUser
-				uaaUsers["test-id"] = uaaUser
+				roleUsers, _ = NewRoleUsers([]cfclient.User{
+					cfclient.User{Username: "test", Guid: "test-id"},
+				}, map[string]uaa.User{
+					"test-id": uaa.User{Username: "test", Origin: "uaa"},
+				})
 			})
+
 			It("Should remove users", func() {
-				roleUsers := make(map[string]string)
-				roleUsers["test"] = "test-id"
 				updateUsersInput := UpdateUsersInput{
 					RemoveUsers: true,
 					SpaceGUID:   "space_guid",
@@ -405,7 +361,7 @@ var _ = Describe("given UserSpaces", func() {
 					RemoveUser:  userManager.RemoveSpaceAuditor,
 				}
 
-				err := userManager.RemoveUsers(uaaUsers, roleUsers, updateUsersInput)
+				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(client.RemoveSpaceAuditorByUsernameAndOriginCallCount()).Should(Equal(1))
 
@@ -416,8 +372,6 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("Should not remove users", func() {
-				roleUsers := make(map[string]string)
-				roleUsers["test"] = "test"
 				updateUsersInput := UpdateUsersInput{
 					RemoveUsers: false,
 					SpaceGUID:   "space_guid",
@@ -425,14 +379,12 @@ var _ = Describe("given UserSpaces", func() {
 					RemoveUser:  userManager.RemoveSpaceAuditor,
 				}
 
-				err := userManager.RemoveUsers(uaaUsers, roleUsers, updateUsersInput)
+				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(client.RemoveSpaceAuditorByUsernameAndOriginCallCount()).Should(Equal(0))
 			})
 
 			It("Should return error", func() {
-				roleUsers := make(map[string]string)
-				roleUsers["test"] = "test"
 				updateUsersInput := UpdateUsersInput{
 					RemoveUsers: true,
 					SpaceGUID:   "space_guid",
@@ -440,11 +392,10 @@ var _ = Describe("given UserSpaces", func() {
 					RemoveUser:  userManager.RemoveSpaceAuditor,
 				}
 				client.RemoveSpaceAuditorByUsernameAndOriginReturns(errors.New("error"))
-				err := userManager.RemoveUsers(uaaUsers, roleUsers, updateUsersInput)
+				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
 				Expect(err).Should(HaveOccurred())
 				Expect(client.RemoveSpaceAuditorByUsernameAndOriginCallCount()).Should(Equal(1))
 			})
-
 		})
 
 		Context("Peek", func() {
@@ -529,30 +480,6 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(spaceGUID).To(Equal("foo"))
 				Expect(userName).To(Equal("bar"))
 				Expect(origin).Should(Equal("uaa"))
-			})
-			It("Should error on ListSpaceAuditors", func() {
-				client.ListSpaceAuditorsReturns(nil, errors.New("error"))
-				_, err := userManager.ListSpaceAuditors("foo")
-				Expect(err).Should(HaveOccurred())
-				Expect(client.ListSpaceAuditorsCallCount()).To(Equal(1))
-				spaceGUID := client.ListSpaceAuditorsArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
-			})
-			It("Should error on ListSpaceDevelopers", func() {
-				client.ListSpaceDevelopersReturns(nil, errors.New("error"))
-				_, err := userManager.ListSpaceDevelopers("foo")
-				Expect(err).Should(HaveOccurred())
-				Expect(client.ListSpaceDevelopersCallCount()).To(Equal(1))
-				spaceGUID := client.ListSpaceDevelopersArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
-			})
-			It("Should error on ListSpaceManagers", func() {
-				client.ListSpaceManagersReturns(nil, errors.New("error"))
-				_, err := userManager.ListSpaceManagers("foo")
-				Expect(err).Should(HaveOccurred())
-				Expect(client.ListSpaceManagersCallCount()).To(Equal(1))
-				spaceGUID := client.ListSpaceManagersArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
 			})
 			It("Should error on AssociateSpaceAuditorByUsernameAndOrigin", func() {
 				client.AssociateSpaceAuditorByUsernameAndOriginReturns(cfclient.Space{}, errors.New("error"))
@@ -728,93 +655,6 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(orgGUID).Should(Equal("test-org-guid"))
 				Expect(userName).Should(Equal("test"))
 				Expect(origin).Should(Equal("uaa"))
-			})
-		})
-
-		Context("ListOrgAuditors", func() {
-			It("should succeed", func() {
-				client.ListOrgAuditorsReturns([]cfclient.User{
-					cfclient.User{
-						Username: "test",
-						Guid:     "test-guid",
-					},
-					cfclient.User{
-						Username: "test2",
-						Guid:     "test2-guid",
-					},
-				}, nil)
-				users, err := userManager.ListOrgAuditors("test-org-guid")
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(len(users)).To(Equal(2))
-				Expect(client.ListOrgAuditorsCallCount()).To(Equal(1))
-				orgGUID := client.ListOrgAuditorsArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-			})
-			It("should error", func() {
-				client.ListOrgAuditorsReturns(nil, errors.New("error"))
-				_, err := userManager.ListOrgAuditors("test-org-guid")
-				Expect(err).Should(HaveOccurred())
-				Expect(client.ListOrgAuditorsCallCount()).To(Equal(1))
-				orgGUID := client.ListOrgAuditorsArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-			})
-		})
-
-		Context("ListOrgBillingManager", func() {
-			It("should succeed", func() {
-				client.ListOrgBillingManagersReturns([]cfclient.User{
-					cfclient.User{
-						Username: "test",
-						Guid:     "test-guid",
-					},
-					cfclient.User{
-						Username: "test2",
-						Guid:     "test2-guid",
-					},
-				}, nil)
-				users, err := userManager.ListOrgBillingManagers("test-org-guid")
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(len(users)).To(Equal(2))
-				Expect(client.ListOrgBillingManagersCallCount()).To(Equal(1))
-				orgGUID := client.ListOrgBillingManagersArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-			})
-			It("should error", func() {
-				client.ListOrgBillingManagersReturns(nil, errors.New("error"))
-				_, err := userManager.ListOrgBillingManagers("test-org-guid")
-				Expect(err).Should(HaveOccurred())
-				Expect(client.ListOrgBillingManagersCallCount()).To(Equal(1))
-				orgGUID := client.ListOrgBillingManagersArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-			})
-		})
-
-		Context("ListOrgManager", func() {
-			It("should succeed", func() {
-				client.ListOrgManagersReturns([]cfclient.User{
-					cfclient.User{
-						Username: "test",
-						Guid:     "test-guid",
-					},
-					cfclient.User{
-						Username: "test2",
-						Guid:     "test2-guid",
-					},
-				}, nil)
-				users, err := userManager.ListOrgManagers("test-org-guid")
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(len(users)).To(Equal(2))
-				Expect(client.ListOrgManagersCallCount()).To(Equal(1))
-				orgGUID := client.ListOrgManagersArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-			})
-			It("should error", func() {
-				client.ListOrgManagersReturns(nil, errors.New("error"))
-				_, err := userManager.ListOrgManagers("test-org-guid")
-				Expect(err).Should(HaveOccurred())
-				Expect(client.ListOrgManagersCallCount()).To(Equal(1))
-				orgGUID := client.ListOrgManagersArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
 			})
 		})
 
