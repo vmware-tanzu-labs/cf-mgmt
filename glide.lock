@@ -1,13 +1,17 @@
-hash: 7534dd698e1cddb8297c94b603dc9cd4471b01089582349b4b5354314bfe8cd9
-updated: 2018-10-31T16:05:39.824845-04:00
+hash: 5a14c2c3863d8fd5cfe44f6dc794d198a1d3a35f483bea22bb86912236e9891a
+updated: 2018-10-31T16:34:37.900131-04:00
 imports:
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: b81f07da974daab3b298ae3c3c101a911a8b9529
-  repo: https://github.com/pivotalservices/cf-mgmt.git
+  version: c86602bd1dcc58ff9d12601f0068efc3282ea8f3
+  repo: https://github.com/calebwashburn/go-cfclient.git
 - name: github.com/cloudfoundry-community/go-uaa
   version: 06d965ffc8f595a3e739463e280b78eb6204ff3d
   subpackages:
   - passwordcredentials
+- name: github.com/cloudfoundry/gofileutils
+  version: 4d0c80011a0f37da1711c184028bc40137cd45af
+  subpackages:
+  - fileutils
 - name: github.com/fatih/color
   version: 3f9d52f7176a6927daacff70a3e8d1dc2025c53e
 - name: github.com/go-ldap/ldap
@@ -18,6 +22,8 @@ imports:
   - proto
 - name: github.com/jessevdk/go-flags
   version: 96dc06278ce32a0e9d957d590bb987c81ee66407
+- name: github.com/Masterminds/semver
+  version: 3c560837130448941620d7694991d3ec440aefc0
 - name: github.com/mattn/go-colorable
   version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
 - name: github.com/mattn/go-isatty
