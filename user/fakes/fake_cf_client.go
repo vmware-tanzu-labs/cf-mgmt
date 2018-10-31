@@ -10,31 +10,34 @@ import (
 )
 
 type FakeCFClient struct {
-	RemoveSpaceAuditorByUsernameStub        func(spaceGUID, userName string) error
-	removeSpaceAuditorByUsernameMutex       sync.RWMutex
-	removeSpaceAuditorByUsernameArgsForCall []struct {
+	RemoveSpaceAuditorByUsernameAndOriginStub        func(spaceGUID, userName, origin string) error
+	removeSpaceAuditorByUsernameAndOriginMutex       sync.RWMutex
+	removeSpaceAuditorByUsernameAndOriginArgsForCall []struct {
 		spaceGUID string
 		userName  string
+		origin    string
 	}
-	removeSpaceAuditorByUsernameReturns struct {
+	removeSpaceAuditorByUsernameAndOriginReturns struct {
 		result1 error
 	}
-	RemoveSpaceDeveloperByUsernameStub        func(spaceGUID, userName string) error
-	removeSpaceDeveloperByUsernameMutex       sync.RWMutex
-	removeSpaceDeveloperByUsernameArgsForCall []struct {
+	RemoveSpaceDeveloperByUsernameAndOriginStub        func(spaceGUID, userName, origin string) error
+	removeSpaceDeveloperByUsernameAndOriginMutex       sync.RWMutex
+	removeSpaceDeveloperByUsernameAndOriginArgsForCall []struct {
 		spaceGUID string
 		userName  string
+		origin    string
 	}
-	removeSpaceDeveloperByUsernameReturns struct {
+	removeSpaceDeveloperByUsernameAndOriginReturns struct {
 		result1 error
 	}
-	RemoveSpaceManagerByUsernameStub        func(spaceGUID, userName string) error
-	removeSpaceManagerByUsernameMutex       sync.RWMutex
-	removeSpaceManagerByUsernameArgsForCall []struct {
+	RemoveSpaceManagerByUsernameAndOriginStub        func(spaceGUID, userName, origin string) error
+	removeSpaceManagerByUsernameAndOriginMutex       sync.RWMutex
+	removeSpaceManagerByUsernameAndOriginArgsForCall []struct {
 		spaceGUID string
 		userName  string
+		origin    string
 	}
-	removeSpaceManagerByUsernameReturns struct {
+	removeSpaceManagerByUsernameAndOriginReturns struct {
 		result1 error
 	}
 	ListSpaceAuditorsStub        func(spaceGUID string) ([]go_cfclient.User, error)
@@ -64,80 +67,88 @@ type FakeCFClient struct {
 		result1 []go_cfclient.User
 		result2 error
 	}
-	AssociateOrgUserByUsernameStub        func(orgGUID, userName string) (go_cfclient.Org, error)
-	associateOrgUserByUsernameMutex       sync.RWMutex
-	associateOrgUserByUsernameArgsForCall []struct {
+	AssociateOrgUserByUsernameAndOriginStub        func(orgGUID, userName, origin string) (go_cfclient.Org, error)
+	associateOrgUserByUsernameAndOriginMutex       sync.RWMutex
+	associateOrgUserByUsernameAndOriginArgsForCall []struct {
 		orgGUID  string
 		userName string
+		origin   string
 	}
-	associateOrgUserByUsernameReturns struct {
+	associateOrgUserByUsernameAndOriginReturns struct {
 		result1 go_cfclient.Org
 		result2 error
 	}
-	AssociateSpaceAuditorByUsernameStub        func(spaceGUID, userName string) (go_cfclient.Space, error)
-	associateSpaceAuditorByUsernameMutex       sync.RWMutex
-	associateSpaceAuditorByUsernameArgsForCall []struct {
+	AssociateSpaceAuditorByUsernameAndOriginStub        func(spaceGUID, userName, origin string) (go_cfclient.Space, error)
+	associateSpaceAuditorByUsernameAndOriginMutex       sync.RWMutex
+	associateSpaceAuditorByUsernameAndOriginArgsForCall []struct {
 		spaceGUID string
 		userName  string
+		origin    string
 	}
-	associateSpaceAuditorByUsernameReturns struct {
+	associateSpaceAuditorByUsernameAndOriginReturns struct {
 		result1 go_cfclient.Space
 		result2 error
 	}
-	AssociateSpaceDeveloperByUsernameStub        func(spaceGUID, userName string) (go_cfclient.Space, error)
-	associateSpaceDeveloperByUsernameMutex       sync.RWMutex
-	associateSpaceDeveloperByUsernameArgsForCall []struct {
+	AssociateSpaceDeveloperByUsernameAndOriginStub        func(spaceGUID, userName, origin string) (go_cfclient.Space, error)
+	associateSpaceDeveloperByUsernameAndOriginMutex       sync.RWMutex
+	associateSpaceDeveloperByUsernameAndOriginArgsForCall []struct {
 		spaceGUID string
 		userName  string
+		origin    string
 	}
-	associateSpaceDeveloperByUsernameReturns struct {
+	associateSpaceDeveloperByUsernameAndOriginReturns struct {
 		result1 go_cfclient.Space
 		result2 error
 	}
-	AssociateSpaceManagerByUsernameStub        func(spaceGUID, userName string) (go_cfclient.Space, error)
-	associateSpaceManagerByUsernameMutex       sync.RWMutex
-	associateSpaceManagerByUsernameArgsForCall []struct {
+	AssociateSpaceManagerByUsernameAndOriginStub        func(spaceGUID, userName, origin string) (go_cfclient.Space, error)
+	associateSpaceManagerByUsernameAndOriginMutex       sync.RWMutex
+	associateSpaceManagerByUsernameAndOriginArgsForCall []struct {
 		spaceGUID string
 		userName  string
+		origin    string
 	}
-	associateSpaceManagerByUsernameReturns struct {
+	associateSpaceManagerByUsernameAndOriginReturns struct {
 		result1 go_cfclient.Space
 		result2 error
 	}
-	RemoveOrgUserByUsernameStub        func(orgGUID, name string) error
-	removeOrgUserByUsernameMutex       sync.RWMutex
-	removeOrgUserByUsernameArgsForCall []struct {
+	RemoveOrgUserByUsernameAndOriginStub        func(orgGUID, name, origin string) error
+	removeOrgUserByUsernameAndOriginMutex       sync.RWMutex
+	removeOrgUserByUsernameAndOriginArgsForCall []struct {
 		orgGUID string
 		name    string
+		origin  string
 	}
-	removeOrgUserByUsernameReturns struct {
+	removeOrgUserByUsernameAndOriginReturns struct {
 		result1 error
 	}
-	RemoveOrgAuditorByUsernameStub        func(orgGUID, name string) error
-	removeOrgAuditorByUsernameMutex       sync.RWMutex
-	removeOrgAuditorByUsernameArgsForCall []struct {
+	RemoveOrgAuditorByUsernameAndOriginStub        func(orgGUID, name, origin string) error
+	removeOrgAuditorByUsernameAndOriginMutex       sync.RWMutex
+	removeOrgAuditorByUsernameAndOriginArgsForCall []struct {
 		orgGUID string
 		name    string
+		origin  string
 	}
-	removeOrgAuditorByUsernameReturns struct {
+	removeOrgAuditorByUsernameAndOriginReturns struct {
 		result1 error
 	}
-	RemoveOrgBillingManagerByUsernameStub        func(orgGUID, name string) error
-	removeOrgBillingManagerByUsernameMutex       sync.RWMutex
-	removeOrgBillingManagerByUsernameArgsForCall []struct {
+	RemoveOrgBillingManagerByUsernameAndOriginStub        func(orgGUID, name, origin string) error
+	removeOrgBillingManagerByUsernameAndOriginMutex       sync.RWMutex
+	removeOrgBillingManagerByUsernameAndOriginArgsForCall []struct {
 		orgGUID string
 		name    string
+		origin  string
 	}
-	removeOrgBillingManagerByUsernameReturns struct {
+	removeOrgBillingManagerByUsernameAndOriginReturns struct {
 		result1 error
 	}
-	RemoveOrgManagerByUsernameStub        func(orgGUID, name string) error
-	removeOrgManagerByUsernameMutex       sync.RWMutex
-	removeOrgManagerByUsernameArgsForCall []struct {
+	RemoveOrgManagerByUsernameAndOriginStub        func(orgGUID, name, origin string) error
+	removeOrgManagerByUsernameAndOriginMutex       sync.RWMutex
+	removeOrgManagerByUsernameAndOriginArgsForCall []struct {
 		orgGUID string
 		name    string
+		origin  string
 	}
-	removeOrgManagerByUsernameReturns struct {
+	removeOrgManagerByUsernameAndOriginReturns struct {
 		result1 error
 	}
 	ListOrgAuditorsStub        func(orgGUID string) ([]go_cfclient.User, error)
@@ -167,33 +178,36 @@ type FakeCFClient struct {
 		result1 []go_cfclient.User
 		result2 error
 	}
-	AssociateOrgAuditorByUsernameStub        func(orgGUID, name string) (go_cfclient.Org, error)
-	associateOrgAuditorByUsernameMutex       sync.RWMutex
-	associateOrgAuditorByUsernameArgsForCall []struct {
+	AssociateOrgAuditorByUsernameAndOriginStub        func(orgGUID, name, origin string) (go_cfclient.Org, error)
+	associateOrgAuditorByUsernameAndOriginMutex       sync.RWMutex
+	associateOrgAuditorByUsernameAndOriginArgsForCall []struct {
 		orgGUID string
 		name    string
+		origin  string
 	}
-	associateOrgAuditorByUsernameReturns struct {
+	associateOrgAuditorByUsernameAndOriginReturns struct {
 		result1 go_cfclient.Org
 		result2 error
 	}
-	AssociateOrgManagerByUsernameStub        func(orgGUID, name string) (go_cfclient.Org, error)
-	associateOrgManagerByUsernameMutex       sync.RWMutex
-	associateOrgManagerByUsernameArgsForCall []struct {
+	AssociateOrgManagerByUsernameAndOriginStub        func(orgGUID, name, origin string) (go_cfclient.Org, error)
+	associateOrgManagerByUsernameAndOriginMutex       sync.RWMutex
+	associateOrgManagerByUsernameAndOriginArgsForCall []struct {
 		orgGUID string
 		name    string
+		origin  string
 	}
-	associateOrgManagerByUsernameReturns struct {
+	associateOrgManagerByUsernameAndOriginReturns struct {
 		result1 go_cfclient.Org
 		result2 error
 	}
-	AssociateOrgBillingManagerByUsernameStub        func(orgGUID, name string) (go_cfclient.Org, error)
-	associateOrgBillingManagerByUsernameMutex       sync.RWMutex
-	associateOrgBillingManagerByUsernameArgsForCall []struct {
+	AssociateOrgBillingManagerByUsernameAndOriginStub        func(orgGUID, name, origin string) (go_cfclient.Org, error)
+	associateOrgBillingManagerByUsernameAndOriginMutex       sync.RWMutex
+	associateOrgBillingManagerByUsernameAndOriginArgsForCall []struct {
 		orgGUID string
 		name    string
+		origin  string
 	}
-	associateOrgBillingManagerByUsernameReturns struct {
+	associateOrgBillingManagerByUsernameAndOriginReturns struct {
 		result1 go_cfclient.Org
 		result2 error
 	}
@@ -219,104 +233,107 @@ type FakeCFClient struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCFClient) RemoveSpaceAuditorByUsername(spaceGUID string, userName string) error {
-	fake.removeSpaceAuditorByUsernameMutex.Lock()
-	fake.removeSpaceAuditorByUsernameArgsForCall = append(fake.removeSpaceAuditorByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) RemoveSpaceAuditorByUsernameAndOrigin(spaceGUID string, userName string, origin string) error {
+	fake.removeSpaceAuditorByUsernameAndOriginMutex.Lock()
+	fake.removeSpaceAuditorByUsernameAndOriginArgsForCall = append(fake.removeSpaceAuditorByUsernameAndOriginArgsForCall, struct {
 		spaceGUID string
 		userName  string
-	}{spaceGUID, userName})
-	fake.recordInvocation("RemoveSpaceAuditorByUsername", []interface{}{spaceGUID, userName})
-	fake.removeSpaceAuditorByUsernameMutex.Unlock()
-	if fake.RemoveSpaceAuditorByUsernameStub != nil {
-		return fake.RemoveSpaceAuditorByUsernameStub(spaceGUID, userName)
+		origin    string
+	}{spaceGUID, userName, origin})
+	fake.recordInvocation("RemoveSpaceAuditorByUsernameAndOrigin", []interface{}{spaceGUID, userName, origin})
+	fake.removeSpaceAuditorByUsernameAndOriginMutex.Unlock()
+	if fake.RemoveSpaceAuditorByUsernameAndOriginStub != nil {
+		return fake.RemoveSpaceAuditorByUsernameAndOriginStub(spaceGUID, userName, origin)
 	} else {
-		return fake.removeSpaceAuditorByUsernameReturns.result1
+		return fake.removeSpaceAuditorByUsernameAndOriginReturns.result1
 	}
 }
 
-func (fake *FakeCFClient) RemoveSpaceAuditorByUsernameCallCount() int {
-	fake.removeSpaceAuditorByUsernameMutex.RLock()
-	defer fake.removeSpaceAuditorByUsernameMutex.RUnlock()
-	return len(fake.removeSpaceAuditorByUsernameArgsForCall)
+func (fake *FakeCFClient) RemoveSpaceAuditorByUsernameAndOriginCallCount() int {
+	fake.removeSpaceAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.removeSpaceAuditorByUsernameAndOriginMutex.RUnlock()
+	return len(fake.removeSpaceAuditorByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) RemoveSpaceAuditorByUsernameArgsForCall(i int) (string, string) {
-	fake.removeSpaceAuditorByUsernameMutex.RLock()
-	defer fake.removeSpaceAuditorByUsernameMutex.RUnlock()
-	return fake.removeSpaceAuditorByUsernameArgsForCall[i].spaceGUID, fake.removeSpaceAuditorByUsernameArgsForCall[i].userName
+func (fake *FakeCFClient) RemoveSpaceAuditorByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.removeSpaceAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.removeSpaceAuditorByUsernameAndOriginMutex.RUnlock()
+	return fake.removeSpaceAuditorByUsernameAndOriginArgsForCall[i].spaceGUID, fake.removeSpaceAuditorByUsernameAndOriginArgsForCall[i].userName, fake.removeSpaceAuditorByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) RemoveSpaceAuditorByUsernameReturns(result1 error) {
-	fake.RemoveSpaceAuditorByUsernameStub = nil
-	fake.removeSpaceAuditorByUsernameReturns = struct {
+func (fake *FakeCFClient) RemoveSpaceAuditorByUsernameAndOriginReturns(result1 error) {
+	fake.RemoveSpaceAuditorByUsernameAndOriginStub = nil
+	fake.removeSpaceAuditorByUsernameAndOriginReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeCFClient) RemoveSpaceDeveloperByUsername(spaceGUID string, userName string) error {
-	fake.removeSpaceDeveloperByUsernameMutex.Lock()
-	fake.removeSpaceDeveloperByUsernameArgsForCall = append(fake.removeSpaceDeveloperByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) RemoveSpaceDeveloperByUsernameAndOrigin(spaceGUID string, userName string, origin string) error {
+	fake.removeSpaceDeveloperByUsernameAndOriginMutex.Lock()
+	fake.removeSpaceDeveloperByUsernameAndOriginArgsForCall = append(fake.removeSpaceDeveloperByUsernameAndOriginArgsForCall, struct {
 		spaceGUID string
 		userName  string
-	}{spaceGUID, userName})
-	fake.recordInvocation("RemoveSpaceDeveloperByUsername", []interface{}{spaceGUID, userName})
-	fake.removeSpaceDeveloperByUsernameMutex.Unlock()
-	if fake.RemoveSpaceDeveloperByUsernameStub != nil {
-		return fake.RemoveSpaceDeveloperByUsernameStub(spaceGUID, userName)
+		origin    string
+	}{spaceGUID, userName, origin})
+	fake.recordInvocation("RemoveSpaceDeveloperByUsernameAndOrigin", []interface{}{spaceGUID, userName, origin})
+	fake.removeSpaceDeveloperByUsernameAndOriginMutex.Unlock()
+	if fake.RemoveSpaceDeveloperByUsernameAndOriginStub != nil {
+		return fake.RemoveSpaceDeveloperByUsernameAndOriginStub(spaceGUID, userName, origin)
 	} else {
-		return fake.removeSpaceDeveloperByUsernameReturns.result1
+		return fake.removeSpaceDeveloperByUsernameAndOriginReturns.result1
 	}
 }
 
-func (fake *FakeCFClient) RemoveSpaceDeveloperByUsernameCallCount() int {
-	fake.removeSpaceDeveloperByUsernameMutex.RLock()
-	defer fake.removeSpaceDeveloperByUsernameMutex.RUnlock()
-	return len(fake.removeSpaceDeveloperByUsernameArgsForCall)
+func (fake *FakeCFClient) RemoveSpaceDeveloperByUsernameAndOriginCallCount() int {
+	fake.removeSpaceDeveloperByUsernameAndOriginMutex.RLock()
+	defer fake.removeSpaceDeveloperByUsernameAndOriginMutex.RUnlock()
+	return len(fake.removeSpaceDeveloperByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) RemoveSpaceDeveloperByUsernameArgsForCall(i int) (string, string) {
-	fake.removeSpaceDeveloperByUsernameMutex.RLock()
-	defer fake.removeSpaceDeveloperByUsernameMutex.RUnlock()
-	return fake.removeSpaceDeveloperByUsernameArgsForCall[i].spaceGUID, fake.removeSpaceDeveloperByUsernameArgsForCall[i].userName
+func (fake *FakeCFClient) RemoveSpaceDeveloperByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.removeSpaceDeveloperByUsernameAndOriginMutex.RLock()
+	defer fake.removeSpaceDeveloperByUsernameAndOriginMutex.RUnlock()
+	return fake.removeSpaceDeveloperByUsernameAndOriginArgsForCall[i].spaceGUID, fake.removeSpaceDeveloperByUsernameAndOriginArgsForCall[i].userName, fake.removeSpaceDeveloperByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) RemoveSpaceDeveloperByUsernameReturns(result1 error) {
-	fake.RemoveSpaceDeveloperByUsernameStub = nil
-	fake.removeSpaceDeveloperByUsernameReturns = struct {
+func (fake *FakeCFClient) RemoveSpaceDeveloperByUsernameAndOriginReturns(result1 error) {
+	fake.RemoveSpaceDeveloperByUsernameAndOriginStub = nil
+	fake.removeSpaceDeveloperByUsernameAndOriginReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeCFClient) RemoveSpaceManagerByUsername(spaceGUID string, userName string) error {
-	fake.removeSpaceManagerByUsernameMutex.Lock()
-	fake.removeSpaceManagerByUsernameArgsForCall = append(fake.removeSpaceManagerByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) RemoveSpaceManagerByUsernameAndOrigin(spaceGUID string, userName string, origin string) error {
+	fake.removeSpaceManagerByUsernameAndOriginMutex.Lock()
+	fake.removeSpaceManagerByUsernameAndOriginArgsForCall = append(fake.removeSpaceManagerByUsernameAndOriginArgsForCall, struct {
 		spaceGUID string
 		userName  string
-	}{spaceGUID, userName})
-	fake.recordInvocation("RemoveSpaceManagerByUsername", []interface{}{spaceGUID, userName})
-	fake.removeSpaceManagerByUsernameMutex.Unlock()
-	if fake.RemoveSpaceManagerByUsernameStub != nil {
-		return fake.RemoveSpaceManagerByUsernameStub(spaceGUID, userName)
+		origin    string
+	}{spaceGUID, userName, origin})
+	fake.recordInvocation("RemoveSpaceManagerByUsernameAndOrigin", []interface{}{spaceGUID, userName, origin})
+	fake.removeSpaceManagerByUsernameAndOriginMutex.Unlock()
+	if fake.RemoveSpaceManagerByUsernameAndOriginStub != nil {
+		return fake.RemoveSpaceManagerByUsernameAndOriginStub(spaceGUID, userName, origin)
 	} else {
-		return fake.removeSpaceManagerByUsernameReturns.result1
+		return fake.removeSpaceManagerByUsernameAndOriginReturns.result1
 	}
 }
 
-func (fake *FakeCFClient) RemoveSpaceManagerByUsernameCallCount() int {
-	fake.removeSpaceManagerByUsernameMutex.RLock()
-	defer fake.removeSpaceManagerByUsernameMutex.RUnlock()
-	return len(fake.removeSpaceManagerByUsernameArgsForCall)
+func (fake *FakeCFClient) RemoveSpaceManagerByUsernameAndOriginCallCount() int {
+	fake.removeSpaceManagerByUsernameAndOriginMutex.RLock()
+	defer fake.removeSpaceManagerByUsernameAndOriginMutex.RUnlock()
+	return len(fake.removeSpaceManagerByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) RemoveSpaceManagerByUsernameArgsForCall(i int) (string, string) {
-	fake.removeSpaceManagerByUsernameMutex.RLock()
-	defer fake.removeSpaceManagerByUsernameMutex.RUnlock()
-	return fake.removeSpaceManagerByUsernameArgsForCall[i].spaceGUID, fake.removeSpaceManagerByUsernameArgsForCall[i].userName
+func (fake *FakeCFClient) RemoveSpaceManagerByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.removeSpaceManagerByUsernameAndOriginMutex.RLock()
+	defer fake.removeSpaceManagerByUsernameAndOriginMutex.RUnlock()
+	return fake.removeSpaceManagerByUsernameAndOriginArgsForCall[i].spaceGUID, fake.removeSpaceManagerByUsernameAndOriginArgsForCall[i].userName, fake.removeSpaceManagerByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) RemoveSpaceManagerByUsernameReturns(result1 error) {
-	fake.RemoveSpaceManagerByUsernameStub = nil
-	fake.removeSpaceManagerByUsernameReturns = struct {
+func (fake *FakeCFClient) RemoveSpaceManagerByUsernameAndOriginReturns(result1 error) {
+	fake.RemoveSpaceManagerByUsernameAndOriginStub = nil
+	fake.removeSpaceManagerByUsernameAndOriginReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -423,278 +440,286 @@ func (fake *FakeCFClient) ListSpaceDevelopersReturns(result1 []go_cfclient.User,
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) AssociateOrgUserByUsername(orgGUID string, userName string) (go_cfclient.Org, error) {
-	fake.associateOrgUserByUsernameMutex.Lock()
-	fake.associateOrgUserByUsernameArgsForCall = append(fake.associateOrgUserByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) AssociateOrgUserByUsernameAndOrigin(orgGUID string, userName string, origin string) (go_cfclient.Org, error) {
+	fake.associateOrgUserByUsernameAndOriginMutex.Lock()
+	fake.associateOrgUserByUsernameAndOriginArgsForCall = append(fake.associateOrgUserByUsernameAndOriginArgsForCall, struct {
 		orgGUID  string
 		userName string
-	}{orgGUID, userName})
-	fake.recordInvocation("AssociateOrgUserByUsername", []interface{}{orgGUID, userName})
-	fake.associateOrgUserByUsernameMutex.Unlock()
-	if fake.AssociateOrgUserByUsernameStub != nil {
-		return fake.AssociateOrgUserByUsernameStub(orgGUID, userName)
+		origin   string
+	}{orgGUID, userName, origin})
+	fake.recordInvocation("AssociateOrgUserByUsernameAndOrigin", []interface{}{orgGUID, userName, origin})
+	fake.associateOrgUserByUsernameAndOriginMutex.Unlock()
+	if fake.AssociateOrgUserByUsernameAndOriginStub != nil {
+		return fake.AssociateOrgUserByUsernameAndOriginStub(orgGUID, userName, origin)
 	} else {
-		return fake.associateOrgUserByUsernameReturns.result1, fake.associateOrgUserByUsernameReturns.result2
+		return fake.associateOrgUserByUsernameAndOriginReturns.result1, fake.associateOrgUserByUsernameAndOriginReturns.result2
 	}
 }
 
-func (fake *FakeCFClient) AssociateOrgUserByUsernameCallCount() int {
-	fake.associateOrgUserByUsernameMutex.RLock()
-	defer fake.associateOrgUserByUsernameMutex.RUnlock()
-	return len(fake.associateOrgUserByUsernameArgsForCall)
+func (fake *FakeCFClient) AssociateOrgUserByUsernameAndOriginCallCount() int {
+	fake.associateOrgUserByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgUserByUsernameAndOriginMutex.RUnlock()
+	return len(fake.associateOrgUserByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) AssociateOrgUserByUsernameArgsForCall(i int) (string, string) {
-	fake.associateOrgUserByUsernameMutex.RLock()
-	defer fake.associateOrgUserByUsernameMutex.RUnlock()
-	return fake.associateOrgUserByUsernameArgsForCall[i].orgGUID, fake.associateOrgUserByUsernameArgsForCall[i].userName
+func (fake *FakeCFClient) AssociateOrgUserByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.associateOrgUserByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgUserByUsernameAndOriginMutex.RUnlock()
+	return fake.associateOrgUserByUsernameAndOriginArgsForCall[i].orgGUID, fake.associateOrgUserByUsernameAndOriginArgsForCall[i].userName, fake.associateOrgUserByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) AssociateOrgUserByUsernameReturns(result1 go_cfclient.Org, result2 error) {
-	fake.AssociateOrgUserByUsernameStub = nil
-	fake.associateOrgUserByUsernameReturns = struct {
+func (fake *FakeCFClient) AssociateOrgUserByUsernameAndOriginReturns(result1 go_cfclient.Org, result2 error) {
+	fake.AssociateOrgUserByUsernameAndOriginStub = nil
+	fake.associateOrgUserByUsernameAndOriginReturns = struct {
 		result1 go_cfclient.Org
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) AssociateSpaceAuditorByUsername(spaceGUID string, userName string) (go_cfclient.Space, error) {
-	fake.associateSpaceAuditorByUsernameMutex.Lock()
-	fake.associateSpaceAuditorByUsernameArgsForCall = append(fake.associateSpaceAuditorByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) AssociateSpaceAuditorByUsernameAndOrigin(spaceGUID string, userName string, origin string) (go_cfclient.Space, error) {
+	fake.associateSpaceAuditorByUsernameAndOriginMutex.Lock()
+	fake.associateSpaceAuditorByUsernameAndOriginArgsForCall = append(fake.associateSpaceAuditorByUsernameAndOriginArgsForCall, struct {
 		spaceGUID string
 		userName  string
-	}{spaceGUID, userName})
-	fake.recordInvocation("AssociateSpaceAuditorByUsername", []interface{}{spaceGUID, userName})
-	fake.associateSpaceAuditorByUsernameMutex.Unlock()
-	if fake.AssociateSpaceAuditorByUsernameStub != nil {
-		return fake.AssociateSpaceAuditorByUsernameStub(spaceGUID, userName)
+		origin    string
+	}{spaceGUID, userName, origin})
+	fake.recordInvocation("AssociateSpaceAuditorByUsernameAndOrigin", []interface{}{spaceGUID, userName, origin})
+	fake.associateSpaceAuditorByUsernameAndOriginMutex.Unlock()
+	if fake.AssociateSpaceAuditorByUsernameAndOriginStub != nil {
+		return fake.AssociateSpaceAuditorByUsernameAndOriginStub(spaceGUID, userName, origin)
 	} else {
-		return fake.associateSpaceAuditorByUsernameReturns.result1, fake.associateSpaceAuditorByUsernameReturns.result2
+		return fake.associateSpaceAuditorByUsernameAndOriginReturns.result1, fake.associateSpaceAuditorByUsernameAndOriginReturns.result2
 	}
 }
 
-func (fake *FakeCFClient) AssociateSpaceAuditorByUsernameCallCount() int {
-	fake.associateSpaceAuditorByUsernameMutex.RLock()
-	defer fake.associateSpaceAuditorByUsernameMutex.RUnlock()
-	return len(fake.associateSpaceAuditorByUsernameArgsForCall)
+func (fake *FakeCFClient) AssociateSpaceAuditorByUsernameAndOriginCallCount() int {
+	fake.associateSpaceAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.associateSpaceAuditorByUsernameAndOriginMutex.RUnlock()
+	return len(fake.associateSpaceAuditorByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) AssociateSpaceAuditorByUsernameArgsForCall(i int) (string, string) {
-	fake.associateSpaceAuditorByUsernameMutex.RLock()
-	defer fake.associateSpaceAuditorByUsernameMutex.RUnlock()
-	return fake.associateSpaceAuditorByUsernameArgsForCall[i].spaceGUID, fake.associateSpaceAuditorByUsernameArgsForCall[i].userName
+func (fake *FakeCFClient) AssociateSpaceAuditorByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.associateSpaceAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.associateSpaceAuditorByUsernameAndOriginMutex.RUnlock()
+	return fake.associateSpaceAuditorByUsernameAndOriginArgsForCall[i].spaceGUID, fake.associateSpaceAuditorByUsernameAndOriginArgsForCall[i].userName, fake.associateSpaceAuditorByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) AssociateSpaceAuditorByUsernameReturns(result1 go_cfclient.Space, result2 error) {
-	fake.AssociateSpaceAuditorByUsernameStub = nil
-	fake.associateSpaceAuditorByUsernameReturns = struct {
+func (fake *FakeCFClient) AssociateSpaceAuditorByUsernameAndOriginReturns(result1 go_cfclient.Space, result2 error) {
+	fake.AssociateSpaceAuditorByUsernameAndOriginStub = nil
+	fake.associateSpaceAuditorByUsernameAndOriginReturns = struct {
 		result1 go_cfclient.Space
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) AssociateSpaceDeveloperByUsername(spaceGUID string, userName string) (go_cfclient.Space, error) {
-	fake.associateSpaceDeveloperByUsernameMutex.Lock()
-	fake.associateSpaceDeveloperByUsernameArgsForCall = append(fake.associateSpaceDeveloperByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) AssociateSpaceDeveloperByUsernameAndOrigin(spaceGUID string, userName string, origin string) (go_cfclient.Space, error) {
+	fake.associateSpaceDeveloperByUsernameAndOriginMutex.Lock()
+	fake.associateSpaceDeveloperByUsernameAndOriginArgsForCall = append(fake.associateSpaceDeveloperByUsernameAndOriginArgsForCall, struct {
 		spaceGUID string
 		userName  string
-	}{spaceGUID, userName})
-	fake.recordInvocation("AssociateSpaceDeveloperByUsername", []interface{}{spaceGUID, userName})
-	fake.associateSpaceDeveloperByUsernameMutex.Unlock()
-	if fake.AssociateSpaceDeveloperByUsernameStub != nil {
-		return fake.AssociateSpaceDeveloperByUsernameStub(spaceGUID, userName)
+		origin    string
+	}{spaceGUID, userName, origin})
+	fake.recordInvocation("AssociateSpaceDeveloperByUsernameAndOrigin", []interface{}{spaceGUID, userName, origin})
+	fake.associateSpaceDeveloperByUsernameAndOriginMutex.Unlock()
+	if fake.AssociateSpaceDeveloperByUsernameAndOriginStub != nil {
+		return fake.AssociateSpaceDeveloperByUsernameAndOriginStub(spaceGUID, userName, origin)
 	} else {
-		return fake.associateSpaceDeveloperByUsernameReturns.result1, fake.associateSpaceDeveloperByUsernameReturns.result2
+		return fake.associateSpaceDeveloperByUsernameAndOriginReturns.result1, fake.associateSpaceDeveloperByUsernameAndOriginReturns.result2
 	}
 }
 
-func (fake *FakeCFClient) AssociateSpaceDeveloperByUsernameCallCount() int {
-	fake.associateSpaceDeveloperByUsernameMutex.RLock()
-	defer fake.associateSpaceDeveloperByUsernameMutex.RUnlock()
-	return len(fake.associateSpaceDeveloperByUsernameArgsForCall)
+func (fake *FakeCFClient) AssociateSpaceDeveloperByUsernameAndOriginCallCount() int {
+	fake.associateSpaceDeveloperByUsernameAndOriginMutex.RLock()
+	defer fake.associateSpaceDeveloperByUsernameAndOriginMutex.RUnlock()
+	return len(fake.associateSpaceDeveloperByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) AssociateSpaceDeveloperByUsernameArgsForCall(i int) (string, string) {
-	fake.associateSpaceDeveloperByUsernameMutex.RLock()
-	defer fake.associateSpaceDeveloperByUsernameMutex.RUnlock()
-	return fake.associateSpaceDeveloperByUsernameArgsForCall[i].spaceGUID, fake.associateSpaceDeveloperByUsernameArgsForCall[i].userName
+func (fake *FakeCFClient) AssociateSpaceDeveloperByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.associateSpaceDeveloperByUsernameAndOriginMutex.RLock()
+	defer fake.associateSpaceDeveloperByUsernameAndOriginMutex.RUnlock()
+	return fake.associateSpaceDeveloperByUsernameAndOriginArgsForCall[i].spaceGUID, fake.associateSpaceDeveloperByUsernameAndOriginArgsForCall[i].userName, fake.associateSpaceDeveloperByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) AssociateSpaceDeveloperByUsernameReturns(result1 go_cfclient.Space, result2 error) {
-	fake.AssociateSpaceDeveloperByUsernameStub = nil
-	fake.associateSpaceDeveloperByUsernameReturns = struct {
+func (fake *FakeCFClient) AssociateSpaceDeveloperByUsernameAndOriginReturns(result1 go_cfclient.Space, result2 error) {
+	fake.AssociateSpaceDeveloperByUsernameAndOriginStub = nil
+	fake.associateSpaceDeveloperByUsernameAndOriginReturns = struct {
 		result1 go_cfclient.Space
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) AssociateSpaceManagerByUsername(spaceGUID string, userName string) (go_cfclient.Space, error) {
-	fake.associateSpaceManagerByUsernameMutex.Lock()
-	fake.associateSpaceManagerByUsernameArgsForCall = append(fake.associateSpaceManagerByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) AssociateSpaceManagerByUsernameAndOrigin(spaceGUID string, userName string, origin string) (go_cfclient.Space, error) {
+	fake.associateSpaceManagerByUsernameAndOriginMutex.Lock()
+	fake.associateSpaceManagerByUsernameAndOriginArgsForCall = append(fake.associateSpaceManagerByUsernameAndOriginArgsForCall, struct {
 		spaceGUID string
 		userName  string
-	}{spaceGUID, userName})
-	fake.recordInvocation("AssociateSpaceManagerByUsername", []interface{}{spaceGUID, userName})
-	fake.associateSpaceManagerByUsernameMutex.Unlock()
-	if fake.AssociateSpaceManagerByUsernameStub != nil {
-		return fake.AssociateSpaceManagerByUsernameStub(spaceGUID, userName)
+		origin    string
+	}{spaceGUID, userName, origin})
+	fake.recordInvocation("AssociateSpaceManagerByUsernameAndOrigin", []interface{}{spaceGUID, userName, origin})
+	fake.associateSpaceManagerByUsernameAndOriginMutex.Unlock()
+	if fake.AssociateSpaceManagerByUsernameAndOriginStub != nil {
+		return fake.AssociateSpaceManagerByUsernameAndOriginStub(spaceGUID, userName, origin)
 	} else {
-		return fake.associateSpaceManagerByUsernameReturns.result1, fake.associateSpaceManagerByUsernameReturns.result2
+		return fake.associateSpaceManagerByUsernameAndOriginReturns.result1, fake.associateSpaceManagerByUsernameAndOriginReturns.result2
 	}
 }
 
-func (fake *FakeCFClient) AssociateSpaceManagerByUsernameCallCount() int {
-	fake.associateSpaceManagerByUsernameMutex.RLock()
-	defer fake.associateSpaceManagerByUsernameMutex.RUnlock()
-	return len(fake.associateSpaceManagerByUsernameArgsForCall)
+func (fake *FakeCFClient) AssociateSpaceManagerByUsernameAndOriginCallCount() int {
+	fake.associateSpaceManagerByUsernameAndOriginMutex.RLock()
+	defer fake.associateSpaceManagerByUsernameAndOriginMutex.RUnlock()
+	return len(fake.associateSpaceManagerByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) AssociateSpaceManagerByUsernameArgsForCall(i int) (string, string) {
-	fake.associateSpaceManagerByUsernameMutex.RLock()
-	defer fake.associateSpaceManagerByUsernameMutex.RUnlock()
-	return fake.associateSpaceManagerByUsernameArgsForCall[i].spaceGUID, fake.associateSpaceManagerByUsernameArgsForCall[i].userName
+func (fake *FakeCFClient) AssociateSpaceManagerByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.associateSpaceManagerByUsernameAndOriginMutex.RLock()
+	defer fake.associateSpaceManagerByUsernameAndOriginMutex.RUnlock()
+	return fake.associateSpaceManagerByUsernameAndOriginArgsForCall[i].spaceGUID, fake.associateSpaceManagerByUsernameAndOriginArgsForCall[i].userName, fake.associateSpaceManagerByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) AssociateSpaceManagerByUsernameReturns(result1 go_cfclient.Space, result2 error) {
-	fake.AssociateSpaceManagerByUsernameStub = nil
-	fake.associateSpaceManagerByUsernameReturns = struct {
+func (fake *FakeCFClient) AssociateSpaceManagerByUsernameAndOriginReturns(result1 go_cfclient.Space, result2 error) {
+	fake.AssociateSpaceManagerByUsernameAndOriginStub = nil
+	fake.associateSpaceManagerByUsernameAndOriginReturns = struct {
 		result1 go_cfclient.Space
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) RemoveOrgUserByUsername(orgGUID string, name string) error {
-	fake.removeOrgUserByUsernameMutex.Lock()
-	fake.removeOrgUserByUsernameArgsForCall = append(fake.removeOrgUserByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) RemoveOrgUserByUsernameAndOrigin(orgGUID string, name string, origin string) error {
+	fake.removeOrgUserByUsernameAndOriginMutex.Lock()
+	fake.removeOrgUserByUsernameAndOriginArgsForCall = append(fake.removeOrgUserByUsernameAndOriginArgsForCall, struct {
 		orgGUID string
 		name    string
-	}{orgGUID, name})
-	fake.recordInvocation("RemoveOrgUserByUsername", []interface{}{orgGUID, name})
-	fake.removeOrgUserByUsernameMutex.Unlock()
-	if fake.RemoveOrgUserByUsernameStub != nil {
-		return fake.RemoveOrgUserByUsernameStub(orgGUID, name)
+		origin  string
+	}{orgGUID, name, origin})
+	fake.recordInvocation("RemoveOrgUserByUsernameAndOrigin", []interface{}{orgGUID, name, origin})
+	fake.removeOrgUserByUsernameAndOriginMutex.Unlock()
+	if fake.RemoveOrgUserByUsernameAndOriginStub != nil {
+		return fake.RemoveOrgUserByUsernameAndOriginStub(orgGUID, name, origin)
 	} else {
-		return fake.removeOrgUserByUsernameReturns.result1
+		return fake.removeOrgUserByUsernameAndOriginReturns.result1
 	}
 }
 
-func (fake *FakeCFClient) RemoveOrgUserByUsernameCallCount() int {
-	fake.removeOrgUserByUsernameMutex.RLock()
-	defer fake.removeOrgUserByUsernameMutex.RUnlock()
-	return len(fake.removeOrgUserByUsernameArgsForCall)
+func (fake *FakeCFClient) RemoveOrgUserByUsernameAndOriginCallCount() int {
+	fake.removeOrgUserByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgUserByUsernameAndOriginMutex.RUnlock()
+	return len(fake.removeOrgUserByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) RemoveOrgUserByUsernameArgsForCall(i int) (string, string) {
-	fake.removeOrgUserByUsernameMutex.RLock()
-	defer fake.removeOrgUserByUsernameMutex.RUnlock()
-	return fake.removeOrgUserByUsernameArgsForCall[i].orgGUID, fake.removeOrgUserByUsernameArgsForCall[i].name
+func (fake *FakeCFClient) RemoveOrgUserByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.removeOrgUserByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgUserByUsernameAndOriginMutex.RUnlock()
+	return fake.removeOrgUserByUsernameAndOriginArgsForCall[i].orgGUID, fake.removeOrgUserByUsernameAndOriginArgsForCall[i].name, fake.removeOrgUserByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) RemoveOrgUserByUsernameReturns(result1 error) {
-	fake.RemoveOrgUserByUsernameStub = nil
-	fake.removeOrgUserByUsernameReturns = struct {
+func (fake *FakeCFClient) RemoveOrgUserByUsernameAndOriginReturns(result1 error) {
+	fake.RemoveOrgUserByUsernameAndOriginStub = nil
+	fake.removeOrgUserByUsernameAndOriginReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeCFClient) RemoveOrgAuditorByUsername(orgGUID string, name string) error {
-	fake.removeOrgAuditorByUsernameMutex.Lock()
-	fake.removeOrgAuditorByUsernameArgsForCall = append(fake.removeOrgAuditorByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) RemoveOrgAuditorByUsernameAndOrigin(orgGUID string, name string, origin string) error {
+	fake.removeOrgAuditorByUsernameAndOriginMutex.Lock()
+	fake.removeOrgAuditorByUsernameAndOriginArgsForCall = append(fake.removeOrgAuditorByUsernameAndOriginArgsForCall, struct {
 		orgGUID string
 		name    string
-	}{orgGUID, name})
-	fake.recordInvocation("RemoveOrgAuditorByUsername", []interface{}{orgGUID, name})
-	fake.removeOrgAuditorByUsernameMutex.Unlock()
-	if fake.RemoveOrgAuditorByUsernameStub != nil {
-		return fake.RemoveOrgAuditorByUsernameStub(orgGUID, name)
+		origin  string
+	}{orgGUID, name, origin})
+	fake.recordInvocation("RemoveOrgAuditorByUsernameAndOrigin", []interface{}{orgGUID, name, origin})
+	fake.removeOrgAuditorByUsernameAndOriginMutex.Unlock()
+	if fake.RemoveOrgAuditorByUsernameAndOriginStub != nil {
+		return fake.RemoveOrgAuditorByUsernameAndOriginStub(orgGUID, name, origin)
 	} else {
-		return fake.removeOrgAuditorByUsernameReturns.result1
+		return fake.removeOrgAuditorByUsernameAndOriginReturns.result1
 	}
 }
 
-func (fake *FakeCFClient) RemoveOrgAuditorByUsernameCallCount() int {
-	fake.removeOrgAuditorByUsernameMutex.RLock()
-	defer fake.removeOrgAuditorByUsernameMutex.RUnlock()
-	return len(fake.removeOrgAuditorByUsernameArgsForCall)
+func (fake *FakeCFClient) RemoveOrgAuditorByUsernameAndOriginCallCount() int {
+	fake.removeOrgAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgAuditorByUsernameAndOriginMutex.RUnlock()
+	return len(fake.removeOrgAuditorByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) RemoveOrgAuditorByUsernameArgsForCall(i int) (string, string) {
-	fake.removeOrgAuditorByUsernameMutex.RLock()
-	defer fake.removeOrgAuditorByUsernameMutex.RUnlock()
-	return fake.removeOrgAuditorByUsernameArgsForCall[i].orgGUID, fake.removeOrgAuditorByUsernameArgsForCall[i].name
+func (fake *FakeCFClient) RemoveOrgAuditorByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.removeOrgAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgAuditorByUsernameAndOriginMutex.RUnlock()
+	return fake.removeOrgAuditorByUsernameAndOriginArgsForCall[i].orgGUID, fake.removeOrgAuditorByUsernameAndOriginArgsForCall[i].name, fake.removeOrgAuditorByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) RemoveOrgAuditorByUsernameReturns(result1 error) {
-	fake.RemoveOrgAuditorByUsernameStub = nil
-	fake.removeOrgAuditorByUsernameReturns = struct {
+func (fake *FakeCFClient) RemoveOrgAuditorByUsernameAndOriginReturns(result1 error) {
+	fake.RemoveOrgAuditorByUsernameAndOriginStub = nil
+	fake.removeOrgAuditorByUsernameAndOriginReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeCFClient) RemoveOrgBillingManagerByUsername(orgGUID string, name string) error {
-	fake.removeOrgBillingManagerByUsernameMutex.Lock()
-	fake.removeOrgBillingManagerByUsernameArgsForCall = append(fake.removeOrgBillingManagerByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) RemoveOrgBillingManagerByUsernameAndOrigin(orgGUID string, name string, origin string) error {
+	fake.removeOrgBillingManagerByUsernameAndOriginMutex.Lock()
+	fake.removeOrgBillingManagerByUsernameAndOriginArgsForCall = append(fake.removeOrgBillingManagerByUsernameAndOriginArgsForCall, struct {
 		orgGUID string
 		name    string
-	}{orgGUID, name})
-	fake.recordInvocation("RemoveOrgBillingManagerByUsername", []interface{}{orgGUID, name})
-	fake.removeOrgBillingManagerByUsernameMutex.Unlock()
-	if fake.RemoveOrgBillingManagerByUsernameStub != nil {
-		return fake.RemoveOrgBillingManagerByUsernameStub(orgGUID, name)
+		origin  string
+	}{orgGUID, name, origin})
+	fake.recordInvocation("RemoveOrgBillingManagerByUsernameAndOrigin", []interface{}{orgGUID, name, origin})
+	fake.removeOrgBillingManagerByUsernameAndOriginMutex.Unlock()
+	if fake.RemoveOrgBillingManagerByUsernameAndOriginStub != nil {
+		return fake.RemoveOrgBillingManagerByUsernameAndOriginStub(orgGUID, name, origin)
 	} else {
-		return fake.removeOrgBillingManagerByUsernameReturns.result1
+		return fake.removeOrgBillingManagerByUsernameAndOriginReturns.result1
 	}
 }
 
-func (fake *FakeCFClient) RemoveOrgBillingManagerByUsernameCallCount() int {
-	fake.removeOrgBillingManagerByUsernameMutex.RLock()
-	defer fake.removeOrgBillingManagerByUsernameMutex.RUnlock()
-	return len(fake.removeOrgBillingManagerByUsernameArgsForCall)
+func (fake *FakeCFClient) RemoveOrgBillingManagerByUsernameAndOriginCallCount() int {
+	fake.removeOrgBillingManagerByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgBillingManagerByUsernameAndOriginMutex.RUnlock()
+	return len(fake.removeOrgBillingManagerByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) RemoveOrgBillingManagerByUsernameArgsForCall(i int) (string, string) {
-	fake.removeOrgBillingManagerByUsernameMutex.RLock()
-	defer fake.removeOrgBillingManagerByUsernameMutex.RUnlock()
-	return fake.removeOrgBillingManagerByUsernameArgsForCall[i].orgGUID, fake.removeOrgBillingManagerByUsernameArgsForCall[i].name
+func (fake *FakeCFClient) RemoveOrgBillingManagerByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.removeOrgBillingManagerByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgBillingManagerByUsernameAndOriginMutex.RUnlock()
+	return fake.removeOrgBillingManagerByUsernameAndOriginArgsForCall[i].orgGUID, fake.removeOrgBillingManagerByUsernameAndOriginArgsForCall[i].name, fake.removeOrgBillingManagerByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) RemoveOrgBillingManagerByUsernameReturns(result1 error) {
-	fake.RemoveOrgBillingManagerByUsernameStub = nil
-	fake.removeOrgBillingManagerByUsernameReturns = struct {
+func (fake *FakeCFClient) RemoveOrgBillingManagerByUsernameAndOriginReturns(result1 error) {
+	fake.RemoveOrgBillingManagerByUsernameAndOriginStub = nil
+	fake.removeOrgBillingManagerByUsernameAndOriginReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeCFClient) RemoveOrgManagerByUsername(orgGUID string, name string) error {
-	fake.removeOrgManagerByUsernameMutex.Lock()
-	fake.removeOrgManagerByUsernameArgsForCall = append(fake.removeOrgManagerByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) RemoveOrgManagerByUsernameAndOrigin(orgGUID string, name string, origin string) error {
+	fake.removeOrgManagerByUsernameAndOriginMutex.Lock()
+	fake.removeOrgManagerByUsernameAndOriginArgsForCall = append(fake.removeOrgManagerByUsernameAndOriginArgsForCall, struct {
 		orgGUID string
 		name    string
-	}{orgGUID, name})
-	fake.recordInvocation("RemoveOrgManagerByUsername", []interface{}{orgGUID, name})
-	fake.removeOrgManagerByUsernameMutex.Unlock()
-	if fake.RemoveOrgManagerByUsernameStub != nil {
-		return fake.RemoveOrgManagerByUsernameStub(orgGUID, name)
+		origin  string
+	}{orgGUID, name, origin})
+	fake.recordInvocation("RemoveOrgManagerByUsernameAndOrigin", []interface{}{orgGUID, name, origin})
+	fake.removeOrgManagerByUsernameAndOriginMutex.Unlock()
+	if fake.RemoveOrgManagerByUsernameAndOriginStub != nil {
+		return fake.RemoveOrgManagerByUsernameAndOriginStub(orgGUID, name, origin)
 	} else {
-		return fake.removeOrgManagerByUsernameReturns.result1
+		return fake.removeOrgManagerByUsernameAndOriginReturns.result1
 	}
 }
 
-func (fake *FakeCFClient) RemoveOrgManagerByUsernameCallCount() int {
-	fake.removeOrgManagerByUsernameMutex.RLock()
-	defer fake.removeOrgManagerByUsernameMutex.RUnlock()
-	return len(fake.removeOrgManagerByUsernameArgsForCall)
+func (fake *FakeCFClient) RemoveOrgManagerByUsernameAndOriginCallCount() int {
+	fake.removeOrgManagerByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgManagerByUsernameAndOriginMutex.RUnlock()
+	return len(fake.removeOrgManagerByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) RemoveOrgManagerByUsernameArgsForCall(i int) (string, string) {
-	fake.removeOrgManagerByUsernameMutex.RLock()
-	defer fake.removeOrgManagerByUsernameMutex.RUnlock()
-	return fake.removeOrgManagerByUsernameArgsForCall[i].orgGUID, fake.removeOrgManagerByUsernameArgsForCall[i].name
+func (fake *FakeCFClient) RemoveOrgManagerByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.removeOrgManagerByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgManagerByUsernameAndOriginMutex.RUnlock()
+	return fake.removeOrgManagerByUsernameAndOriginArgsForCall[i].orgGUID, fake.removeOrgManagerByUsernameAndOriginArgsForCall[i].name, fake.removeOrgManagerByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) RemoveOrgManagerByUsernameReturns(result1 error) {
-	fake.RemoveOrgManagerByUsernameStub = nil
-	fake.removeOrgManagerByUsernameReturns = struct {
+func (fake *FakeCFClient) RemoveOrgManagerByUsernameAndOriginReturns(result1 error) {
+	fake.RemoveOrgManagerByUsernameAndOriginStub = nil
+	fake.removeOrgManagerByUsernameAndOriginReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -801,106 +826,109 @@ func (fake *FakeCFClient) ListOrgBillingManagersReturns(result1 []go_cfclient.Us
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) AssociateOrgAuditorByUsername(orgGUID string, name string) (go_cfclient.Org, error) {
-	fake.associateOrgAuditorByUsernameMutex.Lock()
-	fake.associateOrgAuditorByUsernameArgsForCall = append(fake.associateOrgAuditorByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) AssociateOrgAuditorByUsernameAndOrigin(orgGUID string, name string, origin string) (go_cfclient.Org, error) {
+	fake.associateOrgAuditorByUsernameAndOriginMutex.Lock()
+	fake.associateOrgAuditorByUsernameAndOriginArgsForCall = append(fake.associateOrgAuditorByUsernameAndOriginArgsForCall, struct {
 		orgGUID string
 		name    string
-	}{orgGUID, name})
-	fake.recordInvocation("AssociateOrgAuditorByUsername", []interface{}{orgGUID, name})
-	fake.associateOrgAuditorByUsernameMutex.Unlock()
-	if fake.AssociateOrgAuditorByUsernameStub != nil {
-		return fake.AssociateOrgAuditorByUsernameStub(orgGUID, name)
+		origin  string
+	}{orgGUID, name, origin})
+	fake.recordInvocation("AssociateOrgAuditorByUsernameAndOrigin", []interface{}{orgGUID, name, origin})
+	fake.associateOrgAuditorByUsernameAndOriginMutex.Unlock()
+	if fake.AssociateOrgAuditorByUsernameAndOriginStub != nil {
+		return fake.AssociateOrgAuditorByUsernameAndOriginStub(orgGUID, name, origin)
 	} else {
-		return fake.associateOrgAuditorByUsernameReturns.result1, fake.associateOrgAuditorByUsernameReturns.result2
+		return fake.associateOrgAuditorByUsernameAndOriginReturns.result1, fake.associateOrgAuditorByUsernameAndOriginReturns.result2
 	}
 }
 
-func (fake *FakeCFClient) AssociateOrgAuditorByUsernameCallCount() int {
-	fake.associateOrgAuditorByUsernameMutex.RLock()
-	defer fake.associateOrgAuditorByUsernameMutex.RUnlock()
-	return len(fake.associateOrgAuditorByUsernameArgsForCall)
+func (fake *FakeCFClient) AssociateOrgAuditorByUsernameAndOriginCallCount() int {
+	fake.associateOrgAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgAuditorByUsernameAndOriginMutex.RUnlock()
+	return len(fake.associateOrgAuditorByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) AssociateOrgAuditorByUsernameArgsForCall(i int) (string, string) {
-	fake.associateOrgAuditorByUsernameMutex.RLock()
-	defer fake.associateOrgAuditorByUsernameMutex.RUnlock()
-	return fake.associateOrgAuditorByUsernameArgsForCall[i].orgGUID, fake.associateOrgAuditorByUsernameArgsForCall[i].name
+func (fake *FakeCFClient) AssociateOrgAuditorByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.associateOrgAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgAuditorByUsernameAndOriginMutex.RUnlock()
+	return fake.associateOrgAuditorByUsernameAndOriginArgsForCall[i].orgGUID, fake.associateOrgAuditorByUsernameAndOriginArgsForCall[i].name, fake.associateOrgAuditorByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) AssociateOrgAuditorByUsernameReturns(result1 go_cfclient.Org, result2 error) {
-	fake.AssociateOrgAuditorByUsernameStub = nil
-	fake.associateOrgAuditorByUsernameReturns = struct {
+func (fake *FakeCFClient) AssociateOrgAuditorByUsernameAndOriginReturns(result1 go_cfclient.Org, result2 error) {
+	fake.AssociateOrgAuditorByUsernameAndOriginStub = nil
+	fake.associateOrgAuditorByUsernameAndOriginReturns = struct {
 		result1 go_cfclient.Org
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) AssociateOrgManagerByUsername(orgGUID string, name string) (go_cfclient.Org, error) {
-	fake.associateOrgManagerByUsernameMutex.Lock()
-	fake.associateOrgManagerByUsernameArgsForCall = append(fake.associateOrgManagerByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) AssociateOrgManagerByUsernameAndOrigin(orgGUID string, name string, origin string) (go_cfclient.Org, error) {
+	fake.associateOrgManagerByUsernameAndOriginMutex.Lock()
+	fake.associateOrgManagerByUsernameAndOriginArgsForCall = append(fake.associateOrgManagerByUsernameAndOriginArgsForCall, struct {
 		orgGUID string
 		name    string
-	}{orgGUID, name})
-	fake.recordInvocation("AssociateOrgManagerByUsername", []interface{}{orgGUID, name})
-	fake.associateOrgManagerByUsernameMutex.Unlock()
-	if fake.AssociateOrgManagerByUsernameStub != nil {
-		return fake.AssociateOrgManagerByUsernameStub(orgGUID, name)
+		origin  string
+	}{orgGUID, name, origin})
+	fake.recordInvocation("AssociateOrgManagerByUsernameAndOrigin", []interface{}{orgGUID, name, origin})
+	fake.associateOrgManagerByUsernameAndOriginMutex.Unlock()
+	if fake.AssociateOrgManagerByUsernameAndOriginStub != nil {
+		return fake.AssociateOrgManagerByUsernameAndOriginStub(orgGUID, name, origin)
 	} else {
-		return fake.associateOrgManagerByUsernameReturns.result1, fake.associateOrgManagerByUsernameReturns.result2
+		return fake.associateOrgManagerByUsernameAndOriginReturns.result1, fake.associateOrgManagerByUsernameAndOriginReturns.result2
 	}
 }
 
-func (fake *FakeCFClient) AssociateOrgManagerByUsernameCallCount() int {
-	fake.associateOrgManagerByUsernameMutex.RLock()
-	defer fake.associateOrgManagerByUsernameMutex.RUnlock()
-	return len(fake.associateOrgManagerByUsernameArgsForCall)
+func (fake *FakeCFClient) AssociateOrgManagerByUsernameAndOriginCallCount() int {
+	fake.associateOrgManagerByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgManagerByUsernameAndOriginMutex.RUnlock()
+	return len(fake.associateOrgManagerByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) AssociateOrgManagerByUsernameArgsForCall(i int) (string, string) {
-	fake.associateOrgManagerByUsernameMutex.RLock()
-	defer fake.associateOrgManagerByUsernameMutex.RUnlock()
-	return fake.associateOrgManagerByUsernameArgsForCall[i].orgGUID, fake.associateOrgManagerByUsernameArgsForCall[i].name
+func (fake *FakeCFClient) AssociateOrgManagerByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.associateOrgManagerByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgManagerByUsernameAndOriginMutex.RUnlock()
+	return fake.associateOrgManagerByUsernameAndOriginArgsForCall[i].orgGUID, fake.associateOrgManagerByUsernameAndOriginArgsForCall[i].name, fake.associateOrgManagerByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) AssociateOrgManagerByUsernameReturns(result1 go_cfclient.Org, result2 error) {
-	fake.AssociateOrgManagerByUsernameStub = nil
-	fake.associateOrgManagerByUsernameReturns = struct {
+func (fake *FakeCFClient) AssociateOrgManagerByUsernameAndOriginReturns(result1 go_cfclient.Org, result2 error) {
+	fake.AssociateOrgManagerByUsernameAndOriginStub = nil
+	fake.associateOrgManagerByUsernameAndOriginReturns = struct {
 		result1 go_cfclient.Org
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) AssociateOrgBillingManagerByUsername(orgGUID string, name string) (go_cfclient.Org, error) {
-	fake.associateOrgBillingManagerByUsernameMutex.Lock()
-	fake.associateOrgBillingManagerByUsernameArgsForCall = append(fake.associateOrgBillingManagerByUsernameArgsForCall, struct {
+func (fake *FakeCFClient) AssociateOrgBillingManagerByUsernameAndOrigin(orgGUID string, name string, origin string) (go_cfclient.Org, error) {
+	fake.associateOrgBillingManagerByUsernameAndOriginMutex.Lock()
+	fake.associateOrgBillingManagerByUsernameAndOriginArgsForCall = append(fake.associateOrgBillingManagerByUsernameAndOriginArgsForCall, struct {
 		orgGUID string
 		name    string
-	}{orgGUID, name})
-	fake.recordInvocation("AssociateOrgBillingManagerByUsername", []interface{}{orgGUID, name})
-	fake.associateOrgBillingManagerByUsernameMutex.Unlock()
-	if fake.AssociateOrgBillingManagerByUsernameStub != nil {
-		return fake.AssociateOrgBillingManagerByUsernameStub(orgGUID, name)
+		origin  string
+	}{orgGUID, name, origin})
+	fake.recordInvocation("AssociateOrgBillingManagerByUsernameAndOrigin", []interface{}{orgGUID, name, origin})
+	fake.associateOrgBillingManagerByUsernameAndOriginMutex.Unlock()
+	if fake.AssociateOrgBillingManagerByUsernameAndOriginStub != nil {
+		return fake.AssociateOrgBillingManagerByUsernameAndOriginStub(orgGUID, name, origin)
 	} else {
-		return fake.associateOrgBillingManagerByUsernameReturns.result1, fake.associateOrgBillingManagerByUsernameReturns.result2
+		return fake.associateOrgBillingManagerByUsernameAndOriginReturns.result1, fake.associateOrgBillingManagerByUsernameAndOriginReturns.result2
 	}
 }
 
-func (fake *FakeCFClient) AssociateOrgBillingManagerByUsernameCallCount() int {
-	fake.associateOrgBillingManagerByUsernameMutex.RLock()
-	defer fake.associateOrgBillingManagerByUsernameMutex.RUnlock()
-	return len(fake.associateOrgBillingManagerByUsernameArgsForCall)
+func (fake *FakeCFClient) AssociateOrgBillingManagerByUsernameAndOriginCallCount() int {
+	fake.associateOrgBillingManagerByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgBillingManagerByUsernameAndOriginMutex.RUnlock()
+	return len(fake.associateOrgBillingManagerByUsernameAndOriginArgsForCall)
 }
 
-func (fake *FakeCFClient) AssociateOrgBillingManagerByUsernameArgsForCall(i int) (string, string) {
-	fake.associateOrgBillingManagerByUsernameMutex.RLock()
-	defer fake.associateOrgBillingManagerByUsernameMutex.RUnlock()
-	return fake.associateOrgBillingManagerByUsernameArgsForCall[i].orgGUID, fake.associateOrgBillingManagerByUsernameArgsForCall[i].name
+func (fake *FakeCFClient) AssociateOrgBillingManagerByUsernameAndOriginArgsForCall(i int) (string, string, string) {
+	fake.associateOrgBillingManagerByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgBillingManagerByUsernameAndOriginMutex.RUnlock()
+	return fake.associateOrgBillingManagerByUsernameAndOriginArgsForCall[i].orgGUID, fake.associateOrgBillingManagerByUsernameAndOriginArgsForCall[i].name, fake.associateOrgBillingManagerByUsernameAndOriginArgsForCall[i].origin
 }
 
-func (fake *FakeCFClient) AssociateOrgBillingManagerByUsernameReturns(result1 go_cfclient.Org, result2 error) {
-	fake.AssociateOrgBillingManagerByUsernameStub = nil
-	fake.associateOrgBillingManagerByUsernameReturns = struct {
+func (fake *FakeCFClient) AssociateOrgBillingManagerByUsernameAndOriginReturns(result1 go_cfclient.Org, result2 error) {
+	fake.AssociateOrgBillingManagerByUsernameAndOriginStub = nil
+	fake.associateOrgBillingManagerByUsernameAndOriginReturns = struct {
 		result1 go_cfclient.Org
 		result2 error
 	}{result1, result2}
@@ -977,46 +1005,46 @@ func (fake *FakeCFClient) ListSpacesByQueryReturns(result1 []go_cfclient.Space, 
 func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.removeSpaceAuditorByUsernameMutex.RLock()
-	defer fake.removeSpaceAuditorByUsernameMutex.RUnlock()
-	fake.removeSpaceDeveloperByUsernameMutex.RLock()
-	defer fake.removeSpaceDeveloperByUsernameMutex.RUnlock()
-	fake.removeSpaceManagerByUsernameMutex.RLock()
-	defer fake.removeSpaceManagerByUsernameMutex.RUnlock()
+	fake.removeSpaceAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.removeSpaceAuditorByUsernameAndOriginMutex.RUnlock()
+	fake.removeSpaceDeveloperByUsernameAndOriginMutex.RLock()
+	defer fake.removeSpaceDeveloperByUsernameAndOriginMutex.RUnlock()
+	fake.removeSpaceManagerByUsernameAndOriginMutex.RLock()
+	defer fake.removeSpaceManagerByUsernameAndOriginMutex.RUnlock()
 	fake.listSpaceAuditorsMutex.RLock()
 	defer fake.listSpaceAuditorsMutex.RUnlock()
 	fake.listSpaceManagersMutex.RLock()
 	defer fake.listSpaceManagersMutex.RUnlock()
 	fake.listSpaceDevelopersMutex.RLock()
 	defer fake.listSpaceDevelopersMutex.RUnlock()
-	fake.associateOrgUserByUsernameMutex.RLock()
-	defer fake.associateOrgUserByUsernameMutex.RUnlock()
-	fake.associateSpaceAuditorByUsernameMutex.RLock()
-	defer fake.associateSpaceAuditorByUsernameMutex.RUnlock()
-	fake.associateSpaceDeveloperByUsernameMutex.RLock()
-	defer fake.associateSpaceDeveloperByUsernameMutex.RUnlock()
-	fake.associateSpaceManagerByUsernameMutex.RLock()
-	defer fake.associateSpaceManagerByUsernameMutex.RUnlock()
-	fake.removeOrgUserByUsernameMutex.RLock()
-	defer fake.removeOrgUserByUsernameMutex.RUnlock()
-	fake.removeOrgAuditorByUsernameMutex.RLock()
-	defer fake.removeOrgAuditorByUsernameMutex.RUnlock()
-	fake.removeOrgBillingManagerByUsernameMutex.RLock()
-	defer fake.removeOrgBillingManagerByUsernameMutex.RUnlock()
-	fake.removeOrgManagerByUsernameMutex.RLock()
-	defer fake.removeOrgManagerByUsernameMutex.RUnlock()
+	fake.associateOrgUserByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgUserByUsernameAndOriginMutex.RUnlock()
+	fake.associateSpaceAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.associateSpaceAuditorByUsernameAndOriginMutex.RUnlock()
+	fake.associateSpaceDeveloperByUsernameAndOriginMutex.RLock()
+	defer fake.associateSpaceDeveloperByUsernameAndOriginMutex.RUnlock()
+	fake.associateSpaceManagerByUsernameAndOriginMutex.RLock()
+	defer fake.associateSpaceManagerByUsernameAndOriginMutex.RUnlock()
+	fake.removeOrgUserByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgUserByUsernameAndOriginMutex.RUnlock()
+	fake.removeOrgAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgAuditorByUsernameAndOriginMutex.RUnlock()
+	fake.removeOrgBillingManagerByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgBillingManagerByUsernameAndOriginMutex.RUnlock()
+	fake.removeOrgManagerByUsernameAndOriginMutex.RLock()
+	defer fake.removeOrgManagerByUsernameAndOriginMutex.RUnlock()
 	fake.listOrgAuditorsMutex.RLock()
 	defer fake.listOrgAuditorsMutex.RUnlock()
 	fake.listOrgManagersMutex.RLock()
 	defer fake.listOrgManagersMutex.RUnlock()
 	fake.listOrgBillingManagersMutex.RLock()
 	defer fake.listOrgBillingManagersMutex.RUnlock()
-	fake.associateOrgAuditorByUsernameMutex.RLock()
-	defer fake.associateOrgAuditorByUsernameMutex.RUnlock()
-	fake.associateOrgManagerByUsernameMutex.RLock()
-	defer fake.associateOrgManagerByUsernameMutex.RUnlock()
-	fake.associateOrgBillingManagerByUsernameMutex.RLock()
-	defer fake.associateOrgBillingManagerByUsernameMutex.RUnlock()
+	fake.associateOrgAuditorByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgAuditorByUsernameAndOriginMutex.RUnlock()
+	fake.associateOrgManagerByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgManagerByUsernameAndOriginMutex.RUnlock()
+	fake.associateOrgBillingManagerByUsernameAndOriginMutex.RLock()
+	defer fake.associateOrgBillingManagerByUsernameAndOriginMutex.RUnlock()
 	fake.listOrgUsersMutex.RLock()
 	defer fake.listOrgUsersMutex.RUnlock()
 	fake.listSpacesByQueryMutex.RLock()

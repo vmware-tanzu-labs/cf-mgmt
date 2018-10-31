@@ -15,8 +15,8 @@ type UpdateUsersInput struct {
 	OrgName                                     string
 	RemoveUsers                                 bool
 	ListUsers                                   func(updateUserInput UpdateUsersInput) (map[string]string, error)
-	AddUser                                     func(updateUserInput UpdateUsersInput, userName string) error
-	RemoveUser                                  func(updateUserInput UpdateUsersInput, userName string) error
+	AddUser                                     func(updateUserInput UpdateUsersInput, userName, origin string) error
+	RemoveUser                                  func(updateUserInput UpdateUsersInput, userName, origin string) error
 }
 
 // Manager - interface type encapsulating Update space users behavior
@@ -35,27 +35,27 @@ type Manager interface {
 }
 
 type CFClient interface {
-	RemoveSpaceAuditorByUsername(spaceGUID, userName string) error
-	RemoveSpaceDeveloperByUsername(spaceGUID, userName string) error
-	RemoveSpaceManagerByUsername(spaceGUID, userName string) error
+	RemoveSpaceAuditorByUsernameAndOrigin(spaceGUID, userName, origin string) error
+	RemoveSpaceDeveloperByUsernameAndOrigin(spaceGUID, userName, origin string) error
+	RemoveSpaceManagerByUsernameAndOrigin(spaceGUID, userName, origin string) error
 	ListSpaceAuditors(spaceGUID string) ([]cfclient.User, error)
 	ListSpaceManagers(spaceGUID string) ([]cfclient.User, error)
 	ListSpaceDevelopers(spaceGUID string) ([]cfclient.User, error)
-	AssociateOrgUserByUsername(orgGUID, userName string) (cfclient.Org, error)
-	AssociateSpaceAuditorByUsername(spaceGUID, userName string) (cfclient.Space, error)
-	AssociateSpaceDeveloperByUsername(spaceGUID, userName string) (cfclient.Space, error)
-	AssociateSpaceManagerByUsername(spaceGUID, userName string) (cfclient.Space, error)
+	AssociateOrgUserByUsernameAndOrigin(orgGUID, userName, origin string) (cfclient.Org, error)
+	AssociateSpaceAuditorByUsernameAndOrigin(spaceGUID, userName, origin string) (cfclient.Space, error)
+	AssociateSpaceDeveloperByUsernameAndOrigin(spaceGUID, userName, origin string) (cfclient.Space, error)
+	AssociateSpaceManagerByUsernameAndOrigin(spaceGUID, userName, origin string) (cfclient.Space, error)
 
-	RemoveOrgUserByUsername(orgGUID, name string) error
-	RemoveOrgAuditorByUsername(orgGUID, name string) error
-	RemoveOrgBillingManagerByUsername(orgGUID, name string) error
-	RemoveOrgManagerByUsername(orgGUID, name string) error
+	RemoveOrgUserByUsernameAndOrigin(orgGUID, name, origin string) error
+	RemoveOrgAuditorByUsernameAndOrigin(orgGUID, name, origin string) error
+	RemoveOrgBillingManagerByUsernameAndOrigin(orgGUID, name, origin string) error
+	RemoveOrgManagerByUsernameAndOrigin(orgGUID, name, origin string) error
 	ListOrgAuditors(orgGUID string) ([]cfclient.User, error)
 	ListOrgManagers(orgGUID string) ([]cfclient.User, error)
 	ListOrgBillingManagers(orgGUID string) ([]cfclient.User, error)
-	AssociateOrgAuditorByUsername(orgGUID, name string) (cfclient.Org, error)
-	AssociateOrgManagerByUsername(orgGUID, name string) (cfclient.Org, error)
-	AssociateOrgBillingManagerByUsername(orgGUID, name string) (cfclient.Org, error)
+	AssociateOrgAuditorByUsernameAndOrigin(orgGUID, name, origin string) (cfclient.Org, error)
+	AssociateOrgManagerByUsernameAndOrigin(orgGUID, name, origin string) (cfclient.Org, error)
+	AssociateOrgBillingManagerByUsernameAndOrigin(orgGUID, name, origin string) (cfclient.Org, error)
 
 	ListOrgUsers(orgGUID string) ([]cfclient.User, error)
 	ListSpacesByQuery(query url.Values) ([]cfclient.Space, error)

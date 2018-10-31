@@ -38,7 +38,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers map[string]string, uaaUsers map
 						uaaUsers[userToUse.UserDN] = uaaUser
 					}
 				}
-				if err := updateUsersInput.AddUser(updateUsersInput, userID); err != nil {
+				if err := updateUsersInput.AddUser(updateUsersInput, userID, "ldap"); err != nil {
 					return errors.Wrap(err, fmt.Sprintf("User %s", userID))
 				}
 			} else {

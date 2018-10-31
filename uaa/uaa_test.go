@@ -28,15 +28,15 @@ var _ = Describe("given uaa manager", func() {
 
 		It("should return list of users", func() {
 			fakeuaa.ListAllUsersReturns([]uaaclient.User{
-				uaaclient.User{Username: "foo4"},
-				uaaclient.User{Username: "admin"},
-				uaaclient.User{Username: "user"},
-				uaaclient.User{Username: "cwashburn"},
-				uaaclient.User{Username: "foo"},
-				uaaclient.User{Username: "foo1"},
-				uaaclient.User{Username: "foo2"},
-				uaaclient.User{Username: "foo3"},
-				uaaclient.User{Username: "cn=admin"},
+				uaaclient.User{Username: "foo4", ID: "foo4-id"},
+				uaaclient.User{Username: "admin", ID: "admin-id"},
+				uaaclient.User{Username: "user", ID: "user-id"},
+				uaaclient.User{Username: "cwashburn", ID: "cwashburn-id"},
+				uaaclient.User{Username: "foo", ID: "foo-id"},
+				uaaclient.User{Username: "foo1", ID: "foo1-id"},
+				uaaclient.User{Username: "foo2", ID: "foo2-id"},
+				uaaclient.User{Username: "foo3", ID: "foo3-id"},
+				uaaclient.User{Username: "cn=admin", ID: "cn=admin-id"},
 			}, nil)
 			users, err := manager.ListUsers()
 			Ω(err).ShouldNot(HaveOccurred())
@@ -44,8 +44,10 @@ var _ = Describe("given uaa manager", func() {
 			for k := range users {
 				keys = append(keys, k)
 			}
-			Ω(len(users)).Should(Equal(9))
-			Ω(keys).Should(ConsistOf("foo4", "admin", "user", "cwashburn", "foo", "foo1", "foo2", "foo3", "cn=admin"))
+			Ω(len(users)).Should(Equal(18))
+			Ω(keys).Should(ConsistOf(
+				"foo4", "admin", "user", "cwashburn", "foo", "foo1", "foo2", "foo3", "cn=admin",
+				"foo4-id", "admin-id", "user-id", "cwashburn-id", "foo-id", "foo1-id", "foo2-id", "foo3-id", "cn=admin-id"))
 		})
 		It("should return an error", func() {
 			fakeuaa.ListAllUsersReturns(nil, errors.New("Got an error"))

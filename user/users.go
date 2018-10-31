@@ -45,29 +45,29 @@ type DefaultManager struct {
 	LdapConfig *config.LdapConfig
 }
 
-func (m *DefaultManager) RemoveSpaceAuditor(input UpdateUsersInput, userName string) error {
+func (m *DefaultManager) RemoveSpaceAuditor(input UpdateUsersInput, userName, origin string) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Auditor")
+		lo.G.Infof("[dry-run]: removing user %s with origin %s from org/space %s/%s with role %s", userName, origin, input.OrgName, input.SpaceName, "Auditor")
 		return nil
 	}
-	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Auditor")
-	return m.Client.RemoveSpaceAuditorByUsername(input.SpaceGUID, userName)
+	lo.G.Infof("removing user %s with origin %s from org/space %s/%s with role %s", userName, origin, input.OrgName, input.SpaceName, "Auditor")
+	return m.Client.RemoveSpaceAuditorByUsernameAndOrigin(input.SpaceGUID, userName, origin)
 }
-func (m *DefaultManager) RemoveSpaceDeveloper(input UpdateUsersInput, userName string) error {
+func (m *DefaultManager) RemoveSpaceDeveloper(input UpdateUsersInput, userName, origin string) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Developer")
+		lo.G.Infof("[dry-run]: removing user %s with origin %s from org/space %s/%s with role %s", userName, origin, input.OrgName, input.SpaceName, "Developer")
 		return nil
 	}
-	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Developer")
-	return m.Client.RemoveSpaceDeveloperByUsername(input.SpaceGUID, userName)
+	lo.G.Infof("removing user %s with origin %s from org/space %s/%s with role %s", userName, origin, input.OrgName, input.SpaceName, "Developer")
+	return m.Client.RemoveSpaceDeveloperByUsernameAndOrigin(input.SpaceGUID, userName, origin)
 }
-func (m *DefaultManager) RemoveSpaceManager(input UpdateUsersInput, userName string) error {
+func (m *DefaultManager) RemoveSpaceManager(input UpdateUsersInput, userName, origin string) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Manager")
+		lo.G.Infof("[dry-run]: removing user %s with origin %s from org/space %s/%s with role %s", userName, origin, input.OrgName, input.SpaceName, "Manager")
 		return nil
 	}
-	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Manager")
-	return m.Client.RemoveSpaceManagerByUsername(input.SpaceGUID, userName)
+	lo.G.Infof("removing user %s with origin %s from org/space %s/%s with role %s", userName, origin, input.OrgName, input.SpaceName, "Manager")
+	return m.Client.RemoveSpaceManagerByUsernameAndOrigin(input.SpaceGUID, userName, origin)
 }
 func (m *DefaultManager) ListSpaceAuditors(spaceGUID string) (map[string]string, error) {
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
@@ -130,80 +130,80 @@ func (m *DefaultManager) userListToMap(users []cfclient.User) map[string]string 
 	return userMap
 }
 
-func (m *DefaultManager) AssociateSpaceAuditor(input UpdateUsersInput, userName string) error {
-	err := m.AddUserToOrg(userName, input)
+func (m *DefaultManager) AssociateSpaceAuditor(input UpdateUsersInput, userName, origin string) error {
+	err := m.AddUserToOrg(userName, origin, input)
 	if err != nil {
 		return err
 	}
 	if m.Peek {
-		lo.G.Infof("[dry-run]: adding %s to role %s for org/space %s/%s", userName, "auditor", input.OrgName, input.SpaceName)
+		lo.G.Infof("[dry-run]: adding %s with origin %s to role %s for org/space %s/%s", userName, origin, "auditor", input.OrgName, input.SpaceName)
 		return nil
 	}
 
-	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "auditor", input.OrgName, input.SpaceName)
-	_, err = m.Client.AssociateSpaceAuditorByUsername(input.SpaceGUID, userName)
+	lo.G.Infof("adding %s with origin %s to role %s for org/space %s/%s", userName, origin, "auditor", input.OrgName, input.SpaceName)
+	_, err = m.Client.AssociateSpaceAuditorByUsernameAndOrigin(input.SpaceGUID, userName, origin)
 	return err
 }
-func (m *DefaultManager) AssociateSpaceDeveloper(input UpdateUsersInput, userName string) error {
-	err := m.AddUserToOrg(userName, input)
+func (m *DefaultManager) AssociateSpaceDeveloper(input UpdateUsersInput, userName, origin string) error {
+	err := m.AddUserToOrg(userName, origin, input)
 	if err != nil {
 		return err
 	}
 	if m.Peek {
-		lo.G.Infof("[dry-run]: adding %s to role %s for org/space %s/%s", userName, "developer", input.OrgName, input.SpaceName)
+		lo.G.Infof("[dry-run]: adding %s with origin %s to role %s for org/space %s/%s", userName, origin, "developer", input.OrgName, input.SpaceName)
 		return nil
 	}
-	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "developer", input.OrgName, input.SpaceName)
-	_, err = m.Client.AssociateSpaceDeveloperByUsername(input.SpaceGUID, userName)
+	lo.G.Infof("adding %s with origin %s to role %s for org/space %s/%s", userName, origin, "developer", input.OrgName, input.SpaceName)
+	_, err = m.Client.AssociateSpaceDeveloperByUsernameAndOrigin(input.SpaceGUID, userName, origin)
 	return err
 }
-func (m *DefaultManager) AssociateSpaceManager(input UpdateUsersInput, userName string) error {
-	err := m.AddUserToOrg(userName, input)
+func (m *DefaultManager) AssociateSpaceManager(input UpdateUsersInput, userName, origin string) error {
+	err := m.AddUserToOrg(userName, origin, input)
 	if err != nil {
 		return err
 	}
 	if m.Peek {
-		lo.G.Infof("[dry-run]: adding %s to role %s for org/space %s/%s", userName, "manager", input.OrgName, input.SpaceName)
+		lo.G.Infof("[dry-run]: adding %s with origin %s to role %s for org/space %s/%s", userName, origin, "manager", input.OrgName, input.SpaceName)
 		return nil
 	}
 
-	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "manager", input.OrgName, input.SpaceName)
-	_, err = m.Client.AssociateSpaceManagerByUsername(input.SpaceGUID, userName)
+	lo.G.Infof("adding %s with origin %s to role %s for org/space %s/%s", userName, origin, "manager", input.OrgName, input.SpaceName)
+	_, err = m.Client.AssociateSpaceManagerByUsernameAndOrigin(input.SpaceGUID, userName, origin)
 	return err
 }
 
-func (m *DefaultManager) AddUserToOrg(userName string, input UpdateUsersInput) error {
+func (m *DefaultManager) AddUserToOrg(userName, origin string, input UpdateUsersInput) error {
 	if m.Peek {
 		return nil
 	}
-	_, err := m.Client.AssociateOrgUserByUsername(input.OrgGUID, userName)
+	_, err := m.Client.AssociateOrgUserByUsernameAndOrigin(input.OrgGUID, userName, origin)
 	return err
 }
 
-func (m *DefaultManager) RemoveOrgAuditor(input UpdateUsersInput, userName string) error {
+func (m *DefaultManager) RemoveOrgAuditor(input UpdateUsersInput, userName, origin string) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "auditor")
+		lo.G.Infof("[dry-run]: removing user %s with origin %s from org %s with role %s", userName, origin, input.OrgName, "auditor")
 		return nil
 	}
-	lo.G.Infof("removing user %s from org %s with role %s", userName, input.OrgName, "auditor")
-	return m.Client.RemoveOrgAuditorByUsername(input.OrgGUID, userName)
+	lo.G.Infof("removing user %s with origin %s from org %s with role %s", userName, origin, input.OrgName, "auditor")
+	return m.Client.RemoveOrgAuditorByUsernameAndOrigin(input.OrgGUID, userName, origin)
 }
-func (m *DefaultManager) RemoveOrgBillingManager(input UpdateUsersInput, userName string) error {
+func (m *DefaultManager) RemoveOrgBillingManager(input UpdateUsersInput, userName, origin string) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "billing manager")
+		lo.G.Infof("[dry-run]: removing user %s with origin %s from org %s with role %s", userName, origin, input.OrgName, "billing manager")
 		return nil
 	}
-	lo.G.Infof("removing user %s from org %s with role %s", userName, input.OrgName, "billing manager")
-	return m.Client.RemoveOrgBillingManagerByUsername(input.OrgGUID, userName)
+	lo.G.Infof("removing user %s with origin %s from org %s with role %s", userName, origin, input.OrgName, "billing manager")
+	return m.Client.RemoveOrgBillingManagerByUsernameAndOrigin(input.OrgGUID, userName, origin)
 }
 
-func (m *DefaultManager) RemoveOrgManager(input UpdateUsersInput, userName string) error {
+func (m *DefaultManager) RemoveOrgManager(input UpdateUsersInput, userName, origin string) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "manager")
+		lo.G.Infof("[dry-run]: removing user %s with origin %s from org %s with role %s", userName, origin, input.OrgName, "manager")
 		return nil
 	}
-	lo.G.Infof("removing user %s from org %s with role %s", userName, input.OrgName, "manager")
-	return m.Client.RemoveOrgManagerByUsername(input.OrgGUID, userName)
+	lo.G.Infof("removing user %s with origin %s from org %s with role %s", userName, origin, input.OrgName, "manager")
+	return m.Client.RemoveOrgManagerByUsernameAndOrigin(input.OrgGUID, userName, origin)
 }
 
 func (m *DefaultManager) ListOrgAuditors(orgGUID string) (map[string]string, error) {
@@ -258,47 +258,47 @@ func (m *DefaultManager) listOrgManagers(input UpdateUsersInput) (map[string]str
 	return roleUsers, err
 }
 
-func (m *DefaultManager) AssociateOrgAuditor(input UpdateUsersInput, userName string) error {
-	err := m.AddUserToOrg(userName, input)
+func (m *DefaultManager) AssociateOrgAuditor(input UpdateUsersInput, userName, origin string) error {
+	err := m.AddUserToOrg(userName, origin, input)
 	if err != nil {
 		return err
 	}
 	if m.Peek {
-		lo.G.Infof("[dry-run]: Add User %s to role %s for org %s", userName, "auditor", input.OrgName)
+		lo.G.Infof("[dry-run]: Add User %s with origin %s to role %s for org %s", userName, origin, "auditor", input.OrgName)
 		return nil
 	}
 
-	lo.G.Infof("Add User %s to role %s for org %s", userName, "auditor", input.OrgName)
-	_, err = m.Client.AssociateOrgAuditorByUsername(input.OrgGUID, userName)
+	lo.G.Infof("Add User %s with origin %s to role %s for org %s", userName, origin, "auditor", input.OrgName)
+	_, err = m.Client.AssociateOrgAuditorByUsernameAndOrigin(input.OrgGUID, userName, origin)
 	return err
 }
-func (m *DefaultManager) AssociateOrgBillingManager(input UpdateUsersInput, userName string) error {
-	err := m.AddUserToOrg(userName, input)
+func (m *DefaultManager) AssociateOrgBillingManager(input UpdateUsersInput, userName, origin string) error {
+	err := m.AddUserToOrg(userName, origin, input)
 	if err != nil {
 		return err
 	}
 	if m.Peek {
-		lo.G.Infof("[dry-run]: Add User %s to role %s for org %s", userName, "billing manager", input.OrgName)
+		lo.G.Infof("[dry-run]: Add User %s with origin %s to role %s for org %s", userName, origin, "billing manager", input.OrgName)
 		return nil
 	}
 
-	lo.G.Infof("Add User %s to role %s for org %s", userName, "billing manager", input.OrgName)
-	_, err = m.Client.AssociateOrgBillingManagerByUsername(input.OrgGUID, userName)
+	lo.G.Infof("Add User %s with origin %s to role %s for org %s", userName, origin, "billing manager", input.OrgName)
+	_, err = m.Client.AssociateOrgBillingManagerByUsernameAndOrigin(input.OrgGUID, userName, origin)
 	return err
 }
 
-func (m *DefaultManager) AssociateOrgManager(input UpdateUsersInput, userName string) error {
-	err := m.AddUserToOrg(userName, input)
+func (m *DefaultManager) AssociateOrgManager(input UpdateUsersInput, userName, origin string) error {
+	err := m.AddUserToOrg(userName, origin, input)
 	if err != nil {
 		return err
 	}
 	if m.Peek {
-		lo.G.Infof("[dry-run]: Add User %s to role %s for org %s", userName, "manager", input.OrgName)
+		lo.G.Infof("[dry-run]: Add User %s with origin %s to role %s for org %s", userName, origin, "manager", input.OrgName)
 		return nil
 	}
 
-	lo.G.Infof("Add User %s to role %s for org %s", userName, "manager", input.OrgName)
-	_, err = m.Client.AssociateOrgManagerByUsername(input.OrgGUID, userName)
+	lo.G.Infof("Add User %s with origin %s to role %s for org %s", userName, origin, "manager", input.OrgName)
+	_, err = m.Client.AssociateOrgManagerByUsernameAndOrigin(input.OrgGUID, userName, origin)
 	return err
 }
 
@@ -411,16 +411,20 @@ func (m *DefaultManager) CleanupOrgUsers() error {
 	if err != nil {
 		return err
 	}
+	uaaUsers, err := m.UAAMgr.ListUsers()
+	if err != nil {
+		return err
+	}
 
 	for _, input := range orgConfigs {
-		if err := m.cleanupOrgUsers(&input); err != nil {
+		if err := m.cleanupOrgUsers(uaaUsers, &input); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (m *DefaultManager) cleanupOrgUsers(input *config.OrgConfig) error {
+func (m *DefaultManager) cleanupOrgUsers(uaaUsers map[string]uaa.User, input *config.OrgConfig) error {
 	org, err := m.OrgMgr.FindOrg(input.Org)
 	if err != nil {
 		return err
@@ -439,13 +443,17 @@ func (m *DefaultManager) cleanupOrgUsers(input *config.OrgConfig) error {
 
 	for _, orgUser := range orgUsers {
 		if _, ok := usersInRoles[strings.ToLower(orgUser.Username)]; !ok {
+			uaaUser, ok := uaaUsers[orgUser.Guid]
+			if !ok {
+				return fmt.Errorf("Unable to find user with id %s and userName %s", orgUser.Guid, orgUser.Username)
+			}
 			if m.Peek {
-				lo.G.Infof("[dry-run]: Removing User %s from org %s", orgUser.Username, input.Org)
+				lo.G.Infof("[dry-run]: Removing User %s with origin %s from org %s", orgUser.Username, uaaUser.Origin, input.Org)
 				continue
 			}
 
-			lo.G.Infof("Removing User %s from org %s", orgUser.Username, input.Org)
-			err := m.Client.RemoveOrgUserByUsername(org.Guid, orgUser.Username)
+			lo.G.Infof("Removing User %s with origin %s from org %s", orgUser.Username, uaaUser.Origin, input.Org)
+			err := m.Client.RemoveOrgUserByUsernameAndOrigin(org.Guid, orgUser.Username, uaaUser.Origin)
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
 			}
@@ -521,14 +529,14 @@ func (m *DefaultManager) listSpaces(orgGUID string) ([]cfclient.Space, error) {
 
 }
 
-func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[string]uaa.User) error {
+func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers map[string]uaa.User) error {
 	org, err := m.OrgMgr.FindOrg(input.Org)
 	if err != nil {
 		return err
 	}
 
 	err = m.SyncUsers(
-		uaacUsers, UpdateUsersInput{
+		uaaUsers, UpdateUsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
 			LdapGroupNames: input.GetBillingManagerGroups(),
@@ -545,7 +553,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[s
 	}
 
 	err = m.SyncUsers(
-		uaacUsers, UpdateUsersInput{
+		uaaUsers, UpdateUsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
 			LdapGroupNames: input.GetAuditorGroups(),
@@ -562,7 +570,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaacUsers map[s
 	}
 
 	err = m.SyncUsers(
-		uaacUsers, UpdateUsersInput{
+		uaaUsers, UpdateUsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
 			LdapGroupNames: input.GetManagerGroups(),
@@ -598,7 +606,7 @@ func (m *DefaultManager) SyncUsers(uaaUsers map[string]uaa.User, updateUsersInpu
 	if err := m.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
 		return err
 	}
-	if err := m.RemoveUsers(roleUsers, updateUsersInput); err != nil {
+	if err := m.RemoveUsers(uaaUsers, roleUsers, updateUsersInput); err != nil {
 		return err
 	}
 	return nil
@@ -611,7 +619,7 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers map[string]string, uaaUsers
 			return fmt.Errorf("user %s doesn't exist in cloud foundry, so must add internal user first", lowerUserID)
 		}
 		if _, ok := roleUsers[lowerUserID]; !ok {
-			if err := updateUsersInput.AddUser(updateUsersInput, userID); err != nil {
+			if err := updateUsersInput.AddUser(updateUsersInput, userID, "uaa"); err != nil {
 				return err
 			}
 		} else {
@@ -639,7 +647,7 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers map[string]string, uaaUsers map
 			}
 		}
 		if _, ok := roleUsers[lowerUserEmail]; !ok {
-			if err := updateUsersInput.AddUser(updateUsersInput, userEmail); err != nil {
+			if err := updateUsersInput.AddUser(updateUsersInput, userEmail, m.LdapConfig.Origin); err != nil {
 				return err
 			}
 		} else {
@@ -649,10 +657,14 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers map[string]string, uaaUsers map
 	return nil
 }
 
-func (m *DefaultManager) RemoveUsers(roleUsers map[string]string, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) RemoveUsers(uaaUsers map[string]uaa.User, roleUsers map[string]string, updateUsersInput UpdateUsersInput) error {
 	if updateUsersInput.RemoveUsers {
-		for roleUser, _ := range roleUsers {
-			if err := updateUsersInput.RemoveUser(updateUsersInput, roleUser); err != nil {
+		for roleUser, roleUserGUID := range roleUsers {
+			uaaUser, ok := uaaUsers[roleUserGUID]
+			if !ok {
+				return fmt.Errorf("Unable to find user with id %s and userName %s", roleUserGUID, roleUser)
+			}
+			if err := updateUsersInput.RemoveUser(updateUsersInput, roleUser, uaaUser.Origin); err != nil {
 				return err
 			}
 		}
