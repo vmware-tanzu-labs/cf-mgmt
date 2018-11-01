@@ -1,8 +1,9 @@
-hash: 608d6f627a4ce19f8ee548a8db1b67af5c132d9111d0a3d97e4482f4915ad3af
-updated: 2018-10-17T11:19:31.854929-07:00
+hash: 5a14c2c3863d8fd5cfe44f6dc794d198a1d3a35f483bea22bb86912236e9891a
+updated: 2018-10-31T16:34:37.900131-04:00
 imports:
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: 49319a4a0c6f8b3f09af84053d0200cbf8523c17
+  version: c86602bd1dcc58ff9d12601f0068efc3282ea8f3
+  repo: https://github.com/calebwashburn/go-cfclient.git
 - name: github.com/cloudfoundry-community/go-uaa
   version: 06d965ffc8f595a3e739463e280b78eb6204ff3d
   subpackages:

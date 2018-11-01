@@ -90,6 +90,7 @@ func (m *DefaultUAAManager) ListUsers() (map[string]User, error) {
 			Origin:     user.Origin,
 		}
 		userMap[strings.ToLower(user.Username)] = uaaUser
+		userMap[user.ID] = uaaUser
 		if user.ExternalID != "" {
 			lo.G.Debugf("Adding %s to userMap for userID %s", strings.ToLower(user.ExternalID), user.Username)
 			userMap[strings.ToLower(user.ExternalID)] = uaaUser

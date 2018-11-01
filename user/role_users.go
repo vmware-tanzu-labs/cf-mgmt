@@ -1,0 +1,229 @@
+package user
+
+import (
+	"fmt"
+	"strings"
+
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/pivotalservices/cf-mgmt/uaa"
+	"github.com/pkg/errors"
+	"github.com/xchapter7x/lo"
+)
+
+func NewRoleUsers(users []cfclient.User, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	roleUsers := &RoleUsers{}
+	for _, user := range users {
+		uaaUser := uaaUsers[user.Guid]
+		roleUsers.addUser(RoleUser{
+			UserName: user.Username,
+			Origin:   uaaUser.Origin,
+		})
+	}
+	return roleUsers, nil
+}
+
+func (r *RoleUsers) HasUserForOrigin(userName, origin string) bool {
+	originMap, ok := r.users[strings.ToLower(origin)]
+	if !ok {
+		return false
+	}
+	_, found := originMap[strings.ToLower(userName)]
+	return found
+}
+
+func (r *RoleUsers) HasUser(userName string) bool {
+	for origin, _ := range r.users {
+		if r.HasUserForOrigin(userName, origin) {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *RoleUsers) RemoveUserForOrigin(userName, origin string) {
+	originMap, ok := r.users[strings.ToLower(origin)]
+	if ok {
+		delete(originMap, userName)
+	}
+}
+
+func (r *RoleUsers) AddUsers(roleUsers []RoleUser) {
+	for _, user := range roleUsers {
+		r.addUser(user)
+	}
+}
+
+func (r *RoleUsers) addUser(roleUser RoleUser) {
+	if r.users == nil {
+		r.users = make(map[string]map[string]RoleUser)
+	}
+	originMap := r.users[strings.ToLower(roleUser.Origin)]
+	if originMap == nil {
+		originMap = make(map[string]RoleUser)
+		r.users[strings.ToLower(roleUser.Origin)] = originMap
+	}
+	originMap[strings.ToLower(roleUser.UserName)] = roleUser
+}
+
+func (r *RoleUsers) Users() []RoleUser {
+	var result []RoleUser
+	for _, originUsers := range r.users {
+		for _, user := range originUsers {
+			result = append(result, user)
+		}
+	}
+	return result
+}
+
+func (m *DefaultManager) ListSpaceAuditors(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
+		return nil, nil
+	}
+	users, err := m.Client.ListSpaceAuditors(spaceGUID)
+	if err != nil {
+		return nil, err
+	}
+	return NewRoleUsers(users, uaaUsers)
+}
+func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
+		return nil, nil
+	}
+	users, err := m.Client.ListSpaceDevelopers(spaceGUID)
+	if err != nil {
+		return nil, err
+	}
+	return NewRoleUsers(users, uaaUsers)
+}
+func (m *DefaultManager) ListSpaceManagers(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
+		return nil, nil
+	}
+	users, err := m.Client.ListSpaceManagers(spaceGUID)
+	if err != nil {
+		return nil, err
+	}
+	return NewRoleUsers(users, uaaUsers)
+}
+
+func (m *DefaultManager) listSpaceAuditors(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	roleUsers, err := m.ListSpaceAuditors(input.SpaceGUID, uaaUsers)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-auditor", roleUsers)
+	}
+	return roleUsers, err
+}
+func (m *DefaultManager) listSpaceDevelopers(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	roleUsers, err := m.ListSpaceDevelopers(input.SpaceGUID, uaaUsers)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-developer", roleUsers)
+	}
+	return roleUsers, err
+}
+func (m *DefaultManager) listSpaceManagers(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	roleUsers, err := m.ListSpaceManagers(input.SpaceGUID, uaaUsers)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-manager", roleUsers)
+	}
+	return roleUsers, err
+}
+
+func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	roleUsers := &RoleUsers{}
+
+	orgAuditors, err := m.ListOrgAuditors(orgGUID, uaaUsers)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Error listing org auditors for org %s", orgName))
+	}
+	roleUsers.AddUsers(orgAuditors.Users())
+
+	orgManagers, err := m.ListOrgManagers(orgGUID, uaaUsers)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Error listing org managers for org %s", orgName))
+	}
+	roleUsers.AddUsers(orgManagers.Users())
+
+	orgBillingManagers, err := m.ListOrgBillingManagers(orgGUID, uaaUsers)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Error listing org billing managers for org %s", orgName))
+	}
+	roleUsers.AddUsers(orgBillingManagers.Users())
+
+	spaces, err := m.listSpaces(orgGUID)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Error listing spaces for org %s", orgName))
+	}
+	for _, space := range spaces {
+		spaceAuditors, err := m.ListSpaceAuditors(space.Guid, uaaUsers)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("Error listing space auditors for org/space %s/%s", orgName, space.Name))
+		}
+		roleUsers.AddUsers(spaceAuditors.Users())
+
+		spaceDevelopers, err := m.ListSpaceAuditors(space.Guid, uaaUsers)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("Error listing space developers for org/space %s/%s", orgName, space.Name))
+		}
+		roleUsers.AddUsers(spaceDevelopers.Users())
+
+		spaceManagers, err := m.ListSpaceManagers(space.Guid, uaaUsers)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("Error listing space managers for org/space %s/%s", orgName, space.Name))
+		}
+		roleUsers.AddUsers(spaceManagers.Users())
+	}
+
+	return roleUsers, nil
+}
+
+func (m *DefaultManager) ListOrgAuditors(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return nil, nil
+	}
+	users, err := m.Client.ListOrgAuditors(orgGUID)
+	if err != nil {
+		return nil, err
+	}
+	return NewRoleUsers(users, uaaUsers)
+}
+func (m *DefaultManager) ListOrgBillingManagers(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return nil, nil
+	}
+	users, err := m.Client.ListOrgBillingManagers(orgGUID)
+	if err != nil {
+		return nil, err
+	}
+	return NewRoleUsers(users, uaaUsers)
+}
+func (m *DefaultManager) ListOrgManagers(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return nil, nil
+	}
+	users, err := m.Client.ListOrgManagers(orgGUID)
+	if err != nil {
+		return nil, err
+	}
+	return NewRoleUsers(users, uaaUsers)
+}
+func (m *DefaultManager) listOrgAuditors(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	roleUsers, err := m.ListOrgAuditors(input.OrgGUID, uaaUsers)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-auditor", roleUsers)
+	}
+	return roleUsers, err
+}
+func (m *DefaultManager) listOrgBillingManagers(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	roleUsers, err := m.ListOrgBillingManagers(input.OrgGUID, uaaUsers)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-billing-manager", roleUsers)
+	}
+	return roleUsers, err
+}
+func (m *DefaultManager) listOrgManagers(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+	roleUsers, err := m.ListOrgManagers(input.OrgGUID, uaaUsers)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-manager", roleUsers)
+	}
+	return roleUsers, err
+}
