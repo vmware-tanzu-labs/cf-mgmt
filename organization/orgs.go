@@ -216,7 +216,7 @@ func (m *DefaultManager) DeleteOrg(org cfclient.Org) error {
 		return nil
 	}
 	lo.G.Infof("Deleting [%s] org", org.Name)
-	return m.Client.DeleteOrg(org.Guid, true, true)
+	return m.Client.DeleteOrg(org.Guid, true, false)
 }
 
 func (m *DefaultManager) DeleteOrgByName(orgName string) error {

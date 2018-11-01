@@ -243,5 +243,5 @@ func (m *DefaultManager) DeleteSpace(space cfclient.Space, orgName string) error
 		return nil
 	}
 	lo.G.Infof("delete space with %s from org %s", space.Name, orgName)
-	return m.Client.DeleteSpace(space.Guid, true, true)
+	return m.Client.DeleteSpace(space.Guid, true, false)
 }

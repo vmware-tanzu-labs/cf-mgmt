@@ -277,7 +277,7 @@ var _ = Describe("given SpaceManager", func() {
 			spaceGUID, recursive, async := fakeClient.DeleteSpaceArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("space3-guid"))
 			Expect(recursive).Should(Equal(true))
-			Expect(async).Should(Equal(true))
+			Expect(async).Should(Equal(false))
 		})
 
 		It("should error", func() {
@@ -306,7 +306,7 @@ var _ = Describe("given SpaceManager", func() {
 			spaceGUID, recursive, async := fakeClient.DeleteSpaceArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("space3-guid"))
 			Expect(recursive).Should(Equal(true))
-			Expect(async).Should(Equal(true))
+			Expect(async).Should(Equal(false))
 		})
 
 		It("should peek", func() {
