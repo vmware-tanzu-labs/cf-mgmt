@@ -254,6 +254,8 @@ LDAP configuration file ```ldap.yml``` is located under the ```config``` folder.
 enabled: true
 ldapHost: 127.0.0.1
 ldapPort: 10389
+#true/false (default false)
+use_tls: true
 bindDN: uid=admin,ou=system
 userSearchBase: ou=users,dc=example,dc=com
 userNameAttribute: uid
@@ -261,6 +263,11 @@ userMailAttribute: mail
 groupSearchBase: ou=groups,dc=example,dc=com
 groupAttribute: member
 origin: <needs to match origin configured for elastic runtime>
+
+# optional added in 1.0.11+ - true/false
+insecure_skip_verify: false
+# optional added in 1.0.11+ if ldap server is signed by non-public CA provide ca pem here
+ca_cert: |
 ```
 
 ### SAML Configuration
