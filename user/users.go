@@ -430,16 +430,16 @@ func (m *DefaultManager) SyncUsers(uaaUsers map[string]uaa.User, updateUsersInpu
 	}
 
 	if err := m.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
-		return err
+		return errors.Wrap(err, "adding ldap users")
 	}
 	if err := m.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
-		return err
+		return errors.Wrap(err, "adding internal users")
 	}
 	if err := m.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
-		return err
+		return errors.Wrap(err, "adding saml users")
 	}
 	if err := m.RemoveUsers(roleUsers, updateUsersInput); err != nil {
-		return err
+		return errors.Wrap(err, "removing users")
 	}
 	return nil
 }
