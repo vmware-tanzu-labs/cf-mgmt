@@ -8,7 +8,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	ldap "github.com/pivotalservices/cf-mgmt/ldap"
 	ldapfakes "github.com/pivotalservices/cf-mgmt/ldap/fakes"
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
@@ -129,42 +128,6 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userName).To(Equal("userName"))
 				Expect(origin).Should(Equal("uaa"))
-			})
-		})
-		Context("UpdateUserInfo", func() {
-
-			It("ldap origin with email", func() {
-				userInfo := userManager.UpdateUserInfo(ldap.User{
-					Email:  "test@test.com",
-					UserID: "testUser",
-					UserDN: "testUserDN",
-				})
-				Expect(userInfo.Email).Should(Equal("test@test.com"))
-				Expect(userInfo.UserDN).Should(Equal("testUserDN"))
-				Expect(userInfo.UserID).Should(Equal("testuser"))
-			})
-
-			It("ldap origin without email email", func() {
-				userInfo := userManager.UpdateUserInfo(ldap.User{
-					Email:  "",
-					UserID: "testUser",
-					UserDN: "testUserDN",
-				})
-				Expect(userInfo.Email).Should(Equal("testuser@user.from.ldap.cf"))
-				Expect(userInfo.UserDN).Should(Equal("testUserDN"))
-				Expect(userInfo.UserID).Should(Equal("testuser"))
-			})
-
-			It("non ldap origin should return same email", func() {
-				userManager.LdapConfig = &config.LdapConfig{Origin: ""}
-				userInfo := userManager.UpdateUserInfo(ldap.User{
-					Email:  "test@test.com",
-					UserID: "testUser",
-					UserDN: "testUserDN",
-				})
-				Expect(userInfo.Email).Should(Equal("test@test.com"))
-				Expect(userInfo.UserDN).Should(Equal("test@test.com"))
-				Expect(userInfo.UserID).Should(Equal("test@test.com"))
 			})
 		})
 

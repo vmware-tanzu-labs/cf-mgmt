@@ -99,6 +99,54 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(origin).Should(Equal("ldap"))
 			})
 
+			It("Should add ldap user to role", func() {
+
+				userManager.LdapConfig = &config.LdapConfig{
+					Origin:  "custom_ldap",
+					Enabled: true,
+				}
+				uaaUsers = make(map[string]uaa.User)
+				uaaUsers["test_ldap"] = uaa.User{Username: "test_ldap", Origin: "custom_ldap", ExternalID: "cn=test_ldap"}
+				uaaUsers["test_ldap-id"] = uaa.User{Username: "test_ldap", Origin: "custom_ldap", ExternalID: "cn=test_ldap"}
+				uaaUsers["cn=test_ldap"] = uaa.User{Username: "test_ldap", Origin: "custom_ldap", ExternalID: "cn=test_ldap"}
+				uaaUsers["test_ldap2"] = uaa.User{Username: "test_ldap2", Origin: "custom_ldap", ExternalID: "cn=test_ldap2"}
+				uaaUsers["test_ldap2-id"] = uaa.User{Username: "test_ldap2", Origin: "custom_ldap", ExternalID: "cn=test_ldap2"}
+				uaaUsers["cn=test_ldap2"] = uaa.User{Username: "test_ldap2", Origin: "custom_ldap", ExternalID: "cn=test_ldap2"}
+				roleUsers, _ = NewRoleUsers([]cfclient.User{
+					cfclient.User{Username: "test_ldap", Guid: "test_ldap-id"},
+				}, uaaUsers)
+
+				updateUsersInput := UpdateUsersInput{
+					LdapUsers:      []string{"test_ldap2"},
+					LdapGroupNames: []string{},
+					SpaceGUID:      "space_guid",
+					OrgGUID:        "org_guid",
+					AddUser:        userManager.AssociateSpaceAuditor,
+				}
+
+				ldapFake.GetUserByIDReturns(
+					&ldap.User{
+						UserDN: "ldap_test_dn",
+						UserID: "test_ldap",
+						Email:  "test@test.com",
+					},
+					nil)
+
+				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.AssociateOrgUserByUsernameAndOriginCallCount()).Should(Equal(1))
+				Expect(client.AssociateSpaceAuditorByUsernameAndOriginCallCount()).Should(Equal(1))
+				orgGUID, userName, origin := client.AssociateOrgUserByUsernameAndOriginArgsForCall(0)
+				Expect(orgGUID).Should(Equal("org_guid"))
+				Expect(userName).Should(Equal("test_ldap2"))
+				Expect(origin).Should(Equal("custom_ldap"))
+
+				spaceGUID, userName, origin := client.AssociateSpaceAuditorByUsernameAndOriginArgsForCall(0)
+				Expect(spaceGUID).Should(Equal("space_guid"))
+				Expect(userName).Should(Equal("test_ldap2"))
+				Expect(origin).Should(Equal("custom_ldap"))
+			})
+
 			It("Should add ldap group member to role", func() {
 				updateUsersInput := UpdateUsersInput{
 					LdapUsers:      []string{},
@@ -262,6 +310,45 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(err.Error()).Should(Equal("error"))
 				Expect(client.AssociateOrgUserByUsernameAndOriginCallCount()).Should(Equal(0))
 				Expect(client.AssociateSpaceAuditorByUsernameAndOriginCallCount()).Should(Equal(0))
+			})
+		})
+		Context("UpdateUserInfo", func() {
+
+			It("ldap origin with email", func() {
+				userManager.LdapConfig.Origin = "ldap"
+				userInfo := userManager.UpdateUserInfo(ldap.User{
+					Email:  "test@test.com",
+					UserID: "testUser",
+					UserDN: "testUserDN",
+				})
+				Expect(userInfo.Email).Should(Equal("test@test.com"))
+				Expect(userInfo.UserDN).Should(Equal("testUserDN"))
+				Expect(userInfo.UserID).Should(Equal("testuser"))
+			})
+
+			It("ldap origin without email", func() {
+				userManager.LdapConfig.Origin = "ldap"
+				userInfo := userManager.UpdateUserInfo(ldap.User{
+					Email:  "",
+					UserID: "testUser",
+					UserDN: "testUserDN",
+				})
+				Expect(userInfo.Email).Should(Equal("testuser@user.from.ldap.cf"))
+				Expect(userInfo.UserDN).Should(Equal("testUserDN"))
+				Expect(userInfo.UserID).Should(Equal("testuser"))
+			})
+
+			It("non ldap origin should return same email", func() {
+				userManager.LdapConfig.Origin = "foo"
+				userManager.LdapConfig = &config.LdapConfig{Origin: ""}
+				userInfo := userManager.UpdateUserInfo(ldap.User{
+					Email:  "test@test.com",
+					UserID: "testUser",
+					UserDN: "testUserDN",
+				})
+				Expect(userInfo.Email).Should(Equal("test@test.com"))
+				Expect(userInfo.UserDN).Should(Equal("testUserDN"))
+				Expect(userInfo.UserID).Should(Equal("testuser"))
 			})
 		})
 	})

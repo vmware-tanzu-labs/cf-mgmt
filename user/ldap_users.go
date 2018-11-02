@@ -20,7 +20,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers map[string
 		for _, inputUser := range ldapUsers {
 			userToUse := m.UpdateUserInfo(inputUser)
 			userID := userToUse.UserID
-			if !roleUsers.HasUserForOrigin(userID, "ldap") {
+			if !roleUsers.HasUserForOrigin(userID, m.LdapConfig.Origin) {
 				lo.G.Debugf("User[%s] not found in: %v", userID, roleUsers)
 				if _, userExists := uaaUsers[userID]; !userExists {
 					lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
@@ -38,12 +38,12 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers map[string
 						uaaUsers[userToUse.UserDN] = uaaUser
 					}
 				}
-				if err := updateUsersInput.AddUser(updateUsersInput, userID, "ldap"); err != nil {
+				if err := updateUsersInput.AddUser(updateUsersInput, userID, m.LdapConfig.Origin); err != nil {
 					return errors.Wrap(err, fmt.Sprintf("User %s", userID))
 				}
 			} else {
 				lo.G.Debugf("User[%s] found in role", userID)
-				roleUsers.RemoveUserForOrigin(userID, "ldap")
+				roleUsers.RemoveUserForOrigin(userID, m.LdapConfig.Origin)
 			}
 		}
 	} else {
@@ -104,13 +104,8 @@ func (m *DefaultManager) UpdateUserInfo(user ldap.User) ldap.User {
 	userID := strings.ToLower(user.UserID)
 	externalID := user.UserDN
 	email := user.Email
-	if m.LdapConfig.Origin != "ldap" {
-		userID = strings.ToLower(user.Email)
-		externalID = user.Email
-	} else {
-		if email == "" {
-			email = fmt.Sprintf("%s@user.from.ldap.cf", userID)
-		}
+	if email == "" {
+		email = fmt.Sprintf("%s@user.from.ldap.cf", userID)
 	}
 
 	return ldap.User{
