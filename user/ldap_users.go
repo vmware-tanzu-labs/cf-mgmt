@@ -39,7 +39,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers map[string
 					}
 				}
 				if err := updateUsersInput.AddUser(updateUsersInput, userID, m.LdapConfig.Origin); err != nil {
-					return errors.Wrap(err, fmt.Sprintf("User %s", userID))
+					return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", userID, m.LdapConfig.Origin))
 				}
 			} else {
 				lo.G.Debugf("User[%s] found in role", userID)

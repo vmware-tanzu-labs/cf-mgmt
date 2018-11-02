@@ -185,7 +185,7 @@ var _ = Describe("given UserSpaces", func() {
 				}
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).Should(Equal("user test2 doesn't exist in cloud foundry, so must add internal user first"))
+				Expect(err.Error()).Should(Equal("user test2 doesn't exist in origin uaa, so must add internal user first"))
 			})
 
 			It("Should return error", func() {

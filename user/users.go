@@ -445,17 +445,19 @@ func (m *DefaultManager) SyncUsers(uaaUsers map[string]uaa.User, updateUsersInpu
 }
 
 func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers map[string]uaa.User, updateUsersInput UpdateUsersInput) error {
+	origin := "uaa"
 	for _, userID := range updateUsersInput.Users {
 		lowerUserID := strings.ToLower(userID)
-		if _, userExists := uaaUsers[lowerUserID]; !userExists {
-			return fmt.Errorf("user %s doesn't exist in cloud foundry, so must add internal user first", lowerUserID)
+		uaaUser, userExists := uaaUsers[lowerUserID]
+		if !userExists || !strings.EqualFold(uaaUser.Origin, origin) {
+			return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
 		}
-		if !roleUsers.HasUserForOrigin(lowerUserID, "uaa") {
-			if err := updateUsersInput.AddUser(updateUsersInput, userID, "uaa"); err != nil {
-				return err
+		if !roleUsers.HasUserForOrigin(lowerUserID, origin) {
+			if err := updateUsersInput.AddUser(updateUsersInput, userID, origin); err != nil {
+				return errors.Wrap(err, fmt.Sprintf("adding user %s for origin %s", userID, origin))
 			}
 		} else {
-			roleUsers.RemoveUserForOrigin(lowerUserID, "uaa")
+			roleUsers.RemoveUserForOrigin(lowerUserID, origin)
 		}
 	}
 	return nil
@@ -494,7 +496,7 @@ func (m *DefaultManager) RemoveUsers(roleUsers *RoleUsers, updateUsersInput Upda
 	if updateUsersInput.RemoveUsers {
 		for _, roleUser := range roleUsers.Users() {
 			if err := updateUsersInput.RemoveUser(updateUsersInput, roleUser.UserName, roleUser.Origin); err != nil {
-				return err
+				return errors.Wrap(err, fmt.Sprintf("error removing user %s with origin %s", roleUser.UserName, roleUser.Origin))
 			}
 		}
 	} else {

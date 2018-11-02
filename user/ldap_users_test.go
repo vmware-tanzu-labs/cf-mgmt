@@ -261,7 +261,7 @@ var _ = Describe("given UserSpaces", func() {
 				client.AssociateOrgUserByUsernameAndOriginReturns(cfclient.Org{}, errors.New("error"))
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).Should(Equal("User test_ldap3: error"))
+				Expect(err.Error()).Should(Equal("User test_ldap3 with origin ldap: error"))
 				Expect(client.AssociateOrgUserByUsernameAndOriginCallCount()).Should(Equal(1))
 				Expect(client.AssociateSpaceAuditorByUsernameAndOriginCallCount()).Should(Equal(0))
 			})
