@@ -335,15 +335,18 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers map[string]uaa.User, input *co
 			if !ok {
 				return fmt.Errorf("Unable to find user with id %s and userName %s", orgUser.Guid, orgUser.Username)
 			}
+			if strings.EqualFold(uaaUser.Origin, "uaa") {
+				lo.G.Infof("Skipping removal of user %s with origin %s from org %s", orgUser.Username, uaaUser.Origin, input.Org)
+				continue
+			}
 			if m.Peek {
 				lo.G.Infof("[dry-run]: Removing User %s with origin %s from org %s", orgUser.Username, uaaUser.Origin, input.Org)
 				continue
 			}
-
 			lo.G.Infof("Removing User %s with origin %s from org %s", orgUser.Username, uaaUser.Origin, input.Org)
 			err := m.Client.RemoveOrgUserByUsernameAndOrigin(org.Guid, orgUser.Username, uaaUser.Origin)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
+				return errors.Wrap(err, fmt.Sprintf("Error removing user %s with origin %s from org %s", orgUser.Username, uaaUser.Origin, input.Org))
 			}
 		}
 	}
