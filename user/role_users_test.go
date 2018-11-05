@@ -27,7 +27,7 @@ var _ = Describe("RoleUsers", func() {
 		uaaFake     *uaafakes.FakeManager
 		fakeReader  *configfakes.FakeReader
 		userList    []cfclient.User
-		uaaUsers    map[string]uaa.User
+		uaaUsers    *uaa.Users
 		spaceFake   *spacefakes.FakeManager
 		orgFake     *orgfakes.FakeManager
 	)
@@ -58,13 +58,27 @@ var _ = Describe("RoleUsers", func() {
 				Guid:     "world2",
 			},
 		}
-		uaaUsers = make(map[string]uaa.User)
-		uaaUser := uaa.User{
+		uaaUsers = &uaa.Users{}
+		uaaUsers.Add(uaa.User{
 			Username: "test",
 			Origin:   "uaa",
-		}
-		uaaUsers["test"] = uaaUser
-		uaaUsers["test-id"] = uaaUser
+			GUID:     "test-guid",
+		})
+		uaaUsers.Add(uaa.User{
+			Username: "test-2",
+			Origin:   "uaa",
+			GUID:     "test2-guid",
+		})
+		uaaUsers.Add(uaa.User{
+			Username: "hello",
+			Origin:   "uaa",
+			GUID:     "world",
+		})
+		uaaUsers.Add(uaa.User{
+			Username: "hello2",
+			Origin:   "uaa",
+			GUID:     "world2",
+		})
 	})
 	Context("Space Auditors", func() {
 

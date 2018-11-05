@@ -41,61 +41,61 @@ type FakeManager struct {
 	cleanupOrgUsersReturns     struct {
 		result1 error
 	}
-	ListSpaceAuditorsStub        func(spaceGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error)
+	ListSpaceAuditorsStub        func(spaceGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error)
 	listSpaceAuditorsMutex       sync.RWMutex
 	listSpaceAuditorsArgsForCall []struct {
 		spaceGUID string
-		uaaUsers  map[string]uaa.User
+		uaaUsers  *uaa.Users
 	}
 	listSpaceAuditorsReturns struct {
 		result1 *user.RoleUsers
 		result2 error
 	}
-	ListSpaceDevelopersStub        func(spaceGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error)
+	ListSpaceDevelopersStub        func(spaceGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error)
 	listSpaceDevelopersMutex       sync.RWMutex
 	listSpaceDevelopersArgsForCall []struct {
 		spaceGUID string
-		uaaUsers  map[string]uaa.User
+		uaaUsers  *uaa.Users
 	}
 	listSpaceDevelopersReturns struct {
 		result1 *user.RoleUsers
 		result2 error
 	}
-	ListSpaceManagersStub        func(spaceGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error)
+	ListSpaceManagersStub        func(spaceGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error)
 	listSpaceManagersMutex       sync.RWMutex
 	listSpaceManagersArgsForCall []struct {
 		spaceGUID string
-		uaaUsers  map[string]uaa.User
+		uaaUsers  *uaa.Users
 	}
 	listSpaceManagersReturns struct {
 		result1 *user.RoleUsers
 		result2 error
 	}
-	ListOrgAuditorsStub        func(orgGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error)
+	ListOrgAuditorsStub        func(orgGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error)
 	listOrgAuditorsMutex       sync.RWMutex
 	listOrgAuditorsArgsForCall []struct {
 		orgGUID  string
-		uaaUsers map[string]uaa.User
+		uaaUsers *uaa.Users
 	}
 	listOrgAuditorsReturns struct {
 		result1 *user.RoleUsers
 		result2 error
 	}
-	ListOrgBillingManagersStub        func(orgGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error)
+	ListOrgBillingManagersStub        func(orgGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error)
 	listOrgBillingManagersMutex       sync.RWMutex
 	listOrgBillingManagersArgsForCall []struct {
 		orgGUID  string
-		uaaUsers map[string]uaa.User
+		uaaUsers *uaa.Users
 	}
 	listOrgBillingManagersReturns struct {
 		result1 *user.RoleUsers
 		result2 error
 	}
-	ListOrgManagersStub        func(orgGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error)
+	ListOrgManagersStub        func(orgGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error)
 	listOrgManagersMutex       sync.RWMutex
 	listOrgManagersArgsForCall []struct {
 		orgGUID  string
-		uaaUsers map[string]uaa.User
+		uaaUsers *uaa.Users
 	}
 	listOrgManagersReturns struct {
 		result1 *user.RoleUsers
@@ -238,11 +238,11 @@ func (fake *FakeManager) CleanupOrgUsersReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) ListSpaceAuditors(spaceGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error) {
+func (fake *FakeManager) ListSpaceAuditors(spaceGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error) {
 	fake.listSpaceAuditorsMutex.Lock()
 	fake.listSpaceAuditorsArgsForCall = append(fake.listSpaceAuditorsArgsForCall, struct {
 		spaceGUID string
-		uaaUsers  map[string]uaa.User
+		uaaUsers  *uaa.Users
 	}{spaceGUID, uaaUsers})
 	fake.recordInvocation("ListSpaceAuditors", []interface{}{spaceGUID, uaaUsers})
 	fake.listSpaceAuditorsMutex.Unlock()
@@ -259,7 +259,7 @@ func (fake *FakeManager) ListSpaceAuditorsCallCount() int {
 	return len(fake.listSpaceAuditorsArgsForCall)
 }
 
-func (fake *FakeManager) ListSpaceAuditorsArgsForCall(i int) (string, map[string]uaa.User) {
+func (fake *FakeManager) ListSpaceAuditorsArgsForCall(i int) (string, *uaa.Users) {
 	fake.listSpaceAuditorsMutex.RLock()
 	defer fake.listSpaceAuditorsMutex.RUnlock()
 	return fake.listSpaceAuditorsArgsForCall[i].spaceGUID, fake.listSpaceAuditorsArgsForCall[i].uaaUsers
@@ -273,11 +273,11 @@ func (fake *FakeManager) ListSpaceAuditorsReturns(result1 *user.RoleUsers, resul
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListSpaceDevelopers(spaceGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error) {
+func (fake *FakeManager) ListSpaceDevelopers(spaceGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error) {
 	fake.listSpaceDevelopersMutex.Lock()
 	fake.listSpaceDevelopersArgsForCall = append(fake.listSpaceDevelopersArgsForCall, struct {
 		spaceGUID string
-		uaaUsers  map[string]uaa.User
+		uaaUsers  *uaa.Users
 	}{spaceGUID, uaaUsers})
 	fake.recordInvocation("ListSpaceDevelopers", []interface{}{spaceGUID, uaaUsers})
 	fake.listSpaceDevelopersMutex.Unlock()
@@ -294,7 +294,7 @@ func (fake *FakeManager) ListSpaceDevelopersCallCount() int {
 	return len(fake.listSpaceDevelopersArgsForCall)
 }
 
-func (fake *FakeManager) ListSpaceDevelopersArgsForCall(i int) (string, map[string]uaa.User) {
+func (fake *FakeManager) ListSpaceDevelopersArgsForCall(i int) (string, *uaa.Users) {
 	fake.listSpaceDevelopersMutex.RLock()
 	defer fake.listSpaceDevelopersMutex.RUnlock()
 	return fake.listSpaceDevelopersArgsForCall[i].spaceGUID, fake.listSpaceDevelopersArgsForCall[i].uaaUsers
@@ -308,11 +308,11 @@ func (fake *FakeManager) ListSpaceDevelopersReturns(result1 *user.RoleUsers, res
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListSpaceManagers(spaceGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error) {
+func (fake *FakeManager) ListSpaceManagers(spaceGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error) {
 	fake.listSpaceManagersMutex.Lock()
 	fake.listSpaceManagersArgsForCall = append(fake.listSpaceManagersArgsForCall, struct {
 		spaceGUID string
-		uaaUsers  map[string]uaa.User
+		uaaUsers  *uaa.Users
 	}{spaceGUID, uaaUsers})
 	fake.recordInvocation("ListSpaceManagers", []interface{}{spaceGUID, uaaUsers})
 	fake.listSpaceManagersMutex.Unlock()
@@ -329,7 +329,7 @@ func (fake *FakeManager) ListSpaceManagersCallCount() int {
 	return len(fake.listSpaceManagersArgsForCall)
 }
 
-func (fake *FakeManager) ListSpaceManagersArgsForCall(i int) (string, map[string]uaa.User) {
+func (fake *FakeManager) ListSpaceManagersArgsForCall(i int) (string, *uaa.Users) {
 	fake.listSpaceManagersMutex.RLock()
 	defer fake.listSpaceManagersMutex.RUnlock()
 	return fake.listSpaceManagersArgsForCall[i].spaceGUID, fake.listSpaceManagersArgsForCall[i].uaaUsers
@@ -343,11 +343,11 @@ func (fake *FakeManager) ListSpaceManagersReturns(result1 *user.RoleUsers, resul
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListOrgAuditors(orgGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error) {
+func (fake *FakeManager) ListOrgAuditors(orgGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error) {
 	fake.listOrgAuditorsMutex.Lock()
 	fake.listOrgAuditorsArgsForCall = append(fake.listOrgAuditorsArgsForCall, struct {
 		orgGUID  string
-		uaaUsers map[string]uaa.User
+		uaaUsers *uaa.Users
 	}{orgGUID, uaaUsers})
 	fake.recordInvocation("ListOrgAuditors", []interface{}{orgGUID, uaaUsers})
 	fake.listOrgAuditorsMutex.Unlock()
@@ -364,7 +364,7 @@ func (fake *FakeManager) ListOrgAuditorsCallCount() int {
 	return len(fake.listOrgAuditorsArgsForCall)
 }
 
-func (fake *FakeManager) ListOrgAuditorsArgsForCall(i int) (string, map[string]uaa.User) {
+func (fake *FakeManager) ListOrgAuditorsArgsForCall(i int) (string, *uaa.Users) {
 	fake.listOrgAuditorsMutex.RLock()
 	defer fake.listOrgAuditorsMutex.RUnlock()
 	return fake.listOrgAuditorsArgsForCall[i].orgGUID, fake.listOrgAuditorsArgsForCall[i].uaaUsers
@@ -378,11 +378,11 @@ func (fake *FakeManager) ListOrgAuditorsReturns(result1 *user.RoleUsers, result2
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListOrgBillingManagers(orgGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error) {
+func (fake *FakeManager) ListOrgBillingManagers(orgGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error) {
 	fake.listOrgBillingManagersMutex.Lock()
 	fake.listOrgBillingManagersArgsForCall = append(fake.listOrgBillingManagersArgsForCall, struct {
 		orgGUID  string
-		uaaUsers map[string]uaa.User
+		uaaUsers *uaa.Users
 	}{orgGUID, uaaUsers})
 	fake.recordInvocation("ListOrgBillingManagers", []interface{}{orgGUID, uaaUsers})
 	fake.listOrgBillingManagersMutex.Unlock()
@@ -399,7 +399,7 @@ func (fake *FakeManager) ListOrgBillingManagersCallCount() int {
 	return len(fake.listOrgBillingManagersArgsForCall)
 }
 
-func (fake *FakeManager) ListOrgBillingManagersArgsForCall(i int) (string, map[string]uaa.User) {
+func (fake *FakeManager) ListOrgBillingManagersArgsForCall(i int) (string, *uaa.Users) {
 	fake.listOrgBillingManagersMutex.RLock()
 	defer fake.listOrgBillingManagersMutex.RUnlock()
 	return fake.listOrgBillingManagersArgsForCall[i].orgGUID, fake.listOrgBillingManagersArgsForCall[i].uaaUsers
@@ -413,11 +413,11 @@ func (fake *FakeManager) ListOrgBillingManagersReturns(result1 *user.RoleUsers, 
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListOrgManagers(orgGUID string, uaaUsers map[string]uaa.User) (*user.RoleUsers, error) {
+func (fake *FakeManager) ListOrgManagers(orgGUID string, uaaUsers *uaa.Users) (*user.RoleUsers, error) {
 	fake.listOrgManagersMutex.Lock()
 	fake.listOrgManagersArgsForCall = append(fake.listOrgManagersArgsForCall, struct {
 		orgGUID  string
-		uaaUsers map[string]uaa.User
+		uaaUsers *uaa.Users
 	}{orgGUID, uaaUsers})
 	fake.recordInvocation("ListOrgManagers", []interface{}{orgGUID, uaaUsers})
 	fake.listOrgManagersMutex.Unlock()
@@ -434,7 +434,7 @@ func (fake *FakeManager) ListOrgManagersCallCount() int {
 	return len(fake.listOrgManagersArgsForCall)
 }
 
-func (fake *FakeManager) ListOrgManagersArgsForCall(i int) (string, map[string]uaa.User) {
+func (fake *FakeManager) ListOrgManagersArgsForCall(i int) (string, *uaa.Users) {
 	fake.listOrgManagersMutex.RLock()
 	defer fake.listOrgManagersMutex.RUnlock()
 	return fake.listOrgManagersArgsForCall[i].orgGUID, fake.listOrgManagersArgsForCall[i].uaaUsers

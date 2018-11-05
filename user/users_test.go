@@ -133,13 +133,11 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("SyncInternalUsers", func() {
 			var roleUsers *RoleUsers
-			var uaaUsers map[string]uaa.User
+			var uaaUsers *uaa.Users
 			BeforeEach(func() {
-				uaaUsers = make(map[string]uaa.User)
-				uaaUsers["test"] = uaa.User{Username: "test", Origin: "uaa"}
-				uaaUsers["test-id"] = uaa.User{Username: "test", Origin: "uaa"}
-				uaaUsers["test-existing-id"] = uaa.User{Username: "test-existing", Origin: "uaa"}
-				uaaUsers["test-existing"] = uaa.User{Username: "test-existing", Origin: "uaa"}
+				uaaUsers = &uaa.Users{}
+				uaaUsers.Add(uaa.User{Username: "test", Origin: "uaa", GUID: "test-id"})
+				uaaUsers.Add(uaa.User{Username: "test-existing", Origin: "uaa", GUID: "test-existing-id"})
 				roleUsers, _ = NewRoleUsers([]cfclient.User{
 					cfclient.User{Username: "test-existing", Guid: "test-existing-id"},
 				}, uaaUsers)
@@ -206,13 +204,11 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("SyncSamlUsers", func() {
 			var roleUsers *RoleUsers
-			var uaaUsers map[string]uaa.User
+			var uaaUsers *uaa.Users
 			BeforeEach(func() {
 				userManager.LdapConfig = &config.LdapConfig{Origin: "saml_origin"}
-				uaaUsers = map[string]uaa.User{
-					"test-id":       uaa.User{Username: "test@test.com", Origin: "saml_origin"},
-					"test@test.com": uaa.User{Username: "test@test.com", Origin: "saml_origin"},
-				}
+				uaaUsers = &uaa.Users{}
+				uaaUsers.Add(uaa.User{Username: "test@test.com", Origin: "saml_origin", GUID: "test-id"})
 				roleUsers, _ = NewRoleUsers(
 					[]cfclient.User{
 						cfclient.User{Username: "test@test.com", Guid: "test-id"},
@@ -279,8 +275,8 @@ var _ = Describe("given UserSpaces", func() {
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
 				}
-				uaaFake.CreateExternalUserReturns(errors.New("error"))
-				err := userManager.SyncSamlUsers(roleUsers, nil, updateUsersInput)
+				uaaFake.CreateExternalUserReturns("guid", errors.New("error"))
+				err := userManager.SyncSamlUsers(roleUsers, &uaa.Users{}, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(1))
 			})
@@ -290,8 +286,8 @@ var _ = Describe("given UserSpaces", func() {
 				roleUsers.AddUsers([]RoleUser{
 					RoleUser{UserName: "test"},
 				})
-				uaaUsers := make(map[string]uaa.User)
-				uaaUsers["test@test.com"] = uaa.User{Username: "test@test.com"}
+				uaaUsers := &uaa.Users{}
+				uaaUsers.Add(uaa.User{Username: "test@test.com"})
 				updateUsersInput := UpdateUsersInput{
 					SamlUsers: []string{"test@test.com"},
 					SpaceGUID: "space_guid",
@@ -309,11 +305,11 @@ var _ = Describe("given UserSpaces", func() {
 		Context("Remove Users", func() {
 			var roleUsers *RoleUsers
 			BeforeEach(func() {
+				uaaUsers := &uaa.Users{}
+				uaaUsers.Add(uaa.User{Username: "test", Origin: "uaa", GUID: "test-id"})
 				roleUsers, _ = NewRoleUsers([]cfclient.User{
 					cfclient.User{Username: "test", Guid: "test-id"},
-				}, map[string]uaa.User{
-					"test-id": uaa.User{Username: "test", Origin: "uaa"},
-				})
+				}, uaaUsers)
 			})
 
 			It("Should remove users", func() {
@@ -794,8 +790,8 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("UpdateSpaceUsers", func() {
 			It("Should succeed", func() {
-				userMap := make(map[string]uaa.User)
-				userMap["test-user"] = uaa.User{Username: "test-user-guid"}
+				userMap := &uaa.Users{}
+				userMap.Add(uaa.User{Username: "test-user-guid", GUID: "test-user"})
 				uaaFake.ListUsersReturns(userMap, nil)
 				fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
 					config.SpaceConfig{
@@ -816,8 +812,8 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("UpdateSpaceUsers", func() {
 			It("Should succeed", func() {
-				userMap := make(map[string]uaa.User)
-				userMap["test-user"] = uaa.User{Username: "test-user-guid"}
+				userMap := &uaa.Users{}
+				userMap.Add(uaa.User{Username: "test-user-guid", GUID: "test-user"})
 				uaaFake.ListUsersReturns(userMap, nil)
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
 					config.OrgConfig{

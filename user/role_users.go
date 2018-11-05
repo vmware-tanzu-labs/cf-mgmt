@@ -10,10 +10,13 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func NewRoleUsers(users []cfclient.User, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func NewRoleUsers(users []cfclient.User, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers := &RoleUsers{}
 	for _, user := range users {
-		uaaUser := uaaUsers[user.Guid]
+		uaaUser := uaaUsers.GetByID(user.Guid)
+		if uaaUser == nil {
+			return nil, fmt.Errorf("User with ID %s not found", user.Guid)
+		}
 		roleUsers.addUser(RoleUser{
 			UserName: user.Username,
 			Origin:   uaaUser.Origin,
@@ -75,7 +78,7 @@ func (r *RoleUsers) Users() []RoleUser {
 	return result
 }
 
-func (m *DefaultManager) ListSpaceAuditors(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) ListSpaceAuditors(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
 		return nil, nil
 	}
@@ -85,7 +88,7 @@ func (m *DefaultManager) ListSpaceAuditors(spaceGUID string, uaaUsers map[string
 	}
 	return NewRoleUsers(users, uaaUsers)
 }
-func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
 		return nil, nil
 	}
@@ -95,7 +98,7 @@ func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string, uaaUsers map[stri
 	}
 	return NewRoleUsers(users, uaaUsers)
 }
-func (m *DefaultManager) ListSpaceManagers(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) ListSpaceManagers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
 		return nil, nil
 	}
@@ -106,21 +109,21 @@ func (m *DefaultManager) ListSpaceManagers(spaceGUID string, uaaUsers map[string
 	return NewRoleUsers(users, uaaUsers)
 }
 
-func (m *DefaultManager) listSpaceAuditors(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) listSpaceAuditors(input UpdateUsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers, err := m.ListSpaceAuditors(input.SpaceGUID, uaaUsers)
 	if err == nil {
 		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-auditor", roleUsers)
 	}
 	return roleUsers, err
 }
-func (m *DefaultManager) listSpaceDevelopers(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) listSpaceDevelopers(input UpdateUsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers, err := m.ListSpaceDevelopers(input.SpaceGUID, uaaUsers)
 	if err == nil {
 		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-developer", roleUsers)
 	}
 	return roleUsers, err
 }
-func (m *DefaultManager) listSpaceManagers(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) listSpaceManagers(input UpdateUsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers, err := m.ListSpaceManagers(input.SpaceGUID, uaaUsers)
 	if err == nil {
 		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-manager", roleUsers)
@@ -128,7 +131,7 @@ func (m *DefaultManager) listSpaceManagers(input UpdateUsersInput, uaaUsers map[
 	return roleUsers, err
 }
 
-func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers := &RoleUsers{}
 
 	orgAuditors, err := m.ListOrgAuditors(orgGUID, uaaUsers)
@@ -176,7 +179,7 @@ func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string, uaaUsers map[s
 	return roleUsers, nil
 }
 
-func (m *DefaultManager) ListOrgAuditors(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) ListOrgAuditors(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
 		return nil, nil
 	}
@@ -186,7 +189,7 @@ func (m *DefaultManager) ListOrgAuditors(orgGUID string, uaaUsers map[string]uaa
 	}
 	return NewRoleUsers(users, uaaUsers)
 }
-func (m *DefaultManager) ListOrgBillingManagers(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) ListOrgBillingManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
 		return nil, nil
 	}
@@ -196,7 +199,7 @@ func (m *DefaultManager) ListOrgBillingManagers(orgGUID string, uaaUsers map[str
 	}
 	return NewRoleUsers(users, uaaUsers)
 }
-func (m *DefaultManager) ListOrgManagers(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) ListOrgManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
 		return nil, nil
 	}
@@ -206,21 +209,21 @@ func (m *DefaultManager) ListOrgManagers(orgGUID string, uaaUsers map[string]uaa
 	}
 	return NewRoleUsers(users, uaaUsers)
 }
-func (m *DefaultManager) listOrgAuditors(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) listOrgAuditors(input UpdateUsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers, err := m.ListOrgAuditors(input.OrgGUID, uaaUsers)
 	if err == nil {
 		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-auditor", roleUsers)
 	}
 	return roleUsers, err
 }
-func (m *DefaultManager) listOrgBillingManagers(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) listOrgBillingManagers(input UpdateUsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers, err := m.ListOrgBillingManagers(input.OrgGUID, uaaUsers)
 	if err == nil {
 		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-billing-manager", roleUsers)
 	}
 	return roleUsers, err
 }
-func (m *DefaultManager) listOrgManagers(input UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error) {
+func (m *DefaultManager) listOrgManagers(input UpdateUsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers, err := m.ListOrgManagers(input.OrgGUID, uaaUsers)
 	if err == nil {
 		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-manager", roleUsers)

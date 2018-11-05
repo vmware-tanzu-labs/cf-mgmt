@@ -8,14 +8,14 @@ import (
 )
 
 type FakeManager struct {
-	ListUsersStub        func() (map[string]uaa.User, error)
+	ListUsersStub        func() (*uaa.Users, error)
 	listUsersMutex       sync.RWMutex
 	listUsersArgsForCall []struct{}
 	listUsersReturns     struct {
-		result1 map[string]uaa.User
+		result1 *uaa.Users
 		result2 error
 	}
-	CreateExternalUserStub        func(userName, userEmail, externalID, origin string) (err error)
+	CreateExternalUserStub        func(userName, userEmail, externalID, origin string) (GUID string, err error)
 	createExternalUserMutex       sync.RWMutex
 	createExternalUserArgsForCall []struct {
 		userName   string
@@ -24,13 +24,14 @@ type FakeManager struct {
 		origin     string
 	}
 	createExternalUserReturns struct {
-		result1 error
+		result1 string
+		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeManager) ListUsers() (map[string]uaa.User, error) {
+func (fake *FakeManager) ListUsers() (*uaa.Users, error) {
 	fake.listUsersMutex.Lock()
 	fake.listUsersArgsForCall = append(fake.listUsersArgsForCall, struct{}{})
 	fake.recordInvocation("ListUsers", []interface{}{})
@@ -48,15 +49,15 @@ func (fake *FakeManager) ListUsersCallCount() int {
 	return len(fake.listUsersArgsForCall)
 }
 
-func (fake *FakeManager) ListUsersReturns(result1 map[string]uaa.User, result2 error) {
+func (fake *FakeManager) ListUsersReturns(result1 *uaa.Users, result2 error) {
 	fake.ListUsersStub = nil
 	fake.listUsersReturns = struct {
-		result1 map[string]uaa.User
+		result1 *uaa.Users
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) CreateExternalUser(userName string, userEmail string, externalID string, origin string) (err error) {
+func (fake *FakeManager) CreateExternalUser(userName string, userEmail string, externalID string, origin string) (GUID string, err error) {
 	fake.createExternalUserMutex.Lock()
 	fake.createExternalUserArgsForCall = append(fake.createExternalUserArgsForCall, struct {
 		userName   string
@@ -69,7 +70,7 @@ func (fake *FakeManager) CreateExternalUser(userName string, userEmail string, e
 	if fake.CreateExternalUserStub != nil {
 		return fake.CreateExternalUserStub(userName, userEmail, externalID, origin)
 	} else {
-		return fake.createExternalUserReturns.result1
+		return fake.createExternalUserReturns.result1, fake.createExternalUserReturns.result2
 	}
 }
 
@@ -85,11 +86,12 @@ func (fake *FakeManager) CreateExternalUserArgsForCall(i int) (string, string, s
 	return fake.createExternalUserArgsForCall[i].userName, fake.createExternalUserArgsForCall[i].userEmail, fake.createExternalUserArgsForCall[i].externalID, fake.createExternalUserArgsForCall[i].origin
 }
 
-func (fake *FakeManager) CreateExternalUserReturns(result1 error) {
+func (fake *FakeManager) CreateExternalUserReturns(result1 string, result2 error) {
 	fake.CreateExternalUserStub = nil
 	fake.createExternalUserReturns = struct {
-		result1 error
-	}{result1}
+		result1 string
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeManager) Invocations() map[string][][]interface{} {

@@ -18,8 +18,8 @@ type uaa interface {
 //Manager -
 type Manager interface {
 	//Returns a map keyed and valued by user id. User id is converted to lowercase
-	ListUsers() (map[string]User, error)
-	CreateExternalUser(userName, userEmail, externalID, origin string) (err error)
+	ListUsers() (*Users, error)
+	CreateExternalUser(userName, userEmail, externalID, origin string) (GUID string, err error)
 }
 
 //DefaultUAAManager -
@@ -33,6 +33,7 @@ type User struct {
 	ExternalID string
 	Email      string
 	Origin     string
+	GUID       string
 }
 
 //NewDefaultUAAManager -
@@ -49,16 +50,16 @@ func NewDefaultUAAManager(sysDomain, clientID, clientSecret string, peek bool) (
 }
 
 //CreateExternalUser -
-func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, origin string) error {
+func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, origin string) (string, error) {
 	if userName == "" || userEmail == "" || externalID == "" {
-		return fmt.Errorf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID)
+		return "", fmt.Errorf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID)
 	}
 	if m.Peek {
 		lo.G.Infof("[dry-run]: successfully added user [%s]", userName)
-		return nil
+		return fmt.Sprintf("dry-run-%s-%s-guid", userName, origin), nil
 	}
 
-	m.Client.CreateUser(uaaclient.User{
+	createdUser, err := m.Client.CreateUser(uaaclient.User{
 		Username:   userName,
 		ExternalID: externalID,
 		Origin:     origin,
@@ -68,35 +69,39 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 			},
 		},
 	})
+	if err != nil {
+		return "", err
+	}
 	lo.G.Infof("successfully added user [%s]", userName)
-	return nil
+	return createdUser.ID, nil
 }
 
-//ListUsers - Returns a map containing username as key and user guid as value
-func (m *DefaultUAAManager) ListUsers() (map[string]User, error) {
-	userMap := make(map[string]User)
+//ListUsers - returns uaa.Users
+func (m *DefaultUAAManager) ListUsers() (*Users, error) {
+	users := &Users{}
 	lo.G.Debug("Getting users from Cloud Foundry")
-	users, err := m.Client.ListAllUsers("", "", "", "")
+	userList, err := m.Client.ListAllUsers("", "", "", "")
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debugf("Found %d users in the CF instance", len(users))
-	for _, user := range users {
-		lo.G.Debugf("Adding %s to userMap for userID %s", strings.ToLower(user.Username), user.Username)
-		uaaUser := User{
+	lo.G.Debugf("Found %d users in the CF instance", len(userList))
+	for _, user := range userList {
+		lo.G.Debugf("Adding %s to users for userID %s", strings.ToLower(user.Username), user.Username)
+		users.Add(User{
 			Username:   user.Username,
 			ExternalID: user.ExternalID,
 			Email:      Email(user),
 			Origin:     user.Origin,
-		}
-		userMap[strings.ToLower(user.Username)] = uaaUser
-		userMap[user.ID] = uaaUser
-		if user.ExternalID != "" {
-			lo.G.Debugf("Adding %s to userMap for userID %s", strings.ToLower(user.ExternalID), user.Username)
-			userMap[strings.ToLower(user.ExternalID)] = uaaUser
-		}
+			GUID:       user.ID,
+		})
+		// userMap[strings.ToLower(user.Username)] = uaaUser
+		// userMap[user.ID] = uaaUser
+		// if user.ExternalID != "" {
+		// 	lo.G.Debugf("Adding %s to userMap for userID %s", strings.ToLower(user.ExternalID), user.Username)
+		// 	userMap[strings.ToLower(user.ExternalID)] = uaaUser
+		// }
 	}
-	return userMap, nil
+	return users, nil
 }
 
 func Email(u uaaclient.User) string {

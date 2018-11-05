@@ -15,7 +15,7 @@ type UpdateUsersInput struct {
 	SpaceName                                   string
 	OrgName                                     string
 	RemoveUsers                                 bool
-	ListUsers                                   func(updateUserInput UpdateUsersInput, uaaUsers map[string]uaa.User) (*RoleUsers, error)
+	ListUsers                                   func(updateUserInput UpdateUsersInput, uaaUsers *uaa.Users) (*RoleUsers, error)
 	AddUser                                     func(updateUserInput UpdateUsersInput, userName, origin string) error
 	RemoveUser                                  func(updateUserInput UpdateUsersInput, userName, origin string) error
 }
@@ -36,12 +36,12 @@ type Manager interface {
 	UpdateSpaceUsers() error
 	UpdateOrgUsers() error
 	CleanupOrgUsers() error
-	ListSpaceAuditors(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
-	ListSpaceDevelopers(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
-	ListSpaceManagers(spaceGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
-	ListOrgAuditors(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
-	ListOrgBillingManagers(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
-	ListOrgManagers(orgGUID string, uaaUsers map[string]uaa.User) (*RoleUsers, error)
+	ListSpaceAuditors(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
+	ListSpaceDevelopers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
+	ListSpaceManagers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
+	ListOrgAuditors(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
+	ListOrgBillingManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
+	ListOrgManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
 }
 
 type CFClient interface {

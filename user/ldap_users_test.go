@@ -50,19 +50,15 @@ var _ = Describe("given UserSpaces", func() {
 		})
 		Context("SyncLdapUsers", func() {
 			var roleUsers *RoleUsers
-			var uaaUsers map[string]uaa.User
+			var uaaUsers *uaa.Users
 			BeforeEach(func() {
 				userManager.LdapConfig = &config.LdapConfig{
 					Origin:  "ldap",
 					Enabled: true,
 				}
-				uaaUsers = make(map[string]uaa.User)
-				uaaUsers["test_ldap"] = uaa.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap"}
-				uaaUsers["test_ldap-id"] = uaa.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap"}
-				uaaUsers["cn=test_ldap"] = uaa.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap"}
-				uaaUsers["test_ldap2"] = uaa.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2"}
-				uaaUsers["test_ldap2-id"] = uaa.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2"}
-				uaaUsers["cn=test_ldap2"] = uaa.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2"}
+				uaaUsers = &uaa.Users{}
+				uaaUsers.Add(uaa.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap", GUID: "test_ldap-id"})
+				uaaUsers.Add(uaa.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2", GUID: "test_ldap2-id"})
 				roleUsers, _ = NewRoleUsers([]cfclient.User{
 					cfclient.User{Username: "test_ldap", Guid: "test_ldap-id"},
 				}, uaaUsers)
@@ -105,13 +101,9 @@ var _ = Describe("given UserSpaces", func() {
 					Origin:  "custom_ldap",
 					Enabled: true,
 				}
-				uaaUsers = make(map[string]uaa.User)
-				uaaUsers["test_ldap"] = uaa.User{Username: "test_ldap", Origin: "custom_ldap", ExternalID: "cn=test_ldap"}
-				uaaUsers["test_ldap-id"] = uaa.User{Username: "test_ldap", Origin: "custom_ldap", ExternalID: "cn=test_ldap"}
-				uaaUsers["cn=test_ldap"] = uaa.User{Username: "test_ldap", Origin: "custom_ldap", ExternalID: "cn=test_ldap"}
-				uaaUsers["test_ldap2"] = uaa.User{Username: "test_ldap2", Origin: "custom_ldap", ExternalID: "cn=test_ldap2"}
-				uaaUsers["test_ldap2-id"] = uaa.User{Username: "test_ldap2", Origin: "custom_ldap", ExternalID: "cn=test_ldap2"}
-				uaaUsers["cn=test_ldap2"] = uaa.User{Username: "test_ldap2", Origin: "custom_ldap", ExternalID: "cn=test_ldap2"}
+				uaaUsers = &uaa.Users{}
+				uaaUsers.Add(uaa.User{Username: "test_ldap", Origin: "custom_ldap", ExternalID: "cn=test_ldap", GUID: "test_ldap-id"})
+				uaaUsers.Add(uaa.User{Username: "test_ldap2", Origin: "custom_ldap", ExternalID: "cn=test_ldap2", GUID: "test_ldap2-id"})
 				roleUsers, _ = NewRoleUsers([]cfclient.User{
 					cfclient.User{Username: "test_ldap", Guid: "test_ldap-id"},
 				}, uaaUsers)
@@ -237,10 +229,10 @@ var _ = Describe("given UserSpaces", func() {
 						Email:  "test@test.com",
 					},
 					nil)
-				uaaFake.CreateExternalUserReturns(errors.New("error"))
+				uaaFake.CreateExternalUserReturns("guid", errors.New("error"))
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(uaaUsers).ShouldNot(HaveKey("test_ldap3"))
+				Expect(len(uaaUsers.GetByName("test_ldap3"))).Should(Equal(0))
 				Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(1))
 			})
 

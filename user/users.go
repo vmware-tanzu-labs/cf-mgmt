@@ -211,7 +211,7 @@ func (m *DefaultManager) UpdateSpaceUsers() error {
 	return nil
 }
 
-func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers map[string]uaa.User) error {
+func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *uaa.Users) error {
 	space, err := m.SpaceMgr.FindSpace(input.Org, input.Space)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error finding space for org %s, space %s", input.Org, input.Space))
@@ -312,7 +312,7 @@ func (m *DefaultManager) CleanupOrgUsers() error {
 	return nil
 }
 
-func (m *DefaultManager) cleanupOrgUsers(uaaUsers map[string]uaa.User, input *config.OrgConfig) error {
+func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgConfig) error {
 	org, err := m.OrgMgr.FindOrg(input.Org)
 	if err != nil {
 		return err
@@ -331,8 +331,8 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers map[string]uaa.User, input *co
 
 	for _, orgUser := range orgUsers {
 		if !usersInRoles.HasUser(strings.ToLower(orgUser.Username)) {
-			uaaUser, ok := uaaUsers[orgUser.Guid]
-			if !ok {
+			uaaUser := uaaUsers.GetByID(orgUser.Guid)
+			if uaaUser != nil {
 				return fmt.Errorf("Unable to find user with id %s and userName %s", orgUser.Guid, orgUser.Username)
 			}
 			if strings.EqualFold(uaaUser.Origin, "uaa") {
@@ -364,7 +364,7 @@ func (m *DefaultManager) listSpaces(orgGUID string) ([]cfclient.Space, error) {
 
 }
 
-func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers map[string]uaa.User) error {
+func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.Users) error {
 	org, err := m.OrgMgr.FindOrg(input.Org)
 	if err != nil {
 		return err
@@ -426,7 +426,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers map[st
 }
 
 //SyncUsers
-func (m *DefaultManager) SyncUsers(uaaUsers map[string]uaa.User, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncUsers(uaaUsers *uaa.Users, updateUsersInput UpdateUsersInput) error {
 	roleUsers, err := updateUsersInput.ListUsers(updateUsersInput, uaaUsers)
 	if err != nil {
 		return err
@@ -447,12 +447,12 @@ func (m *DefaultManager) SyncUsers(uaaUsers map[string]uaa.User, updateUsersInpu
 	return nil
 }
 
-func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers map[string]uaa.User, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, updateUsersInput UpdateUsersInput) error {
 	origin := "uaa"
 	for _, userID := range updateUsersInput.Users {
 		lowerUserID := strings.ToLower(userID)
-		uaaUser, userExists := uaaUsers[lowerUserID]
-		if !userExists || !strings.EqualFold(uaaUser.Origin, origin) {
+		uaaUserList := uaaUsers.GetByName(lowerUserID)
+		if len(uaaUserList) == 0 || !strings.EqualFold(uaaUserList[0].Origin, origin) {
 			return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
 		}
 		if !roleUsers.HasUserForOrigin(lowerUserID, origin) {
@@ -466,22 +466,24 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers map[st
 	return nil
 }
 
-func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, uaaUsers map[string]uaa.User, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, updateUsersInput UpdateUsersInput) error {
 	origin := m.LdapConfig.Origin
 	for _, userEmail := range updateUsersInput.SamlUsers {
 		lowerUserEmail := strings.ToLower(userEmail)
-		if _, userExists := uaaUsers[lowerUserEmail]; !userExists {
+		userList := uaaUsers.GetByName(lowerUserEmail)
+		if len(userList) == 0 {
 			lo.G.Debug("User", userEmail, "doesn't exist in cloud foundry, so creating user")
-			if err := m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, origin); err != nil {
+			if userGUID, err := m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, origin); err != nil {
 				lo.G.Error("Unable to create user", userEmail)
 				continue
 			} else {
-				uaaUsers[userEmail] = uaa.User{
+				uaaUsers.Add(uaa.User{
 					Username:   userEmail,
 					Email:      userEmail,
 					ExternalID: userEmail,
 					Origin:     origin,
-				}
+					GUID:       userGUID,
+				})
 			}
 		}
 		if !roleUsers.HasUserForOrigin(lowerUserEmail, origin) {

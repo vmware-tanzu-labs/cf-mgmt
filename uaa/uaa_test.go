@@ -40,14 +40,12 @@ var _ = Describe("given uaa manager", func() {
 			}, nil)
 			users, err := manager.ListUsers()
 			Ω(err).ShouldNot(HaveOccurred())
-			keys := make([]string, 0, len(users))
-			for k := range users {
-				keys = append(keys, k)
+			keys := make([]string, 0, len(users.List()))
+			for _, k := range users.List() {
+				keys = append(keys, k.Username)
 			}
-			Ω(len(users)).Should(Equal(18))
-			Ω(keys).Should(ConsistOf(
-				"foo4", "admin", "user", "cwashburn", "foo", "foo1", "foo2", "foo3", "cn=admin",
-				"foo4-id", "admin-id", "user-id", "cwashburn-id", "foo-id", "foo1-id", "foo2-id", "foo3-id", "cn=admin-id"))
+			Ω(len(users.List())).Should(Equal(9))
+			Ω(keys).Should(ConsistOf("foo4", "admin", "user", "cwashburn", "foo", "foo1", "foo2", "foo3", "cn=admin"))
 		})
 		It("should return an error", func() {
 			fakeuaa.ListAllUsersReturns(nil, errors.New("Got an error"))
@@ -71,7 +69,7 @@ var _ = Describe("given uaa manager", func() {
 					}},
 				nil,
 			)
-			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
+			_, err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 		It("should successfully create user with complex dn", func() {
@@ -88,7 +86,7 @@ var _ = Describe("given uaa manager", func() {
 					}},
 				nil,
 			)
-			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
+			_, err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 
@@ -97,12 +95,12 @@ var _ = Describe("given uaa manager", func() {
 			userEmail := "email"
 			externalID := "userDN"
 			manager.Peek = true
-			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
+			_, err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(fakeuaa.CreateUserCallCount()).Should(Equal(0))
 		})
 		It("should not invoke post", func() {
-			err := manager.CreateExternalUser("", "", "", "ldap")
+			_, err := manager.CreateExternalUser("", "", "", "ldap")
 			Ω(err).Should(HaveOccurred())
 			Ω(fakeuaa.CreateUserCallCount()).Should(Equal(0))
 		})
@@ -124,7 +122,7 @@ var _ = Describe("given uaa manager", func() {
 					}},
 				nil,
 			)
-			err := manager.CreateExternalUser(userName, userEmail, externalID, origin)
+			_, err := manager.CreateExternalUser(userName, userEmail, externalID, origin)
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 	})
