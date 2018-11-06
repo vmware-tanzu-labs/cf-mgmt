@@ -17,26 +17,28 @@ func NewRoleUsers(users []cfclient.User, uaaUsers *uaa.Users) (*RoleUsers, error
 		if uaaUser == nil {
 			return nil, fmt.Errorf("User with ID %s not found", user.Guid)
 		}
-		roleUsers.addUser(RoleUser{
-			UserName: user.Username,
+		roleUser := RoleUser{
+			UserName: uaaUser.Username,
 			Origin:   uaaUser.Origin,
-		})
+			GUID:     uaaUser.GUID,
+		}
+		if roleUser.UserName == "" {
+			return nil, fmt.Errorf("Username is blank for user with id %s", user.Guid)
+		}
+		roleUsers.addUser(roleUser)
 	}
 	return roleUsers, nil
 }
 
-func (r *RoleUsers) HasUserForOrigin(userName, origin string) bool {
-	originMap, ok := r.users[strings.ToLower(origin)]
-	if !ok {
-		return false
-	}
-	_, found := originMap[strings.ToLower(userName)]
-	return found
+func (r *RoleUsers) HasUser(userName string) bool {
+	_, ok := r.users[strings.ToLower(userName)]
+	return ok
 }
 
-func (r *RoleUsers) HasUser(userName string) bool {
-	for origin, _ := range r.users {
-		if r.HasUserForOrigin(userName, origin) {
+func (r *RoleUsers) HasUserForOrigin(userName, origin string) bool {
+	userList := r.users[strings.ToLower(userName)]
+	for _, user := range userList {
+		if strings.EqualFold(user.Origin, origin) {
 			return true
 		}
 	}
@@ -44,9 +46,17 @@ func (r *RoleUsers) HasUser(userName string) bool {
 }
 
 func (r *RoleUsers) RemoveUserForOrigin(userName, origin string) {
-	originMap, ok := r.users[strings.ToLower(origin)]
-	if ok {
-		delete(originMap, userName)
+	var result []RoleUser
+	userList := r.users[strings.ToLower(userName)]
+	for _, user := range userList {
+		if !strings.EqualFold(user.Origin, origin) {
+			result = append(result, user)
+		}
+	}
+	if len(result) == 0 {
+		delete(r.users, strings.ToLower(userName))
+	} else {
+		r.users[strings.ToLower(userName)] = result
 	}
 }
 
@@ -58,14 +68,12 @@ func (r *RoleUsers) AddUsers(roleUsers []RoleUser) {
 
 func (r *RoleUsers) addUser(roleUser RoleUser) {
 	if r.users == nil {
-		r.users = make(map[string]map[string]RoleUser)
+		r.users = make(map[string][]RoleUser)
 	}
-	originMap := r.users[strings.ToLower(roleUser.Origin)]
-	if originMap == nil {
-		originMap = make(map[string]RoleUser)
-		r.users[strings.ToLower(roleUser.Origin)] = originMap
-	}
-	originMap[strings.ToLower(roleUser.UserName)] = roleUser
+
+	userList := r.users[strings.ToLower(roleUser.UserName)]
+	userList = append(userList, roleUser)
+	r.users[strings.ToLower(roleUser.UserName)] = userList
 }
 
 func (r *RoleUsers) Users() []RoleUser {
@@ -163,7 +171,7 @@ func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string, uaaUsers *uaa.
 		}
 		roleUsers.AddUsers(spaceAuditors.Users())
 
-		spaceDevelopers, err := m.ListSpaceAuditors(space.Guid, uaaUsers)
+		spaceDevelopers, err := m.ListSpaceDevelopers(space.Guid, uaaUsers)
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("Error listing space developers for org/space %s/%s", orgName, space.Name))
 		}

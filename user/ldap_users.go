@@ -11,6 +11,7 @@ import (
 )
 
 func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, updateUsersInput UpdateUsersInput) error {
+	origin := m.LdapConfig.Origin
 	if m.LdapConfig.Enabled {
 		ldapUsers, err := m.GetLDAPUsers(uaaUsers, updateUsersInput)
 		if err != nil {
@@ -20,30 +21,36 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 		for _, inputUser := range ldapUsers {
 			userToUse := m.UpdateUserInfo(inputUser)
 			userID := userToUse.UserID
-			if !roleUsers.HasUserForOrigin(userID, m.LdapConfig.Origin) {
-				lo.G.Debugf("User[%s] not found in: %v", userID, roleUsers)
-				userList := uaaUsers.GetByName(userID)
-				if len(userList) == 0 {
-					lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
-					if userGUID, err := m.UAAMgr.CreateExternalUser(userID, userToUse.Email, userToUse.UserDN, m.LdapConfig.Origin); err != nil {
-						lo.G.Errorf("Unable to create user %s with error %s", userID, err.Error())
-						continue
-					} else {
-						uaaUsers.Add(uaa.User{
-							Username:   userID,
-							ExternalID: userToUse.UserDN,
-							Origin:     m.LdapConfig.Origin,
-							Email:      userToUse.Email,
-							GUID:       userGUID,
-						})
-					}
+
+			lo.G.Debugf("User[%s] not found in: %v", userID, roleUsers)
+			userList := uaaUsers.GetByName(userID)
+			if len(userList) == 0 {
+				lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
+				if userGUID, err := m.UAAMgr.CreateExternalUser(userID, userToUse.Email, userToUse.UserDN, m.LdapConfig.Origin); err != nil {
+					lo.G.Errorf("Unable to create user %s with error %s", userID, err.Error())
+					continue
+				} else {
+					uaaUsers.Add(uaa.User{
+						Username:   userID,
+						ExternalID: userToUse.UserDN,
+						Origin:     m.LdapConfig.Origin,
+						Email:      userToUse.Email,
+						GUID:       userGUID,
+					})
+					userList = uaaUsers.GetByName(userID)
 				}
-				if err := updateUsersInput.AddUser(updateUsersInput, userID, m.LdapConfig.Origin); err != nil {
-					return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", userID, m.LdapConfig.Origin))
+			}
+			if !roleUsers.HasUserForOrigin(userID, origin) {
+				user := uaaUsers.GetByNameAndOrigin(userID, origin)
+				if user == nil {
+					return fmt.Errorf("Unabled to find user %s for origin %s", userID, origin)
+				}
+				if err := updateUsersInput.AddUser(updateUsersInput, user.Username, user.GUID); err != nil {
+					return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", user.Username, user.Origin))
 				}
 			} else {
 				lo.G.Debugf("User[%s] found in role", userID)
-				roleUsers.RemoveUserForOrigin(userID, m.LdapConfig.Origin)
+				roleUsers.RemoveUserForOrigin(userID, origin)
 			}
 		}
 	} else {
