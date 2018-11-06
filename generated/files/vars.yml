@@ -1,4 +1,5 @@
 git_repo_uri: #your git repo uri
+git_repo_branch: master
 system_domain: #your cf system domain
 user_id: # user account with permission to create orgs/spaces
 password: # DEPRECATED - Use client_secret - password of user account with permission to create orgs/spaces

@@ -3,7 +3,7 @@ resources:
   type: git
   source:
     uri: {{git_repo_uri}}
-    branch: master
+    branch: {{git_repo_branch}}
 - name: 15m
   type: time
   source: {interval: 15m}
