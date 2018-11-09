@@ -1,22 +1,24 @@
 &larr; [back to Commands](../README.md)
 
-# `cf-mgmt add-org-to-config`
+# `cf-mgmt apply`
 
-`add-org-to-config` will add the specified org to orgs.yml and create folder based on the org name you specified.  Within this folder will be an orgConfig.yml and spaces.yml which will be empty but will eventually contain a list of spaces.  Any org listed in orgs.yml will be created when the create-orgs operation is ran.
+`apply` will run all the commands in the correct order.  Ideal for using peek option to see what will happen or if not using concourse pipeline.
 
 ## Command Usage
 
 ```
-Usage:
-  main [OPTIONS] add-org-to-config [add-org-to-config-OPTIONS]
+error: Usage:
+  main [OPTIONS] apply [apply-OPTIONS]
 
 Help Options:
-  -h, --help                     Show this help message
+  -h, --help               Show this help message
 
-[add-org-to-config command options]
-  --config-dir=          Name of the config directory (default: config) [$CONFIG_DIR]
-  --org=                 Org name to add [$ORG]
-  --org-billing-mgr-grp= LDAP group for Org Billing Manager [$ORG_BILLING_MGR_GRP]
-  --org-mgr-grp=         LDAP group for Org Manager [$ORG_MGR_GRP]
-  --org-auditor-grp=     LDAP group for Org Auditor [$ORG_AUDITOR_GRP]
+[apply command options]
+  --config-dir=    Name of the config directory (default: config) [$CONFIG_DIR]
+  --system-domain= system domain [$SYSTEM_DOMAIN]
+  --user-id=       user id that has privileges to create/update/delete users, orgs and spaces [$USER_ID]
+  --password=      password for user account [optional if client secret is provided] [$PASSWORD]
+  --client-secret= secret for user account that has sufficient privileges to create/update/delete users, orgs and spaces] [$CLIENT_SECRET]
+  --peek           Preview entities to change without modifying [$PEEK]
+  --ldap-password= LDAP password for binding [$LDAP_PASSWORD]
 ```
