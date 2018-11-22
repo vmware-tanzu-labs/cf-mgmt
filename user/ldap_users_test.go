@@ -64,7 +64,7 @@ var _ = Describe("given UserSpaces", func() {
 				}, uaaUsers)
 			})
 			It("Should add ldap user to role", func() {
-				updateUsersInput := UpdateUsersInput{
+				updateUsersInput := UsersInput{
 					LdapUsers:      []string{"test_ldap2"},
 					LdapGroupNames: []string{},
 					SpaceGUID:      "space_guid",
@@ -106,7 +106,7 @@ var _ = Describe("given UserSpaces", func() {
 					cfclient.User{Username: "test_ldap", Guid: "test_ldap-id"},
 				}, uaaUsers)
 
-				updateUsersInput := UpdateUsersInput{
+				updateUsersInput := UsersInput{
 					LdapUsers:      []string{"test_ldap2"},
 					LdapGroupNames: []string{},
 					SpaceGUID:      "space_guid",
@@ -136,7 +136,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("Should add ldap group member to role", func() {
-				updateUsersInput := UpdateUsersInput{
+				updateUsersInput := UsersInput{
 					LdapUsers:      []string{},
 					LdapGroupNames: []string{"test_group"},
 					SpaceGUID:      "space_guid",
@@ -168,7 +168,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("Should not add existing ldap user to role", func() {
-				updateUsersInput := UpdateUsersInput{
+				updateUsersInput := UsersInput{
 					LdapUsers: []string{"test_ldap"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
@@ -187,7 +187,7 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(0))
 			})
 			It("Should create external user when user doesn't exist in uaa", func() {
-				updateUsersInput := UpdateUsersInput{
+				updateUsersInput := UsersInput{
 					LdapUsers: []string{"test_ldap_new"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
@@ -211,7 +211,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("Should not error when create external user errors", func() {
-				updateUsersInput := UpdateUsersInput{
+				updateUsersInput := UsersInput{
 					LdapUsers: []string{"test_ldap3"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
@@ -232,7 +232,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("Should return error", func() {
-				updateUsersInput := UpdateUsersInput{
+				updateUsersInput := UsersInput{
 					LdapUsers: []string{"test_ldap3"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
@@ -254,7 +254,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("Should not query ldap if user exists in UAA", func() {
-				updateUsersInput := UpdateUsersInput{
+				updateUsersInput := UsersInput{
 					LdapUsers: []string{"test_ldap2"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
@@ -269,7 +269,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("Should not query ldap if user exists in UAA", func() {
-				updateUsersInput := UpdateUsersInput{
+				updateUsersInput := UsersInput{
 					LdapGroupNames: []string{"test_group"},
 					SpaceGUID:      "space_guid",
 					OrgGUID:        "org_guid",
@@ -285,7 +285,7 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(ldapFake.GetUserByDNCallCount()).Should(Equal(0))
 			})
 			It("Should return error", func() {
-				updateUsersInput := UpdateUsersInput{
+				updateUsersInput := UsersInput{
 					LdapUsers: []string{"test_ldap3"},
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",

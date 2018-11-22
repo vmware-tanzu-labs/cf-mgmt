@@ -10,10 +10,10 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, usersInput UsersInput) error {
 	origin := m.LdapConfig.Origin
 	if m.LdapConfig.Enabled {
-		ldapUsers, err := m.GetLDAPUsers(uaaUsers, updateUsersInput)
+		ldapUsers, err := m.GetLDAPUsers(uaaUsers, usersInput)
 		if err != nil {
 			return err
 		}
@@ -45,7 +45,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 				if user == nil {
 					return fmt.Errorf("Unabled to find user %s for origin %s", userID, origin)
 				}
-				if err := updateUsersInput.AddUser(updateUsersInput, user.Username, user.GUID); err != nil {
+				if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
 					return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", user.Username, user.Origin))
 				}
 			} else {
@@ -59,9 +59,9 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 	return nil
 }
 
-func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, updateUsersInput UpdateUsersInput) ([]ldap.User, error) {
+func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, usersInput UsersInput) ([]ldap.User, error) {
 	var ldapUsers []ldap.User
-	for _, groupName := range updateUsersInput.LdapGroupNames {
+	for _, groupName := range usersInput.UniqueLdapGroupNames() {
 		userDNList, err := m.LdapMgr.GetUserDNs(groupName)
 		if err != nil {
 			return nil, err
@@ -87,7 +87,7 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, updateUsersInput Upda
 			}
 		}
 	}
-	for _, userID := range updateUsersInput.LdapUsers {
+	for _, userID := range usersInput.LdapUsers {
 		userList := uaaUsers.GetByName(userID)
 		if len(userList) > 0 {
 			lo.G.Debugf("UserID [%s] found in UAA, skipping ldap lookup", userID)

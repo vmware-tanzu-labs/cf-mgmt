@@ -7,19 +7,6 @@ import (
 	"github.com/pivotalservices/cf-mgmt/uaa"
 )
 
-//UpdateUsersInput
-type UpdateUsersInput struct {
-	SpaceGUID                                   string
-	OrgGUID                                     string
-	LdapUsers, Users, LdapGroupNames, SamlUsers []string
-	SpaceName                                   string
-	OrgName                                     string
-	RemoveUsers                                 bool
-	ListUsers                                   func(updateUserInput UpdateUsersInput, uaaUsers *uaa.Users) (*RoleUsers, error)
-	AddUser                                     func(updateUserInput UpdateUsersInput, userName, userGUID string) error
-	RemoveUser                                  func(updateUserInput UpdateUsersInput, userName, userGUID string) error
-}
-
 type RoleUsers struct {
 	users map[string][]RoleUser
 }

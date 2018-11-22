@@ -45,7 +45,7 @@ type DefaultManager struct {
 	LdapConfig *config.LdapConfig
 }
 
-func (m *DefaultManager) RemoveSpaceAuditor(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) RemoveSpaceAuditor(input UsersInput, userName, userGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Auditor")
 		return nil
@@ -53,7 +53,7 @@ func (m *DefaultManager) RemoveSpaceAuditor(input UpdateUsersInput, userName, us
 	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Auditor")
 	return m.Client.RemoveSpaceAuditor(input.SpaceGUID, userGUID)
 }
-func (m *DefaultManager) RemoveSpaceDeveloper(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) RemoveSpaceDeveloper(input UsersInput, userName, userGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Developer")
 		return nil
@@ -61,7 +61,7 @@ func (m *DefaultManager) RemoveSpaceDeveloper(input UpdateUsersInput, userName, 
 	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Developer")
 	return m.Client.RemoveSpaceDeveloper(input.SpaceGUID, userGUID)
 }
-func (m *DefaultManager) RemoveSpaceManager(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) RemoveSpaceManager(input UsersInput, userName, userGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Manager")
 		return nil
@@ -70,7 +70,7 @@ func (m *DefaultManager) RemoveSpaceManager(input UpdateUsersInput, userName, us
 	return m.Client.RemoveSpaceManager(input.SpaceGUID, userGUID)
 }
 
-func (m *DefaultManager) AssociateSpaceAuditor(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) AssociateSpaceAuditor(input UsersInput, userName, userGUID string) error {
 	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
@@ -84,7 +84,7 @@ func (m *DefaultManager) AssociateSpaceAuditor(input UpdateUsersInput, userName,
 	_, err = m.Client.AssociateSpaceAuditor(input.SpaceGUID, userGUID)
 	return err
 }
-func (m *DefaultManager) AssociateSpaceDeveloper(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) AssociateSpaceDeveloper(input UsersInput, userName, userGUID string) error {
 	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
@@ -97,7 +97,7 @@ func (m *DefaultManager) AssociateSpaceDeveloper(input UpdateUsersInput, userNam
 	_, err = m.Client.AssociateSpaceDeveloper(input.SpaceGUID, userGUID)
 	return err
 }
-func (m *DefaultManager) AssociateSpaceManager(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) AssociateSpaceManager(input UsersInput, userName, userGUID string) error {
 	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func (m *DefaultManager) AddUserToOrg(orgGUID string, userName, userGUID string)
 	return err
 }
 
-func (m *DefaultManager) RemoveOrgAuditor(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) RemoveOrgAuditor(input UsersInput, userName, userGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "auditor")
 		return nil
@@ -128,7 +128,7 @@ func (m *DefaultManager) RemoveOrgAuditor(input UpdateUsersInput, userName, user
 	lo.G.Infof("removing user %s from org %s with role %s", userName, input.OrgName, "auditor")
 	return m.Client.RemoveOrgAuditor(input.OrgGUID, userGUID)
 }
-func (m *DefaultManager) RemoveOrgBillingManager(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) RemoveOrgBillingManager(input UsersInput, userName, userGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "billing manager")
 		return nil
@@ -137,7 +137,7 @@ func (m *DefaultManager) RemoveOrgBillingManager(input UpdateUsersInput, userNam
 	return m.Client.RemoveOrgBillingManager(input.OrgGUID, userGUID)
 }
 
-func (m *DefaultManager) RemoveOrgManager(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) RemoveOrgManager(input UsersInput, userName, userGUID string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: removing user %s from org %s with role %s", userName, input.OrgName, "manager")
 		return nil
@@ -146,7 +146,7 @@ func (m *DefaultManager) RemoveOrgManager(input UpdateUsersInput, userName, user
 	return m.Client.RemoveOrgManager(input.OrgGUID, userGUID)
 }
 
-func (m *DefaultManager) AssociateOrgAuditor(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) AssociateOrgAuditor(input UsersInput, userName, userGUID string) error {
 	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (m *DefaultManager) AssociateOrgAuditor(input UpdateUsersInput, userName, u
 	_, err = m.Client.AssociateOrgAuditor(input.OrgGUID, userGUID)
 	return err
 }
-func (m *DefaultManager) AssociateOrgBillingManager(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) AssociateOrgBillingManager(input UsersInput, userName, userGUID string) error {
 	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
@@ -175,7 +175,7 @@ func (m *DefaultManager) AssociateOrgBillingManager(input UpdateUsersInput, user
 	return err
 }
 
-func (m *DefaultManager) AssociateOrgManager(input UpdateUsersInput, userName, userGUID string) error {
+func (m *DefaultManager) AssociateOrgManager(input UsersInput, userName, userGUID string) error {
 	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
@@ -217,7 +217,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 		return errors.Wrap(err, fmt.Sprintf("Error finding space for org %s, space %s", input.Org, input.Space))
 	}
 
-	if err = m.SyncUsers(uaaUsers, UpdateUsersInput{
+	if err = m.SyncUsers(uaaUsers, UsersInput{
 		SpaceName:      space.Name,
 		SpaceGUID:      space.Guid,
 		OrgName:        input.Org,
@@ -235,7 +235,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 	}
 
 	if err = m.SyncUsers(uaaUsers,
-		UpdateUsersInput{
+		UsersInput{
 			SpaceName:      space.Name,
 			SpaceGUID:      space.Guid,
 			OrgGUID:        space.OrganizationGuid,
@@ -252,7 +252,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "manager"))
 	}
 	if err = m.SyncUsers(uaaUsers,
-		UpdateUsersInput{
+		UsersInput{
 			SpaceName:      space.Name,
 			SpaceGUID:      space.Guid,
 			OrgGUID:        space.OrganizationGuid,
@@ -364,7 +364,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.U
 	}
 
 	err = m.SyncUsers(
-		uaaUsers, UpdateUsersInput{
+		uaaUsers, UsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
 			LdapGroupNames: input.GetBillingManagerGroups(),
@@ -381,7 +381,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.U
 	}
 
 	err = m.SyncUsers(
-		uaaUsers, UpdateUsersInput{
+		uaaUsers, UsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
 			LdapGroupNames: input.GetAuditorGroups(),
@@ -398,7 +398,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.U
 	}
 
 	err = m.SyncUsers(
-		uaaUsers, UpdateUsersInput{
+		uaaUsers, UsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
 			LdapGroupNames: input.GetManagerGroups(),
@@ -419,30 +419,30 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.U
 }
 
 //SyncUsers
-func (m *DefaultManager) SyncUsers(uaaUsers *uaa.Users, updateUsersInput UpdateUsersInput) error {
-	roleUsers, err := updateUsersInput.ListUsers(updateUsersInput, uaaUsers)
+func (m *DefaultManager) SyncUsers(uaaUsers *uaa.Users, usersInput UsersInput) error {
+	roleUsers, err := usersInput.ListUsers(usersInput, uaaUsers)
 	if err != nil {
 		return err
 	}
 
-	if err := m.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
+	if err := m.SyncLdapUsers(roleUsers, uaaUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding ldap users")
 	}
-	if err := m.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
+	if err := m.SyncInternalUsers(roleUsers, uaaUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding internal users")
 	}
-	if err := m.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput); err != nil {
+	if err := m.SyncSamlUsers(roleUsers, uaaUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding saml users")
 	}
-	if err := m.RemoveUsers(roleUsers, updateUsersInput); err != nil {
+	if err := m.RemoveUsers(roleUsers, usersInput); err != nil {
 		return errors.Wrap(err, "removing users")
 	}
 	return nil
 }
 
-func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, usersInput UsersInput) error {
 	origin := "uaa"
-	for _, userID := range updateUsersInput.Users {
+	for _, userID := range usersInput.UniqueUsers() {
 		lowerUserID := strings.ToLower(userID)
 		uaaUserList := uaaUsers.GetByName(lowerUserID)
 		if len(uaaUserList) == 0 || !strings.EqualFold(uaaUserList[0].Origin, origin) {
@@ -453,7 +453,7 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers *uaa.U
 			if user == nil {
 				return fmt.Errorf("Unabled to find user %s for origin %s", lowerUserID, origin)
 			}
-			if err := updateUsersInput.AddUser(updateUsersInput, user.Username, user.GUID); err != nil {
+			if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
 				return errors.Wrap(err, fmt.Sprintf("adding user %s for origin %s", user.Username, origin))
 			}
 		} else {
@@ -463,9 +463,9 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers *uaa.U
 	return nil
 }
 
-func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, updateUsersInput UpdateUsersInput) error {
+func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, usersInput UsersInput) error {
 	origin := m.LdapConfig.Origin
-	for _, userEmail := range updateUsersInput.SamlUsers {
+	for _, userEmail := range usersInput.UniqueSamlUsers() {
 		userList := uaaUsers.GetByName(userEmail)
 		if len(userList) == 0 {
 			lo.G.Debug("User", userEmail, "doesn't exist in cloud foundry, so creating user")
@@ -488,7 +488,7 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 			return fmt.Errorf("Unabled to find user %s for origin %s", userEmail, origin)
 		}
 		if !roleUsers.HasUserForOrigin(userEmail, user.Origin) {
-			if err := updateUsersInput.AddUser(updateUsersInput, user.Username, user.GUID); err != nil {
+			if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
 				return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", user.Username, user.Origin))
 			}
 		} else {
@@ -498,18 +498,18 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 	return nil
 }
 
-func (m *DefaultManager) RemoveUsers(roleUsers *RoleUsers, updateUsersInput UpdateUsersInput) error {
-	if updateUsersInput.RemoveUsers {
+func (m *DefaultManager) RemoveUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
+	if usersInput.RemoveUsers {
 		for _, roleUser := range roleUsers.Users() {
-			if err := updateUsersInput.RemoveUser(updateUsersInput, roleUser.UserName, roleUser.GUID); err != nil {
+			if err := usersInput.RemoveUser(usersInput, roleUser.UserName, roleUser.GUID); err != nil {
 				return errors.Wrap(err, fmt.Sprintf("error removing user %s", roleUser.UserName))
 			}
 		}
 	} else {
-		if updateUsersInput.SpaceName == "" {
-			lo.G.Debugf("Not removing users. Set enable-remove-users: true to orgConfig for org: %s", updateUsersInput.OrgName)
+		if usersInput.SpaceName == "" {
+			lo.G.Debugf("Not removing users. Set enable-remove-users: true to orgConfig for org: %s", usersInput.OrgName)
 		} else {
-			lo.G.Debugf("Not removing users. Set enable-remove-users: true to spaceConfig for org/space: %s/%s", updateUsersInput.OrgName, updateUsersInput.SpaceName)
+			lo.G.Debugf("Not removing users. Set enable-remove-users: true to spaceConfig for org/space: %s/%s", usersInput.OrgName, usersInput.SpaceName)
 		}
 	}
 	return nil
