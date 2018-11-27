@@ -8,6 +8,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/privatedomain"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
+	"github.com/pivotalservices/cf-mgmt/shareddomain"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/pivotalservices/cf-mgmt/user"
@@ -23,7 +24,8 @@ func NewExportManager(
 	orgManager organization.Manager,
 	securityGroupManager securitygroup.Manager,
 	isoSegmentMgr isosegment.Manager,
-	privateDomainMgr privatedomain.Manager) Manager {
+	privateDomainMgr privatedomain.Manager,
+	sharedDomainMgr *shareddomain.Manager) Manager {
 	return &DefaultImportManager{
 		ConfigDir:            configDir,
 		UAAMgr:               uaaMgr,
@@ -33,6 +35,7 @@ func NewExportManager(
 		SecurityGroupManager: securityGroupManager,
 		IsoSegmentManager:    isoSegmentMgr,
 		PrivateDomainManager: privateDomainMgr,
+		SharedDomainManager: sharedDomainMgr,
 	}
 }
 
@@ -46,6 +49,7 @@ type DefaultImportManager struct {
 	SecurityGroupManager securitygroup.Manager
 	IsoSegmentManager    isosegment.Manager
 	PrivateDomainManager privatedomain.Manager
+	SharedDomainManager  *shareddomain.Manager
 }
 
 //ExportConfig Imports org and space configuration from an existing CF instance
@@ -266,16 +270,33 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		}
 	}
 
+	sharedDomains, err := im.SharedDomainManager.CFClient.ListSharedDomains()
+	if err != nil {
+		return err
+	}
+
+	routerGroups, err := im.SharedDomainManager.RoutingClient.RouterGroups()
+	if err != nil {
+		return err
+	}
+	globalConfig.EnableDeleteSharedDomains = true
+	globalConfig.SharedDomains = make(map[string]config.SharedDomain)
+	for _, sharedDomain := range sharedDomains {
+		sharedDomainConfig := config.SharedDomain{
+			Internal: sharedDomain.Internal,
+		}
+		if sharedDomain.RouterGroupGuid != "" {
+			for _, routerGroup := range routerGroups {
+				if routerGroup.Guid == sharedDomain.RouterGroupGuid {
+					sharedDomainConfig.RouterGroup = routerGroup.Name
+					continue
+				}
+			}
+		}
+		globalConfig.SharedDomains[sharedDomain.Name] = sharedDomainConfig
+	}
 	return configMgr.SaveGlobalConfig(globalConfig)
 }
-
-/*func quotaDefinition(controller cc.Manager, quotaDefinitionGUID, entityType string) cc.QuotaEntity {
-	quotaDef, _ := controller.Org(quotaDefinitionGUID, entityType)
-	if quotaDef.Name != "default" {
-		return quotaDef.Entity
-	}
-	return cc.QuotaEntity{}
-}*/
 
 func (im *DefaultImportManager) addOrgUsers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
 	im.addOrgManagers(orgConfig, uaaUsers, orgGUID)

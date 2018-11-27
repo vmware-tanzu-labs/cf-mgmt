@@ -2,7 +2,9 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
+	"code.cloudfoundry.org/routing-api"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/configcommands"
@@ -12,6 +14,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/quota"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/serviceaccess"
+	"github.com/pivotalservices/cf-mgmt/shareddomain"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/pivotalservices/cf-mgmt/user"
@@ -31,6 +34,7 @@ type CFMgmt struct {
 	SecurityGroupManager    securitygroup.Manager
 	IsolationSegmentManager isosegment.Manager
 	ServiceAccessManager    *serviceaccess.Manager
+	SharedDomainManager     *shareddomain.Manager
 }
 
 type Initialize struct {
@@ -97,5 +101,14 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 		return nil, err
 	}
 	cfMgmt.ServiceAccessManager = serviceaccess.NewManager(client, cfMgmt.OrgManager, cfg, peek)
+	token, err := client.GetToken()
+	if err != nil {
+		return nil, err
+	}
+	//needs to not include bearer prefix
+	token = strings.Replace(token, "bearer ", "", 1)
+	routingAPIClient := routing_api.NewClient(c.ApiAddress, true)
+	routingAPIClient.SetToken(token)
+	cfMgmt.SharedDomainManager = shareddomain.NewManager(client, routingAPIClient, cfg, peek)
 	return cfMgmt, nil
 }

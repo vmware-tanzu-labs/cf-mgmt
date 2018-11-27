@@ -1,8 +1,16 @@
-hash: f57b7151747194e5bc747bebb10308143ad6e2cdc31822fdf7989c30198c5cef
-updated: 2018-11-01T10:36:47.631902-04:00
+hash: 3a58c2b3b5ac644038110fd6de3cb0032257bb63fa167fe0f2fd12075089f5b9
+updated: 2018-11-26T22:00:27.08534-05:00
 imports:
+- name: code.cloudfoundry.org/routing-api
+  version: b308b1a648d23d5bf691565fffc14524bda52680
+  subpackages:
+  - models
+- name: code.cloudfoundry.org/trace-logger
+  version: 107ef08a939d5be6092ce2b5f171a16aba149cb2
+- name: github.com/bmizerany/pat
+  version: 6226ea591a40176dd3ff9cd8eff81ed6ca721a00
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: 5dfefc0e324b09114ef8fb1bfe1dcf7932c11e41
+  version: b75ec7d52c9cd9b691cf80da587d076afbed4957
 - name: github.com/cloudfoundry-community/go-uaa
   version: 06d965ffc8f595a3e739463e280b78eb6204ff3d
   subpackages:
@@ -27,10 +35,18 @@ imports:
   version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
 - name: github.com/mattn/go-isatty
   version: 3fb116b820352b7f0c281308a4d6250c22d94e27
+- name: github.com/nu7hatch/gouuid
+  version: 179d4d0c4d8d407a32af483c2354df1d2c91e6c3
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
+- name: github.com/tedsuo/rata
+  version: 07d200713958d05692ac35aa8b5f1949342fee80
+- name: github.com/vito/go-sse
+  version: fd69d275caac5d78d793e77ddbe9bd2001d9b88d
+  subpackages:
+  - sse
 - name: github.com/xchapter7x/lo
   version: e33b245fc7a8186582208abc2458c2691bff681c
 - name: golang.org/x/net
@@ -61,7 +77,7 @@ imports:
   - internal/urlfetch
   - urlfetch
 - name: gopkg.in/asn1-ber.v1
-  version: 379148ca0225df7a432012b8df0355c2a2063ac0
+  version: f715ec2f112d1e4195b827ad68cf44017a3ef2b1
 - name: gopkg.in/yaml.v2
   version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 testImports:
@@ -77,7 +93,7 @@ testImports:
 - name: github.com/moul/http2curl
   version: 9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d
 - name: github.com/onsi/ginkgo
-  version: 3774a09d95489ccaa16032e0770d08ea77ba6184
+  version: 2e1be8f7d90e9d3e3e58b0ce470f2f14d075406f
   subpackages:
   - config
   - internal/codelocation
@@ -97,7 +113,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
+  version: 65fb64232476ad9046e57c26cd0bff3d3a8dc6cd
   subpackages:
   - format
   - gbytes

@@ -41,7 +41,7 @@ uaac client add cf-mgmt \
   --name cf-mgmt \
   --secret <client secret from cf-mgmt client> \
   --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write
+  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
 ```
 
 ### Setup Configuration

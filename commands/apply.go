@@ -106,5 +106,10 @@ func (c *ApplyCommand) Execute([]string) error {
 		return err
 	}
 
+	fmt.Println("*********  Shared Domains")
+	if err = cfMgmt.SharedDomainManager.Apply(); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -28,6 +28,7 @@ type CfMgmtCommand struct {
 	IsolationSegmentsCommand         IsolationSegmentsCommand         `command:"isolation-segments" description:"assigns isolations segments to orgs and spaces"`
 	SharePrivateDomainsCommand       SharePrivateDomainsCommand       `command:"share-org-private-domains" description:"shares an existing private domain with the specified org"`
 	ServiceAccessCommand             ServiceAccessCommand             `command:"service-access" description:"enables/disables service access for orgs"`
+	SharedDomainsCommand             SharedDomainsCommand             `command:"shared-domains" description:"adds/removes shared domains"`
 	ApplyCommand                     ApplyCommand                     `command:"apply" description:"applies the configuration to your target foundation"`
 }
 
