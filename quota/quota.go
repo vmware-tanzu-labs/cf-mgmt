@@ -49,18 +49,59 @@ func (m *DefaultManager) CreateSpaceQuotas() error {
 		if err != nil {
 			return err
 		}
+
+		memoryLimit, err := config.ToMegabytes(input.MemoryLimit)
+		if err != nil {
+			return err
+		}
+
+		instanceMemoryLimit, err := config.ToMegabytes(input.InstanceMemoryLimit)
+		if err != nil {
+			return err
+		}
+
+		totalRoutes, err := config.ToInteger(input.TotalRoutes)
+		if err != nil {
+			return err
+		}
+
+		totalServices, err := config.ToInteger(input.TotalServices)
+		if err != nil {
+			return err
+		}
+
+		totalReservedRoutePorts, err := config.ToInteger(input.TotalReservedRoutePorts)
+		if err != nil {
+			return err
+		}
+
+		totalServiceKeys, err := config.ToInteger(input.TotalServiceKeys)
+		if err != nil {
+			return err
+		}
+
+		appInstanceLimit, err := config.ToInteger(input.AppInstanceLimit)
+		if err != nil {
+			return err
+		}
+
+		appTaskLimit, err := config.ToInteger(input.AppTaskLimit)
+		if err != nil {
+			return err
+		}
+
 		quota := cfclient.SpaceQuotaRequest{
 			Name:                    space.Name,
 			OrganizationGuid:        space.OrganizationGuid,
-			MemoryLimit:             input.MemoryLimit,
-			InstanceMemoryLimit:     input.InstanceMemoryLimit,
-			TotalRoutes:             input.TotalRoutes,
-			TotalServices:           input.TotalServices,
+			MemoryLimit:             memoryLimit,
+			InstanceMemoryLimit:     instanceMemoryLimit,
+			TotalRoutes:             totalRoutes,
+			TotalServices:           totalServices,
 			NonBasicServicesAllowed: input.PaidServicePlansAllowed,
-			TotalReservedRoutePorts: input.TotalReservedRoutePorts,
-			TotalServiceKeys:        input.TotalServiceKeys,
-			AppInstanceLimit:        input.AppInstanceLimit,
-			AppTaskLimit:            input.AppTaskLimit,
+			TotalReservedRoutePorts: totalReservedRoutePorts,
+			TotalServiceKeys:        totalServiceKeys,
+			AppInstanceLimit:        appInstanceLimit,
+			AppTaskLimit:            appTaskLimit,
 		}
 		var spaceQuota cfclient.SpaceQuota
 		var ok bool
@@ -180,18 +221,64 @@ func (m *DefaultManager) CreateOrgQuotas() error {
 			return err
 		}
 		quotaName := org.Name
+		memoryLimit, err := config.ToMegabytes(input.MemoryLimit)
+		if err != nil {
+			return err
+		}
+
+		instanceMemoryLimit, err := config.ToMegabytes(input.InstanceMemoryLimit)
+		if err != nil {
+			return err
+		}
+
+		totalRoutes, err := config.ToInteger(input.TotalRoutes)
+		if err != nil {
+			return err
+		}
+
+		totalServices, err := config.ToInteger(input.TotalServices)
+		if err != nil {
+			return err
+		}
+
+		totalReservedRoutePorts, err := config.ToInteger(input.TotalReservedRoutePorts)
+		if err != nil {
+			return err
+		}
+
+		totalServiceKeys, err := config.ToInteger(input.TotalServiceKeys)
+		if err != nil {
+			return err
+		}
+
+		appInstanceLimit, err := config.ToInteger(input.AppInstanceLimit)
+		if err != nil {
+			return err
+		}
+
+		appTaskLimit, err := config.ToInteger(input.AppTaskLimit)
+		if err != nil {
+			return err
+		}
+
+		totalPrivateDomains, err := config.ToInteger(input.TotalPrivateDomains)
+		if err != nil {
+			return err
+		}
+
+
 		quota := cfclient.OrgQuotaRequest{
 			Name:                    quotaName,
-			MemoryLimit:             input.MemoryLimit,
-			InstanceMemoryLimit:     input.InstanceMemoryLimit,
-			TotalRoutes:             input.TotalRoutes,
-			TotalServices:           input.TotalServices,
+			MemoryLimit:             memoryLimit,
+			InstanceMemoryLimit:     instanceMemoryLimit,
+			TotalRoutes:             totalRoutes,
+			TotalServices:           totalServices,
 			NonBasicServicesAllowed: input.PaidServicePlansAllowed,
-			TotalPrivateDomains:     input.TotalPrivateDomains,
-			TotalReservedRoutePorts: input.TotalReservedRoutePorts,
-			TotalServiceKeys:        input.TotalServiceKeys,
-			AppInstanceLimit:        input.AppInstanceLimit,
-			AppTaskLimit:            input.AppTaskLimit,
+			TotalPrivateDomains:     totalPrivateDomains,
+			TotalReservedRoutePorts: totalReservedRoutePorts,
+			TotalServiceKeys:        totalServiceKeys,
+			AppInstanceLimit:        appInstanceLimit,
+			AppTaskLimit:            appTaskLimit,
 		}
 		var orgQuota cfclient.OrgQuota
 		var ok bool

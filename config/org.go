@@ -21,19 +21,27 @@ type OrgConfig struct {
 	SharedPrivateDomains       []string            `yaml:"shared-private-domains"`
 	RemoveSharedPrivateDomains bool                `yaml:"enable-remove-shared-private-domains"`
 	EnableOrgQuota             bool                `yaml:"enable-org-quota"`
-	MemoryLimit                int                 `yaml:"memory-limit"`
-	InstanceMemoryLimit        int                 `yaml:"instance-memory-limit"`
-	TotalRoutes                int                 `yaml:"total-routes"`
-	TotalServices              int                 `yaml:"total-services"`
+	MemoryLimit                string              `yaml:"memory-limit"`
+	InstanceMemoryLimit        string              `yaml:"instance-memory-limit"`
+	TotalRoutes                string              `yaml:"total-routes"`
+	TotalServices              string              `yaml:"total-services"`
 	PaidServicePlansAllowed    bool                `yaml:"paid-service-plans-allowed"`
 	RemoveUsers                bool                `yaml:"enable-remove-users"`
-	TotalPrivateDomains        int                 `yaml:"total_private_domains"`
-	TotalReservedRoutePorts    int                 `yaml:"total_reserved_route_ports"`
-	TotalServiceKeys           int                 `yaml:"total_service_keys"`
-	AppInstanceLimit           int                 `yaml:"app_instance_limit"`
-	AppTaskLimit               int                 `yaml:"app_task_limit"`
+	TotalPrivateDomains        string              `yaml:"total_private_domains"`
+	TotalReservedRoutePorts    string              `yaml:"total_reserved_route_ports"`
+	TotalServiceKeys           string              `yaml:"total_service_keys"`
+	AppInstanceLimit           string              `yaml:"app_instance_limit"`
+	AppTaskLimit               string              `yaml:"app_task_limit"`
 	DefaultIsoSegment          string              `yaml:"default_isolation_segment"`
 	ServiceAccess              map[string][]string `yaml:"service-access"`
+}
+
+func (o *OrgConfig) InstanceMemoryLimitAsInt() (int, error) {
+	return ToMegabytes(o.InstanceMemoryLimit)
+}
+
+func (o *OrgConfig) MemoryLimitAsInt() (int, error) {
+	return ToMegabytes(o.MemoryLimit)
 }
 
 // Orgs contains cf-mgmt configuration for all orgs.

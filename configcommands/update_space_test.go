@@ -47,21 +47,21 @@ var _ = Describe("given update orgs config command", func() {
 			}, nil)
 
 			err := configuration.Execute(nil)
-			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(1))
 			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(1))
 			Expect(mockConfig.SaveSpaceConfigArgsForCall(0)).To(BeEquivalentTo(&config.SpaceConfig{
 				Org:                     orgName,
 				Space:                   spaceName,
 				EnableSpaceQuota:        true,
-				MemoryLimit:             1,
-				InstanceMemoryLimit:     2,
-				TotalRoutes:             3,
-				TotalServices:           4,
+				MemoryLimit:             "1M",
+				InstanceMemoryLimit:     "2M",
+				TotalRoutes:             "3",
+				TotalServices:           "4",
 				PaidServicePlansAllowed: true,
-				TotalPrivateDomains:     5,
-				TotalReservedRoutePorts: 6,
-				TotalServiceKeys:        7,
-				AppInstanceLimit:        8,
+				TotalPrivateDomains:     "5",
+				TotalReservedRoutePorts: "6",
+				TotalServiceKeys:        "7",
+				AppInstanceLimit:        "8",
 			}))
 		})
 

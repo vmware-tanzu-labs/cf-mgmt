@@ -26,21 +26,29 @@ type SpaceConfig struct {
 	AuditorGroup            string   `yaml:"space-auditor-group,omitempty"`
 	AllowSSH                bool     `yaml:"allow-ssh"`
 	EnableSpaceQuota        bool     `yaml:"enable-space-quota"`
-	MemoryLimit             int      `yaml:"memory-limit"`
-	InstanceMemoryLimit     int      `yaml:"instance-memory-limit"`
-	TotalRoutes             int      `yaml:"total-routes"`
-	TotalServices           int      `yaml:"total-services"`
+	MemoryLimit             string   `yaml:"memory-limit"`
+	InstanceMemoryLimit     string   `yaml:"instance-memory-limit"`
+	TotalRoutes             string   `yaml:"total-routes"`
+	TotalServices           string   `yaml:"total-services"`
 	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed"`
 	EnableSecurityGroup     bool     `yaml:"enable-security-group"`
 	SecurityGroupContents   string   `yaml:"security-group-contents,omitempty"`
 	RemoveUsers             bool     `yaml:"enable-remove-users"`
-	TotalPrivateDomains     int      `yaml:"total_private_domains"`
-	TotalReservedRoutePorts int      `yaml:"total_reserved_route_ports"`
-	TotalServiceKeys        int      `yaml:"total_service_keys"`
-	AppInstanceLimit        int      `yaml:"app_instance_limit"`
-	AppTaskLimit            int      `yaml:"app_task_limit"`
+	TotalPrivateDomains     string   `yaml:"total_private_domains"`
+	TotalReservedRoutePorts string   `yaml:"total_reserved_route_ports"`
+	TotalServiceKeys        string   `yaml:"total_service_keys"`
+	AppInstanceLimit        string   `yaml:"app_instance_limit"`
+	AppTaskLimit            string   `yaml:"app_task_limit"`
 	IsoSegment              string   `yaml:"isolation_segment"`
 	ASGs                    []string `yaml:"named-security-groups"`
+}
+
+func (s *SpaceConfig) InstanceMemoryLimitAsInt() (int, error) {
+	return ToMegabytes(s.InstanceMemoryLimit)
+}
+
+func (s *SpaceConfig) MemoryLimitAsInt() (int, error) {
+	return ToMegabytes(s.MemoryLimit)
 }
 
 // Contains determines whether a space is present in a list of spaces.

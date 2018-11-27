@@ -142,15 +142,16 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 				if quota.Name == orgName {
 					orgConfig.EnableOrgQuota = true
 				}
-				orgConfig.MemoryLimit = quota.MemoryLimit
-				orgConfig.InstanceMemoryLimit = quota.InstanceMemoryLimit
-				orgConfig.TotalRoutes = quota.TotalRoutes
-				orgConfig.TotalServices = quota.TotalServices
+				orgConfig.MemoryLimit = config.ByteSize(quota.MemoryLimit)
+				orgConfig.InstanceMemoryLimit = config.ByteSize(quota.InstanceMemoryLimit)
+				orgConfig.TotalRoutes = config.AsString(quota.TotalRoutes)
+				orgConfig.TotalServices = config.AsString(quota.TotalServices)
 				orgConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
-				orgConfig.TotalPrivateDomains = quota.TotalPrivateDomains
-				orgConfig.TotalReservedRoutePorts = quota.TotalReservedRoutePorts
-				orgConfig.TotalServiceKeys = quota.TotalServiceKeys
-				orgConfig.AppInstanceLimit = quota.AppInstanceLimit
+				orgConfig.TotalPrivateDomains = config.AsString(quota.TotalPrivateDomains)
+				orgConfig.TotalReservedRoutePorts = config.AsString(quota.TotalReservedRoutePorts)
+				orgConfig.TotalServiceKeys = config.AsString(quota.TotalServiceKeys)
+				orgConfig.AppInstanceLimit = config.AsString(quota.AppInstanceLimit)
+				orgConfig.AppTaskLimit = config.AsString(quota.AppTaskLimit)
 			}
 		}
 		if org.DefaultIsolationSegmentGuid != "" {
@@ -220,14 +221,15 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 					if quota.Name == orgSpace.Name {
 						spaceConfig.EnableSpaceQuota = true
 					}
-					spaceConfig.MemoryLimit = quota.MemoryLimit
-					spaceConfig.InstanceMemoryLimit = quota.InstanceMemoryLimit
-					spaceConfig.TotalRoutes = quota.TotalRoutes
-					spaceConfig.TotalServices = quota.TotalServices
+					spaceConfig.MemoryLimit = config.ByteSize(quota.MemoryLimit)
+					spaceConfig.InstanceMemoryLimit = config.ByteSize(quota.InstanceMemoryLimit)
+					spaceConfig.TotalRoutes = config.AsString(quota.TotalRoutes)
+					spaceConfig.TotalServices = config.AsString(quota.TotalServices)
 					spaceConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
-					spaceConfig.TotalReservedRoutePorts = quota.TotalReservedRoutePorts
-					spaceConfig.TotalServiceKeys = quota.TotalServiceKeys
-					spaceConfig.AppInstanceLimit = quota.AppInstanceLimit
+					spaceConfig.TotalReservedRoutePorts = config.AsString(quota.TotalReservedRoutePorts)
+					spaceConfig.TotalServiceKeys = config.AsString(quota.TotalServiceKeys)
+					spaceConfig.AppInstanceLimit = config.AsString(quota.AppInstanceLimit)
+					spaceConfig.AppTaskLimit = config.AsString(quota.AppTaskLimit)
 				}
 			}
 

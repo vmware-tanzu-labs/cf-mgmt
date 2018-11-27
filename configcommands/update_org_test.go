@@ -253,7 +253,7 @@ var _ = Describe("given update orgs config command", func() {
 		It("should succeed", func() {
 			configuration.Quota.EnableOrgQuota = "true"
 			configuration.Quota.MemoryLimit = "1"
-			configuration.Quota.InstanceMemoryLimit = "2"
+			configuration.Quota.InstanceMemoryLimit = "1024"
 			configuration.Quota.TotalRoutes = "3"
 			configuration.Quota.TotalServices = "4"
 			configuration.Quota.PaidServicesAllowed = "true"
@@ -275,15 +275,15 @@ var _ = Describe("given update orgs config command", func() {
 				Org:                     orgName,
 				RemovePrivateDomains:    false,
 				EnableOrgQuota:          true,
-				MemoryLimit:             1,
-				InstanceMemoryLimit:     2,
-				TotalRoutes:             3,
-				TotalServices:           4,
+				MemoryLimit:             "1M",
+				InstanceMemoryLimit:     "1G",
+				TotalRoutes:             "3",
+				TotalServices:           "4",
 				PaidServicePlansAllowed: true,
-				TotalPrivateDomains:     5,
-				TotalReservedRoutePorts: 6,
-				TotalServiceKeys:        7,
-				AppInstanceLimit:        8,
+				TotalPrivateDomains:     "5",
+				TotalReservedRoutePorts: "6",
+				TotalServiceKeys:        "7",
+				AppInstanceLimit:        "8",
 			}))
 			Expect(mockConfig.SaveOrgSpacesCallCount()).To(Equal(1))
 			Expect(mockConfig.SaveOrgSpacesArgsForCall(0)).To(BeEquivalentTo(&config.Spaces{

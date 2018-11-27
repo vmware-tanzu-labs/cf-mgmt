@@ -91,6 +91,33 @@ func convertToInt(parameterName string, currentValue *int, proposedValue string,
 		return
 	}
 	*currentValue = i
+
+}
+
+func convertToGB(parameterName string, currentValue *string, proposedValue string, errorString *string) {
+
+	if proposedValue == "" {
+		return
+	}
+	val, err := config.StringToMegabytes(proposedValue)
+	if err != nil {
+		*errorString += fmt.Sprintf("\n--%s must be an integer instead of [%s]", parameterName, proposedValue)
+		return
+	}
+	*currentValue = val
+}
+
+func convertToFormattedInt(parameterName string, currentValue *string, proposedValue string, errorString *string) {
+
+	if proposedValue == "" {
+		return
+	}
+	val, err := config.ToInteger(proposedValue)
+	if err != nil {
+		*errorString += fmt.Sprintf("\n--%s must be an integer instead of [%s]", parameterName, proposedValue)
+		return
+	}
+	*currentValue = config.AsString(val)
 }
 
 func convertToBool(parameterName string, currentValue *bool, proposedValue string, errorString *string) {
@@ -151,30 +178,30 @@ func sliceToMap(theSlice []string) map[string]string {
 
 func updateOrgQuotaConfig(orgConfig *config.OrgConfig, orgQuota OrgQuota, errorString *string) {
 	convertToBool("enable-org-quota", &orgConfig.EnableOrgQuota, orgQuota.EnableOrgQuota, errorString)
-	convertToInt("memory-limit", &orgConfig.MemoryLimit, orgQuota.MemoryLimit, errorString)
-	convertToInt("instance-memory-limit", &orgConfig.InstanceMemoryLimit, orgQuota.InstanceMemoryLimit, errorString)
-	convertToInt("total-routes", &orgConfig.TotalRoutes, orgQuota.TotalRoutes, errorString)
-	convertToInt("total-services", &orgConfig.TotalServices, orgQuota.TotalServices, errorString)
+	convertToGB("memory-limit", &orgConfig.MemoryLimit, orgQuota.MemoryLimit, errorString)
+	convertToGB("instance-memory-limit", &orgConfig.InstanceMemoryLimit, orgQuota.InstanceMemoryLimit, errorString)
+	convertToFormattedInt("total-routes", &orgConfig.TotalRoutes, orgQuota.TotalRoutes, errorString)
+	convertToFormattedInt("total-services", &orgConfig.TotalServices, orgQuota.TotalServices, errorString)
 	convertToBool("paid-service-plans-allowed", &orgConfig.PaidServicePlansAllowed, orgQuota.PaidServicesAllowed, errorString)
-	convertToInt("total-private-domains", &orgConfig.TotalPrivateDomains, orgQuota.TotalPrivateDomains, errorString)
-	convertToInt("total-reserved-route-ports", &orgConfig.TotalReservedRoutePorts, orgQuota.TotalReservedRoutePorts, errorString)
-	convertToInt("total-service-keys", &orgConfig.TotalServiceKeys, orgQuota.TotalServiceKeys, errorString)
-	convertToInt("app-instance-limit", &orgConfig.AppInstanceLimit, orgQuota.AppInstanceLimit, errorString)
-	convertToInt("app-task-limit", &orgConfig.AppTaskLimit, orgQuota.AppTaskLimit, errorString)
+	convertToFormattedInt("total-private-domains", &orgConfig.TotalPrivateDomains, orgQuota.TotalPrivateDomains, errorString)
+	convertToFormattedInt("total-reserved-route-ports", &orgConfig.TotalReservedRoutePorts, orgQuota.TotalReservedRoutePorts, errorString)
+	convertToFormattedInt("total-service-keys", &orgConfig.TotalServiceKeys, orgQuota.TotalServiceKeys, errorString)
+	convertToFormattedInt("app-instance-limit", &orgConfig.AppInstanceLimit, orgQuota.AppInstanceLimit, errorString)
+	convertToFormattedInt("app-task-limit", &orgConfig.AppTaskLimit, orgQuota.AppTaskLimit, errorString)
 }
 
 func updateSpaceQuotaConfig(spaceConfig *config.SpaceConfig, spaceQuota SpaceQuota, errorString *string) {
 	convertToBool("enable-space-quota", &spaceConfig.EnableSpaceQuota, spaceQuota.EnableSpaceQuota, errorString)
-	convertToInt("memory-limit", &spaceConfig.MemoryLimit, spaceQuota.MemoryLimit, errorString)
-	convertToInt("instance-memory-limit", &spaceConfig.InstanceMemoryLimit, spaceQuota.InstanceMemoryLimit, errorString)
-	convertToInt("total-routes", &spaceConfig.TotalRoutes, spaceQuota.TotalRoutes, errorString)
-	convertToInt("total-services", &spaceConfig.TotalServices, spaceQuota.TotalServices, errorString)
+	convertToGB("memory-limit", &spaceConfig.MemoryLimit, spaceQuota.MemoryLimit, errorString)
+	convertToGB("instance-memory-limit", &spaceConfig.InstanceMemoryLimit, spaceQuota.InstanceMemoryLimit, errorString)
+	convertToFormattedInt("total-routes", &spaceConfig.TotalRoutes, spaceQuota.TotalRoutes, errorString)
+	convertToFormattedInt("total-services", &spaceConfig.TotalServices, spaceQuota.TotalServices, errorString)
 	convertToBool("paid-service-plans-allowed", &spaceConfig.PaidServicePlansAllowed, spaceQuota.PaidServicesAllowed, errorString)
-	convertToInt("total-private-domains", &spaceConfig.TotalPrivateDomains, spaceQuota.TotalPrivateDomains, errorString)
-	convertToInt("total-reserved-route-ports", &spaceConfig.TotalReservedRoutePorts, spaceQuota.TotalReservedRoutePorts, errorString)
-	convertToInt("total-service-keys", &spaceConfig.TotalServiceKeys, spaceQuota.TotalServiceKeys, errorString)
-	convertToInt("app-instance-limit", &spaceConfig.AppInstanceLimit, spaceQuota.AppInstanceLimit, errorString)
-	convertToInt("app-task-limit", &spaceConfig.AppTaskLimit, spaceQuota.AppTaskLimit, errorString)
+	convertToFormattedInt("total-private-domains", &spaceConfig.TotalPrivateDomains, spaceQuota.TotalPrivateDomains, errorString)
+	convertToFormattedInt("total-reserved-route-ports", &spaceConfig.TotalReservedRoutePorts, spaceQuota.TotalReservedRoutePorts, errorString)
+	convertToFormattedInt("total-service-keys", &spaceConfig.TotalServiceKeys, spaceQuota.TotalServiceKeys, errorString)
+	convertToFormattedInt("app-instance-limit", &spaceConfig.AppInstanceLimit, spaceQuota.AppInstanceLimit, errorString)
+	convertToFormattedInt("app-task-limit", &spaceConfig.AppTaskLimit, spaceQuota.AppTaskLimit, errorString)
 }
 
 func validateASGsExist(configuredASGs []config.ASGConfig, asgs []string, errorString *string) {
