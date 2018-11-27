@@ -8,6 +8,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/privatedomain"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
+	"github.com/pivotalservices/cf-mgmt/serviceaccess"
 	"github.com/pivotalservices/cf-mgmt/shareddomain"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
@@ -25,7 +26,8 @@ func NewExportManager(
 	securityGroupManager securitygroup.Manager,
 	isoSegmentMgr isosegment.Manager,
 	privateDomainMgr privatedomain.Manager,
-	sharedDomainMgr *shareddomain.Manager) Manager {
+	sharedDomainMgr *shareddomain.Manager,
+	serviceAccessMgr *serviceaccess.Manager) Manager {
 	return &DefaultImportManager{
 		ConfigDir:            configDir,
 		UAAMgr:               uaaMgr,
@@ -35,7 +37,8 @@ func NewExportManager(
 		SecurityGroupManager: securityGroupManager,
 		IsoSegmentManager:    isoSegmentMgr,
 		PrivateDomainManager: privateDomainMgr,
-		SharedDomainManager: sharedDomainMgr,
+		SharedDomainManager:  sharedDomainMgr,
+		ServiceAccessManager: serviceAccessMgr,
 	}
 }
 
@@ -50,6 +53,7 @@ type DefaultImportManager struct {
 	IsoSegmentManager    isosegment.Manager
 	PrivateDomainManager privatedomain.Manager
 	SharedDomainManager  *shareddomain.Manager
+	ServiceAccessManager *serviceaccess.Manager
 }
 
 //ExportConfig Imports org and space configuration from an existing CF instance
@@ -116,6 +120,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 
 	lo.G.Debugf("Orgs to process: %s", orgs)
 
+	globalConfig.EnableServiceAccess = true
 	for _, org := range orgs {
 		orgName := org.Name
 		if _, ok := excludedOrgs[orgName]; ok {
@@ -171,6 +176,22 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		for privatedomain, _ := range privatedomains {
 			orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, privatedomain)
 		}
+
+		orgConfig.ServiceAccess = make(map[string][]string)
+		serviceInfo, err := im.ServiceAccessManager.ListServiceInfo()
+		if err != nil {
+			return err
+		}
+		for service, plans := range serviceInfo.AllPlans() {
+			accessPlans := []string{}
+			for _, plan := range plans {
+				if plan.Public || plan.OrgHasAccess(org.Guid) {
+					accessPlans = append(accessPlans, plan.Name)
+				}
+			}
+			orgConfig.ServiceAccess[service] = accessPlans
+		}
+
 		spacesConfig := &config.Spaces{Org: orgConfig.Org, EnableDeleteSpaces: true}
 		configMgr.AddOrgToConfig(orgConfig, spacesConfig)
 
