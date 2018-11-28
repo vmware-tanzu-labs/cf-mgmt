@@ -11,6 +11,7 @@ import (
 
 	"github.com/xchapter7x/lo"
 )
+
 const unlimited = "unlimited"
 
 // yamlManager is the default implementation of Manager.
@@ -31,7 +32,12 @@ func (m *yamlManager) Orgs() (*Orgs, error) {
 }
 
 func (m *yamlManager) GetDefaultASGConfigs() ([]ASGConfig, error) {
-	files, err := FindFiles(path.Join(m.ConfigDir, "default_asgs"), ".json")
+	filePath := path.Join(m.ConfigDir, "default_asgs")
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		lo.G.Infof("No default asgs found.  Create directory default_asgs and add asg defintion(s)")
+		return nil, nil
+	}
+	files, err := FindFiles(filePath, ".json")
 	if err != nil {
 		return nil, err
 	}
@@ -53,8 +59,12 @@ func (m *yamlManager) GetDefaultASGConfigs() ([]ASGConfig, error) {
 
 // GetASGConfigs reads all ASGs from the cf-mgmt configuration.
 func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
-
-	files, err := FindFiles(path.Join(m.ConfigDir, "asgs"), ".json")
+	filePath := path.Join(m.ConfigDir, "asgs")
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		lo.G.Infof("No asgs found.  Create directory asgs and add asg defintion(s)")
+		return nil, nil
+	}
+	files, err := FindFiles(filePath, ".json")
 	if err != nil {
 		return nil, err
 	}
