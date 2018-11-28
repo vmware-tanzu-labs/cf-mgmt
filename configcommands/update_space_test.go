@@ -37,7 +37,6 @@ var _ = Describe("given update orgs config command", func() {
 			configuration.Quota.TotalRoutes = "3"
 			configuration.Quota.TotalServices = "4"
 			configuration.Quota.PaidServicesAllowed = "true"
-			configuration.Quota.TotalPrivateDomains = "5"
 			configuration.Quota.TotalReservedRoutePorts = "6"
 			configuration.Quota.TotalServiceKeys = "7"
 			configuration.Quota.AppInstanceLimit = "8"
@@ -58,7 +57,6 @@ var _ = Describe("given update orgs config command", func() {
 				TotalRoutes:             "3",
 				TotalServices:           "4",
 				PaidServicePlansAllowed: true,
-				TotalPrivateDomains:     "5",
 				TotalReservedRoutePorts: "6",
 				TotalServiceKeys:        "7",
 				AppInstanceLimit:        "8",

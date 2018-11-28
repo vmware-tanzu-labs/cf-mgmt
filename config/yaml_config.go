@@ -161,7 +161,6 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		result[i].AppInstanceLimit = unlimited
 		result[i].AppTaskLimit = unlimited
 		result[i].TotalReservedRoutePorts = "0"
-		result[i].TotalPrivateDomains = unlimited
 		result[i].TotalServiceKeys = unlimited
 
 		if err = LoadFile(f, &result[i]); err != nil {

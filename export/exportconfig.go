@@ -134,24 +134,24 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		im.addOrgUsers(orgConfig, uaaUsers, org.Guid)
 		//Add Quota definition if applicable
 		if org.QuotaDefinitionGuid != "" {
-			quota, err := org.Quota()
+			orgQuota, err := org.Quota()
 			if err != nil {
 				return err
 			}
-			if quota != nil {
-				if quota.Name == orgName {
+			if orgQuota != nil {
+				if orgQuota.Name == orgName {
 					orgConfig.EnableOrgQuota = true
 				}
-				orgConfig.MemoryLimit = config.ByteSize(quota.MemoryLimit)
-				orgConfig.InstanceMemoryLimit = config.ByteSize(quota.InstanceMemoryLimit)
-				orgConfig.TotalRoutes = config.AsString(quota.TotalRoutes)
-				orgConfig.TotalServices = config.AsString(quota.TotalServices)
-				orgConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
-				orgConfig.TotalPrivateDomains = config.AsString(quota.TotalPrivateDomains)
-				orgConfig.TotalReservedRoutePorts = config.AsString(quota.TotalReservedRoutePorts)
-				orgConfig.TotalServiceKeys = config.AsString(quota.TotalServiceKeys)
-				orgConfig.AppInstanceLimit = config.AsString(quota.AppInstanceLimit)
-				orgConfig.AppTaskLimit = config.AsString(quota.AppTaskLimit)
+				orgConfig.MemoryLimit = config.ByteSize(orgQuota.MemoryLimit)
+				orgConfig.InstanceMemoryLimit = config.ByteSize(orgQuota.InstanceMemoryLimit)
+				orgConfig.TotalRoutes = config.AsString(orgQuota.TotalRoutes)
+				orgConfig.TotalServices = config.AsString(orgQuota.TotalServices)
+				orgConfig.PaidServicePlansAllowed = orgQuota.NonBasicServicesAllowed
+				orgConfig.TotalPrivateDomains = config.AsString(orgQuota.TotalPrivateDomains)
+				orgConfig.TotalReservedRoutePorts = config.AsString(orgQuota.TotalReservedRoutePorts)
+				orgConfig.TotalServiceKeys = config.AsString(orgQuota.TotalServiceKeys)
+				orgConfig.AppInstanceLimit = config.AsString(orgQuota.AppInstanceLimit)
+				orgConfig.AppTaskLimit = config.AsString(orgQuota.AppTaskLimit)
 			}
 		}
 		if org.DefaultIsolationSegmentGuid != "" {
@@ -231,6 +231,16 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 					spaceConfig.AppInstanceLimit = config.AsString(quota.AppInstanceLimit)
 					spaceConfig.AppTaskLimit = config.AsString(quota.AppTaskLimit)
 				}
+			} else {
+				spaceConfig.MemoryLimit = orgConfig.MemoryLimit
+				spaceConfig.InstanceMemoryLimit = orgConfig.InstanceMemoryLimit
+				spaceConfig.TotalRoutes = orgConfig.TotalRoutes
+				spaceConfig.TotalServices = orgConfig.TotalServices
+				spaceConfig.PaidServicePlansAllowed = orgConfig.PaidServicePlansAllowed
+				spaceConfig.TotalReservedRoutePorts = orgConfig.TotalReservedRoutePorts
+				spaceConfig.TotalServiceKeys = orgConfig.TotalServiceKeys
+				spaceConfig.AppInstanceLimit = orgConfig.AppInstanceLimit
+				spaceConfig.AppTaskLimit = orgConfig.AppTaskLimit
 			}
 
 			if orgSpace.IsolationSegmentGuid != "" {

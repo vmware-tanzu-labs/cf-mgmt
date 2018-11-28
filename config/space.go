@@ -34,7 +34,6 @@ type SpaceConfig struct {
 	EnableSecurityGroup     bool     `yaml:"enable-security-group"`
 	SecurityGroupContents   string   `yaml:"security-group-contents,omitempty"`
 	RemoveUsers             bool     `yaml:"enable-remove-users"`
-	TotalPrivateDomains     string   `yaml:"total_private_domains"`
 	TotalReservedRoutePorts string   `yaml:"total_reserved_route_ports"`
 	TotalServiceKeys        string   `yaml:"total_service_keys"`
 	AppInstanceLimit        string   `yaml:"app_instance_limit"`

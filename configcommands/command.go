@@ -58,7 +58,6 @@ type SpaceQuota struct {
 	TotalRoutes             string `long:"total-routes" description:"Total Routes capacity for an Space"`
 	TotalServices           string `long:"total-services" description:"Total Services capacity for an Space"`
 	PaidServicesAllowed     string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an Space" choice:"true" choice:"false"`
-	TotalPrivateDomains     string `long:"total-private-domains" description:"Total Private Domain capacity for an Space"`
 	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Space"`
 	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Space"`
 	AppInstanceLimit        string `long:"app-instance-limit" description:"App Instance Limit for a space"`
@@ -197,7 +196,6 @@ func updateSpaceQuotaConfig(spaceConfig *config.SpaceConfig, spaceQuota SpaceQuo
 	convertToFormattedInt("total-routes", &spaceConfig.TotalRoutes, spaceQuota.TotalRoutes, errorString)
 	convertToFormattedInt("total-services", &spaceConfig.TotalServices, spaceQuota.TotalServices, errorString)
 	convertToBool("paid-service-plans-allowed", &spaceConfig.PaidServicePlansAllowed, spaceQuota.PaidServicesAllowed, errorString)
-	convertToFormattedInt("total-private-domains", &spaceConfig.TotalPrivateDomains, spaceQuota.TotalPrivateDomains, errorString)
 	convertToFormattedInt("total-reserved-route-ports", &spaceConfig.TotalReservedRoutePorts, spaceQuota.TotalReservedRoutePorts, errorString)
 	convertToFormattedInt("total-service-keys", &spaceConfig.TotalServiceKeys, spaceQuota.TotalServiceKeys, errorString)
 	convertToFormattedInt("app-instance-limit", &spaceConfig.AppInstanceLimit, spaceQuota.AppInstanceLimit, errorString)
