@@ -69,6 +69,18 @@ type FakeReader struct {
 		result1 []config.OrgConfig
 		result2 error
 	}
+	GetOrgQuotasStub        func() ([]config.OrgQuota, error)
+	getOrgQuotasMutex       sync.RWMutex
+	getOrgQuotasArgsForCall []struct {
+	}
+	getOrgQuotasReturns struct {
+		result1 []config.OrgQuota
+		result2 error
+	}
+	getOrgQuotasReturnsOnCall map[int]struct {
+		result1 []config.OrgQuota
+		result2 error
+	}
 	GetSpaceConfigStub        func(string, string) (*config.SpaceConfig, error)
 	getSpaceConfigMutex       sync.RWMutex
 	getSpaceConfigArgsForCall []struct {
@@ -105,6 +117,19 @@ type FakeReader struct {
 	}
 	getSpaceDefaultsReturnsOnCall map[int]struct {
 		result1 *config.SpaceConfig
+		result2 error
+	}
+	GetSpaceQuotasStub        func(string) ([]config.SpaceQuota, error)
+	getSpaceQuotasMutex       sync.RWMutex
+	getSpaceQuotasArgsForCall []struct {
+		arg1 string
+	}
+	getSpaceQuotasReturns struct {
+		result1 []config.SpaceQuota
+		result2 error
+	}
+	getSpaceQuotasReturnsOnCall map[int]struct {
+		result1 []config.SpaceQuota
 		result2 error
 	}
 	LdapConfigStub        func(string) (*config.LdapConfig, error)
@@ -444,6 +469,61 @@ func (fake *FakeReader) GetOrgConfigsReturnsOnCall(i int, result1 []config.OrgCo
 	}{result1, result2}
 }
 
+func (fake *FakeReader) GetOrgQuotas() ([]config.OrgQuota, error) {
+	fake.getOrgQuotasMutex.Lock()
+	ret, specificReturn := fake.getOrgQuotasReturnsOnCall[len(fake.getOrgQuotasArgsForCall)]
+	fake.getOrgQuotasArgsForCall = append(fake.getOrgQuotasArgsForCall, struct {
+	}{})
+	fake.recordInvocation("GetOrgQuotas", []interface{}{})
+	fake.getOrgQuotasMutex.Unlock()
+	if fake.GetOrgQuotasStub != nil {
+		return fake.GetOrgQuotasStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getOrgQuotasReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeReader) GetOrgQuotasCallCount() int {
+	fake.getOrgQuotasMutex.RLock()
+	defer fake.getOrgQuotasMutex.RUnlock()
+	return len(fake.getOrgQuotasArgsForCall)
+}
+
+func (fake *FakeReader) GetOrgQuotasCalls(stub func() ([]config.OrgQuota, error)) {
+	fake.getOrgQuotasMutex.Lock()
+	defer fake.getOrgQuotasMutex.Unlock()
+	fake.GetOrgQuotasStub = stub
+}
+
+func (fake *FakeReader) GetOrgQuotasReturns(result1 []config.OrgQuota, result2 error) {
+	fake.getOrgQuotasMutex.Lock()
+	defer fake.getOrgQuotasMutex.Unlock()
+	fake.GetOrgQuotasStub = nil
+	fake.getOrgQuotasReturns = struct {
+		result1 []config.OrgQuota
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeReader) GetOrgQuotasReturnsOnCall(i int, result1 []config.OrgQuota, result2 error) {
+	fake.getOrgQuotasMutex.Lock()
+	defer fake.getOrgQuotasMutex.Unlock()
+	fake.GetOrgQuotasStub = nil
+	if fake.getOrgQuotasReturnsOnCall == nil {
+		fake.getOrgQuotasReturnsOnCall = make(map[int]struct {
+			result1 []config.OrgQuota
+			result2 error
+		})
+	}
+	fake.getOrgQuotasReturnsOnCall[i] = struct {
+		result1 []config.OrgQuota
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeReader) GetSpaceConfig(arg1 string, arg2 string) (*config.SpaceConfig, error) {
 	fake.getSpaceConfigMutex.Lock()
 	ret, specificReturn := fake.getSpaceConfigReturnsOnCall[len(fake.getSpaceConfigArgsForCall)]
@@ -614,6 +694,69 @@ func (fake *FakeReader) GetSpaceDefaultsReturnsOnCall(i int, result1 *config.Spa
 	}
 	fake.getSpaceDefaultsReturnsOnCall[i] = struct {
 		result1 *config.SpaceConfig
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeReader) GetSpaceQuotas(arg1 string) ([]config.SpaceQuota, error) {
+	fake.getSpaceQuotasMutex.Lock()
+	ret, specificReturn := fake.getSpaceQuotasReturnsOnCall[len(fake.getSpaceQuotasArgsForCall)]
+	fake.getSpaceQuotasArgsForCall = append(fake.getSpaceQuotasArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetSpaceQuotas", []interface{}{arg1})
+	fake.getSpaceQuotasMutex.Unlock()
+	if fake.GetSpaceQuotasStub != nil {
+		return fake.GetSpaceQuotasStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getSpaceQuotasReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeReader) GetSpaceQuotasCallCount() int {
+	fake.getSpaceQuotasMutex.RLock()
+	defer fake.getSpaceQuotasMutex.RUnlock()
+	return len(fake.getSpaceQuotasArgsForCall)
+}
+
+func (fake *FakeReader) GetSpaceQuotasCalls(stub func(string) ([]config.SpaceQuota, error)) {
+	fake.getSpaceQuotasMutex.Lock()
+	defer fake.getSpaceQuotasMutex.Unlock()
+	fake.GetSpaceQuotasStub = stub
+}
+
+func (fake *FakeReader) GetSpaceQuotasArgsForCall(i int) string {
+	fake.getSpaceQuotasMutex.RLock()
+	defer fake.getSpaceQuotasMutex.RUnlock()
+	argsForCall := fake.getSpaceQuotasArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeReader) GetSpaceQuotasReturns(result1 []config.SpaceQuota, result2 error) {
+	fake.getSpaceQuotasMutex.Lock()
+	defer fake.getSpaceQuotasMutex.Unlock()
+	fake.GetSpaceQuotasStub = nil
+	fake.getSpaceQuotasReturns = struct {
+		result1 []config.SpaceQuota
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeReader) GetSpaceQuotasReturnsOnCall(i int, result1 []config.SpaceQuota, result2 error) {
+	fake.getSpaceQuotasMutex.Lock()
+	defer fake.getSpaceQuotasMutex.Unlock()
+	fake.GetSpaceQuotasStub = nil
+	if fake.getSpaceQuotasReturnsOnCall == nil {
+		fake.getSpaceQuotasReturnsOnCall = make(map[int]struct {
+			result1 []config.SpaceQuota
+			result2 error
+		})
+	}
+	fake.getSpaceQuotasReturnsOnCall[i] = struct {
+		result1 []config.SpaceQuota
 		result2 error
 	}{result1, result2}
 }
@@ -867,12 +1010,16 @@ func (fake *FakeReader) Invocations() map[string][][]interface{} {
 	defer fake.getOrgConfigMutex.RUnlock()
 	fake.getOrgConfigsMutex.RLock()
 	defer fake.getOrgConfigsMutex.RUnlock()
+	fake.getOrgQuotasMutex.RLock()
+	defer fake.getOrgQuotasMutex.RUnlock()
 	fake.getSpaceConfigMutex.RLock()
 	defer fake.getSpaceConfigMutex.RUnlock()
 	fake.getSpaceConfigsMutex.RLock()
 	defer fake.getSpaceConfigsMutex.RUnlock()
 	fake.getSpaceDefaultsMutex.RLock()
 	defer fake.getSpaceDefaultsMutex.RUnlock()
+	fake.getSpaceQuotasMutex.RLock()
+	defer fake.getSpaceQuotasMutex.RUnlock()
 	fake.ldapConfigMutex.RLock()
 	defer fake.ldapConfigMutex.RUnlock()
 	fake.orgSpacesMutex.RLock()

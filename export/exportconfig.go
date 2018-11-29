@@ -3,10 +3,12 @@ package export
 import (
 	"fmt"
 
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/privatedomain"
+	"github.com/pivotalservices/cf-mgmt/quota"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
 	"github.com/pivotalservices/cf-mgmt/serviceaccess"
 	"github.com/pivotalservices/cf-mgmt/shareddomain"
@@ -27,7 +29,8 @@ func NewExportManager(
 	isoSegmentMgr isosegment.Manager,
 	privateDomainMgr privatedomain.Manager,
 	sharedDomainMgr *shareddomain.Manager,
-	serviceAccessMgr *serviceaccess.Manager) Manager {
+	serviceAccessMgr *serviceaccess.Manager,
+	quotaMgr *quota.Manager) Manager {
 	return &DefaultImportManager{
 		ConfigDir:            configDir,
 		UAAMgr:               uaaMgr,
@@ -39,6 +42,7 @@ func NewExportManager(
 		PrivateDomainManager: privateDomainMgr,
 		SharedDomainManager:  sharedDomainMgr,
 		ServiceAccessManager: serviceAccessMgr,
+		QuotaManager:         quotaMgr,
 	}
 }
 
@@ -54,6 +58,7 @@ type DefaultImportManager struct {
 	PrivateDomainManager privatedomain.Manager
 	SharedDomainManager  *shareddomain.Manager
 	ServiceAccessManager *serviceaccess.Manager
+	QuotaManager         *quota.Manager
 }
 
 //ExportConfig Imports org and space configuration from an existing CF instance
@@ -141,17 +146,20 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			if orgQuota != nil {
 				if orgQuota.Name == orgName {
 					orgConfig.EnableOrgQuota = true
+					orgConfig.MemoryLimit = config.ByteSize(orgQuota.MemoryLimit)
+					orgConfig.InstanceMemoryLimit = config.ByteSize(orgQuota.InstanceMemoryLimit)
+					orgConfig.TotalRoutes = config.AsString(orgQuota.TotalRoutes)
+					orgConfig.TotalServices = config.AsString(orgQuota.TotalServices)
+					orgConfig.PaidServicePlansAllowed = orgQuota.NonBasicServicesAllowed
+					orgConfig.TotalPrivateDomains = config.AsString(orgQuota.TotalPrivateDomains)
+					orgConfig.TotalReservedRoutePorts = config.AsString(orgQuota.TotalReservedRoutePorts)
+					orgConfig.TotalServiceKeys = config.AsString(orgQuota.TotalServiceKeys)
+					orgConfig.AppInstanceLimit = config.AsString(orgQuota.AppInstanceLimit)
+					orgConfig.AppTaskLimit = config.AsString(orgQuota.AppTaskLimit)
+				} else {
+					orgConfig.NamedQuota = orgQuota.Name
 				}
-				orgConfig.MemoryLimit = config.ByteSize(orgQuota.MemoryLimit)
-				orgConfig.InstanceMemoryLimit = config.ByteSize(orgQuota.InstanceMemoryLimit)
-				orgConfig.TotalRoutes = config.AsString(orgQuota.TotalRoutes)
-				orgConfig.TotalServices = config.AsString(orgQuota.TotalServices)
-				orgConfig.PaidServicePlansAllowed = orgQuota.NonBasicServicesAllowed
-				orgConfig.TotalPrivateDomains = config.AsString(orgQuota.TotalPrivateDomains)
-				orgConfig.TotalReservedRoutePorts = config.AsString(orgQuota.TotalReservedRoutePorts)
-				orgConfig.TotalServiceKeys = config.AsString(orgQuota.TotalServiceKeys)
-				orgConfig.AppInstanceLimit = config.AsString(orgQuota.AppInstanceLimit)
-				orgConfig.AppTaskLimit = config.AsString(orgQuota.AppTaskLimit)
+
 			}
 		}
 		if org.DefaultIsolationSegmentGuid != "" {
@@ -200,6 +208,33 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
 		spaces, _ := im.SpaceManager.ListSpaces(org.Guid)
 		lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
+
+		spaceQuotas, err := im.QuotaManager.ListAllSpaceQuotasForOrg(org.Guid)
+		if err != nil {
+			return err
+		}
+
+		for _, spaceQuota := range spaceQuotas {
+			if !im.doesSpaceExist(spaces, spaceQuota.Name) {
+				err = configMgr.AddSpaceQuota(config.SpaceQuota{
+					Org:                     org.Name,
+					Name:                    spaceQuota.Name,
+					AppInstanceLimit:        config.AsString(spaceQuota.AppInstanceLimit),
+					TotalReservedRoutePorts: config.AsString(spaceQuota.TotalReservedRoutePorts),
+					TotalServiceKeys:        config.AsString(spaceQuota.TotalServiceKeys),
+					AppTaskLimit:            config.AsString(spaceQuota.AppTaskLimit),
+					MemoryLimit:             config.ByteSize(spaceQuota.MemoryLimit),
+					InstanceMemoryLimit:     config.ByteSize(spaceQuota.InstanceMemoryLimit),
+					TotalRoutes:             config.AsString(spaceQuota.TotalRoutes),
+					TotalServices:           config.AsString(spaceQuota.TotalServices),
+					PaidServicePlansAllowed: spaceQuota.NonBasicServicesAllowed,
+				})
+				if err != nil {
+					return err
+				}
+			}
+		}
+
 		for _, orgSpace := range spaces {
 			spaceName := orgSpace.Name
 			if _, ok := excludedSpaces[spaceName]; ok {
@@ -220,16 +255,18 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 				if quota != nil {
 					if quota.Name == orgSpace.Name {
 						spaceConfig.EnableSpaceQuota = true
+						spaceConfig.MemoryLimit = config.ByteSize(quota.MemoryLimit)
+						spaceConfig.InstanceMemoryLimit = config.ByteSize(quota.InstanceMemoryLimit)
+						spaceConfig.TotalRoutes = config.AsString(quota.TotalRoutes)
+						spaceConfig.TotalServices = config.AsString(quota.TotalServices)
+						spaceConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
+						spaceConfig.TotalReservedRoutePorts = config.AsString(quota.TotalReservedRoutePorts)
+						spaceConfig.TotalServiceKeys = config.AsString(quota.TotalServiceKeys)
+						spaceConfig.AppInstanceLimit = config.AsString(quota.AppInstanceLimit)
+						spaceConfig.AppTaskLimit = config.AsString(quota.AppTaskLimit)
+					} else {
+						spaceConfig.NamedQuota = quota.Name
 					}
-					spaceConfig.MemoryLimit = config.ByteSize(quota.MemoryLimit)
-					spaceConfig.InstanceMemoryLimit = config.ByteSize(quota.InstanceMemoryLimit)
-					spaceConfig.TotalRoutes = config.AsString(quota.TotalRoutes)
-					spaceConfig.TotalServices = config.AsString(quota.TotalServices)
-					spaceConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
-					spaceConfig.TotalReservedRoutePorts = config.AsString(quota.TotalReservedRoutePorts)
-					spaceConfig.TotalServiceKeys = config.AsString(quota.TotalServiceKeys)
-					spaceConfig.AppInstanceLimit = config.AsString(quota.AppInstanceLimit)
-					spaceConfig.AppTaskLimit = config.AsString(quota.AppTaskLimit)
 				}
 			} else {
 				spaceConfig.MemoryLimit = orgConfig.MemoryLimit
@@ -303,6 +340,32 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		}
 	}
 
+	orgQuotas, err := im.QuotaManager.Client.ListOrgQuotas()
+	if err != nil {
+		return err
+	}
+
+	for _, orgQuota := range orgQuotas {
+		if !im.doesOrgExist(orgs, orgQuota.Name) {
+			err = configMgr.AddOrgQuota(config.OrgQuota{
+				Name:                    orgQuota.Name,
+				AppInstanceLimit:        config.AsString(orgQuota.AppInstanceLimit),
+				TotalPrivateDomains:     config.AsString(orgQuota.TotalPrivateDomains),
+				TotalReservedRoutePorts: config.AsString(orgQuota.TotalReservedRoutePorts),
+				TotalServiceKeys:        config.AsString(orgQuota.TotalServiceKeys),
+				AppTaskLimit:            config.AsString(orgQuota.AppTaskLimit),
+				MemoryLimit:             config.ByteSize(orgQuota.MemoryLimit),
+				InstanceMemoryLimit:     config.ByteSize(orgQuota.InstanceMemoryLimit),
+				TotalRoutes:             config.AsString(orgQuota.TotalRoutes),
+				TotalServices:           config.AsString(orgQuota.TotalServices),
+				PaidServicePlansAllowed: orgQuota.NonBasicServicesAllowed,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	sharedDomains, err := im.SharedDomainManager.CFClient.ListSharedDomains()
 	if err != nil {
 		return err
@@ -329,6 +392,24 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		globalConfig.SharedDomains[sharedDomain.Name] = sharedDomainConfig
 	}
 	return configMgr.SaveGlobalConfig(globalConfig)
+}
+
+func (im *DefaultImportManager) doesOrgExist(orgs []cfclient.Org, orgName string) bool {
+	for _, org := range orgs {
+		if org.Name == orgName {
+			return true
+		}
+	}
+	return false
+}
+
+func (im *DefaultImportManager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
+	for _, space := range spaces {
+		if space.Name == spaceName {
+			return true
+		}
+	}
+	return false
 }
 
 func (im *DefaultImportManager) addOrgUsers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {

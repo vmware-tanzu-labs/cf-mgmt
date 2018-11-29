@@ -398,6 +398,21 @@ func (m *yamlManager) AddDefaultSecurityGroup(securityGroupName string, security
 	return WriteFileBytes(fmt.Sprintf("%s/default_asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)
 }
 
+func (m *yamlManager) AddOrgQuota(orgQuota OrgQuota) error {
+	lo.G.Infof("Writing out orgQuota %s", orgQuota.Name)
+	return WriteFile(fmt.Sprintf("%s/org_quotas/%s.yml", m.ConfigDir, orgQuota.Name), orgQuota)
+}
+
+func (m *yamlManager) AddSpaceQuota(spaceQuota SpaceQuota) error {
+	quotasDir := path.Join(m.ConfigDir, spaceQuota.Org, "space_quotas")
+	if err := os.MkdirAll(quotasDir, 0755); err != nil {
+		lo.G.Errorf("Error creating config directory %s. Error : %s", quotasDir, err)
+		return fmt.Errorf("cannot create directory %s: %v", quotasDir, err)
+	}
+	lo.G.Infof("Writing out spaceQuota %s for org %s", spaceQuota.Name, spaceQuota.Org)
+	return WriteFile(fmt.Sprintf("%s/%s/space_quotas/%s.yml", m.ConfigDir, spaceQuota.Org, spaceQuota.Name), spaceQuota)
+}
+
 // CreateConfigIfNotExists initializes a new configuration directory.
 // If the specified configuration directory already exists, it is left unmodified.
 func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
@@ -424,6 +439,13 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 		return fmt.Errorf("cannot create directory %s: %v", asgDir, err)
 	}
 	lo.G.Infof("ASG directory %s created", asgDir)
+
+	orgQuotasDir := path.Join(m.ConfigDir, "org_quotas")
+	if err := os.MkdirAll(orgQuotasDir, 0755); err != nil {
+		lo.G.Errorf("Error creating config directory %s. Error : %s", orgQuotasDir, err)
+		return fmt.Errorf("cannot create directory %s: %v", orgQuotasDir, err)
+	}
+	lo.G.Infof("OrgQuotas directory %s created", orgQuotasDir)
 
 	if err := m.SaveGlobalConfig(&GlobalConfig{}); err != nil {
 		return err
@@ -481,4 +503,50 @@ func (m *yamlManager) LdapConfig(ldapBindPassword string) (*LdapConfig, error) {
 		config.Origin = "ldap"
 	}
 	return config, nil
+}
+
+func (m *yamlManager) GetOrgQuotas() ([]OrgQuota, error) {
+	filePath := path.Join(m.ConfigDir, "org_quotas")
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		lo.G.Infof("No org quotas found.  Create directory org_quotas and add org quota defintion(s)")
+		return nil, nil
+	}
+	files, err := FindFiles(filePath, ".yml")
+	if err != nil {
+		return nil, err
+	}
+	var result []OrgQuota
+	for _, orgQuotaFile := range files {
+		orgQuota := &OrgQuota{}
+		err = LoadFile(orgQuotaFile, orgQuota)
+		if err != nil {
+			return nil, err
+		}
+		orgQuota.Name = strings.Replace(filepath.Base(orgQuotaFile), ".yml", "", 1)
+		result = append(result, *orgQuota)
+	}
+	return result, nil
+}
+
+func (m *yamlManager) GetSpaceQuotas(org string) ([]SpaceQuota, error) {
+	filePath := path.Join(m.ConfigDir, org, "space_quotas")
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		lo.G.Infof("No space quotas found. Create directory space_quotas for org %s and add space quota defintion(s)", org)
+		return nil, nil
+	}
+	files, err := FindFiles(filePath, ".yml")
+	if err != nil {
+		return nil, err
+	}
+	var result []SpaceQuota
+	for _, spaceQuotaFile := range files {
+		spaceQuota := &SpaceQuota{}
+		err = LoadFile(spaceQuotaFile, spaceQuota)
+		if err != nil {
+			return nil, err
+		}
+		spaceQuota.Name = strings.Replace(filepath.Base(spaceQuotaFile), ".yml", "", 1)
+		result = append(result, *spaceQuota)
+	}
+	return result, nil
 }

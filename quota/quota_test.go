@@ -20,7 +20,7 @@ var _ = Describe("given QuotaManager", func() {
 		fakeOrgMgr   *orgfakes.FakeManager
 		fakeClient   *quotafakes.FakeCFClient
 		fakeSpaceMgr *spacefakes.FakeManager
-		quotaMgr     quota.DefaultManager
+		quotaMgr     *quota.Manager
 	)
 
 	BeforeEach(func() {
@@ -28,7 +28,7 @@ var _ = Describe("given QuotaManager", func() {
 		fakeOrgMgr = new(orgfakes.FakeManager)
 		fakeSpaceMgr = new(spacefakes.FakeManager)
 		fakeClient = new(quotafakes.FakeCFClient)
-		quotaMgr = quota.DefaultManager{
+		quotaMgr = &quota.Manager{
 			Cfg:      fakeReader,
 			Client:   fakeClient,
 			OrgMgr:   fakeOrgMgr,
@@ -167,7 +167,6 @@ var _ = Describe("given QuotaManager", func() {
 					OrganizationGuid: "org1-guid",
 				},
 			}, nil)
-			fakeClient.UpdateSpaceQuotaReturns(nil, nil)
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).Should(BeNil())
 			Expect(fakeClient.UpdateSpaceQuotaCallCount()).Should(Equal(0))
@@ -431,61 +430,52 @@ var _ = Describe("given QuotaManager", func() {
 		})
 	})
 
-	/*It("should update 2 quota", func() {
-	  spaces := []cfclient.Space{
-	    {
-	      Name:             "space1",
-	      OrganizationGuid: "testOrgGUID",
-	      Guid:             "space1GUID",
-	    },
-	    {
-	      Name:             "space2",
-	      OrganizationGuid: "testOrgGUID",
-	      Guid:             "space2GUID",
-	    },
-	  }
-	  quotas := make(map[string]string)
-	  quotas["space1"] = "space1QuotaGUID"
-	  quotas["space2"] = "space2QuotaGUID"
-	  mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
-	  mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
-	  mockCloudController.EXPECT().ListAllSpaceQuotasForOrg("testOrgGUID").Return(quotas, nil)
-	  mockCloudController.EXPECT().UpdateSpaceQuota("space1QuotaGUID", cloudcontroller.SpaceQuotaEntity{
-	    OrgGUID: "testOrgGUID",
-	    QuotaEntity: cloudcontroller.QuotaEntity{
-	      Name:                    "space1",
-	      MemoryLimit:             10240,
-	      InstanceMemoryLimit:     -1,
-	      TotalRoutes:             10,
-	      TotalServices:           -1,
-	      PaidServicePlansAllowed: true,
-	      AppInstanceLimit:        -1,
-	      TotalReservedRoutePorts: 0,
-	      TotalPrivateDomains:     -1,
-	      TotalServiceKeys:        -1,
-	    }}).Return(nil)
-	  mockCloudController.EXPECT().AssignQuotaToSpace("space1GUID", "space1QuotaGUID")
+	Context("CreateNamedOrgQuotas()", func() {
+		It("Should create a named quota and assign it to org", func() {
+			fakeReader.GetOrgQuotasReturns([]config.OrgQuota{
+				config.OrgQuota{
+					Name: "my-named-quota",
+				},
+			}, nil)
+			fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
+				config.OrgConfig{
+					Org: "test",
+					NamedQuota: "my-named-quota",
+				},
+			}, nil)
+			fakeClient.CreateOrgQuotaReturns(&cfclient.OrgQuota{Guid:"my-named-quota-guid", Name: "my-named-quota"}, nil)
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{Name:"test"}, nil)
 
-	  mockOrgMgr.EXPECT().GetOrgGUID("test").Return("testOrgGUID", nil)
-	  mockCloudController.EXPECT().ListSpaces("testOrgGUID").Return(spaces, nil)
-	  mockCloudController.EXPECT().ListAllSpaceQuotasForOrg("testOrgGUID").Return(quotas, nil)
-	  mockCloudController.EXPECT().UpdateSpaceQuota("space2QuotaGUID", cloudcontroller.SpaceQuotaEntity{
-	    OrgGUID: "testOrgGUID",
-	    QuotaEntity: cloudcontroller.QuotaEntity{
-	      Name:                    "space2",
-	      MemoryLimit:             10240,
-	      InstanceMemoryLimit:     -1,
-	      TotalRoutes:             10,
-	      TotalServices:           -1,
-	      PaidServicePlansAllowed: true,
-	      AppInstanceLimit:        -1,
-	      TotalReservedRoutePorts: 0,
-	      TotalPrivateDomains:     -1,
-	      TotalServiceKeys:        -1,
-	    }}).Return(nil)
-	  mockCloudController.EXPECT().AssignQuotaToSpace("space2GUID", "space2QuotaGUID")
-	  err := spaceManager.CreateQuotas("./fixtures/config")
-	  Ω(err).Should(BeNil())
-	})*/
+			err := quotaMgr.CreateOrgQuotas()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.CreateOrgQuotaCallCount()).Should(Equal(1))
+			Expect(fakeOrgMgr.UpdateOrgCallCount()).Should(Equal(1))
+		})
+	})
+
+	Context("CreateNamedSpaceQuotas()", func() {
+		It("Should create a named quota and assign it to space", func() {
+			fakeReader.GetSpaceQuotasReturns([]config.SpaceQuota{
+				config.SpaceQuota{
+					Name: "my-named-quota",
+				},
+			}, nil)
+			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+				config.SpaceConfig{
+					Org: "test",
+					Space: "test-space",
+					NamedQuota: "my-named-quota",
+					EnableSpaceQuota: false,
+				},
+			}, nil)
+			fakeClient.CreateSpaceQuotaReturns(&cfclient.SpaceQuota{Guid:"my-named-quota-guid", Name: "my-named-quota"}, nil)
+			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name:"test-space"}, nil)
+
+			err := quotaMgr.CreateSpaceQuotas()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.CreateSpaceQuotaCallCount()).Should(Equal(1))
+			Expect(fakeClient.AssignSpaceQuotaCallCount()).Should(Equal(1))
+		})
+	})
 
 })

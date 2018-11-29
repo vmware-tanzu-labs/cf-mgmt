@@ -26,7 +26,7 @@ type CFMgmt struct {
 	OrgManager              organization.Manager
 	SpaceManager            space.Manager
 	UserManager             user.Manager
-	QuotaManager            quota.Manager
+	QuotaManager            *quota.Manager
 	PrivateDomainManager    privatedomain.Manager
 	ConfigManager           config.Updater
 	ConfigDirectory         string

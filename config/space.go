@@ -26,28 +26,50 @@ type SpaceConfig struct {
 	AuditorGroup            string   `yaml:"space-auditor-group,omitempty"`
 	AllowSSH                bool     `yaml:"allow-ssh"`
 	EnableSpaceQuota        bool     `yaml:"enable-space-quota"`
-	MemoryLimit             string   `yaml:"memory-limit"`
-	InstanceMemoryLimit     string   `yaml:"instance-memory-limit"`
-	TotalRoutes             string   `yaml:"total-routes"`
-	TotalServices           string   `yaml:"total-services"`
-	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed"`
 	EnableSecurityGroup     bool     `yaml:"enable-security-group"`
 	SecurityGroupContents   string   `yaml:"security-group-contents,omitempty"`
 	RemoveUsers             bool     `yaml:"enable-remove-users"`
-	TotalReservedRoutePorts string   `yaml:"total_reserved_route_ports"`
-	TotalServiceKeys        string   `yaml:"total_service_keys"`
-	AppInstanceLimit        string   `yaml:"app_instance_limit"`
-	AppTaskLimit            string   `yaml:"app_task_limit"`
 	IsoSegment              string   `yaml:"isolation_segment"`
 	ASGs                    []string `yaml:"named-security-groups"`
+	MemoryLimit             string   `yaml:"memory-limit,omitempty"`
+	InstanceMemoryLimit     string   `yaml:"instance-memory-limit,omitempty"`
+	TotalRoutes             string   `yaml:"total-routes,omitempty"`
+	TotalServices           string   `yaml:"total-services,omitempty"`
+	PaidServicePlansAllowed bool     `yaml:"paid-service-plans-allowed,omitempty"`
+	TotalReservedRoutePorts string   `yaml:"total_reserved_route_ports,omitempty"`
+	TotalServiceKeys        string   `yaml:"total_service_keys,omitempty"`
+	AppInstanceLimit        string   `yaml:"app_instance_limit,omitempty"`
+	AppTaskLimit            string   `yaml:"app_task_limit,omitempty"`
+	NamedQuota              string   `yaml:"named_quota"`
 }
 
-func (s *SpaceConfig) InstanceMemoryLimitAsInt() (int, error) {
-	return ToMegabytes(s.InstanceMemoryLimit)
+func (s *SpaceConfig) GetQuota() SpaceQuota {
+	return SpaceQuota{
+		Name:                    s.Space,
+		MemoryLimit:             s.MemoryLimit,
+		InstanceMemoryLimit:     s.InstanceMemoryLimit,
+		TotalRoutes:             s.TotalRoutes,
+		TotalServices:           s.TotalServices,
+		PaidServicePlansAllowed: s.PaidServicePlansAllowed,
+		TotalReservedRoutePorts: s.TotalReservedRoutePorts,
+		TotalServiceKeys:        s.TotalServiceKeys,
+		AppInstanceLimit:        s.AppInstanceLimit,
+		AppTaskLimit:            s.AppTaskLimit,
+	}
 }
 
-func (s *SpaceConfig) MemoryLimitAsInt() (int, error) {
-	return ToMegabytes(s.MemoryLimit)
+type SpaceQuota struct {
+	Name                    string `yaml:"-"`
+	Org                     string `yaml:"-"`
+	MemoryLimit             string `yaml:"memory-limit"`
+	InstanceMemoryLimit     string `yaml:"instance-memory-limit"`
+	TotalRoutes             string `yaml:"total-routes"`
+	TotalServices           string `yaml:"total-services"`
+	PaidServicePlansAllowed bool   `yaml:"paid-service-plans-allowed"`
+	TotalReservedRoutePorts string `yaml:"total_reserved_route_ports"`
+	TotalServiceKeys        string `yaml:"total_service_keys"`
+	AppInstanceLimit        string `yaml:"app_instance_limit"`
+	AppTaskLimit            string `yaml:"app_task_limit"`
 }
 
 // Contains determines whether a space is present in a list of spaces.

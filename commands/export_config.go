@@ -26,7 +26,8 @@ func (c *ExportConfigurationCommand) Execute([]string) error {
 			cfMgmt.IsolationSegmentManager,
 			cfMgmt.PrivateDomainManager,
 			cfMgmt.SharedDomainManager,
-			cfMgmt.ServiceAccessManager)
+			cfMgmt.ServiceAccessManager,
+		  cfMgmt.QuotaManager)
 		excludedOrgs := make(map[string]string)
 		excludedOrgs["system"] = "system"
 		for _, org := range c.ExcludedOrgs {

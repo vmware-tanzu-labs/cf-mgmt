@@ -1,6 +1,8 @@
 package quota
 
 import (
+	"fmt"
+
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organization"
@@ -12,8 +14,8 @@ import (
 func NewManager(client CFClient,
 	spaceMgr space.Manager,
 	orgMgr organization.Manager,
-	cfg config.Reader, peek bool) Manager {
-	return &DefaultManager{
+	cfg config.Reader, peek bool) *Manager {
+	return &Manager{
 		Cfg:      cfg,
 		Client:   client,
 		SpaceMgr: spaceMgr,
@@ -22,8 +24,8 @@ func NewManager(client CFClient,
 	}
 }
 
-//DefaultManager -
-type DefaultManager struct {
+//Manager -
+type Manager struct {
 	Cfg      config.Reader
 	Client   CFClient
 	SpaceMgr space.Manager
@@ -32,103 +34,128 @@ type DefaultManager struct {
 }
 
 //CreateSpaceQuotas -
-func (m *DefaultManager) CreateSpaceQuotas() error {
+func (m *Manager) CreateSpaceQuotas() error {
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		return err
 	}
+
 	for _, input := range spaceConfigs {
-		if !input.EnableSpaceQuota {
-			continue
+		spaceQuotas, err := m.Cfg.GetSpaceQuotas(input.Org)
+		if err != nil {
+			return err
 		}
 		space, err := m.SpaceMgr.FindSpace(input.Org, input.Space)
 		if err != nil {
 			return err
 		}
+
 		quotas, err := m.ListAllSpaceQuotasForOrg(space.OrganizationGuid)
 		if err != nil {
 			return err
 		}
-
-		memoryLimit, err := config.ToMegabytes(input.MemoryLimit)
-		if err != nil {
-			return err
+		for _, spaceQuotaConfig := range spaceQuotas {
+			err = m.createSpaceQuota(spaceQuotaConfig, space, quotas)
+			if err != nil {
+				return err
+			}
 		}
 
-		instanceMemoryLimit, err := config.ToMegabytes(input.InstanceMemoryLimit)
-		if err != nil {
-			return err
+		if input.NamedQuota != "" && input.EnableSpaceQuota {
+			return fmt.Errorf("Cannot have named quota %s and enable-space-quota for org/space %s/%s", input.NamedQuota, input.Org, input.Space)
 		}
-
-		totalRoutes, err := config.ToInteger(input.TotalRoutes)
-		if err != nil {
-			return err
-		}
-
-		totalServices, err := config.ToInteger(input.TotalServices)
-		if err != nil {
-			return err
-		}
-
-		totalReservedRoutePorts, err := config.ToInteger(input.TotalReservedRoutePorts)
-		if err != nil {
-			return err
-		}
-
-		totalServiceKeys, err := config.ToInteger(input.TotalServiceKeys)
-		if err != nil {
-			return err
-		}
-
-		appInstanceLimit, err := config.ToInteger(input.AppInstanceLimit)
-		if err != nil {
-			return err
-		}
-
-		appTaskLimit, err := config.ToInteger(input.AppTaskLimit)
-		if err != nil {
-			return err
-		}
-
-		quota := cfclient.SpaceQuotaRequest{
-			Name:                    space.Name,
-			OrganizationGuid:        space.OrganizationGuid,
-			MemoryLimit:             memoryLimit,
-			InstanceMemoryLimit:     instanceMemoryLimit,
-			TotalRoutes:             totalRoutes,
-			TotalServices:           totalServices,
-			NonBasicServicesAllowed: input.PaidServicePlansAllowed,
-			TotalReservedRoutePorts: totalReservedRoutePorts,
-			TotalServiceKeys:        totalServiceKeys,
-			AppInstanceLimit:        appInstanceLimit,
-			AppTaskLimit:            appTaskLimit,
-		}
-		var spaceQuota cfclient.SpaceQuota
-		var ok bool
-		if spaceQuota, ok = quotas[space.Name]; ok {
-			if m.hasSpaceQuotaChanged(spaceQuota, quota) {
-				if err := m.UpdateSpaceQuota(spaceQuota.Guid, quota); err != nil {
+		if input.EnableSpaceQuota || input.NamedQuota != "" {
+			if input.EnableSpaceQuota {
+				quotaDef := input.GetQuota()
+				err = m.createSpaceQuota(quotaDef, space, quotas)
+				if err != nil {
 					return err
 				}
+				input.NamedQuota = input.Space
 			}
-		} else {
-			createdQuota, err := m.CreateSpaceQuota(quota)
-			if err != nil {
-				return err
-			}
-			spaceQuota = *createdQuota
-		}
-		if space.QuotaDefinitionGuid != spaceQuota.Guid {
-			err := m.AssignQuotaToSpace(space, spaceQuota)
-			if err != nil {
-				return err
+			spaceQuota := quotas[input.NamedQuota]
+			if space.QuotaDefinitionGuid != spaceQuota.Guid {
+				if err = m.AssignQuotaToSpace(space, spaceQuota); err != nil {
+					return err
+				}
 			}
 		}
 	}
 	return nil
 }
 
-func (m *DefaultManager) hasSpaceQuotaChanged(quota cfclient.SpaceQuota, newQuota cfclient.SpaceQuotaRequest) bool {
+func (m *Manager) createSpaceQuota(input config.SpaceQuota, space cfclient.Space, quotas map[string]cfclient.SpaceQuota) error {
+
+	memoryLimit, err := config.ToMegabytes(input.MemoryLimit)
+	if err != nil {
+		return err
+	}
+
+	instanceMemoryLimit, err := config.ToMegabytes(input.InstanceMemoryLimit)
+	if err != nil {
+		return err
+	}
+
+	totalRoutes, err := config.ToInteger(input.TotalRoutes)
+	if err != nil {
+		return err
+	}
+
+	totalServices, err := config.ToInteger(input.TotalServices)
+	if err != nil {
+		return err
+	}
+
+	totalReservedRoutePorts, err := config.ToInteger(input.TotalReservedRoutePorts)
+	if err != nil {
+		return err
+	}
+
+	totalServiceKeys, err := config.ToInteger(input.TotalServiceKeys)
+	if err != nil {
+		return err
+	}
+
+	appInstanceLimit, err := config.ToInteger(input.AppInstanceLimit)
+	if err != nil {
+		return err
+	}
+
+	appTaskLimit, err := config.ToInteger(input.AppTaskLimit)
+	if err != nil {
+		return err
+	}
+
+	quota := cfclient.SpaceQuotaRequest{
+		Name:                    input.Name,
+		OrganizationGuid:        space.OrganizationGuid,
+		MemoryLimit:             memoryLimit,
+		InstanceMemoryLimit:     instanceMemoryLimit,
+		TotalRoutes:             totalRoutes,
+		TotalServices:           totalServices,
+		NonBasicServicesAllowed: input.PaidServicePlansAllowed,
+		TotalReservedRoutePorts: totalReservedRoutePorts,
+		TotalServiceKeys:        totalServiceKeys,
+		AppInstanceLimit:        appInstanceLimit,
+		AppTaskLimit:            appTaskLimit,
+	}
+	if spaceQuota, ok := quotas[input.Name]; ok {
+		if m.hasSpaceQuotaChanged(spaceQuota, quota) {
+			if err := m.UpdateSpaceQuota(spaceQuota.Guid, quota); err != nil {
+				return err
+			}
+		}
+	} else {
+		createdQuota, err := m.CreateSpaceQuota(quota)
+		if err != nil {
+			return err
+		}
+		quotas[input.Name] = *createdQuota
+	}
+	return nil
+}
+
+func (m *Manager) hasSpaceQuotaChanged(quota cfclient.SpaceQuota, newQuota cfclient.SpaceQuotaRequest) bool {
 	quoteRequest := cfclient.SpaceQuotaRequest{
 		Name:                    quota.Name,
 		OrganizationGuid:        quota.OrganizationGuid,
@@ -150,7 +177,7 @@ func (m *DefaultManager) hasSpaceQuotaChanged(quota cfclient.SpaceQuota, newQuot
 	}
 }
 
-func (m *DefaultManager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]cfclient.SpaceQuota, error) {
+func (m *Manager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]cfclient.SpaceQuota, error) {
 	quotas := make(map[string]cfclient.SpaceQuota)
 	spaceQuotas, err := m.Client.ListOrgSpaceQuotas(orgGUID)
 	if err != nil {
@@ -163,7 +190,7 @@ func (m *DefaultManager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]cf
 	return quotas, nil
 }
 
-func (m *DefaultManager) UpdateSpaceQuota(quotaGUID string, quota cfclient.SpaceQuotaRequest) error {
+func (m *Manager) UpdateSpaceQuota(quotaGUID string, quota cfclient.SpaceQuotaRequest) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: update space quota %s", quota.Name)
 		return nil
@@ -173,7 +200,7 @@ func (m *DefaultManager) UpdateSpaceQuota(quotaGUID string, quota cfclient.Space
 	return err
 }
 
-func (m *DefaultManager) AssignQuotaToSpace(space cfclient.Space, quota cfclient.SpaceQuota) error {
+func (m *Manager) AssignQuotaToSpace(space cfclient.Space, quota cfclient.SpaceQuota) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: assigning quota %s to space %s", quota.Name, space.Name)
 		return nil
@@ -182,7 +209,7 @@ func (m *DefaultManager) AssignQuotaToSpace(space cfclient.Space, quota cfclient
 	return m.Client.AssignSpaceQuota(quota.Guid, space.Guid)
 }
 
-func (m *DefaultManager) CreateSpaceQuota(quota cfclient.SpaceQuotaRequest) (*cfclient.SpaceQuota, error) {
+func (m *Manager) CreateSpaceQuota(quota cfclient.SpaceQuotaRequest) (*cfclient.SpaceQuota, error) {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: creating quota %s", quota.Name)
 		return &cfclient.SpaceQuota{Name: "dry-run-quota", Guid: "dry-run-guid"}, nil
@@ -195,116 +222,137 @@ func (m *DefaultManager) CreateSpaceQuota(quota cfclient.SpaceQuotaRequest) (*cf
 	return spaceQuota, nil
 }
 
-func (m *DefaultManager) SpaceQuotaByName(name string) (cfclient.SpaceQuota, error) {
+func (m *Manager) SpaceQuotaByName(name string) (cfclient.SpaceQuota, error) {
 	return m.Client.GetSpaceQuotaByName(name)
 }
 
 //CreateOrgQuotas -
-func (m *DefaultManager) CreateOrgQuotas() error {
-	orgs, err := m.Cfg.GetOrgConfigs()
-	if err != nil {
-		return err
-	}
-
+func (m *Manager) CreateOrgQuotas() error {
 	quotas, err := m.ListAllOrgQuotas()
 	if err != nil {
 		return err
 	}
 
+	orgQuotas, err := m.Cfg.GetOrgQuotas()
+	if err != nil {
+		return err
+	}
+	for _, orgQuotaConfig := range orgQuotas {
+		err = m.createOrgQuota(orgQuotaConfig, quotas)
+		if err != nil {
+			return err
+		}
+	}
+	orgs, err := m.Cfg.GetOrgConfigs()
+	if err != nil {
+		return err
+	}
+
 	for _, input := range orgs {
-		if !input.EnableOrgQuota {
-			continue
+		if input.NamedQuota != "" && input.EnableOrgQuota {
+			return fmt.Errorf("Cannot have named quota %s and enable-org-quota for org %s", input.NamedQuota, input.Org)
 		}
-
-		org, err := m.OrgMgr.FindOrg(input.Org)
-		if err != nil {
-			return err
-		}
-		quotaName := org.Name
-		memoryLimit, err := config.ToMegabytes(input.MemoryLimit)
-		if err != nil {
-			return err
-		}
-
-		instanceMemoryLimit, err := config.ToMegabytes(input.InstanceMemoryLimit)
-		if err != nil {
-			return err
-		}
-
-		totalRoutes, err := config.ToInteger(input.TotalRoutes)
-		if err != nil {
-			return err
-		}
-
-		totalServices, err := config.ToInteger(input.TotalServices)
-		if err != nil {
-			return err
-		}
-
-		totalReservedRoutePorts, err := config.ToInteger(input.TotalReservedRoutePorts)
-		if err != nil {
-			return err
-		}
-
-		totalServiceKeys, err := config.ToInteger(input.TotalServiceKeys)
-		if err != nil {
-			return err
-		}
-
-		appInstanceLimit, err := config.ToInteger(input.AppInstanceLimit)
-		if err != nil {
-			return err
-		}
-
-		appTaskLimit, err := config.ToInteger(input.AppTaskLimit)
-		if err != nil {
-			return err
-		}
-
-		totalPrivateDomains, err := config.ToInteger(input.TotalPrivateDomains)
-		if err != nil {
-			return err
-		}
-
-
-		quota := cfclient.OrgQuotaRequest{
-			Name:                    quotaName,
-			MemoryLimit:             memoryLimit,
-			InstanceMemoryLimit:     instanceMemoryLimit,
-			TotalRoutes:             totalRoutes,
-			TotalServices:           totalServices,
-			NonBasicServicesAllowed: input.PaidServicePlansAllowed,
-			TotalPrivateDomains:     totalPrivateDomains,
-			TotalReservedRoutePorts: totalReservedRoutePorts,
-			TotalServiceKeys:        totalServiceKeys,
-			AppInstanceLimit:        appInstanceLimit,
-			AppTaskLimit:            appTaskLimit,
-		}
-		var orgQuota cfclient.OrgQuota
-		var ok bool
-		if orgQuota, ok = quotas[quotaName]; ok {
-			if m.hasOrgQuotaChanged(orgQuota, quota) {
-				if err = m.UpdateOrgQuota(orgQuota.Guid, quota); err != nil {
-					return err
-				}
-			}
-		} else {
-			createdQuota, err := m.CreateOrgQuota(quota)
+		if input.EnableOrgQuota || input.NamedQuota != "" {
+			org, err := m.OrgMgr.FindOrg(input.Org)
 			if err != nil {
 				return err
 			}
-			orgQuota = *createdQuota
-		}
-		if org.QuotaDefinitionGuid != orgQuota.Guid {
-			if err = m.AssignQuotaToOrg(org, orgQuota); err != nil {
-				return err
+			if input.EnableOrgQuota {
+				quotaDef := input.GetQuota()
+				err = m.createOrgQuota(quotaDef, quotas)
+				if err != nil {
+					return err
+				}
+				input.NamedQuota = input.Org
+			}
+			orgQuota := quotas[input.NamedQuota]
+			if org.QuotaDefinitionGuid != orgQuota.Guid {
+				if err = m.AssignQuotaToOrg(org, orgQuota); err != nil {
+					return err
+				}
 			}
 		}
 	}
 	return nil
 }
 
-func (m *DefaultManager) hasOrgQuotaChanged(quota cfclient.OrgQuota, newQuota cfclient.OrgQuotaRequest) bool {
+func (m *Manager) createOrgQuota(input config.OrgQuota, quotas map[string]cfclient.OrgQuota) error {
+	memoryLimit, err := config.ToMegabytes(input.MemoryLimit)
+	if err != nil {
+		return err
+	}
+
+	instanceMemoryLimit, err := config.ToMegabytes(input.InstanceMemoryLimit)
+	if err != nil {
+		return err
+	}
+
+	totalRoutes, err := config.ToInteger(input.TotalRoutes)
+	if err != nil {
+		return err
+	}
+
+	totalServices, err := config.ToInteger(input.TotalServices)
+	if err != nil {
+		return err
+	}
+
+	totalReservedRoutePorts, err := config.ToInteger(input.TotalReservedRoutePorts)
+	if err != nil {
+		return err
+	}
+
+	totalServiceKeys, err := config.ToInteger(input.TotalServiceKeys)
+	if err != nil {
+		return err
+	}
+
+	appInstanceLimit, err := config.ToInteger(input.AppInstanceLimit)
+	if err != nil {
+		return err
+	}
+
+	appTaskLimit, err := config.ToInteger(input.AppTaskLimit)
+	if err != nil {
+		return err
+	}
+
+	totalPrivateDomains, err := config.ToInteger(input.TotalPrivateDomains)
+	if err != nil {
+		return err
+	}
+
+	quota := cfclient.OrgQuotaRequest{
+		Name:                    input.Name,
+		MemoryLimit:             memoryLimit,
+		InstanceMemoryLimit:     instanceMemoryLimit,
+		TotalRoutes:             totalRoutes,
+		TotalServices:           totalServices,
+		NonBasicServicesAllowed: input.PaidServicePlansAllowed,
+		TotalPrivateDomains:     totalPrivateDomains,
+		TotalReservedRoutePorts: totalReservedRoutePorts,
+		TotalServiceKeys:        totalServiceKeys,
+		AppInstanceLimit:        appInstanceLimit,
+		AppTaskLimit:            appTaskLimit,
+	}
+	if orgQuota, ok := quotas[input.Name]; ok {
+		if m.hasOrgQuotaChanged(orgQuota, quota) {
+			if err = m.UpdateOrgQuota(orgQuota.Guid, quota); err != nil {
+				return err
+			}
+		}
+	} else {
+		createdQuota, err := m.CreateOrgQuota(quota)
+		if err != nil {
+			return err
+		}
+		quotas[input.Name] = *createdQuota
+	}
+
+	return nil
+}
+
+func (m *Manager) hasOrgQuotaChanged(quota cfclient.OrgQuota, newQuota cfclient.OrgQuotaRequest) bool {
 	quoteRequest := cfclient.OrgQuotaRequest{
 		Name:                    quota.Name,
 		TotalPrivateDomains:     quota.TotalPrivateDomains,
@@ -326,7 +374,7 @@ func (m *DefaultManager) hasOrgQuotaChanged(quota cfclient.OrgQuota, newQuota cf
 	}
 }
 
-func (m *DefaultManager) ListAllOrgQuotas() (map[string]cfclient.OrgQuota, error) {
+func (m *Manager) ListAllOrgQuotas() (map[string]cfclient.OrgQuota, error) {
 	quotas := make(map[string]cfclient.OrgQuota)
 	orgQutotas, err := m.Client.ListOrgQuotas()
 	if err != nil {
@@ -339,7 +387,7 @@ func (m *DefaultManager) ListAllOrgQuotas() (map[string]cfclient.OrgQuota, error
 	return quotas, nil
 }
 
-func (m *DefaultManager) CreateOrgQuota(quota cfclient.OrgQuotaRequest) (*cfclient.OrgQuota, error) {
+func (m *Manager) CreateOrgQuota(quota cfclient.OrgQuotaRequest) (*cfclient.OrgQuota, error) {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: create org quota %s", quota.Name)
 		return &cfclient.OrgQuota{Name: "dry-run-quota", Guid: "dry-run-quota-guid"}, nil
@@ -353,7 +401,7 @@ func (m *DefaultManager) CreateOrgQuota(quota cfclient.OrgQuotaRequest) (*cfclie
 	return orgQuota, nil
 }
 
-func (m *DefaultManager) UpdateOrgQuota(quotaGUID string, quota cfclient.OrgQuotaRequest) error {
+func (m *Manager) UpdateOrgQuota(quotaGUID string, quota cfclient.OrgQuotaRequest) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: update org quota %s", quota.Name)
 		return nil
@@ -363,7 +411,7 @@ func (m *DefaultManager) UpdateOrgQuota(quotaGUID string, quota cfclient.OrgQuot
 	return err
 }
 
-func (m *DefaultManager) AssignQuotaToOrg(org cfclient.Org, quota cfclient.OrgQuota) error {
+func (m *Manager) AssignQuotaToOrg(org cfclient.Org, quota cfclient.OrgQuota) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: assign quota %s to org %s", quota.Name, org.Name)
 		return nil
@@ -376,6 +424,6 @@ func (m *DefaultManager) AssignQuotaToOrg(org cfclient.Org, quota cfclient.OrgQu
 	return err
 }
 
-func (m *DefaultManager) OrgQuotaByName(name string) (cfclient.OrgQuota, error) {
+func (m *Manager) OrgQuotaByName(name string) (cfclient.OrgQuota, error) {
 	return m.Client.GetOrgQuotaByName(name)
 }

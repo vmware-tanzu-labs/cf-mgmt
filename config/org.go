@@ -21,27 +21,50 @@ type OrgConfig struct {
 	SharedPrivateDomains       []string            `yaml:"shared-private-domains"`
 	RemoveSharedPrivateDomains bool                `yaml:"enable-remove-shared-private-domains"`
 	EnableOrgQuota             bool                `yaml:"enable-org-quota"`
-	MemoryLimit                string              `yaml:"memory-limit"`
-	InstanceMemoryLimit        string              `yaml:"instance-memory-limit"`
-	TotalRoutes                string              `yaml:"total-routes"`
-	TotalServices              string              `yaml:"total-services"`
-	PaidServicePlansAllowed    bool                `yaml:"paid-service-plans-allowed"`
+	MemoryLimit                string              `yaml:"memory-limit,omitempty"`
+	InstanceMemoryLimit        string              `yaml:"instance-memory-limit,omitempty"`
+	TotalRoutes                string              `yaml:"total-routes,omitempty"`
+	TotalServices              string              `yaml:"total-services,omitempty"`
+	PaidServicePlansAllowed    bool                `yaml:"paid-service-plans-allowed,omitempty"`
 	RemoveUsers                bool                `yaml:"enable-remove-users"`
-	TotalPrivateDomains        string              `yaml:"total_private_domains"`
-	TotalReservedRoutePorts    string              `yaml:"total_reserved_route_ports"`
-	TotalServiceKeys           string              `yaml:"total_service_keys"`
-	AppInstanceLimit           string              `yaml:"app_instance_limit"`
-	AppTaskLimit               string              `yaml:"app_task_limit"`
+	TotalPrivateDomains        string              `yaml:"total_private_domains,omitempty"`
+	TotalReservedRoutePorts    string              `yaml:"total_reserved_route_ports,omitempty"`
+	TotalServiceKeys           string              `yaml:"total_service_keys,omitempty"`
+	AppInstanceLimit           string              `yaml:"app_instance_limit,omitempty"`
+	AppTaskLimit               string              `yaml:"app_task_limit,omitempty"`
 	DefaultIsoSegment          string              `yaml:"default_isolation_segment"`
 	ServiceAccess              map[string][]string `yaml:"service-access"`
+	NamedQuota                 string              `yaml:"named_quota"`
 }
 
-func (o *OrgConfig) InstanceMemoryLimitAsInt() (int, error) {
-	return ToMegabytes(o.InstanceMemoryLimit)
+func (o *OrgConfig) GetQuota() OrgQuota {
+	return OrgQuota{
+		Name: o.Org,
+		TotalPrivateDomains: o.TotalPrivateDomains,
+		TotalReservedRoutePorts: o.TotalReservedRoutePorts,
+		TotalServiceKeys       : o.TotalServiceKeys,
+		AppInstanceLimit       : o.AppInstanceLimit,
+		AppTaskLimit: o.AppTaskLimit,
+		MemoryLimit: o.MemoryLimit,
+		InstanceMemoryLimit: o.InstanceMemoryLimit,
+		TotalRoutes: o.TotalRoutes,
+		TotalServices: o.TotalServices,
+		PaidServicePlansAllowed: o.PaidServicePlansAllowed,
+	}
 }
 
-func (o *OrgConfig) MemoryLimitAsInt() (int, error) {
-	return ToMegabytes(o.MemoryLimit)
+type OrgQuota struct {
+	Name                    string `yaml:"-"`
+	TotalPrivateDomains     string `yaml:"total_private_domains"`
+	TotalReservedRoutePorts string `yaml:"total_reserved_route_ports"`
+	TotalServiceKeys        string `yaml:"total_service_keys"`
+	AppInstanceLimit        string `yaml:"app_instance_limit"`
+	AppTaskLimit            string `yaml:"app_task_limit"`
+	MemoryLimit             string `yaml:"memory-limit"`
+	InstanceMemoryLimit     string `yaml:"instance-memory-limit"`
+	TotalRoutes             string `yaml:"total-routes"`
+	TotalServices           string `yaml:"total-services"`
+	PaidServicePlansAllowed bool   `yaml:"paid-service-plans-allowed"`
 }
 
 // Orgs contains cf-mgmt configuration for all orgs.

@@ -23,6 +23,8 @@ type Updater interface {
 	AddSpaceToConfig(spaceConfig *SpaceConfig) error
 	AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error
 	AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error
+	AddOrgQuota(orgQuota OrgQuota) error
+	AddSpaceQuota(spaceQuota SpaceQuota) error
 	AddDefaultSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error
 	CreateConfigIfNotExists(uaaOrigin string) error
 	DeleteConfigIfExists() error
@@ -54,6 +56,8 @@ type Reader interface {
 	GetOrgConfig(orgName string) (*OrgConfig, error)
 	GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, error)
 	LdapConfig(bindPassword string) (*LdapConfig, error)
+	GetOrgQuotas() ([]OrgQuota, error)
+	GetSpaceQuotas(org string) ([]SpaceQuota, error)
 }
 
 // NewManager creates a Manager that is backed by a set of YAML

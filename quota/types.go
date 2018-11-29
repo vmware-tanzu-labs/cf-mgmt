@@ -4,13 +4,6 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
-type Manager interface {
-	CreateSpaceQuotas() error
-	SpaceQuotaByName(name string) (cfclient.SpaceQuota, error)
-	CreateOrgQuotas() error
-	OrgQuotaByName(name string) (cfclient.OrgQuota, error)
-}
-
 type CFClient interface {
 	ListOrgSpaceQuotas(orgGUID string) ([]cfclient.SpaceQuota, error)
 	UpdateSpaceQuota(spaceQuotaGUID string, spaceQuote cfclient.SpaceQuotaRequest) (*cfclient.SpaceQuota, error)

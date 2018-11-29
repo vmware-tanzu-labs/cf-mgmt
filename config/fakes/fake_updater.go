@@ -20,6 +20,17 @@ type FakeUpdater struct {
 	addDefaultSecurityGroupReturnsOnCall map[int]struct {
 		result1 error
 	}
+	AddOrgQuotaStub        func(config.OrgQuota) error
+	addOrgQuotaMutex       sync.RWMutex
+	addOrgQuotaArgsForCall []struct {
+		arg1 config.OrgQuota
+	}
+	addOrgQuotaReturns struct {
+		result1 error
+	}
+	addOrgQuotaReturnsOnCall map[int]struct {
+		result1 error
+	}
 	AddOrgToConfigStub        func(*config.OrgConfig, *config.Spaces) error
 	addOrgToConfigMutex       sync.RWMutex
 	addOrgToConfigArgsForCall []struct {
@@ -55,6 +66,17 @@ type FakeUpdater struct {
 		result1 error
 	}
 	addSecurityGroupToSpaceReturnsOnCall map[int]struct {
+		result1 error
+	}
+	AddSpaceQuotaStub        func(config.SpaceQuota) error
+	addSpaceQuotaMutex       sync.RWMutex
+	addSpaceQuotaArgsForCall []struct {
+		arg1 config.SpaceQuota
+	}
+	addSpaceQuotaReturns struct {
+		result1 error
+	}
+	addSpaceQuotaReturnsOnCall map[int]struct {
 		result1 error
 	}
 	AddSpaceToConfigStub        func(*config.SpaceConfig) error
@@ -259,6 +281,66 @@ func (fake *FakeUpdater) AddDefaultSecurityGroupReturnsOnCall(i int, result1 err
 	}{result1}
 }
 
+func (fake *FakeUpdater) AddOrgQuota(arg1 config.OrgQuota) error {
+	fake.addOrgQuotaMutex.Lock()
+	ret, specificReturn := fake.addOrgQuotaReturnsOnCall[len(fake.addOrgQuotaArgsForCall)]
+	fake.addOrgQuotaArgsForCall = append(fake.addOrgQuotaArgsForCall, struct {
+		arg1 config.OrgQuota
+	}{arg1})
+	fake.recordInvocation("AddOrgQuota", []interface{}{arg1})
+	fake.addOrgQuotaMutex.Unlock()
+	if fake.AddOrgQuotaStub != nil {
+		return fake.AddOrgQuotaStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.addOrgQuotaReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeUpdater) AddOrgQuotaCallCount() int {
+	fake.addOrgQuotaMutex.RLock()
+	defer fake.addOrgQuotaMutex.RUnlock()
+	return len(fake.addOrgQuotaArgsForCall)
+}
+
+func (fake *FakeUpdater) AddOrgQuotaCalls(stub func(config.OrgQuota) error) {
+	fake.addOrgQuotaMutex.Lock()
+	defer fake.addOrgQuotaMutex.Unlock()
+	fake.AddOrgQuotaStub = stub
+}
+
+func (fake *FakeUpdater) AddOrgQuotaArgsForCall(i int) config.OrgQuota {
+	fake.addOrgQuotaMutex.RLock()
+	defer fake.addOrgQuotaMutex.RUnlock()
+	argsForCall := fake.addOrgQuotaArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeUpdater) AddOrgQuotaReturns(result1 error) {
+	fake.addOrgQuotaMutex.Lock()
+	defer fake.addOrgQuotaMutex.Unlock()
+	fake.AddOrgQuotaStub = nil
+	fake.addOrgQuotaReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeUpdater) AddOrgQuotaReturnsOnCall(i int, result1 error) {
+	fake.addOrgQuotaMutex.Lock()
+	defer fake.addOrgQuotaMutex.Unlock()
+	fake.AddOrgQuotaStub = nil
+	if fake.addOrgQuotaReturnsOnCall == nil {
+		fake.addOrgQuotaReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.addOrgQuotaReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeUpdater) AddOrgToConfig(arg1 *config.OrgConfig, arg2 *config.Spaces) error {
 	fake.addOrgToConfigMutex.Lock()
 	ret, specificReturn := fake.addOrgToConfigReturnsOnCall[len(fake.addOrgToConfigArgsForCall)]
@@ -449,6 +531,66 @@ func (fake *FakeUpdater) AddSecurityGroupToSpaceReturnsOnCall(i int, result1 err
 		})
 	}
 	fake.addSecurityGroupToSpaceReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeUpdater) AddSpaceQuota(arg1 config.SpaceQuota) error {
+	fake.addSpaceQuotaMutex.Lock()
+	ret, specificReturn := fake.addSpaceQuotaReturnsOnCall[len(fake.addSpaceQuotaArgsForCall)]
+	fake.addSpaceQuotaArgsForCall = append(fake.addSpaceQuotaArgsForCall, struct {
+		arg1 config.SpaceQuota
+	}{arg1})
+	fake.recordInvocation("AddSpaceQuota", []interface{}{arg1})
+	fake.addSpaceQuotaMutex.Unlock()
+	if fake.AddSpaceQuotaStub != nil {
+		return fake.AddSpaceQuotaStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.addSpaceQuotaReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeUpdater) AddSpaceQuotaCallCount() int {
+	fake.addSpaceQuotaMutex.RLock()
+	defer fake.addSpaceQuotaMutex.RUnlock()
+	return len(fake.addSpaceQuotaArgsForCall)
+}
+
+func (fake *FakeUpdater) AddSpaceQuotaCalls(stub func(config.SpaceQuota) error) {
+	fake.addSpaceQuotaMutex.Lock()
+	defer fake.addSpaceQuotaMutex.Unlock()
+	fake.AddSpaceQuotaStub = stub
+}
+
+func (fake *FakeUpdater) AddSpaceQuotaArgsForCall(i int) config.SpaceQuota {
+	fake.addSpaceQuotaMutex.RLock()
+	defer fake.addSpaceQuotaMutex.RUnlock()
+	argsForCall := fake.addSpaceQuotaArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeUpdater) AddSpaceQuotaReturns(result1 error) {
+	fake.addSpaceQuotaMutex.Lock()
+	defer fake.addSpaceQuotaMutex.Unlock()
+	fake.AddSpaceQuotaStub = nil
+	fake.addSpaceQuotaReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeUpdater) AddSpaceQuotaReturnsOnCall(i int, result1 error) {
+	fake.addSpaceQuotaMutex.Lock()
+	defer fake.addSpaceQuotaMutex.Unlock()
+	fake.AddSpaceQuotaStub = nil
+	if fake.addSpaceQuotaReturnsOnCall == nil {
+		fake.addSpaceQuotaReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.addSpaceQuotaReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -1171,12 +1313,16 @@ func (fake *FakeUpdater) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.addDefaultSecurityGroupMutex.RLock()
 	defer fake.addDefaultSecurityGroupMutex.RUnlock()
+	fake.addOrgQuotaMutex.RLock()
+	defer fake.addOrgQuotaMutex.RUnlock()
 	fake.addOrgToConfigMutex.RLock()
 	defer fake.addOrgToConfigMutex.RUnlock()
 	fake.addSecurityGroupMutex.RLock()
 	defer fake.addSecurityGroupMutex.RUnlock()
 	fake.addSecurityGroupToSpaceMutex.RLock()
 	defer fake.addSecurityGroupToSpaceMutex.RUnlock()
+	fake.addSpaceQuotaMutex.RLock()
+	defer fake.addSpaceQuotaMutex.RUnlock()
 	fake.addSpaceToConfigMutex.RLock()
 	defer fake.addSpaceToConfigMutex.RUnlock()
 	fake.createConfigIfNotExistsMutex.RLock()
