@@ -24,6 +24,21 @@ jobs:
       LOG_LEVEL: {{log_level}}
       CF_MGMT_COMMAND: create-orgs
 
+- name: shared-domains
+  plan:
+  - get: config-repo
+    trigger: true
+  - task: shared-domains
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      USER_ID: {{user_id}}
+      PASSWORD: {{password}}
+      CONFIG_DIR: ./config
+      CLIENT_SECRET: {{client_secret}}
+      LOG_LEVEL: {{log_level}}
+      CF_MGMT_COMMAND: shared-domains
+
 - name: create-security-groups
   plan:
   - get: config-repo
