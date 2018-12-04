@@ -40,6 +40,8 @@ type Updater interface {
 
 	SaveOrgs(*Orgs) error
 	SaveGlobalConfig(*GlobalConfig) error
+	SaveOrgQuota(*OrgQuota) error
+	SaveSpaceQuota(*SpaceQuota) error
 }
 
 // Reader is used to read the cf-mgmt configuration.
@@ -58,6 +60,8 @@ type Reader interface {
 	LdapConfig(bindPassword string) (*LdapConfig, error)
 	GetOrgQuotas() ([]OrgQuota, error)
 	GetSpaceQuotas(org string) ([]SpaceQuota, error)
+	GetOrgQuota(name string) (*OrgQuota, error)
+	GetSpaceQuota(name, org string) (*SpaceQuota, error)
 }
 
 // NewManager creates a Manager that is backed by a set of YAML

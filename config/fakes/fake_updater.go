@@ -178,6 +178,17 @@ type FakeUpdater struct {
 	saveOrgConfigReturnsOnCall map[int]struct {
 		result1 error
 	}
+	SaveOrgQuotaStub        func(*config.OrgQuota) error
+	saveOrgQuotaMutex       sync.RWMutex
+	saveOrgQuotaArgsForCall []struct {
+		arg1 *config.OrgQuota
+	}
+	saveOrgQuotaReturns struct {
+		result1 error
+	}
+	saveOrgQuotaReturnsOnCall map[int]struct {
+		result1 error
+	}
 	SaveOrgSpacesStub        func(*config.Spaces) error
 	saveOrgSpacesMutex       sync.RWMutex
 	saveOrgSpacesArgsForCall []struct {
@@ -209,6 +220,17 @@ type FakeUpdater struct {
 		result1 error
 	}
 	saveSpaceConfigReturnsOnCall map[int]struct {
+		result1 error
+	}
+	SaveSpaceQuotaStub        func(*config.SpaceQuota) error
+	saveSpaceQuotaMutex       sync.RWMutex
+	saveSpaceQuotaArgsForCall []struct {
+		arg1 *config.SpaceQuota
+	}
+	saveSpaceQuotaReturns struct {
+		result1 error
+	}
+	saveSpaceQuotaReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
@@ -1128,6 +1150,66 @@ func (fake *FakeUpdater) SaveOrgConfigReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeUpdater) SaveOrgQuota(arg1 *config.OrgQuota) error {
+	fake.saveOrgQuotaMutex.Lock()
+	ret, specificReturn := fake.saveOrgQuotaReturnsOnCall[len(fake.saveOrgQuotaArgsForCall)]
+	fake.saveOrgQuotaArgsForCall = append(fake.saveOrgQuotaArgsForCall, struct {
+		arg1 *config.OrgQuota
+	}{arg1})
+	fake.recordInvocation("SaveOrgQuota", []interface{}{arg1})
+	fake.saveOrgQuotaMutex.Unlock()
+	if fake.SaveOrgQuotaStub != nil {
+		return fake.SaveOrgQuotaStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.saveOrgQuotaReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeUpdater) SaveOrgQuotaCallCount() int {
+	fake.saveOrgQuotaMutex.RLock()
+	defer fake.saveOrgQuotaMutex.RUnlock()
+	return len(fake.saveOrgQuotaArgsForCall)
+}
+
+func (fake *FakeUpdater) SaveOrgQuotaCalls(stub func(*config.OrgQuota) error) {
+	fake.saveOrgQuotaMutex.Lock()
+	defer fake.saveOrgQuotaMutex.Unlock()
+	fake.SaveOrgQuotaStub = stub
+}
+
+func (fake *FakeUpdater) SaveOrgQuotaArgsForCall(i int) *config.OrgQuota {
+	fake.saveOrgQuotaMutex.RLock()
+	defer fake.saveOrgQuotaMutex.RUnlock()
+	argsForCall := fake.saveOrgQuotaArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeUpdater) SaveOrgQuotaReturns(result1 error) {
+	fake.saveOrgQuotaMutex.Lock()
+	defer fake.saveOrgQuotaMutex.Unlock()
+	fake.SaveOrgQuotaStub = nil
+	fake.saveOrgQuotaReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeUpdater) SaveOrgQuotaReturnsOnCall(i int, result1 error) {
+	fake.saveOrgQuotaMutex.Lock()
+	defer fake.saveOrgQuotaMutex.Unlock()
+	fake.SaveOrgQuotaStub = nil
+	if fake.saveOrgQuotaReturnsOnCall == nil {
+		fake.saveOrgQuotaReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.saveOrgQuotaReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeUpdater) SaveOrgSpaces(arg1 *config.Spaces) error {
 	fake.saveOrgSpacesMutex.Lock()
 	ret, specificReturn := fake.saveOrgSpacesReturnsOnCall[len(fake.saveOrgSpacesArgsForCall)]
@@ -1308,6 +1390,66 @@ func (fake *FakeUpdater) SaveSpaceConfigReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeUpdater) SaveSpaceQuota(arg1 *config.SpaceQuota) error {
+	fake.saveSpaceQuotaMutex.Lock()
+	ret, specificReturn := fake.saveSpaceQuotaReturnsOnCall[len(fake.saveSpaceQuotaArgsForCall)]
+	fake.saveSpaceQuotaArgsForCall = append(fake.saveSpaceQuotaArgsForCall, struct {
+		arg1 *config.SpaceQuota
+	}{arg1})
+	fake.recordInvocation("SaveSpaceQuota", []interface{}{arg1})
+	fake.saveSpaceQuotaMutex.Unlock()
+	if fake.SaveSpaceQuotaStub != nil {
+		return fake.SaveSpaceQuotaStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.saveSpaceQuotaReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeUpdater) SaveSpaceQuotaCallCount() int {
+	fake.saveSpaceQuotaMutex.RLock()
+	defer fake.saveSpaceQuotaMutex.RUnlock()
+	return len(fake.saveSpaceQuotaArgsForCall)
+}
+
+func (fake *FakeUpdater) SaveSpaceQuotaCalls(stub func(*config.SpaceQuota) error) {
+	fake.saveSpaceQuotaMutex.Lock()
+	defer fake.saveSpaceQuotaMutex.Unlock()
+	fake.SaveSpaceQuotaStub = stub
+}
+
+func (fake *FakeUpdater) SaveSpaceQuotaArgsForCall(i int) *config.SpaceQuota {
+	fake.saveSpaceQuotaMutex.RLock()
+	defer fake.saveSpaceQuotaMutex.RUnlock()
+	argsForCall := fake.saveSpaceQuotaArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeUpdater) SaveSpaceQuotaReturns(result1 error) {
+	fake.saveSpaceQuotaMutex.Lock()
+	defer fake.saveSpaceQuotaMutex.Unlock()
+	fake.SaveSpaceQuotaStub = nil
+	fake.saveSpaceQuotaReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeUpdater) SaveSpaceQuotaReturnsOnCall(i int, result1 error) {
+	fake.saveSpaceQuotaMutex.Lock()
+	defer fake.saveSpaceQuotaMutex.Unlock()
+	fake.SaveSpaceQuotaStub = nil
+	if fake.saveSpaceQuotaReturnsOnCall == nil {
+		fake.saveSpaceQuotaReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.saveSpaceQuotaReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeUpdater) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -1341,12 +1483,16 @@ func (fake *FakeUpdater) Invocations() map[string][][]interface{} {
 	defer fake.saveGlobalConfigMutex.RUnlock()
 	fake.saveOrgConfigMutex.RLock()
 	defer fake.saveOrgConfigMutex.RUnlock()
+	fake.saveOrgQuotaMutex.RLock()
+	defer fake.saveOrgQuotaMutex.RUnlock()
 	fake.saveOrgSpacesMutex.RLock()
 	defer fake.saveOrgSpacesMutex.RUnlock()
 	fake.saveOrgsMutex.RLock()
 	defer fake.saveOrgsMutex.RUnlock()
 	fake.saveSpaceConfigMutex.RLock()
 	defer fake.saveSpaceConfigMutex.RUnlock()
+	fake.saveSpaceQuotaMutex.RLock()
+	defer fake.saveSpaceQuotaMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

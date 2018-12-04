@@ -195,6 +195,19 @@ type FakeManager struct {
 		result1 []config.OrgConfig
 		result2 error
 	}
+	GetOrgQuotaStub        func(string) (*config.OrgQuota, error)
+	getOrgQuotaMutex       sync.RWMutex
+	getOrgQuotaArgsForCall []struct {
+		arg1 string
+	}
+	getOrgQuotaReturns struct {
+		result1 *config.OrgQuota
+		result2 error
+	}
+	getOrgQuotaReturnsOnCall map[int]struct {
+		result1 *config.OrgQuota
+		result2 error
+	}
 	GetOrgQuotasStub        func() ([]config.OrgQuota, error)
 	getOrgQuotasMutex       sync.RWMutex
 	getOrgQuotasArgsForCall []struct {
@@ -243,6 +256,20 @@ type FakeManager struct {
 	}
 	getSpaceDefaultsReturnsOnCall map[int]struct {
 		result1 *config.SpaceConfig
+		result2 error
+	}
+	GetSpaceQuotaStub        func(string, string) (*config.SpaceQuota, error)
+	getSpaceQuotaMutex       sync.RWMutex
+	getSpaceQuotaArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	getSpaceQuotaReturns struct {
+		result1 *config.SpaceQuota
+		result2 error
+	}
+	getSpaceQuotaReturnsOnCall map[int]struct {
+		result1 *config.SpaceQuota
 		result2 error
 	}
 	GetSpaceQuotasStub        func(string) ([]config.SpaceQuota, error)
@@ -340,6 +367,17 @@ type FakeManager struct {
 	saveOrgConfigReturnsOnCall map[int]struct {
 		result1 error
 	}
+	SaveOrgQuotaStub        func(*config.OrgQuota) error
+	saveOrgQuotaMutex       sync.RWMutex
+	saveOrgQuotaArgsForCall []struct {
+		arg1 *config.OrgQuota
+	}
+	saveOrgQuotaReturns struct {
+		result1 error
+	}
+	saveOrgQuotaReturnsOnCall map[int]struct {
+		result1 error
+	}
 	SaveOrgSpacesStub        func(*config.Spaces) error
 	saveOrgSpacesMutex       sync.RWMutex
 	saveOrgSpacesArgsForCall []struct {
@@ -371,6 +409,17 @@ type FakeManager struct {
 		result1 error
 	}
 	saveSpaceConfigReturnsOnCall map[int]struct {
+		result1 error
+	}
+	SaveSpaceQuotaStub        func(*config.SpaceQuota) error
+	saveSpaceQuotaMutex       sync.RWMutex
+	saveSpaceQuotaArgsForCall []struct {
+		arg1 *config.SpaceQuota
+	}
+	saveSpaceQuotaReturns struct {
+		result1 error
+	}
+	saveSpaceQuotaReturnsOnCall map[int]struct {
 		result1 error
 	}
 	SpacesStub        func() ([]config.Spaces, error)
@@ -1345,6 +1394,69 @@ func (fake *FakeManager) GetOrgConfigsReturnsOnCall(i int, result1 []config.OrgC
 	}{result1, result2}
 }
 
+func (fake *FakeManager) GetOrgQuota(arg1 string) (*config.OrgQuota, error) {
+	fake.getOrgQuotaMutex.Lock()
+	ret, specificReturn := fake.getOrgQuotaReturnsOnCall[len(fake.getOrgQuotaArgsForCall)]
+	fake.getOrgQuotaArgsForCall = append(fake.getOrgQuotaArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetOrgQuota", []interface{}{arg1})
+	fake.getOrgQuotaMutex.Unlock()
+	if fake.GetOrgQuotaStub != nil {
+		return fake.GetOrgQuotaStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getOrgQuotaReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeManager) GetOrgQuotaCallCount() int {
+	fake.getOrgQuotaMutex.RLock()
+	defer fake.getOrgQuotaMutex.RUnlock()
+	return len(fake.getOrgQuotaArgsForCall)
+}
+
+func (fake *FakeManager) GetOrgQuotaCalls(stub func(string) (*config.OrgQuota, error)) {
+	fake.getOrgQuotaMutex.Lock()
+	defer fake.getOrgQuotaMutex.Unlock()
+	fake.GetOrgQuotaStub = stub
+}
+
+func (fake *FakeManager) GetOrgQuotaArgsForCall(i int) string {
+	fake.getOrgQuotaMutex.RLock()
+	defer fake.getOrgQuotaMutex.RUnlock()
+	argsForCall := fake.getOrgQuotaArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeManager) GetOrgQuotaReturns(result1 *config.OrgQuota, result2 error) {
+	fake.getOrgQuotaMutex.Lock()
+	defer fake.getOrgQuotaMutex.Unlock()
+	fake.GetOrgQuotaStub = nil
+	fake.getOrgQuotaReturns = struct {
+		result1 *config.OrgQuota
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) GetOrgQuotaReturnsOnCall(i int, result1 *config.OrgQuota, result2 error) {
+	fake.getOrgQuotaMutex.Lock()
+	defer fake.getOrgQuotaMutex.Unlock()
+	fake.GetOrgQuotaStub = nil
+	if fake.getOrgQuotaReturnsOnCall == nil {
+		fake.getOrgQuotaReturnsOnCall = make(map[int]struct {
+			result1 *config.OrgQuota
+			result2 error
+		})
+	}
+	fake.getOrgQuotaReturnsOnCall[i] = struct {
+		result1 *config.OrgQuota
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeManager) GetOrgQuotas() ([]config.OrgQuota, error) {
 	fake.getOrgQuotasMutex.Lock()
 	ret, specificReturn := fake.getOrgQuotasReturnsOnCall[len(fake.getOrgQuotasArgsForCall)]
@@ -1570,6 +1682,70 @@ func (fake *FakeManager) GetSpaceDefaultsReturnsOnCall(i int, result1 *config.Sp
 	}
 	fake.getSpaceDefaultsReturnsOnCall[i] = struct {
 		result1 *config.SpaceConfig
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) GetSpaceQuota(arg1 string, arg2 string) (*config.SpaceQuota, error) {
+	fake.getSpaceQuotaMutex.Lock()
+	ret, specificReturn := fake.getSpaceQuotaReturnsOnCall[len(fake.getSpaceQuotaArgsForCall)]
+	fake.getSpaceQuotaArgsForCall = append(fake.getSpaceQuotaArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("GetSpaceQuota", []interface{}{arg1, arg2})
+	fake.getSpaceQuotaMutex.Unlock()
+	if fake.GetSpaceQuotaStub != nil {
+		return fake.GetSpaceQuotaStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getSpaceQuotaReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeManager) GetSpaceQuotaCallCount() int {
+	fake.getSpaceQuotaMutex.RLock()
+	defer fake.getSpaceQuotaMutex.RUnlock()
+	return len(fake.getSpaceQuotaArgsForCall)
+}
+
+func (fake *FakeManager) GetSpaceQuotaCalls(stub func(string, string) (*config.SpaceQuota, error)) {
+	fake.getSpaceQuotaMutex.Lock()
+	defer fake.getSpaceQuotaMutex.Unlock()
+	fake.GetSpaceQuotaStub = stub
+}
+
+func (fake *FakeManager) GetSpaceQuotaArgsForCall(i int) (string, string) {
+	fake.getSpaceQuotaMutex.RLock()
+	defer fake.getSpaceQuotaMutex.RUnlock()
+	argsForCall := fake.getSpaceQuotaArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeManager) GetSpaceQuotaReturns(result1 *config.SpaceQuota, result2 error) {
+	fake.getSpaceQuotaMutex.Lock()
+	defer fake.getSpaceQuotaMutex.Unlock()
+	fake.GetSpaceQuotaStub = nil
+	fake.getSpaceQuotaReturns = struct {
+		result1 *config.SpaceQuota
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) GetSpaceQuotaReturnsOnCall(i int, result1 *config.SpaceQuota, result2 error) {
+	fake.getSpaceQuotaMutex.Lock()
+	defer fake.getSpaceQuotaMutex.Unlock()
+	fake.GetSpaceQuotaStub = nil
+	if fake.getSpaceQuotaReturnsOnCall == nil {
+		fake.getSpaceQuotaReturnsOnCall = make(map[int]struct {
+			result1 *config.SpaceQuota
+			result2 error
+		})
+	}
+	fake.getSpaceQuotaReturnsOnCall[i] = struct {
+		result1 *config.SpaceQuota
 		result2 error
 	}{result1, result2}
 }
@@ -2058,6 +2234,66 @@ func (fake *FakeManager) SaveOrgConfigReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeManager) SaveOrgQuota(arg1 *config.OrgQuota) error {
+	fake.saveOrgQuotaMutex.Lock()
+	ret, specificReturn := fake.saveOrgQuotaReturnsOnCall[len(fake.saveOrgQuotaArgsForCall)]
+	fake.saveOrgQuotaArgsForCall = append(fake.saveOrgQuotaArgsForCall, struct {
+		arg1 *config.OrgQuota
+	}{arg1})
+	fake.recordInvocation("SaveOrgQuota", []interface{}{arg1})
+	fake.saveOrgQuotaMutex.Unlock()
+	if fake.SaveOrgQuotaStub != nil {
+		return fake.SaveOrgQuotaStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.saveOrgQuotaReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeManager) SaveOrgQuotaCallCount() int {
+	fake.saveOrgQuotaMutex.RLock()
+	defer fake.saveOrgQuotaMutex.RUnlock()
+	return len(fake.saveOrgQuotaArgsForCall)
+}
+
+func (fake *FakeManager) SaveOrgQuotaCalls(stub func(*config.OrgQuota) error) {
+	fake.saveOrgQuotaMutex.Lock()
+	defer fake.saveOrgQuotaMutex.Unlock()
+	fake.SaveOrgQuotaStub = stub
+}
+
+func (fake *FakeManager) SaveOrgQuotaArgsForCall(i int) *config.OrgQuota {
+	fake.saveOrgQuotaMutex.RLock()
+	defer fake.saveOrgQuotaMutex.RUnlock()
+	argsForCall := fake.saveOrgQuotaArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeManager) SaveOrgQuotaReturns(result1 error) {
+	fake.saveOrgQuotaMutex.Lock()
+	defer fake.saveOrgQuotaMutex.Unlock()
+	fake.SaveOrgQuotaStub = nil
+	fake.saveOrgQuotaReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) SaveOrgQuotaReturnsOnCall(i int, result1 error) {
+	fake.saveOrgQuotaMutex.Lock()
+	defer fake.saveOrgQuotaMutex.Unlock()
+	fake.SaveOrgQuotaStub = nil
+	if fake.saveOrgQuotaReturnsOnCall == nil {
+		fake.saveOrgQuotaReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.saveOrgQuotaReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeManager) SaveOrgSpaces(arg1 *config.Spaces) error {
 	fake.saveOrgSpacesMutex.Lock()
 	ret, specificReturn := fake.saveOrgSpacesReturnsOnCall[len(fake.saveOrgSpacesArgsForCall)]
@@ -2238,6 +2474,66 @@ func (fake *FakeManager) SaveSpaceConfigReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeManager) SaveSpaceQuota(arg1 *config.SpaceQuota) error {
+	fake.saveSpaceQuotaMutex.Lock()
+	ret, specificReturn := fake.saveSpaceQuotaReturnsOnCall[len(fake.saveSpaceQuotaArgsForCall)]
+	fake.saveSpaceQuotaArgsForCall = append(fake.saveSpaceQuotaArgsForCall, struct {
+		arg1 *config.SpaceQuota
+	}{arg1})
+	fake.recordInvocation("SaveSpaceQuota", []interface{}{arg1})
+	fake.saveSpaceQuotaMutex.Unlock()
+	if fake.SaveSpaceQuotaStub != nil {
+		return fake.SaveSpaceQuotaStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.saveSpaceQuotaReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeManager) SaveSpaceQuotaCallCount() int {
+	fake.saveSpaceQuotaMutex.RLock()
+	defer fake.saveSpaceQuotaMutex.RUnlock()
+	return len(fake.saveSpaceQuotaArgsForCall)
+}
+
+func (fake *FakeManager) SaveSpaceQuotaCalls(stub func(*config.SpaceQuota) error) {
+	fake.saveSpaceQuotaMutex.Lock()
+	defer fake.saveSpaceQuotaMutex.Unlock()
+	fake.SaveSpaceQuotaStub = stub
+}
+
+func (fake *FakeManager) SaveSpaceQuotaArgsForCall(i int) *config.SpaceQuota {
+	fake.saveSpaceQuotaMutex.RLock()
+	defer fake.saveSpaceQuotaMutex.RUnlock()
+	argsForCall := fake.saveSpaceQuotaArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeManager) SaveSpaceQuotaReturns(result1 error) {
+	fake.saveSpaceQuotaMutex.Lock()
+	defer fake.saveSpaceQuotaMutex.Unlock()
+	fake.SaveSpaceQuotaStub = nil
+	fake.saveSpaceQuotaReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) SaveSpaceQuotaReturnsOnCall(i int, result1 error) {
+	fake.saveSpaceQuotaMutex.Lock()
+	defer fake.saveSpaceQuotaMutex.Unlock()
+	fake.SaveSpaceQuotaStub = nil
+	if fake.saveSpaceQuotaReturnsOnCall == nil {
+		fake.saveSpaceQuotaReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.saveSpaceQuotaReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeManager) Spaces() ([]config.Spaces, error) {
 	fake.spacesMutex.Lock()
 	ret, specificReturn := fake.spacesReturnsOnCall[len(fake.spacesArgsForCall)]
@@ -2328,6 +2624,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.getOrgConfigMutex.RUnlock()
 	fake.getOrgConfigsMutex.RLock()
 	defer fake.getOrgConfigsMutex.RUnlock()
+	fake.getOrgQuotaMutex.RLock()
+	defer fake.getOrgQuotaMutex.RUnlock()
 	fake.getOrgQuotasMutex.RLock()
 	defer fake.getOrgQuotasMutex.RUnlock()
 	fake.getSpaceConfigMutex.RLock()
@@ -2336,6 +2634,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.getSpaceConfigsMutex.RUnlock()
 	fake.getSpaceDefaultsMutex.RLock()
 	defer fake.getSpaceDefaultsMutex.RUnlock()
+	fake.getSpaceQuotaMutex.RLock()
+	defer fake.getSpaceQuotaMutex.RUnlock()
 	fake.getSpaceQuotasMutex.RLock()
 	defer fake.getSpaceQuotasMutex.RUnlock()
 	fake.ldapConfigMutex.RLock()
@@ -2352,12 +2652,16 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.saveGlobalConfigMutex.RUnlock()
 	fake.saveOrgConfigMutex.RLock()
 	defer fake.saveOrgConfigMutex.RUnlock()
+	fake.saveOrgQuotaMutex.RLock()
+	defer fake.saveOrgQuotaMutex.RUnlock()
 	fake.saveOrgSpacesMutex.RLock()
 	defer fake.saveOrgSpacesMutex.RUnlock()
 	fake.saveOrgsMutex.RLock()
 	defer fake.saveOrgsMutex.RUnlock()
 	fake.saveSpaceConfigMutex.RLock()
 	defer fake.saveSpaceConfigMutex.RUnlock()
+	fake.saveSpaceQuotaMutex.RLock()
+	defer fake.saveSpaceQuotaMutex.RUnlock()
 	fake.spacesMutex.RLock()
 	defer fake.spacesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

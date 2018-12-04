@@ -11,6 +11,8 @@
 * [update-space](update-space/README.md)
 * [rename-org](rename-org/README.md)
 * [rename-space](rename-space/README.md)
+* [named-org-quota](named-org-quota/README.md)
+* [named-space-quota](named-space-quota/README.md)
 * [version ](version/README.md)
 
 #### Org Configuration
@@ -126,6 +128,9 @@ enable-remove-private-domains: true/false
 service-access:
   p-mysql: ["small","large"]
   p-rabbit: ["*"]
+
+# added in 1.0.12+ allows specifying a named quota, cannot be used with enable-org-quota
+named-quota:
 ```
 
 #### Space Configuration
@@ -236,6 +241,9 @@ enable-remove-users: true/false
 
 # allowing security groups to be applied that are defined globally
 named-security-groups: []
+
+# added in 1.0.12+ allows specifying a named quota, cannot be used with enable-space-quota
+named-quota:
 ```
 
 #### Space Default Configuration

@@ -28,6 +28,8 @@ Help Options:
   --default-isolation-segment=                        Default isolation segment for org
   --clear-default-isolation-segment                   Sets the default isolation segment to blank
   --enable-remove-users=[true|false]                  Enable removing users from the org
+  --named-quota=                                      Named quota to assign to org
+  --clear-named-quota                                 Sets the named quota to blank
 
 quota:
   --enable-org-quota=[true|false]              Enable the Org Quota in the config

@@ -25,6 +25,8 @@ Help Options:
   --clear-isolation-segment                 Sets the isolation segment to blank
   --named-asg=                              Named asg(s) to assign to space, specify multiple times
   --named-asg-to-remove=                    Named asg(s) to remove, specify multiple times
+  --named-quota=                            Named quota to assign to space
+  --clear-named-quota                       Sets the named quota to blank
 
 quota:
   --enable-space-quota=[true|false]         Enable the Space Quota in the config
@@ -33,7 +35,6 @@ quota:
   --total-routes=                           Total Routes capacity for an Space
   --total-services=                         Total Services capacity for an Space
   --paid-service-plans-allowed=[true|false] Allow paid services to appear in an Space
-  --total-private-domains=                  Total Private Domain capacity for an Space
   --total-reserved-route-ports=             Total Reserved Route Ports capacity for an Space
   --total-service-keys=                     Total Service Keys capacity for an Space
   --app-instance-limit=                     Total Service Keys capacity for an Space

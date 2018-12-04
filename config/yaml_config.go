@@ -528,6 +528,28 @@ func (m *yamlManager) GetOrgQuotas() ([]OrgQuota, error) {
 	return result, nil
 }
 
+func (m *yamlManager) GetOrgQuota(name string) (*OrgQuota, error) {
+	orgQuotas, err := m.GetOrgQuotas()
+	if err != nil {
+		return nil, err
+	}
+	for _, orgQuota := range orgQuotas {
+		if strings.EqualFold(orgQuota.Name, name) {
+			return &orgQuota, nil
+		}
+	}
+	return nil, nil
+}
+
+func (m *yamlManager) SaveOrgQuota(orgQuota *OrgQuota) error {
+	orgQuotaPath := path.Join(m.ConfigDir, "org_quotas")
+	if err := os.MkdirAll(orgQuotaPath, 0755); err != nil {
+		return fmt.Errorf("cannot create directory %s: %v", orgQuotaPath, err)
+	}
+	fmt.Println(fmt.Sprintf("Saving Named Org Quote %s", orgQuota.Name))
+	return WriteFile(fmt.Sprintf("%s/%s.yml", orgQuotaPath, orgQuota.Name), orgQuota)
+}
+
 func (m *yamlManager) GetSpaceQuotas(org string) ([]SpaceQuota, error) {
 	filePath := path.Join(m.ConfigDir, org, "space_quotas")
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -546,7 +568,31 @@ func (m *yamlManager) GetSpaceQuotas(org string) ([]SpaceQuota, error) {
 			return nil, err
 		}
 		spaceQuota.Name = strings.Replace(filepath.Base(spaceQuotaFile), ".yml", "", 1)
+		spaceQuota.Org = org
 		result = append(result, *spaceQuota)
 	}
 	return result, nil
+}
+
+func (m *yamlManager) GetSpaceQuota(name, org string) (*SpaceQuota, error) {
+	spaceQuotas, err := m.GetSpaceQuotas(org)
+	if err != nil {
+		return nil, err
+	}
+	for _, spaceQuota := range spaceQuotas {
+		if strings.EqualFold(spaceQuota.Name, name) {
+			return &spaceQuota, nil
+		}
+	}
+	return nil, nil
+}
+
+func (m *yamlManager) SaveSpaceQuota(spaceQuota *SpaceQuota) error {
+	spaceQuotaPath := path.Join(m.ConfigDir, spaceQuota.Org, "space_quotas")
+	if err := os.MkdirAll(spaceQuotaPath, 0755); err != nil {
+		return fmt.Errorf("cannot create directory %s: %v", spaceQuotaPath, err)
+	}
+	targetFile := fmt.Sprintf("%s/%s.yml", spaceQuotaPath, spaceQuota.Name)
+	fmt.Println(fmt.Sprintf("Saving Named Space Quote %s for org %s", spaceQuota.Name, spaceQuota.Org))
+	return WriteFile(targetFile, spaceQuota)
 }

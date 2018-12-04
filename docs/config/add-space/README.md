@@ -21,6 +21,7 @@ Help Options:
   --enable-security-group=[true|false]      Enable space level security group definitions
   --isolation-segment=                      Isolation segment assigned to space
   --named-asg=                              Named asg(s) to assign to space, specify multiple times
+  --named-quota=                            Named quota to assign to space
 
 quota:
   --enable-space-quota=[true|false]         Enable the Space Quota in the config
@@ -29,7 +30,6 @@ quota:
   --total-routes=                           Total Routes capacity for an Space
   --total-services=                         Total Services capacity for an Space
   --paid-service-plans-allowed=[true|false] Allow paid services to appear in an Space
-  --total-private-domains=                  Total Private Domain capacity for an Space
   --total-reserved-route-ports=             Total Reserved Route Ports capacity for an Space
   --total-service-keys=                     Total Service Keys capacity for an Space
   --app-instance-limit=                     Total Service Keys capacity for an Space

@@ -51,8 +51,33 @@ type OrgQuota struct {
 	AppTaskLimit            string `long:"app-task-limit" description:"App Task Limit an Org"`
 }
 
+type NamedOrgQuota struct {
+	MemoryLimit             string `long:"memory-limit" description:"An Org's memory limit in Megabytes"`
+	InstanceMemoryLimit     string `long:"instance-memory-limit" description:"Global Org Application instance memory limit in Megabytes"`
+	TotalRoutes             string `long:"total-routes" description:"Total Routes capacity for an Org"`
+	TotalServices           string `long:"total-services" description:"Total Services capacity for an Org"`
+	PaidServicesAllowed     string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an org" choice:"true" choice:"false"`
+	TotalPrivateDomains     string `long:"total-private-domains" description:"Total Private Domain capacity for an Org"`
+	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Org"`
+	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Org"`
+	AppInstanceLimit        string `long:"app-instance-limit" description:"App Instance Limit an Org"`
+	AppTaskLimit            string `long:"app-task-limit" description:"App Task Limit an Org"`
+}
+
 type SpaceQuota struct {
 	EnableSpaceQuota        string `long:"enable-space-quota" description:"Enable the Space Quota in the config" choice:"true" choice:"false"`
+	MemoryLimit             string `long:"memory-limit" description:"An Space's memory limit in Megabytes"`
+	InstanceMemoryLimit     string `long:"instance-memory-limit" description:"Space Application instance memory limit in Megabytes"`
+	TotalRoutes             string `long:"total-routes" description:"Total Routes capacity for an Space"`
+	TotalServices           string `long:"total-services" description:"Total Services capacity for an Space"`
+	PaidServicesAllowed     string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an Space" choice:"true" choice:"false"`
+	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Space"`
+	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Space"`
+	AppInstanceLimit        string `long:"app-instance-limit" description:"App Instance Limit for a space"`
+	AppTaskLimit            string `long:"app-task-limit" description:"App Task Limit for a space"`
+}
+
+type NamedSpaceQuota struct {
 	MemoryLimit             string `long:"memory-limit" description:"An Space's memory limit in Megabytes"`
 	InstanceMemoryLimit     string `long:"instance-memory-limit" description:"Space Application instance memory limit in Megabytes"`
 	TotalRoutes             string `long:"total-routes" description:"Total Routes capacity for an Space"`
