@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"code.cloudfoundry.org/routing-api"
@@ -84,6 +85,9 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 			ClientSecret:      baseCommand.ClientSecret,
 			UserAgent:         fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION),
 		}
+	}
+	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "debug") {
+		c.Debug = true
 	}
 	client, err := cfclient.NewClient(c)
 	if err != nil {

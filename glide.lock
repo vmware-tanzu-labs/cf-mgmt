@@ -1,5 +1,5 @@
-hash: 3a58c2b3b5ac644038110fd6de3cb0032257bb63fa167fe0f2fd12075089f5b9
-updated: 2018-11-26T22:00:27.08534-05:00
+hash: 85e28b2e924ca8790b9680c7bdcfb3bbe85b3bc36266f0c25ee658bcdc1507ec
+updated: 2018-12-04T15:54:20.114614-05:00
 imports:
 - name: code.cloudfoundry.org/routing-api
   version: b308b1a648d23d5bf691565fffc14524bda52680
@@ -10,7 +10,8 @@ imports:
 - name: github.com/bmizerany/pat
   version: 6226ea591a40176dd3ff9cd8eff81ed6ca721a00
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: b75ec7d52c9cd9b691cf80da587d076afbed4957
+  version: 2e98f76916cc6fa1de8477268d5111f81846ba83
+  repo: https://github.com/calebwashburn/go-cfclient
 - name: github.com/cloudfoundry-community/go-uaa
   version: 06d965ffc8f595a3e739463e280b78eb6204ff3d
   subpackages:
