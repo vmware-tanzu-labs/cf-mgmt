@@ -21,6 +21,8 @@ type UpdateOrgConfigurationCommand struct {
 	DefaultIsolationSegment          string        `long:"default-isolation-segment" description:"Default isolation segment for org" `
 	ClearDefaultIsolationSegment     bool          `long:"clear-default-isolation-segment" description:"Sets the default isolation segment to blank"`
 	EnableRemoveUsers                string        `long:"enable-remove-users" description:"Enable removing users from the org" choice:"true" choice:"false"`
+	NamedQuota                       string        `long:"named-quota" description:"Named quota to assign to org"`
+	ClearNamedQuota                  bool          `long:"clear-named-quota" description:"Sets the named quota to blank"`
 	Quota                            OrgQuota      `group:"quota"`
 	BillingManager                   UserRole      `group:"billing-manager" namespace:"billing-manager"`
 	Manager                          UserRole      `group:"manager" namespace:"manager"`
@@ -34,6 +36,10 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 	orgConfig, err := c.ConfigManager.GetOrgConfig(c.OrgName)
 	if err != nil {
 		return err
+	}
+
+	if c.Quota.EnableOrgQuota == "true" && c.NamedQuota != "" {
+		return fmt.Errorf("cannot enable org quota and use named quotas")
 	}
 
 	orgSpaces, err := c.ConfigManager.OrgSpaces(c.OrgName)
@@ -57,6 +63,12 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 	convertToBool("enable-remove-shared-private-domains", &orgConfig.RemoveSharedPrivateDomains, c.EnableRemoveSharedPrivateDomains, &errorString)
 
 	updateOrgQuotaConfig(orgConfig, c.Quota, &errorString)
+	if c.NamedQuota != "" {
+		orgConfig.NamedQuota = c.NamedQuota
+	}
+	if c.ClearNamedQuota {
+		orgConfig.NamedQuota = ""
+	}
 	c.updateUsers(orgConfig, &errorString)
 
 	if c.ServiceAccess.ServiceNameToRemove != "" {

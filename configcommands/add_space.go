@@ -16,6 +16,7 @@ type AddSpaceToConfigurationCommand struct {
 	EnableSecurityGroup string      `long:"enable-security-group" description:"Enable space level security group definitions" choice:"true" choice:"false"`
 	IsoSegment          string      `long:"isolation-segment" description:"Isolation segment assigned to space"`
 	ASGs                []string    `long:"named-asg" description:"Named asg(s) to assign to space, specify multiple times"`
+	NamedQuota          string      `long:"named-quota" description:"Named quota to assign to space"`
 	Quota               SpaceQuota  `group:"quota"`
 	Developer           UserRoleAdd `group:"developer" namespace:"developer"`
 	Manager             UserRoleAdd `group:"manager" namespace:"manager"`
@@ -28,6 +29,10 @@ func (c *AddSpaceToConfigurationCommand) Execute([]string) error {
 	spaceConfig := &config.SpaceConfig{
 		Org:   c.OrgName,
 		Space: c.SpaceName,
+	}
+
+	if c.Quota.EnableSpaceQuota == "true" && c.NamedQuota != "" {
+		return fmt.Errorf("cannot enable space quota and use named quotas")
 	}
 
 	asgConfigs, err := c.ConfigManager.GetASGConfigs()
@@ -44,9 +49,11 @@ func (c *AddSpaceToConfigurationCommand) Execute([]string) error {
 		spaceConfig.IsoSegment = c.IsoSegment
 	}
 
+	updateSpaceQuotaConfig(spaceConfig, c.Quota, &errorString)
+	spaceConfig.NamedQuota = c.NamedQuota
+
 	spaceConfig.ASGs = addToSlice(spaceConfig.ASGs, c.ASGs, &errorString)
 	validateASGsExist(asgConfigs, spaceConfig.ASGs, &errorString)
-	updateSpaceQuotaConfig(spaceConfig, c.Quota, &errorString)
 	c.updateUsers(spaceConfig, &errorString)
 
 	if errorString != "" {

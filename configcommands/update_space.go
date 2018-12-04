@@ -19,6 +19,8 @@ type UpdateSpaceConfigurationCommand struct {
 	ClearIsolationSegment bool       `long:"clear-isolation-segment" description:"Sets the isolation segment to blank"`
 	ASGs                  []string   `long:"named-asg" description:"Named asg(s) to assign to space, specify multiple times"`
 	ASGsToRemove          []string   `long:"named-asg-to-remove" description:"Named asg(s) to remove, specify multiple times"`
+	NamedQuota            string     `long:"named-quota" description:"Named quota to assign to space"`
+	ClearNamedQuota       bool       `long:"clear-named-quota" description:"Sets the named quota to blank"`
 	Quota                 SpaceQuota `group:"quota"`
 	Developer             UserRole   `group:"developer" namespace:"developer"`
 	Manager               UserRole   `group:"manager" namespace:"manager"`
@@ -37,6 +39,10 @@ func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 		return err
 	}
 
+	if c.Quota.EnableSpaceQuota == "true" && c.NamedQuota != "" {
+		return fmt.Errorf("cannot enable space quota and use named quotas")
+	}
+	
 	errorString := ""
 
 	convertToBool("allow-ssh", &spaceConfig.AllowSSH, c.AllowSSH, &errorString)
@@ -52,6 +58,14 @@ func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 	spaceConfig.ASGs = removeFromSlice(addToSlice(spaceConfig.ASGs, c.ASGs, &errorString), c.ASGsToRemove)
 	validateASGsExist(asgConfigs, spaceConfig.ASGs, &errorString)
 	updateSpaceQuotaConfig(spaceConfig, c.Quota, &errorString)
+
+	if c.NamedQuota != "" {
+		spaceConfig.NamedQuota = c.NamedQuota
+	}
+	if c.ClearNamedQuota {
+		spaceConfig.NamedQuota = ""
+	}
+
 	c.updateUsers(spaceConfig, &errorString)
 
 	if errorString != "" {

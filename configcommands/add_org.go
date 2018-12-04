@@ -18,6 +18,7 @@ type AddOrgToConfigurationCommand struct {
 	BillingManager          UserRoleAdd `group:"billing-manager" namespace:"billing-manager"`
 	Manager                 UserRoleAdd `group:"manager" namespace:"manager"`
 	Auditor                 UserRoleAdd `group:"auditor" namespace:"auditor"`
+	NamedQuota              string      `long:"named-quota" description:"Named quota to assign to org"`
 	ServiceAccess           struct {
 		ServiceNames []string `long:"service" description:"Service Name to add, specify multiple times"`
 	} `group:"service-access"`
@@ -32,6 +33,9 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 
 	c.initConfig()
 
+	if c.Quota.EnableOrgQuota == "true" && c.NamedQuota != "" {
+		return fmt.Errorf("cannot enable org quota and use named quotas")
+	}
 	errorString := ""
 
 	if c.DefaultIsolationSegment != "" {
@@ -45,6 +49,8 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 	orgConfig.SharedPrivateDomains = addToSlice(orgConfig.SharedPrivateDomains, c.SharedPrivateDomains, &errorString)
 
 	updateOrgQuotaConfig(orgConfig, c.Quota, &errorString)
+	orgConfig.NamedQuota = c.NamedQuota
+
 	c.updateUsers(orgConfig, &errorString)
 
 	orgConfig.ServiceAccess = make(map[string][]string)
