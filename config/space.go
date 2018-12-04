@@ -46,6 +46,7 @@ type SpaceConfig struct {
 func (s *SpaceConfig) GetQuota() SpaceQuota {
 	return SpaceQuota{
 		Name:                    s.Space,
+		Org:                     s.Org,
 		MemoryLimit:             s.MemoryLimit,
 		InstanceMemoryLimit:     s.InstanceMemoryLimit,
 		TotalRoutes:             s.TotalRoutes,
@@ -70,6 +71,10 @@ type SpaceQuota struct {
 	TotalServiceKeys        string `yaml:"total_service_keys"`
 	AppInstanceLimit        string `yaml:"app_instance_limit"`
 	AppTaskLimit            string `yaml:"app_task_limit"`
+}
+
+func (s *SpaceQuota) IsUnlimitedMemory() bool {
+	return strings.EqualFold(s.MemoryLimit, "-1") || strings.EqualFold(s.MemoryLimit, "unlimited")
 }
 
 // Contains determines whether a space is present in a list of spaces.

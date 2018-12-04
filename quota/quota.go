@@ -54,8 +54,13 @@ func (m *Manager) CreateSpaceQuotas() error {
 		if err != nil {
 			return err
 		}
+
+		orgQuotas, err := m.Client.ListOrgQuotas()
+		if err != nil {
+			return err
+		}
 		for _, spaceQuotaConfig := range spaceQuotas {
-			err = m.createSpaceQuota(spaceQuotaConfig, space, quotas)
+			err = m.createSpaceQuota(spaceQuotaConfig, space, quotas, orgQuotas)
 			if err != nil {
 				return err
 			}
@@ -67,7 +72,7 @@ func (m *Manager) CreateSpaceQuotas() error {
 		if input.EnableSpaceQuota || input.NamedQuota != "" {
 			if input.EnableSpaceQuota {
 				quotaDef := input.GetQuota()
-				err = m.createSpaceQuota(quotaDef, space, quotas)
+				err = m.createSpaceQuota(quotaDef, space, quotas, orgQuotas)
 				if err != nil {
 					return err
 				}
@@ -84,12 +89,7 @@ func (m *Manager) CreateSpaceQuotas() error {
 	return nil
 }
 
-func (m *Manager) createSpaceQuota(input config.SpaceQuota, space cfclient.Space, quotas map[string]cfclient.SpaceQuota) error {
-
-	memoryLimit, err := config.ToMegabytes(input.MemoryLimit)
-	if err != nil {
-		return err
-	}
+func (m *Manager) createSpaceQuota(input config.SpaceQuota, space cfclient.Space, quotas map[string]cfclient.SpaceQuota, orgQuotas []cfclient.OrgQuota) error {
 
 	instanceMemoryLimit, err := config.ToMegabytes(input.InstanceMemoryLimit)
 	if err != nil {
@@ -126,6 +126,22 @@ func (m *Manager) createSpaceQuota(input config.SpaceQuota, space cfclient.Space
 		return err
 	}
 
+	memoryLimit, err := config.ToMegabytes(input.MemoryLimit)
+	if err != nil {
+		return err
+	}
+
+	if input.IsUnlimitedMemory() {
+		org, err := m.OrgMgr.FindOrg(input.Org)
+		if err != nil {
+			return err
+		}
+		for _, orgQuota := range orgQuotas {
+			if org.QuotaDefinitionGuid == orgQuota.Guid {
+				memoryLimit = orgQuota.MemoryLimit
+			}
+		}
+	}
 	quota := cfclient.SpaceQuotaRequest{
 		Name:                    input.Name,
 		OrganizationGuid:        space.OrganizationGuid,

@@ -101,6 +101,41 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(spaceGUID).Should(Equal("space1-guid"))
 		})
 
+		It("should create a quota that has unlimited memory specified and assign it", func() {
+			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+				config.SpaceConfig{
+					EnableSpaceQuota: true,
+					Space:            "space1",
+					Org:              "org1",
+					MemoryLimit:      "unlimited",
+				},
+			}, nil)
+			fakeClient.CreateSpaceQuotaReturns(&cfclient.SpaceQuota{Name: "space1", Guid: "space-quota-guid"}, nil)
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{
+				QuotaDefinitionGuid: "org1-quota-guid",
+			}, nil)
+			fakeClient.ListOrgQuotasReturns([]cfclient.OrgQuota{
+				cfclient.OrgQuota{
+					Guid: "org1-quota-guid",
+					MemoryLimit: 1000,
+				},
+				cfclient.OrgQuota{
+					Guid: "org2-quota-guid",
+					MemoryLimit: 100,
+				},
+				}, nil)
+			err := quotaMgr.CreateSpaceQuotas()
+			Expect(err).Should(BeNil())
+			Expect(fakeClient.CreateSpaceQuotaCallCount()).Should(Equal(1))
+			quotaRequest := fakeClient.CreateSpaceQuotaArgsForCall(0)
+			Expect(quotaRequest.Name).Should(Equal("space1"))
+			Expect(quotaRequest.MemoryLimit).Should(Equal(1000))
+			Expect(fakeClient.AssignSpaceQuotaCallCount()).Should(Equal(1))
+			quotaGUID, spaceGUID := fakeClient.AssignSpaceQuotaArgsForCall(0)
+			Expect(quotaGUID).Should(Equal("space-quota-guid"))
+			Expect(spaceGUID).Should(Equal("space1-guid"))
+		})
+
 		It("should error creating a quota", func() {
 			fakeClient.CreateSpaceQuotaReturns(nil, errors.New("error"))
 			err := quotaMgr.CreateSpaceQuotas()
@@ -439,12 +474,12 @@ var _ = Describe("given QuotaManager", func() {
 			}, nil)
 			fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
 				config.OrgConfig{
-					Org: "test",
+					Org:        "test",
 					NamedQuota: "my-named-quota",
 				},
 			}, nil)
-			fakeClient.CreateOrgQuotaReturns(&cfclient.OrgQuota{Guid:"my-named-quota-guid", Name: "my-named-quota"}, nil)
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Name:"test"}, nil)
+			fakeClient.CreateOrgQuotaReturns(&cfclient.OrgQuota{Guid: "my-named-quota-guid", Name: "my-named-quota"}, nil)
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{Name: "test"}, nil)
 
 			err := quotaMgr.CreateOrgQuotas()
 			Expect(err).ShouldNot(HaveOccurred())
@@ -462,14 +497,14 @@ var _ = Describe("given QuotaManager", func() {
 			}, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
 				config.SpaceConfig{
-					Org: "test",
-					Space: "test-space",
-					NamedQuota: "my-named-quota",
+					Org:              "test",
+					Space:            "test-space",
+					NamedQuota:       "my-named-quota",
 					EnableSpaceQuota: false,
 				},
 			}, nil)
-			fakeClient.CreateSpaceQuotaReturns(&cfclient.SpaceQuota{Guid:"my-named-quota-guid", Name: "my-named-quota"}, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name:"test-space"}, nil)
+			fakeClient.CreateSpaceQuotaReturns(&cfclient.SpaceQuota{Guid: "my-named-quota-guid", Name: "my-named-quota"}, nil)
+			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name: "test-space"}, nil)
 
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(HaveOccurred())
