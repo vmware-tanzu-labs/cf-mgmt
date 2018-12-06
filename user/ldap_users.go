@@ -21,8 +21,6 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 		for _, inputUser := range ldapUsers {
 			userToUse := m.UpdateUserInfo(inputUser)
 			userID := userToUse.UserID
-
-			lo.G.Debugf("User[%s] not found in: %v", userID, roleUsers)
 			userList := uaaUsers.GetByName(userID)
 			if len(userList) == 0 {
 				lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
@@ -37,7 +35,6 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 						Email:      userToUse.Email,
 						GUID:       userGUID,
 					})
-					userList = uaaUsers.GetByName(userID)
 				}
 			}
 			if !roleUsers.HasUserForOrigin(userID, origin) {
