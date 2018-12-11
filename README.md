@@ -130,7 +130,7 @@ uaac client add cf-mgmt \
   --name cf-mgmt \
   --secret cf-mgmt-secret \
   --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write
+  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
 RUN_INTEGRATION_TESTS=true go test ./integration/...
 ```
 
