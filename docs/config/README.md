@@ -15,6 +15,31 @@
 * [named-space-quota](named-space-quota/README.md)
 * [version ](version/README.md)
 
+### Global Config
+There is global configuration that is managed in `cf-mgmt.yml`.  The following options exist in that configuration.
+
+```
+enable-delete-isolation-segments: false #true/false
+enable-unassign-security-groups: false #true/false
+enable-service-access: true #true/false
+running-security-groups: # array of security groups to apply to running
+- all_access
+- public_networks
+- dns
+- load_balancer
+staging-security-groups: # array of security groups to apply to staging
+- all_access
+- public_networks
+- dns
+shared-domains: # map of shared domains and their configuration 1.0.12+
+  dev.cfdev.sh: #shared domain name
+    internal: false
+  dev.cfdev.sh.tcp: #shared domain name
+    internal: false
+    router-group: default-tcp #router group to associate with domain
+enable-remove-shared-domains: true #true/false
+```
+
 #### Org Configuration
 There is a orgs.yml that contains list of orgs that will be created.  This should have a corresponding folder with name of the orgs cf-mgmt is managing. orgs.yml also can be configured with a list of protected orgs which would never be deleted when using the the `delete-orgs` command. An example of how orgs.yml could be configured is seen below.
 
