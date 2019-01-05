@@ -10,7 +10,9 @@ import (
 type UpdateOrgsConfigurationCommand struct {
 	ConfigManager config.Manager
 	BaseConfigCommand
-	EnableDeleteOrgs string `long:"enable-delete-orgs" description:"Enable delete orgs option" choice:"true" choice:"false"`
+	EnableDeleteOrgs      string   `long:"enable-delete-orgs" description:"Enable delete orgs option" choice:"true" choice:"false"`
+	ProtectedOrgsToAdd    []string `long:"protected-org" description:"Add org(s) to protected org list, specify multiple times"`
+	ProtectedOrgsToRemove []string `long:"protected-org-to-remove" description:"Remove org(s) from protected org list, specify multiple times"`
 }
 
 //Execute - updates org configuration`
@@ -22,6 +24,7 @@ func (c *UpdateOrgsConfigurationCommand) Execute(args []string) error {
 	}
 	errorString := ""
 	convertToBool("enable-delete-orgs", &orgs.EnableDeleteOrgs, c.EnableDeleteOrgs, &errorString)
+	orgs.ProtectedOrgs = removeFromSlice(addToSlice(orgs.ProtectedOrgs, c.ProtectedOrgsToAdd, &errorString), c.ProtectedOrgsToRemove)
 
 	if errorString != "" {
 		return errors.New(errorString)
