@@ -55,9 +55,39 @@ var _ = Describe("given update orgs config command", func() {
 				ProtectedOrgs:    []string{"system", "my-special-org"},
 			}))
 		})
-
+		It("should succeed when adding org to protected org", func() {
+			configuration.ProtectedOrgsToAdd = []string{"apigee-edge-for-pcf-service-broker-org", "p-dataflow"}
+			mockConfig.OrgsReturns(&config.Orgs{
+				EnableDeleteOrgs: true,
+				Orgs:             []string{"foo", "bar"},
+				ProtectedOrgs:    []string{"system", "my-special-org"},
+			}, nil)
+			err := configuration.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveOrgsCallCount()).To(Equal(1))
+			Expect(mockConfig.SaveOrgsArgsForCall(0)).To(BeEquivalentTo(&config.Orgs{
+				EnableDeleteOrgs: true,
+				Orgs:             []string{"foo", "bar"},
+				ProtectedOrgs:    []string{"system", "my-special-org", "apigee-edge-for-pcf-service-broker-org", "p-dataflow"},
+			}))
+		})
+		It("should succeed when removing org to protected org", func() {
+			configuration.ProtectedOrgsToRemove = []string{"apigee-edge-for-pcf-service-broker-org", "p-dataflow"}
+			mockConfig.OrgsReturns(&config.Orgs{
+				EnableDeleteOrgs: true,
+				Orgs:             []string{"foo", "bar"},
+				ProtectedOrgs:    []string{"system", "my-special-org", "apigee-edge-for-pcf-service-broker-org", "p-dataflow"},
+			}, nil)
+			err := configuration.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveOrgsCallCount()).To(Equal(1))
+			Expect(mockConfig.SaveOrgsArgsForCall(0)).To(BeEquivalentTo(&config.Orgs{
+				EnableDeleteOrgs: true,
+				Orgs:             []string{"foo", "bar"},
+				ProtectedOrgs:    []string{"system", "my-special-org"},
+			}))
+		})
 	})
-
 	Context("Failures", func() {
 		It("should fail retrieving orgs", func() {
 			mockConfig.OrgsReturns(nil, errors.New("error retrieve"))
