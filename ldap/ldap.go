@@ -23,6 +23,7 @@ var (
 
 const (
 	groupFilter                 = "(cn=%s)"
+	groupFilterWithObjectClass  = "(&(objectclass=groupOfNames)(cn=%s))"
 	userFilter                  = "(%s=%s)"
 	userFilterWithObjectClass   = "(&(objectclass=%s)(%s=%s))"
 	userDNFilter                = "(%s)"
@@ -104,9 +105,15 @@ func (m *DefaultManager) GetUserDNs(groupName string) ([]string, error) {
 func (m *DefaultManager) getCN(userDN string) (string, error) {
 	indexes := userRegexp.FindStringIndex(strings.ToUpper(userDN))
 	if len(indexes) == 0 {
-		return "", fmt.Errorf("cannot find CN for group DN: %s", userDN)
+		return "", fmt.Errorf("cannot find CN for DN: %s", userDN)
 	}
-	return strings.Replace(userDN[:indexes[0]], "cn=", "", 1), nil
+	cn := strings.Replace(userDN[:indexes[0]], "cn=", "", 1)
+	cnTemp := UnescapeFilterValue(cn)
+	lo.G.Debug("CN unescaped:", cnTemp)
+
+	escapedCN := l.EscapeFilter(strings.Replace(cnTemp, "\\", "", -1))
+	lo.G.Debug("CN escaped:", escapedCN)
+	return escapedCN, nil
 }
 func (m *DefaultManager) IsGroup(userDN string) (bool, string, error) {
 	if strings.Contains(userDN, m.Config.GroupSearchBase) {
@@ -117,13 +124,14 @@ func (m *DefaultManager) IsGroup(userDN string) (bool, string, error) {
 		search := l.NewSearchRequest(
 			m.Config.GroupSearchBase,
 			l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
-			fmt.Sprintf(groupFilter, cn),
+			fmt.Sprintf(groupFilterWithObjectClass, cn),
 			attributes,
 			nil)
 		sr, err := m.Connection.Search(search)
 		if err != nil {
 			return false, "", err
 		}
+		lo.G.Debugf("Found %d entries for userDN %s", len(sr.Entries), userDN)
 		return len(sr.Entries) == 1, cn, nil
 	} else {
 		return false, "", nil
@@ -140,9 +148,9 @@ func (m *DefaultManager) GetUserByDN(userDN string) (*User, error) {
 	userCNTemp := UnescapeFilterValue(userDN[:index])
 	lo.G.Debug("CN unescaped:", userCNTemp)
 
-	userCN := l.EscapeFilter(strings.Replace(userCNTemp, "\\", "", -1))
+	userCN := l.EscapeFilter(strings.Replace(userCNTemp, "\\", "", 1))
 	lo.G.Debug("CN escaped:", userCN)
-	filter := m.getUserFilterWithDN(userCN)
+	filter := m.getUserFilterWithCN(userCN)
 	return m.searchUser(filter, userDN[index+1:], "")
 }
 
@@ -154,6 +162,7 @@ func (m *DefaultManager) GetUserByID(userID string) (*User, error) {
 }
 
 func (m *DefaultManager) searchUser(filter, searchBase, userID string) (*User, error) {
+	lo.G.Debugf("Searching with filter %s", filter)
 	search := l.NewSearchRequest(
 		searchBase,
 		l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
@@ -207,11 +216,11 @@ func (m *DefaultManager) getUserFilter(userID string) string {
 	return fmt.Sprintf(userFilterWithObjectClass, m.Config.UserObjectClass, m.Config.UserNameAttribute, userID)
 }
 
-func (m *DefaultManager) getUserFilterWithDN(userDN string) string {
+func (m *DefaultManager) getUserFilterWithCN(cn string) string {
 	if m.Config.UserObjectClass == "" {
-		return fmt.Sprintf(userDNFilter, userDN)
+		return fmt.Sprintf(userDNFilter, cn)
 	}
-	return fmt.Sprintf(userDNFilterWithObjectClass, m.Config.UserObjectClass, userDN)
+	return fmt.Sprintf(userDNFilterWithObjectClass, m.Config.UserObjectClass, cn)
 }
 
 func (m *DefaultManager) Close() {

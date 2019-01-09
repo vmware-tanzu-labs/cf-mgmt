@@ -33,7 +33,7 @@ var _ = Describe("Ldap", func() {
 				UserSearchBase:    "ou=users,dc=pivotal,dc=org",
 				UserNameAttribute: "uid",
 				UserMailAttribute: "mail",
-				GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
+				GroupSearchBase:   "dc=pivotal,dc=org",
 				GroupAttribute:    "member",
 				LdapHost:          host,
 				LdapPort:          port,
@@ -65,10 +65,10 @@ var _ = Describe("Ldap", func() {
 				Expect(len(users)).Should(Equal(5))
 				Expect(users).To(ConsistOf([]string{
 					"cn=cwashburn,ou=users,dc=pivotal,dc=org",
-          "cn=Washburn\\2C Caleb,ou=users,dc=pivotal,dc=org",
-          "cn=special\\2C (char) - username,ou=users,dc=pivotal,dc=org",
-          "cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org",
-          "cn=cwashburn1,ou=users,dc=pivotal,dc=org"}))
+					"cn=Washburn\\2C Caleb,ou=users,dc=pivotal,dc=org",
+					"cn=special\\2C (char) - username,ou=users,dc=pivotal,dc=org",
+					"cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org",
+					"cn=cwashburn1,ou=users,dc=pivotal,dc=org"}))
 			})
 		})
 		Context("when called with a valid group with special characters", func() {
@@ -107,7 +107,7 @@ var _ = Describe("Ldap", func() {
 					UserSearchBase:    "ou=users,dc=pivotal,dc=org",
 					UserNameAttribute: "uid",
 					UserMailAttribute: "mail",
-					GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
+					GroupSearchBase:   "dc=pivotal,dc=org",
 					GroupAttribute:    "member",
 					LdapHost:          host,
 					LdapPort:          port,
