@@ -30,7 +30,7 @@ var _ = Describe("Ldap", func() {
 			ldapConfig := &config.LdapConfig{
 				BindDN:            "cn=admin,dc=pivotal,dc=org",
 				BindPassword:      "password",
-				UserSearchBase:    "dc=pivotal,dc=org",
+				UserSearchBase:    "ou=users,dc=pivotal,dc=org",
 				UserNameAttribute: "uid",
 				UserMailAttribute: "mail",
 				GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
@@ -47,39 +47,45 @@ var _ = Describe("Ldap", func() {
 		Context("when cn with special characters", func() {
 			It("then it should return 1 Entry", func() {
 				entry, err := ldapManager.GetUserByDN("cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
-				Ω(err).Should(BeNil())
-				Ω(entry).ShouldNot(BeNil())
+				Expect(err).Should(BeNil())
+				Expect(entry).ShouldNot(BeNil())
 			})
 		})
 		Context("when cn has a period", func() {
 			It("then it should return 1 Entry", func() {
 				entry, err := ldapManager.GetUserByDN("cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org")
-				Ω(err).Should(BeNil())
-				Ω(entry).ShouldNot(BeNil())
+				Expect(err).Should(BeNil())
+				Expect(entry).ShouldNot(BeNil())
 			})
 		})
 		Context("when called with a valid group", func() {
 			It("then it should return 5 users", func() {
 				users, err := ldapManager.GetUserDNs("space_developers")
-				Ω(err).Should(BeNil())
-				Ω(len(users)).Should(Equal(5))
+				Expect(err).Should(BeNil())
+				Expect(len(users)).Should(Equal(5))
+				Expect(users).To(ConsistOf([]string{
+					"cn=cwashburn,ou=users,dc=pivotal,dc=org",
+          "cn=Washburn\\2C Caleb,ou=users,dc=pivotal,dc=org",
+          "cn=special\\2C (char) - username,ou=users,dc=pivotal,dc=org",
+          "cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org",
+          "cn=cwashburn1,ou=users,dc=pivotal,dc=org"}))
 			})
 		})
 		Context("when called with a valid group with special characters", func() {
 			It("then it should return 4 users", func() {
 				users, err := ldapManager.GetUserDNs("special (char) group,name")
-				Ω(err).Should(BeNil())
-				Ω(len(users)).Should(Equal(4))
+				Expect(err).Should(BeNil())
+				Expect(len(users)).Should(Equal(4))
 			})
 		})
 		Context("GetUser()", func() {
 			It("then it should return 1 user", func() {
 				user, err := ldapManager.GetUserByID("cwashburn")
-				Ω(err).Should(BeNil())
-				Ω(user).ShouldNot(BeNil())
-				Ω(user.UserID).Should(Equal("cwashburn"))
-				Ω(user.UserDN).Should(Equal("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
-				Ω(user.Email).Should(Equal("cwashburn+cfmt@testdomain.com"))
+				Expect(err).Should(BeNil())
+				Expect(user).ShouldNot(BeNil())
+				Expect(user.UserID).Should(Equal("cwashburn"))
+				Expect(user.UserDN).Should(Equal("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
+				Expect(user.Email).Should(Equal("cwashburn+cfmt@testdomain.com"))
 			})
 		})
 
@@ -98,7 +104,7 @@ var _ = Describe("Ldap", func() {
 				ldapConfig := &config.LdapConfig{
 					BindDN:            "cn=admin,dc=pivotal,dc=org",
 					BindPassword:      "password",
-					UserSearchBase:    "dc=pivotal,dc=org",
+					UserSearchBase:    "ou=users,dc=pivotal,dc=org",
 					UserNameAttribute: "uid",
 					UserMailAttribute: "mail",
 					GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
@@ -117,18 +123,18 @@ var _ = Describe("Ldap", func() {
 			Context("when cn with special characters", func() {
 				It("then it should return 1 Entry", func() {
 					entry, err := ldapManager.GetUserByDN("cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
-					Ω(err).Should(BeNil())
-					Ω(entry).ShouldNot(BeNil())
+					Expect(err).Should(BeNil())
+					Expect(entry).ShouldNot(BeNil())
 				})
 			})
 			Context("GetUser()", func() {
 				It("then it should return 1 user", func() {
 					user, err := ldapManager.GetUserByID("cwashburn")
-					Ω(err).Should(BeNil())
-					Ω(user).ShouldNot(BeNil())
-					Ω(user.UserID).Should(Equal("cwashburn"))
-					Ω(user.UserDN).Should(Equal("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
-					Ω(user.Email).Should(Equal("cwashburn+cfmt@testdomain.com"))
+					Expect(err).Should(BeNil())
+					Expect(user).ShouldNot(BeNil())
+					Expect(user.UserID).Should(Equal("cwashburn"))
+					Expect(user.UserDN).Should(Equal("cn=cwashburn,ou=users,dc=pivotal,dc=org"))
+					Expect(user.Email).Should(Equal("cwashburn+cfmt@testdomain.com"))
 				})
 			})
 
@@ -136,10 +142,10 @@ var _ = Describe("Ldap", func() {
 				It("then it should return 1 user", func() {
 					data, _ := ioutil.ReadFile("./fixtures/user1.txt")
 					user, err := ldapManager.GetUserByDN(string(data))
-					Ω(err).Should(BeNil())
-					Ω(user).ShouldNot(BeNil())
-					Ω(user.UserID).Should(Equal("cwashburn2"))
-					Ω(user.Email).Should(Equal("cwashburn+cfmt2@testdomain.com"))
+					Expect(err).Should(BeNil())
+					Expect(user).ShouldNot(BeNil())
+					Expect(user.UserID).Should(Equal("cwashburn2"))
+					Expect(user.Email).Should(Equal("cwashburn+cfmt2@testdomain.com"))
 				})
 			})
 		})

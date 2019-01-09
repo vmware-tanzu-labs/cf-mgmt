@@ -72,7 +72,62 @@ func (m *DefaultManager) GetUserDNs(groupName string) ([]string, error) {
 	if len(userDNList) == 0 {
 		lo.G.Warningf("No users found under group: %s", groupName)
 	}
-	return userDNList, nil
+
+	userMap := make(map[string]string)
+	for _, userDN := range userDNList {
+		group, cn, err := m.IsGroup(userDN)
+		if err != nil {
+			return nil, err
+		}
+		if group {
+			if err != nil {
+				return nil, err
+			}
+			nestedUsers, err := m.GetUserDNs(cn)
+			if err != nil {
+				return nil, err
+			}
+			for _, nestedUser := range nestedUsers {
+				userMap[nestedUser] = nestedUser
+			}
+		} else {
+			userMap[userDN] = userDN
+		}
+	}
+	var userList []string
+	for _, userDN := range userMap {
+		userList = append(userList, userDN)
+	}
+	return userList, nil
+}
+
+func (m *DefaultManager) getCN(userDN string) (string, error) {
+	indexes := userRegexp.FindStringIndex(strings.ToUpper(userDN))
+	if len(indexes) == 0 {
+		return "", fmt.Errorf("cannot find CN for group DN: %s", userDN)
+	}
+	return strings.Replace(userDN[:indexes[0]], "cn=", "", 1), nil
+}
+func (m *DefaultManager) IsGroup(userDN string) (bool, string, error) {
+	if strings.Contains(userDN, m.Config.GroupSearchBase) {
+		cn, err := m.getCN(userDN)
+		if err != nil {
+			return false, "", err
+		}
+		search := l.NewSearchRequest(
+			m.Config.GroupSearchBase,
+			l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
+			fmt.Sprintf(groupFilter, cn),
+			attributes,
+			nil)
+		sr, err := m.Connection.Search(search)
+		if err != nil {
+			return false, "", err
+		}
+		return len(sr.Entries) == 1, cn, nil
+	} else {
+		return false, "", nil
+	}
 }
 
 func (m *DefaultManager) GetUserByDN(userDN string) (*User, error) {

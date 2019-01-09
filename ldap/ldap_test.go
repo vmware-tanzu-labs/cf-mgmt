@@ -22,6 +22,8 @@ var _ = Describe("Ldap", func() {
 				GroupAttribute:    "member",
 				UserNameAttribute: "uid",
 				UserMailAttribute: "mail",
+				GroupSearchBase:   "ou=groups,dc=pivotal,dc=org",
+				UserSearchBase:    "ou=users,dc=pivotal,dc=org",
 			}
 			connection = &fakes.FakeConnection{}
 			ldapManager = &ldap.DefaultManager{Config: ldapConfig, Connection: connection}
@@ -182,7 +184,10 @@ var _ = Describe("Ldap", func() {
 					Entries: []*l.Entry{
 						&l.Entry{
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{Name: "member", Values: []string{"cn=cwashburn,ou=users,dc=pivotal,dc=org", "cn=cwashburn1,ou=users,dc=pivotal,dc=org", `cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org`}},
+								&l.EntryAttribute{Name: "member", Values: []string{
+									"cn=cwashburn,ou=users,dc=pivotal,dc=org",
+									"cn=cwashburn1,ou=users,dc=pivotal,dc=org",
+									`cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org`}},
 							}},
 					},
 				}, nil)

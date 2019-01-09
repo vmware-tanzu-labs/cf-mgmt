@@ -52,15 +52,21 @@ userpassword: password
 homephone: 555-111-2222
 mail: cwashburn+cfmt4@testdomain.com
 
+dn: cn=nested_group,ou=groups,dc=pivotal,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: nested_group
+member: cn=cwashburn1,ou=users,dc=pivotal,dc=org
+
 dn: cn=space_developers,ou=groups,dc=pivotal,dc=org
 objectClass: groupOfNames
 objectClass: top
 cn: space_developers
 member: cn=cwashburn,ou=users,dc=pivotal,dc=org
-member: cn=cwashburn1,ou=users,dc=pivotal,dc=org
 member: cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org
 member: cn=special\, (char) - username,ou=users,dc=pivotal,dc=org
 member: cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org
+member: cn=nested_group,ou=groups,dc=pivotal,dc=org
 
 dn: cn=special (char) group\,name,ou=groups,dc=pivotal,dc=org
 objectClass: groupOfNames
