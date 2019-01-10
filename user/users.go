@@ -331,15 +331,22 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 
 	for _, orgUser := range orgUsers {
 		uaaUser := uaaUsers.GetByID(orgUser.Guid)
+		var guid string
+		if uaaUser == nil {
+			lo.G.Infof("Unable to find users (%s) GUID from uaa using org user guid", orgUser)
+			guid = orgUser.Guid
+		} else {
+			guid = orgUser.Guid
+		}
 		if !usersInRoles.HasUser(uaaUser.Username) {
 			if m.Peek {
-				lo.G.Infof("[dry-run]: Removing User %s from org %s", uaaUser.Username, input.Org)
+				lo.G.Infof("[dry-run]: Removing User %s from org %s", orgUser.Username, input.Org)
 				continue
 			}
-			lo.G.Infof("Removing User %s from org %s", uaaUser.Username, input.Org)
-			err := m.Client.RemoveOrgUser(org.Guid, uaaUser.GUID)
+			lo.G.Infof("Removing User %s from org %s", orgUser.Username, input.Org)
+			err := m.Client.RemoveOrgUser(org.Guid, guid)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", uaaUser.Username, input.Org))
+				return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
 			}
 		}
 	}
