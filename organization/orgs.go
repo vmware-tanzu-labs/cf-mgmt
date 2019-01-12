@@ -22,6 +22,18 @@ type DefaultManager struct {
 	Cfg    config.Reader
 	Client CFClient
 	Peek   bool
+	orgs   []cfclient.Org
+}
+
+func (m *DefaultManager) init() error {
+	if m.orgs == nil {
+		orgs, err := m.Client.ListOrgs()
+		if err != nil {
+			return err
+		}
+		m.orgs = orgs
+	}
+	return nil
 }
 
 func (m *DefaultManager) GetOrgGUID(orgName string) (string, error) {
@@ -165,12 +177,12 @@ func (m *DefaultManager) FindOrgByGUID(orgGUID string) (cfclient.Org, error) {
 
 //ListOrgs : Returns all orgs in the given foundation
 func (m *DefaultManager) ListOrgs() ([]cfclient.Org, error) {
-	orgs, err := m.Client.ListOrgs()
+	err := m.init()
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debug("Total orgs returned :", len(orgs))
-	return orgs, nil
+	lo.G.Debug("Total orgs returned :", len(m.orgs))
+	return m.orgs, nil
 }
 
 func (m *DefaultManager) orgNames(orgs []cfclient.Org) []string {
@@ -188,9 +200,13 @@ func (m *DefaultManager) CreateOrg(orgName string, currentOrgs []string) error {
 		return nil
 	}
 	lo.G.Infof("create org %s as it doesn't exist in %v", orgName, currentOrgs)
-	_, err := m.Client.CreateOrg(cfclient.OrgRequest{
+	org, err := m.Client.CreateOrg(cfclient.OrgRequest{
 		Name: orgName,
 	})
+	if m.orgs == nil {
+		m.orgs = []cfclient.Org{}
+	}
+	m.orgs = append(m.orgs, org)
 	return err
 }
 
@@ -207,6 +223,7 @@ func (m *DefaultManager) RenameOrg(originalOrgName, newOrgName string) error {
 	_, err = m.Client.UpdateOrg(org.Guid, cfclient.OrgRequest{
 		Name: newOrgName,
 	})
+	org.Name = newOrgName
 	return err
 }
 

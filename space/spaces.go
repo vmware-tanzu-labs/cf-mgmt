@@ -49,11 +49,13 @@ func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, space cfclient.Space, o
 }
 
 func (m *DefaultManager) init() error {
-	spaces, err := m.Client.ListSpaces()
-	if err != nil {
-		return err
+	if m.spaces == nil {
+		spaces, err := m.Client.ListSpaces()
+		if err != nil {
+			return err
+		}
+		m.spaces = spaces
 	}
-	m.spaces = spaces
 	return nil
 }
 
@@ -84,11 +86,10 @@ func (m *DefaultManager) UpdateSpaces() error {
 
 func (m *DefaultManager) ListSpaces(orgGUID string) ([]cfclient.Space, error) {
 	if m.spaces == nil {
-		s, err := m.Client.ListSpaces()
+		err := m.init()
 		if err != nil {
 			return nil, err
 		}
-		m.spaces = s
 	}
 	spaces := []cfclient.Space{}
 	for _, space := range m.spaces {
