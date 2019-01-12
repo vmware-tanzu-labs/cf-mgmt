@@ -42,12 +42,13 @@ var _ = Describe("given SpaceManager", func() {
 	Context("FindSpace()", func() {
 		It("should return an space", func() {
 			spaces := []cfclient.Space{
-				{
-					Name: "testSpace",
+				cfclient.Space{
+					Name:             "testSpace",
+					OrganizationGuid: "testOrgGUID",
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			space, err := spaceManager.FindSpace("testOrg", "testSpace")
 			Expect(err).Should(BeNil())
 			Expect(space).ShouldNot(BeNil())
@@ -60,7 +61,7 @@ var _ = Describe("given SpaceManager", func() {
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			_, err := spaceManager.FindSpace("testOrg", "testSpace2")
 			Expect(err).Should(HaveOccurred())
 		})
@@ -72,7 +73,7 @@ var _ = Describe("given SpaceManager", func() {
 		})
 		It("should return an error if unable to get Spaces", func() {
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesByQueryReturns(nil, fmt.Errorf("test"))
+			fakeClient.ListSpacesReturns(nil, fmt.Errorf("test"))
 			_, err := spaceManager.FindSpace("testOrg", "testSpace2")
 			Expect(err).Should(HaveOccurred())
 		})
@@ -92,7 +93,7 @@ var _ = Describe("given SpaceManager", func() {
 		It("should create 2 spaces", func() {
 			spaces := []cfclient.Space{}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			Expect(spaceManager.CreateSpaces()).Should(Succeed())
 
 			Expect(fakeClient.CreateSpaceCallCount()).Should(Equal(2))
@@ -109,11 +110,12 @@ var _ = Describe("given SpaceManager", func() {
 		It("should create 1 space", func() {
 			spaces := []cfclient.Space{
 				{
-					Name: "space1",
+					Name:             "space1",
+					OrganizationGuid: "testOrgGUID",
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 
 			Expect(spaceManager.CreateSpaces()).Should(Succeed())
 			Expect(fakeClient.CreateSpaceCallCount()).Should(Equal(1))
@@ -141,8 +143,8 @@ var _ = Describe("given SpaceManager", func() {
 					OrganizationGuid: "testOrgGUID",
 				},
 			}
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
-
+			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			Expect(spaceManager.CreateSpaces()).Should(Succeed())
 			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(1))
 			spaceGUID, spaceRequest := fakeClient.UpdateSpaceArgsForCall(0)
@@ -172,7 +174,7 @@ var _ = Describe("given SpaceManager", func() {
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			fakeClient.UpdateSpaceReturns(cfclient.Space{}, nil)
 
 			err := spaceManager.UpdateSpaces()
@@ -195,7 +197,7 @@ var _ = Describe("given SpaceManager", func() {
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			fakeClient.UpdateSpaceReturns(cfclient.Space{}, nil)
 
 			err := spaceManager.UpdateSpaces()
@@ -214,7 +216,7 @@ var _ = Describe("given SpaceManager", func() {
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			fakeClient.UpdateSpaceReturns(cfclient.Space{}, nil)
 
 			err := spaceManager.UpdateSpaces()
@@ -232,7 +234,7 @@ var _ = Describe("given SpaceManager", func() {
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			fakeClient.UpdateSpaceReturns(cfclient.Space{}, errors.New("error"))
 
 			err := spaceManager.UpdateSpaces()
@@ -262,15 +264,16 @@ var _ = Describe("given SpaceManager", func() {
 					Guid: "space2-guid",
 				},
 				cfclient.Space{
-					Name: "space3",
-					Guid: "space3-guid",
+					Name:             "space3",
+					Guid:             "space3-guid",
+					OrganizationGuid: "test2-org-guid",
 				},
 			}
 			fakeOrgMgr.FindOrgReturns(cfclient.Org{
 				Name: "test2",
 				Guid: "test2-org-guid",
 			}, nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			fakeClient.DeleteSpaceReturns(nil)
 			Expect(spaceManager.DeleteSpaces()).Should(Succeed())
 			Expect(fakeClient.DeleteSpaceCallCount()).Should(Equal(1))
@@ -291,15 +294,16 @@ var _ = Describe("given SpaceManager", func() {
 					Guid: "space2-guid",
 				},
 				cfclient.Space{
-					Name: "space3",
-					Guid: "space3-guid",
+					Name:             "space3",
+					Guid:             "space3-guid",
+					OrganizationGuid: "test2-org-guid",
 				},
 			}
 			fakeOrgMgr.FindOrgReturns(cfclient.Org{
 				Name: "test2",
 				Guid: "test2-org-guid",
 			}, nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			fakeClient.DeleteSpaceReturns(errors.New("error"))
 			Expect(spaceManager.DeleteSpaces()).ShouldNot(Succeed())
 			Expect(fakeClient.DeleteSpaceCallCount()).Should(Equal(1))
@@ -329,7 +333,7 @@ var _ = Describe("given SpaceManager", func() {
 				Name: "test2",
 				Guid: "test2-org-guid",
 			}, nil)
-			fakeClient.ListSpacesByQueryReturns(spaces, nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
 			fakeClient.DeleteSpaceReturns(nil)
 			Expect(spaceManager.DeleteSpaces()).Should(Succeed())
 			Expect(fakeClient.DeleteSpaceCallCount()).Should(Equal(0))

@@ -2,7 +2,6 @@ package space
 
 import (
 	"fmt"
-	"net/url"
 	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
@@ -32,6 +31,7 @@ type DefaultManager struct {
 	UAAMgr uaa.Manager
 	OrgMgr organization.Manager
 	Peek   bool
+	spaces []cfclient.Space
 }
 
 func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, space cfclient.Space, orgName string) error {
@@ -48,9 +48,22 @@ func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, space cfclient.Space, o
 	return err
 }
 
+func (m *DefaultManager) init() error {
+	spaces, err := m.Client.ListSpaces()
+	if err != nil {
+		return err
+	}
+	m.spaces = spaces
+	return nil
+}
+
 //UpdateSpaces -
 func (m *DefaultManager) UpdateSpaces() error {
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
+	if err != nil {
+		return err
+	}
+	err = m.init()
 	if err != nil {
 		return err
 	}
@@ -70,13 +83,20 @@ func (m *DefaultManager) UpdateSpaces() error {
 }
 
 func (m *DefaultManager) ListSpaces(orgGUID string) ([]cfclient.Space, error) {
-	spaces, err := m.Client.ListSpacesByQuery(url.Values{
-		"q": []string{fmt.Sprintf("%s:%s", "organization_guid", orgGUID)},
-	})
-	if err != nil {
-		return nil, err
+	if m.spaces == nil {
+		s, err := m.Client.ListSpaces()
+		if err != nil {
+			return nil, err
+		}
+		m.spaces = s
 	}
-	return spaces, err
+	spaces := []cfclient.Space{}
+	for _, space := range m.spaces {
+		if strings.EqualFold(space.OrganizationGuid, orgGUID) {
+			spaces = append(spaces, space)
+		}
+	}
+	return spaces, nil
 
 }
 
@@ -111,10 +131,11 @@ func (m *DefaultManager) CreateSpace(spaceName, orgName, orgGUID string) error {
 		return nil
 	}
 	lo.G.Infof("create space %s for org %s", spaceName, orgName)
-	_, err := m.Client.CreateSpace(cfclient.SpaceRequest{
+	space, err := m.Client.CreateSpace(cfclient.SpaceRequest{
 		Name:             spaceName,
 		OrganizationGuid: orgGUID,
 	})
+	m.spaces = append(m.spaces, space)
 	return err
 }
 
@@ -133,13 +154,17 @@ func (m *DefaultManager) RenameSpace(originalSpaceName, spaceName, orgName strin
 		Name:             spaceName,
 		OrganizationGuid: space.OrganizationGuid,
 	})
+	space.Name = spaceName
 	return err
 }
 
 //CreateSpaces -
 func (m *DefaultManager) CreateSpaces() error {
-
 	configSpaceList, err := m.Cfg.GetSpaceConfigs()
+	if err != nil {
+		return err
+	}
+	err = m.init()
 	if err != nil {
 		return err
 	}
@@ -158,7 +183,7 @@ func (m *DefaultManager) CreateSpaces() error {
 			continue
 		} else if doesSpaceExistFromRename(space.OriginalSpace, spaces) {
 			lo.G.Debugf("renamed space [%s] already exists as [%s]", space.Space, space.OriginalSpace)
-			if err := m.RenameSpace(space.OriginalSpace, space.Space, space.Org); err != nil {
+			if err = m.RenameSpace(space.OriginalSpace, space.Space, space.Org); err != nil {
 				return err
 			}
 			continue
@@ -197,8 +222,12 @@ func (m *DefaultManager) DeleteSpaces() error {
 	if err != nil {
 		return err
 	}
-	for _, input := range configSpaceList {
 
+	err = m.init()
+	if err != nil {
+		return err
+	}
+	for _, input := range configSpaceList {
 		if !input.EnableDeleteSpaces {
 			lo.G.Debugf("Space deletion is not enabled for %s.  Set enable-delete-spaces: true in spaces.yml", input.Org)
 			continue //Skip all orgs that have not opted-in
@@ -230,7 +259,6 @@ func (m *DefaultManager) DeleteSpaces() error {
 				return err
 			}
 		}
-
 	}
 
 	return nil
