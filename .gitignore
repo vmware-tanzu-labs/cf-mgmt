@@ -11,3 +11,4 @@ prepare-output
 vars.yml
 foo
 concourse-outputs
+config_tests

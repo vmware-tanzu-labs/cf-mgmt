@@ -3,6 +3,8 @@ package configcommands
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/pivotalservices/cf-mgmt/config"
 )
@@ -12,7 +14,8 @@ type UpdateSpaceConfigurationCommand struct {
 	BaseConfigCommand
 	OrgName               string     `long:"org" description:"Org name" required:"true"`
 	SpaceName             string     `long:"space" description:"Space name" required:"true"`
-	AllowSSH              string     `long:"allow-ssh" description:"Enable the Space Quota in the config" choice:"true" choice:"false"`
+	AllowSSH              string     `long:"allow-ssh" description:"Enable the application ssh" choice:"true" choice:"false"`
+	AllowSSHUntil         string     `long:"allow-ssh-until" description:"Temporarily allow application ssh until options are Days (1D), Hours (5H), or Minutes (10M)"`
 	EnableRemoveUsers     string     `long:"enable-remove-users" description:"Enable removing users from the space" choice:"true" choice:"false"`
 	EnableSecurityGroup   string     `long:"enable-security-group" description:"Enable space level security group definitions" choice:"true" choice:"false"`
 	IsoSegment            string     `long:"isolation-segment" description:"Isolation segment assigned to space"`
@@ -42,10 +45,9 @@ func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 	if c.Quota.EnableSpaceQuota == "true" && c.NamedQuota != "" {
 		return fmt.Errorf("cannot enable space quota and use named quotas")
 	}
-	
+
 	errorString := ""
 
-	convertToBool("allow-ssh", &spaceConfig.AllowSSH, c.AllowSSH, &errorString)
 	convertToBool("enable-remove-users", &spaceConfig.RemoveUsers, c.EnableRemoveUsers, &errorString)
 	convertToBool("enable-security-group", &spaceConfig.EnableSecurityGroup, c.EnableSecurityGroup, &errorString)
 	if c.IsoSegment != "" {
@@ -67,6 +69,7 @@ func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 	}
 
 	c.updateUsers(spaceConfig, &errorString)
+	c.sshConfig(spaceConfig, &errorString)
 
 	if errorString != "" {
 		return errors.New(errorString)
@@ -77,6 +80,27 @@ func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 	}
 	fmt.Println(fmt.Sprintf("The org/space [%s/%s] has been updated", c.OrgName, c.SpaceName))
 	return nil
+}
+
+func (c *UpdateSpaceConfigurationCommand) sshConfig(spaceConfig *config.SpaceConfig, errorString *string) {
+	if strings.EqualFold(c.AllowSSH, "true") && c.AllowSSHUntil != "" {
+		*errorString += fmt.Sprintf("\nCannot set --allow-ssh and --allow-ssh-until")
+		return
+	}
+	if strings.EqualFold(c.AllowSSH, "true") {
+		spaceConfig.AllowSSH = true
+		spaceConfig.AllowSSHUntil = ""
+	} else {
+		spaceConfig.AllowSSH = false
+	}
+	if c.AllowSSHUntil != "" {
+		t, err := config.FutureTime(time.Now(), c.AllowSSHUntil)
+		if err != nil {
+			*errorString += fmt.Sprintf("\n%s", err.Error())
+		}
+		spaceConfig.AllowSSHUntil = t
+		spaceConfig.AllowSSH = false
+	}
 }
 
 func (c *UpdateSpaceConfigurationCommand) updateUsers(spaceConfig *config.SpaceConfig, errorString *string) {

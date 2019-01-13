@@ -3,6 +3,9 @@ package space
 import (
 	"fmt"
 	"strings"
+	"time"
+
+	"github.com/pkg/errors"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
@@ -35,11 +38,6 @@ type DefaultManager struct {
 }
 
 func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, space cfclient.Space, orgName string) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: setting sshAllowed to %v for org/space %s/%s", sshAllowed, orgName, space.Name)
-		return nil
-	}
-	lo.G.Infof("setting sshAllowed to %v for org/space %s/%s", sshAllowed, orgName, space.Name)
 	_, err := m.Client.UpdateSpace(space.Guid, cfclient.SpaceRequest{
 		Name:             space.Name,
 		AllowSSH:         sshAllowed,
@@ -75,9 +73,41 @@ func (m *DefaultManager) UpdateSpaces() error {
 			continue
 		}
 		lo.G.Debug("Processing space", space.Name)
-		if input.AllowSSH != space.AllowSSH {
-			if err := m.UpdateSpaceSSH(input.AllowSSH, space, input.Org); err != nil {
-				return err
+		if input.AllowSSHUntil != "" {
+			allowUntil, err := time.Parse(time.RFC3339, input.AllowSSHUntil)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("Unable to parse %s with format %s", input.AllowSSHUntil, time.RFC3339))
+			}
+			if allowUntil.After(time.Now()) && !space.AllowSSH {
+				if m.Peek {
+					lo.G.Infof("[dry-run]: temporarily enabling sshAllowed for org/space %s/%s until %s", input.Org, space.Name, input.AllowSSHUntil)
+					continue
+				}
+				lo.G.Infof("temporarily enabling sshAllowed for org/space %s/%s until %s", input.Org, space.Name, input.AllowSSHUntil)
+				if err := m.UpdateSpaceSSH(true, space, input.Org); err != nil {
+					return err
+				}
+			}
+			if allowUntil.Before(time.Now()) && space.AllowSSH {
+				if m.Peek {
+					lo.G.Infof("[dry-run]: removing temporarily enabling sshAllowed for org/space %s/%s as past %s", input.Org, space.Name, input.AllowSSHUntil)
+					continue
+				}
+				lo.G.Infof("removing temporarily enabling sshAllowed for org/space %s/%s as past %s", input.Org, space.Name, input.AllowSSHUntil)
+				if err := m.UpdateSpaceSSH(false, space, input.Org); err != nil {
+					return err
+				}
+			}
+		} else {
+			if input.AllowSSH != space.AllowSSH {
+				if m.Peek {
+					lo.G.Infof("[dry-run]: setting sshAllowed to %v for org/space %s/%s", input.AllowSSH, input.Org, space.Name)
+					continue
+				}
+				lo.G.Infof("setting sshAllowed to %v for org/space %s/%s", input.AllowSSH, input.Org, space.Name)
+				if err := m.UpdateSpaceSSH(input.AllowSSH, space, input.Org); err != nil {
+					return err
+				}
 			}
 		}
 	}

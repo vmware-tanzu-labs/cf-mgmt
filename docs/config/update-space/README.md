@@ -18,9 +18,10 @@ Help Options:
   --config-dir=                             Name of the config directory (default: config) [$CONFIG_DIR]
   --org=                                    Org name
   --space=                                  Space name
-  --allow-ssh=[true|false]                  Enable the Space Quota in the config
-  --enable-security-group=[true|false]      Enable space level security group definitions
+  --allow-ssh=[true|false]                  Enable the application ssh
+  --allow-ssh-until=                        Temporarily allow application ssh until options are Days (1D), Hours (5H), or Minutes (10M)
   --enable-remove-users=[true|false]        Enable removing users from the space
+  --enable-security-group=[true|false]      Enable space level security group definitions
   --isolation-segment=                      Isolation segment assigned to space
   --clear-isolation-segment                 Sets the isolation segment to blank
   --named-asg=                              Named asg(s) to assign to space, specify multiple times
@@ -37,35 +38,36 @@ quota:
   --paid-service-plans-allowed=[true|false] Allow paid services to appear in an Space
   --total-reserved-route-ports=             Total Reserved Route Ports capacity for an Space
   --total-service-keys=                     Total Service Keys capacity for an Space
-  --app-instance-limit=                     Total Service Keys capacity for an Space
+  --app-instance-limit=                     App Instance Limit for a space
+  --app-task-limit=                         App Task Limit for a space
 
 developer:
   --developer-ldap-user=                    Ldap User to add, specify multiple times
-  --developer-ldap-user-to-remove=          Ldap User to remove, specify multiple times
   --developer-user=                         User to add, specify multiple times
-  --developer-user-to-remove=               User to remove, specify multiple times
   --developer-saml-user=                    SAML user to add, specify multiple times
-  --developer-saml-user-to-remove=          SAML user to remove, specify multiple times
   --developer-ldap-group=                   Group to add, specify multiple times
+  --developer-ldap-user-to-remove=          Ldap User to remove, specify multiple times
+  --developer-user-to-remove=               User to remove, specify multiple times
+  --developer-saml-user-to-remove=          SAML user to remove, specify multiple times
   --developer-ldap-group-to-remove=         Group to remove, specify multiple times
 
 manager:
   --manager-ldap-user=                      Ldap User to add, specify multiple times
-  --manager-ldap-user-to-remove=            Ldap User to remove, specify multiple times
   --manager-user=                           User to add, specify multiple times
-  --manager-user-to-remove=                 User to remove, specify multiple times
   --manager-saml-user=                      SAML user to add, specify multiple times
-  --manager-saml-user-to-remove=            SAML user to remove, specify multiple times
   --manager-ldap-group=                     Group to add, specify multiple times
+  --manager-ldap-user-to-remove=            Ldap User to remove, specify multiple times
+  --manager-user-to-remove=                 User to remove, specify multiple times
+  --manager-saml-user-to-remove=            SAML user to remove, specify multiple times
   --manager-ldap-group-to-remove=           Group to remove, specify multiple times
 
 auditor:
   --auditor-ldap-user=                      Ldap User to add, specify multiple times
-  --auditor-ldap-user-to-remove=            Ldap User to remove, specify multiple times
   --auditor-user=                           User to add, specify multiple times
-  --auditor-user-to-remove=                 User to remove, specify multiple times
   --auditor-saml-user=                      SAML user to add, specify multiple times
-  --auditor-saml-user-to-remove=            SAML user to remove, specify multiple times
   --auditor-ldap-group=                     Group to add, specify multiple times
+  --auditor-ldap-user-to-remove=            Ldap User to remove, specify multiple times
+  --auditor-user-to-remove=                 User to remove, specify multiple times
+  --auditor-saml-user-to-remove=            SAML user to remove, specify multiple times
   --auditor-ldap-group-to-remove=           Group to remove, specify multiple times
 ```

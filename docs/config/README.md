@@ -180,6 +180,9 @@ original-space: old-space1
 # if cf ssh is allowed for space
 allow-ssh: yes
 
+# to temporarily grant ssh access added in 1.0.13+, use cf-mgmt-config to specify time as field needs to be in RFC3339 format
+allow-ssh-until: "2019-01-13T18:09:16-07:00"
+
 space-manager:
   # list of ldap users that will be created in cf and given space manager role
   ldap_users:

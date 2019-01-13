@@ -10,6 +10,8 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
 
+	"time"
+
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 	"github.com/pivotalservices/cf-mgmt/space"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
@@ -205,6 +207,61 @@ var _ = Describe("given SpaceManager", func() {
 			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(0))
 		})
 
+		It("should turn on ssh temporarily", func() {
+			future := time.Now().Add(time.Minute * 10)
+			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+				config.SpaceConfig{
+					Space:         "space1",
+					AllowSSH:      false,
+					AllowSSHUntil: future.Format(time.RFC3339),
+				},
+			}, nil)
+			spaces := []cfclient.Space{
+				{
+					Name:             "space1",
+					OrganizationGuid: "testOrgGUID",
+					Guid:             "space1GUID",
+					AllowSSH:         false,
+				},
+			}
+			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeClient.UpdateSpaceReturns(cfclient.Space{}, nil)
+
+			err := spaceManager.UpdateSpaces()
+			Expect(err).Should(BeNil())
+			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(1))
+			_, spaceRequest := fakeClient.UpdateSpaceArgsForCall(0)
+			Expect(spaceRequest.AllowSSH).To(BeTrue())
+		})
+
+		It("should turn off temporarily granted ssh", func() {
+			past := time.Now().Add(time.Minute * -10)
+			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+				config.SpaceConfig{
+					Space:         "space1",
+					AllowSSH:      false,
+					AllowSSHUntil: past.Format(time.RFC3339),
+				},
+			}, nil)
+			spaces := []cfclient.Space{
+				{
+					Name:             "space1",
+					OrganizationGuid: "testOrgGUID",
+					Guid:             "space1GUID",
+					AllowSSH:         true,
+				},
+			}
+			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
+			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeClient.UpdateSpaceReturns(cfclient.Space{}, nil)
+
+			err := spaceManager.UpdateSpaces()
+			Expect(err).Should(BeNil())
+			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(1))
+			_, spaceRequest := fakeClient.UpdateSpaceArgsForCall(0)
+			Expect(spaceRequest.AllowSSH).To(BeFalse())
+		})
 		It("should do nothing as peek", func() {
 			spaceManager.Peek = true
 			spaces := []cfclient.Space{

@@ -25,6 +25,7 @@ type SpaceConfig struct {
 	ManagerGroup            string   `yaml:"space-manager-group,omitempty"`
 	AuditorGroup            string   `yaml:"space-auditor-group,omitempty"`
 	AllowSSH                bool     `yaml:"allow-ssh"`
+	AllowSSHUntil           string   `yaml:"allow-ssh-until,omitempty"`
 	EnableSpaceQuota        bool     `yaml:"enable-space-quota"`
 	EnableSecurityGroup     bool     `yaml:"enable-security-group"`
 	SecurityGroupContents   string   `yaml:"security-group-contents,omitempty"`

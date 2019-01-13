@@ -4,9 +4,10 @@ resources:
   source:
     uri: {{git_repo_uri}}
     branch: {{git_repo_branch}}
-- name: 15m
+- name: time-trigger
   type: time
-  source: {interval: 15m}
+  source:
+    interval: {{time-trigger}}
 
 jobs:
 - name: create-orgs
@@ -74,7 +75,7 @@ jobs:
   plan:
   - get: config-repo
     trigger: true
-  - get: 15m
+  - get: time-trigger
     trigger: true
   - task: delete-orgs
     file: config-repo/ci/tasks/cf-mgmt.yml
@@ -157,7 +158,7 @@ jobs:
   - get: config-repo
     passed: [create-orgs]
     trigger: true
-  - get: 15m
+  - get: time-trigger
     trigger: true
   - task: delete-spaces
     file: config-repo/ci/tasks/cf-mgmt.yml
@@ -175,6 +176,8 @@ jobs:
   - get: config-repo
     passed: [create-spaces]
     trigger: true
+  - get: time-trigger
+    trigger: true
   - task: update-spaces
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
@@ -191,7 +194,7 @@ jobs:
   - get: config-repo
     passed: [create-spaces]
     trigger: true
-  - get: 15m
+  - get: time-trigger
     trigger: true
   - task: update-space-users
     file: config-repo/ci/tasks/cf-mgmt.yml
@@ -242,7 +245,7 @@ jobs:
   - get: config-repo
     passed: [create-orgs]
     trigger: true
-  - get: 15m
+  - get: time-trigger
     trigger: true
   - task: update-org-users
     file: config-repo/ci/tasks/cf-mgmt.yml
@@ -277,7 +280,7 @@ jobs:
   - get: config-repo
     trigger: true
     passed: [create-orgs, create-spaces]
-  - get: 15m
+  - get: time-trigger
     trigger: true
   - task: isolation-segments
     file: config-repo/ci/tasks/cf-mgmt.yml
@@ -294,7 +297,7 @@ jobs:
   - get: config-repo
     passed: [update-org-users,update-space-users]
     trigger: true
-  - get: 15m
+  - get: time-trigger
     trigger: true
   - task: cleanup-org-users
     file: config-repo/ci/tasks/cf-mgmt.yml

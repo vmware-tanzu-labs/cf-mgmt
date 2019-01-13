@@ -17,7 +17,8 @@ Help Options:
   --config-dir=                             Name of the config directory (default: config) [$CONFIG_DIR]
   --org=                                    Org name
   --space=                                  Space name
-  --allow-ssh=[true|false]                  Enable the Space Quota in the config
+  --allow-ssh=[true|false]                  Enable the application ssh
+  --allow-ssh-until=                        Temporarily allow application ssh until options are Days (1D), Hours (5H), or Minutes (10M)
   --enable-security-group=[true|false]      Enable space level security group definitions
   --isolation-segment=                      Isolation segment assigned to space
   --named-asg=                              Named asg(s) to assign to space, specify multiple times
@@ -32,7 +33,8 @@ quota:
   --paid-service-plans-allowed=[true|false] Allow paid services to appear in an Space
   --total-reserved-route-ports=             Total Reserved Route Ports capacity for an Space
   --total-service-keys=                     Total Service Keys capacity for an Space
-  --app-instance-limit=                     Total Service Keys capacity for an Space
+  --app-instance-limit=                     App Instance Limit for a space
+  --app-task-limit=                         App Task Limit for a space
 
 developer:
   --developer-ldap-user=                    Ldap User to add, specify multiple times
