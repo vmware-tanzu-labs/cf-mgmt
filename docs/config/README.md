@@ -321,3 +321,21 @@ userMailAttribute:
 groupSearchBase:
 groupAttribute:
 ```
+
+### Enable Temporary Application SSH Access
+With 1.0.13+ there is ability to grant applicaiton ssh access for a specific duration.  Durations supported are in number of Days (D), Hours (H) or Minutes (M).  Use the cf-mgmt-config cli to update a given space with one of these metrics.  This will generate the timestamp in the correct format for you.  You must also use the latest generated concourse pipeline as this places update-space command on a timer to run every 15m (by default) to check to see if time has elapsed to re-disable application ssh access
+
+The following will enable for 2 days:
+```
+cf-mgmt-config update-space --config-dir <your directory> --org <org> --space <space> --allow-ssh false --allow-ssh-until 2D  
+```
+
+The following will enable for 5 hours:
+```
+cf-mgmt-config update-space --config-dir <your directory> --org <org> --space <space> --allow-ssh false --allow-ssh-until 5H
+```
+
+The following will enable for 95 minutes:
+```
+cf-mgmt-config update-space --config-dir <your directory> --org <org> --space <space> --allow-ssh false --allow-ssh-until 95M
+```
