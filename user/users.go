@@ -333,7 +333,7 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 		uaaUser := uaaUsers.GetByID(orgUser.Username)
 		var guid string
 		if uaaUser == nil {
-			lo.G.Infof("Unable to find users (%s) GUID from uaa using org user guid instead", orgUser)
+			lo.G.Infof("Unable to find user (%s) GUID from uaa, using org user guid instead", orgUser.Username)
 			guid = orgUser.Guid
 		} else {
 			guid = uaaUser.GUID
