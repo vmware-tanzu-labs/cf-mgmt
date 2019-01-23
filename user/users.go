@@ -330,7 +330,7 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 	lo.G.Debugf("Users In Roles %+v", usersInRoles)
 
 	for _, orgUser := range orgUsers {
-		uaaUser := uaaUsers.GetByID(orgUser.Username)
+		uaaUser := uaaUsers.GetByID(orgUser.Guid)
 		var guid string
 		if uaaUser == nil {
 			lo.G.Infof("Unable to find user (%s) GUID from uaa, using org user guid instead", orgUser.Username)
