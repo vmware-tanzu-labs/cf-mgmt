@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/export"
 	"github.com/xchapter7x/lo"
 )
@@ -29,7 +30,9 @@ func (c *ExportConfigurationCommand) Execute([]string) error {
 			cfMgmt.ServiceAccessManager,
 		  cfMgmt.QuotaManager)
 		excludedOrgs := make(map[string]string)
-		excludedOrgs["system"] = "system"
+		for _, org := range config.DefaultProtectedOrgs {
+			excludedOrgs[org] = org
+		}
 		for _, org := range c.ExcludedOrgs {
 			excludedOrgs[org] = org
 		}
@@ -37,7 +40,7 @@ func (c *ExportConfigurationCommand) Execute([]string) error {
 		for _, space := range c.ExcludedSpaces {
 			excludedSpaces[space] = space
 		}
-		lo.G.Info("Orgs excluded from export by default: [system]")
+		lo.G.Infof("Orgs excluded from export by default: %v ", config.DefaultProtectedOrgs)
 		lo.G.Infof("Orgs excluded from export by user:  %v ", c.ExcludedOrgs)
 		lo.G.Infof("Spaces excluded from export by user:  %v ", c.ExcludedSpaces)
 		err = exportManager.ExportConfig(excludedOrgs, excludedSpaces)
