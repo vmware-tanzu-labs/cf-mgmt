@@ -129,7 +129,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	for _, org := range orgs {
 		orgName := org.Name
 		if _, ok := excludedOrgs[orgName]; ok {
-			lo.G.Infof("Skipping org: %s as it is ignored from import", orgName)
+			lo.G.Infof("Skipping org: %s as it is ignored from export", orgName)
 			continue
 		}
 
@@ -238,7 +238,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		for _, orgSpace := range spaces {
 			spaceName := orgSpace.Name
 			if _, ok := excludedSpaces[spaceName]; ok {
-				lo.G.Infof("Skipping space: %s as it is ignored from import", spaceName)
+				lo.G.Infof("Skipping space: %s as it is ignored from export", spaceName)
 				continue
 			}
 			lo.G.Infof("Processing space: %s", spaceName)
