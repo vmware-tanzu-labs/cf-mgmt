@@ -2,7 +2,6 @@ package uaa
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/xchapter7x/lo"
 
@@ -86,7 +85,7 @@ func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 	}
 	lo.G.Debugf("Found %d users in the CF instance", len(userList))
 	for _, user := range userList {
-		lo.G.Debugf("Adding %s to users for userID %s", strings.ToLower(user.Username), user.Username)
+		lo.G.Debugf("Adding to users userID [%s], externalID [%s], origin [%s], email [%s], GUID [%s]", user.Username, user.ExternalID, user.Origin, Email(user), user.ID)
 		users.Add(User{
 			Username:   user.Username,
 			ExternalID: user.ExternalID,
@@ -94,12 +93,6 @@ func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 			Origin:     user.Origin,
 			GUID:       user.ID,
 		})
-		// userMap[strings.ToLower(user.Username)] = uaaUser
-		// userMap[user.ID] = uaaUser
-		// if user.ExternalID != "" {
-		// 	lo.G.Debugf("Adding %s to userMap for userID %s", strings.ToLower(user.ExternalID), user.Username)
-		// 	userMap[strings.ToLower(user.ExternalID)] = uaaUser
-		// }
 	}
 	return users, nil
 }
