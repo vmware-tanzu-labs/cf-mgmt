@@ -31,7 +31,6 @@ func NewManager(
 		UAAMgr:   uaaMgr,
 		Cfg:      cfg,
 	}
-
 }
 
 type DefaultManager struct {
