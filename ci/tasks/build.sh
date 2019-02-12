@@ -17,7 +17,7 @@ cd ${SOURCE_DIR}
 if [ -d ".git" ]; then
   if ${DEV}; then
     ts=$(date +"%Y%m%M%S%N")
-    DRAFT_VERSION="dev-%{ts}"
+    DRAFT_VERSION="dev-${ts}"
   else
     DRAFT_VERSION=`versioning bump_patch`-`git rev-parse HEAD`
   fi
