@@ -69,10 +69,14 @@ func (u *Users) GetByID(ID string) *User {
 }
 
 func (u *Users) GetByExternalID(externalID string) *User {
+	var uaaUsers []*User
 	for _, user := range u.List() {
 		if strings.EqualFold(user.ExternalID, externalID) {
-			return &user
+			uaaUsers = append(uaaUsers, &user)
 		}
+	}
+	if len(uaaUsers) == 1 {
+		return uaaUsers[0]
 	}
 	return nil
 }
