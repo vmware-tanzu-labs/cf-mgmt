@@ -2,6 +2,8 @@ package uaa
 
 import (
 	"strings"
+
+	"github.com/xchapter7x/lo"
 )
 
 type Users struct {
@@ -79,6 +81,10 @@ func (u *Users) GetByExternalID(externalID string) *User {
 	}
 	if len(foundUsers) == 1 {
 		return &foundUsers[0]
+	} else {
+		for _, user := range foundUsers {
+			lo.G.Infof("Multiple User [%s] found for externalID [%s]", user.Username, externalID)
+		}
 	}
 	return nil
 
