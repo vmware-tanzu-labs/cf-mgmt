@@ -216,7 +216,11 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error finding space for org %s, space %s", input.Org, input.Space))
 	}
-
+	lo.G.Debug("")
+	lo.G.Debug("")
+	lo.G.Debugf("Processing Org(%s)/Space(%s)", input.Org, input.Space)
+	lo.G.Debug("")
+	lo.G.Debug("")
 	if err = m.SyncUsers(uaaUsers, UsersInput{
 		SpaceName:      space.Name,
 		SpaceGUID:      space.Guid,
@@ -268,6 +272,12 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 		}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "auditor"))
 	}
+
+	lo.G.Debug("")
+	lo.G.Debug("")
+	lo.G.Debugf("Done Processing Org(%s)/Space(%s)", input.Org, input.Space)
+	lo.G.Debug("")
+	lo.G.Debug("")
 	return nil
 }
 

@@ -1,6 +1,8 @@
 package uaa
 
-import "strings"
+import (
+	"strings"
+)
 
 type Users struct {
 	userMap map[string][]User
@@ -69,14 +71,15 @@ func (u *Users) GetByID(ID string) *User {
 }
 
 func (u *Users) GetByExternalID(externalID string) *User {
-	var uaaUsers []*User
+	var foundUsers []User
 	for _, user := range u.List() {
 		if strings.EqualFold(user.ExternalID, externalID) {
-			uaaUsers = append(uaaUsers, &user)
+			foundUsers = append(foundUsers, user)
 		}
 	}
-	if len(uaaUsers) == 1 {
-		return uaaUsers[0]
+	if len(foundUsers) == 1 {
+		return &foundUsers[0]
 	}
 	return nil
+
 }

@@ -11,6 +11,7 @@ import (
 )
 
 func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, usersInput UsersInput) error {
+	lo.G.Debugf("Uaa Users %+v", uaaUsers)
 	origin := m.LdapConfig.Origin
 	if m.LdapConfig.Enabled {
 		ldapUsers, err := m.GetLDAPUsers(uaaUsers, usersInput)
