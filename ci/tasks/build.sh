@@ -15,7 +15,12 @@ go get github.com/xchapter7x/versioning
 
 cd ${SOURCE_DIR}
 if [ -d ".git" ]; then
-  DRAFT_VERSION=`versioning bump_patch`-`git rev-parse HEAD`
+  if ${DEV}; then
+    ts=$(date +"%Y%m%M%S%N")
+    DRAFT_VERSION="dev-%{ts}"
+  else
+    DRAFT_VERSION=`versioning bump_patch`-`git rev-parse HEAD`
+  fi
 else
   DRAFT_VERSION="v0.0.0-local"
 fi
