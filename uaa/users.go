@@ -83,7 +83,7 @@ func (u *Users) GetByExternalID(externalID string) *User {
 		return &foundUsers[0]
 	} else {
 		for _, user := range foundUsers {
-			lo.G.Infof("Multiple User [%s] found for externalID [%s]", user.Username, externalID)
+			lo.G.Debugf("Multiple User [%s] found for externalID [%s]", user.Username, externalID)
 		}
 	}
 	return nil

@@ -74,7 +74,7 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, usersInput UsersInput
 					Email:  uaaUser.Email,
 				})
 			} else {
-				lo.G.Infof("UserDN [%s] not found in UAA, executing ldap lookup", userDN)
+				lo.G.Debugf("UserDN [%s] not found in UAA, executing ldap lookup", userDN)
 				user, err := m.LdapMgr.GetUserByDN(userDN)
 				if err != nil {
 					return nil, err
@@ -101,7 +101,7 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, usersInput UsersInput
 				}
 			}
 		} else {
-			lo.G.Infof("User [%s] not found in UAA, executing ldap lookup", userID)
+			lo.G.Debugf("User [%s] not found in UAA, executing ldap lookup", userID)
 			user, err := m.LdapMgr.GetUserByID(userID)
 			if err != nil {
 				return nil, err
