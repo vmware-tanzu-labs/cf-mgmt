@@ -271,7 +271,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("Should return error", func() {
-				roleUsers := &RoleUsers{}
+				roleUsers := InitRoleUsers()
 				roleUsers.AddUsers([]RoleUser{
 					RoleUser{UserName: "test"},
 				})

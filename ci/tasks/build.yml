@@ -5,6 +5,8 @@ image_resource:
     repository: golang
 run:
   path: source/ci/tasks/build.sh
+params:
+  DEV: false
 inputs:
 - name: source
 outputs:

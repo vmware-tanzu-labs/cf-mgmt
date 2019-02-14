@@ -269,6 +269,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("Should not query ldap if user exists in UAA", func() {
+
 				updateUsersInput := UsersInput{
 					LdapGroupNames: []string{"test_group"},
 					SpaceGUID:      "space_guid",

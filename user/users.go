@@ -31,7 +31,6 @@ func NewManager(
 		UAAMgr:   uaaMgr,
 		Cfg:      cfg,
 	}
-
 }
 
 type DefaultManager struct {
@@ -216,7 +215,11 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error finding space for org %s, space %s", input.Org, input.Space))
 	}
-
+	lo.G.Debug("")
+	lo.G.Debug("")
+	lo.G.Debugf("Processing Org(%s)/Space(%s)", input.Org, input.Space)
+	lo.G.Debug("")
+	lo.G.Debug("")
 	if err = m.SyncUsers(uaaUsers, UsersInput{
 		SpaceName:      space.Name,
 		SpaceGUID:      space.Guid,
@@ -268,6 +271,12 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 		}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "auditor"))
 	}
+
+	lo.G.Debug("")
+	lo.G.Debug("")
+	lo.G.Debugf("Done Processing Org(%s)/Space(%s)", input.Org, input.Space)
+	lo.G.Debug("")
+	lo.G.Debug("")
 	return nil
 }
 
@@ -456,6 +465,7 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers *uaa.U
 			return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
 		}
 		if !roleUsers.HasUser(lowerUserID) {
+			lo.G.Infof("Role Users %+v", roleUsers.users)
 			user := uaaUsers.GetByNameAndOrigin(lowerUserID, origin)
 			if user == nil {
 				return fmt.Errorf("Unabled to find user %s for origin %s", lowerUserID, origin)

@@ -7,6 +7,12 @@ import (
 	"github.com/pivotalservices/cf-mgmt/uaa"
 )
 
+func InitRoleUsers() *RoleUsers {
+	return &RoleUsers{
+		users: make(map[string][]RoleUser),
+	}
+}
+
 type RoleUsers struct {
 	users map[string][]RoleUser
 }

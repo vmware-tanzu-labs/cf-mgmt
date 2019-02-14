@@ -29,9 +29,21 @@ var _ = Describe("Users", func() {
 				GUID:       "test2-ldap-guid",
 				ExternalID: "cn=test2",
 			})
+			users.Add(User{
+				Username:   "test3",
+				Origin:     "ldap",
+				GUID:       "test3a-ldap-guid",
+				ExternalID: "cn=test3",
+			})
+			users.Add(User{
+				Username:   "test3a",
+				Origin:     "ldap",
+				GUID:       "test3-ldap-guid",
+				ExternalID: "cn=test3",
+			})
 		})
 		It("Users list", func() {
-			Expect(len(users.List())).To(Equal(3))
+			Expect(len(users.List())).To(Equal(5))
 		})
 
 		It("Get By Name should find multiples", func() {
@@ -60,6 +72,10 @@ var _ = Describe("Users", func() {
 
 		It("Get By ExternalID should not return nil", func() {
 			Expect(users.GetByExternalID("cn=test2")).ToNot(BeNil())
+		})
+
+		It("Get By ExternalID should return nil", func() {
+			Expect(users.GetByExternalID("cn=test3")).To(BeNil())
 		})
 	})
 })

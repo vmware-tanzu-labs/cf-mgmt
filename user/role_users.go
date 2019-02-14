@@ -11,7 +11,7 @@ import (
 )
 
 func NewRoleUsers(users []cfclient.User, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	roleUsers := &RoleUsers{}
+	roleUsers := InitRoleUsers()
 	for _, user := range users {
 		uaaUser := uaaUsers.GetByID(user.Guid)
 		if uaaUser == nil {
@@ -67,10 +67,6 @@ func (r *RoleUsers) AddUsers(roleUsers []RoleUser) {
 }
 
 func (r *RoleUsers) addUser(roleUser RoleUser) {
-	if r.users == nil {
-		r.users = make(map[string][]RoleUser)
-	}
-
 	userList := r.users[strings.ToLower(roleUser.UserName)]
 	userList = append(userList, roleUser)
 	r.users[strings.ToLower(roleUser.UserName)] = userList
@@ -78,9 +74,11 @@ func (r *RoleUsers) addUser(roleUser RoleUser) {
 
 func (r *RoleUsers) Users() []RoleUser {
 	var result []RoleUser
-	for _, originUsers := range r.users {
-		for _, user := range originUsers {
-			result = append(result, user)
+	if r.users != nil {
+		for _, originUsers := range r.users {
+			for _, user := range originUsers {
+				result = append(result, user)
+			}
 		}
 	}
 	return result
@@ -140,7 +138,7 @@ func (m *DefaultManager) listSpaceManagers(input UsersInput, uaaUsers *uaa.Users
 }
 
 func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	roleUsers := &RoleUsers{}
+	roleUsers := InitRoleUsers()
 
 	orgAuditors, err := m.ListOrgAuditors(orgGUID, uaaUsers)
 	if err != nil {

@@ -24,6 +24,8 @@ jobs:
       file: source/ci/tasks/runTests.yml
     - task: build
       file: source/ci/tasks/build.yml
+      params:
+        DEV: true
     - put: docker-registry
       params:
         build: compiled-output

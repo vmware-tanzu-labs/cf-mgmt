@@ -1,6 +1,10 @@
 package uaa
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/xchapter7x/lo"
+)
 
 type Users struct {
 	userMap map[string][]User
@@ -69,10 +73,19 @@ func (u *Users) GetByID(ID string) *User {
 }
 
 func (u *Users) GetByExternalID(externalID string) *User {
+	var foundUsers []User
 	for _, user := range u.List() {
 		if strings.EqualFold(user.ExternalID, externalID) {
-			return &user
+			foundUsers = append(foundUsers, user)
+		}
+	}
+	if len(foundUsers) == 1 {
+		return &foundUsers[0]
+	} else {
+		for _, user := range foundUsers {
+			lo.G.Infof("Multiple User [%s] found for externalID [%s]", user.Username, externalID)
 		}
 	}
 	return nil
+
 }
