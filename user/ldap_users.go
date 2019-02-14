@@ -113,7 +113,18 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, usersInput UsersInput
 			}
 		}
 	}
-	return ldapUsers, nil
+
+	uniqueLDAPUsers := make(map[string]ldap.User)
+	for _, ldapUser := range ldapUsers {
+		uniqueLDAPUsers[strings.ToUpper(ldapUser.UserDN)] = ldapUser
+	}
+
+	ldapUsersToReturn := []ldap.User{}
+
+	for _, uniqueLDAPUser := range uniqueLDAPUsers {
+		ldapUsersToReturn = append(ldapUsersToReturn, uniqueLDAPUser)
+	}
+	return ldapUsersToReturn, nil
 }
 
 func (m *DefaultManager) UpdateUserInfo(user ldap.User) ldap.User {
