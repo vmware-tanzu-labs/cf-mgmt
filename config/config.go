@@ -9,6 +9,7 @@ var DefaultProtectedOrgs = []string{
 	"splunk-nozzle-org",
 	"redis-test-ORG*",
 	"appdynamics-org",
+	"credhub-service-broker-org",
 }
 
 // Manager can read and write the cf-mgmt configuration.

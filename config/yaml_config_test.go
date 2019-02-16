@@ -19,6 +19,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 				Ω(config.DefaultProtectedOrgs).Should(ContainElement("splunk-nozzle-org"))
 				Ω(config.DefaultProtectedOrgs).Should(ContainElement("redis-test-ORG*"))
 				Ω(config.DefaultProtectedOrgs).Should(ContainElement("appdynamics-org"))
+				Ω(config.DefaultProtectedOrgs).Should(ContainElement("credhub-service-broker-org"))
 				Ω(config.DefaultProtectedOrgs).Should(HaveLen(5))
 			})
 		})
