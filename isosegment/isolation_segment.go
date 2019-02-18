@@ -228,6 +228,19 @@ func (u *Updater) Entitle() error {
 		}
 	}
 	for _, orgConfig := range orgs {
+		for _, segment := range orgConfig.IsoSegments {
+			org, err := u.OrgManager.FindOrg(orgConfig.Org)
+			if err != nil {
+				return errors.Wrap(err, "finding org for org configs in entitle")
+			}
+			if isosegment, ok := isolationSegmentsMap[segment]; ok {
+				sm[org.Guid] = append(sm[org.Guid], isosegment)
+			} else {
+				if !u.Peek {
+					return fmt.Errorf("Isolation segment [%s] does not exist", segment)
+				}
+			}
+		}
 		if s := orgConfig.DefaultIsoSegment; s != "" {
 			org, err := u.OrgManager.FindOrg(orgConfig.Org)
 			if err != nil {

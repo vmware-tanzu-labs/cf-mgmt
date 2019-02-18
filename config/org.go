@@ -33,22 +33,23 @@ type OrgConfig struct {
 	AppInstanceLimit           string              `yaml:"app_instance_limit,omitempty"`
 	AppTaskLimit               string              `yaml:"app_task_limit,omitempty"`
 	DefaultIsoSegment          string              `yaml:"default_isolation_segment"`
+	IsoSegments                []string            `yaml:"isolation_segments"`
 	ServiceAccess              map[string][]string `yaml:"service-access"`
 	NamedQuota                 string              `yaml:"named_quota"`
 }
 
 func (o *OrgConfig) GetQuota() OrgQuota {
 	return OrgQuota{
-		Name: o.Org,
-		TotalPrivateDomains: o.TotalPrivateDomains,
+		Name:                    o.Org,
+		TotalPrivateDomains:     o.TotalPrivateDomains,
 		TotalReservedRoutePorts: o.TotalReservedRoutePorts,
-		TotalServiceKeys       : o.TotalServiceKeys,
-		AppInstanceLimit       : o.AppInstanceLimit,
-		AppTaskLimit: o.AppTaskLimit,
-		MemoryLimit: o.MemoryLimit,
-		InstanceMemoryLimit: o.InstanceMemoryLimit,
-		TotalRoutes: o.TotalRoutes,
-		TotalServices: o.TotalServices,
+		TotalServiceKeys:        o.TotalServiceKeys,
+		AppInstanceLimit:        o.AppInstanceLimit,
+		AppTaskLimit:            o.AppTaskLimit,
+		MemoryLimit:             o.MemoryLimit,
+		InstanceMemoryLimit:     o.InstanceMemoryLimit,
+		TotalRoutes:             o.TotalRoutes,
+		TotalServices:           o.TotalServices,
 		PaidServicePlansAllowed: o.PaidServicePlansAllowed,
 	}
 }

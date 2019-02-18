@@ -14,6 +14,7 @@ type AddOrgToConfigurationCommand struct {
 	PrivateDomains          []string    `long:"private-domain" description:"Private Domain(s) to add, specify multiple times"`
 	SharedPrivateDomains    []string    `long:"shared-private-domain" description:"Shared Private Domain(s) to add, specify multiple times"`
 	DefaultIsolationSegment string      `long:"default-isolation-segment" description:"Default isolation segment for org" `
+	IsolationSegments       []string    `long:"isolation-segment" description:"Isolation segment(s) for org, specify multiple times" `
 	Quota                   OrgQuota    `group:"quota"`
 	BillingManager          UserRoleAdd `group:"billing-manager" namespace:"billing-manager"`
 	Manager                 UserRoleAdd `group:"manager" namespace:"manager"`
@@ -41,6 +42,7 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 	if c.DefaultIsolationSegment != "" {
 		orgConfig.DefaultIsoSegment = c.DefaultIsolationSegment
 	}
+	orgConfig.IsoSegments = addToSlice(orgConfig.IsoSegments, c.IsolationSegments, &errorString)
 	orgConfig.RemoveUsers = true
 	orgConfig.RemovePrivateDomains = true
 	orgConfig.PrivateDomains = addToSlice(orgConfig.PrivateDomains, c.PrivateDomains, &errorString)

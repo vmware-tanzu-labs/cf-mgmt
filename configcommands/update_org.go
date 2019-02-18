@@ -20,6 +20,8 @@ type UpdateOrgConfigurationCommand struct {
 	EnableRemoveSpaces               string        `long:"enable-remove-spaces" description:"Enable removing spaces" choice:"true" choice:"false"`
 	DefaultIsolationSegment          string        `long:"default-isolation-segment" description:"Default isolation segment for org" `
 	ClearDefaultIsolationSegment     bool          `long:"clear-default-isolation-segment" description:"Sets the default isolation segment to blank"`
+	IsolationSegments                []string      `long:"isolation-segment" description:"Isolation segment(s) for org, specify multiple times" `
+	IsolationSegmentsToRemove        []string      `long:"isolation-segment-to-remove" description:"Isolation segment(s) for org, specify multiple times" `
 	EnableRemoveUsers                string        `long:"enable-remove-users" description:"Enable removing users from the org" choice:"true" choice:"false"`
 	NamedQuota                       string        `long:"named-quota" description:"Named quota to assign to org"`
 	ClearNamedQuota                  bool          `long:"clear-named-quota" description:"Sets the named quota to blank"`
@@ -55,6 +57,7 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 	if c.ClearDefaultIsolationSegment {
 		orgConfig.DefaultIsoSegment = ""
 	}
+	orgConfig.IsoSegments = removeFromSlice(addToSlice(orgConfig.IsoSegments, c.IsolationSegments, &errorString), c.IsolationSegmentsToRemove)
 	convertToBool("enable-remove-users", &orgConfig.RemoveUsers, c.EnableRemoveUsers, &errorString)
 	orgConfig.PrivateDomains = removeFromSlice(addToSlice(orgConfig.PrivateDomains, c.PrivateDomains, &errorString), c.PrivateDomainsToRemove)
 	convertToBool("enable-remove-private-domains", &orgConfig.RemovePrivateDomains, c.EnableRemovePrivateDomains, &errorString)
