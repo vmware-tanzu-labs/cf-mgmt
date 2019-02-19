@@ -187,6 +187,7 @@ func (m *DefaultManager) searchUser(filter, searchBase, userID string) (*User, e
 		} else {
 			user.UserID = entry.GetAttributeValue(m.Config.UserNameAttribute)
 		}
+		lo.G.Debugf("Search filter %s returned userDN [%s], email [%s], userID [%s]", filter, user.UserDN, user.Email, user.UserID)
 		return user, nil
 	}
 	lo.G.Errorf("Found %d number of entries for filter %s", len(sr.Entries), filter)
