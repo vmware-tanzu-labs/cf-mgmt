@@ -23,7 +23,6 @@ var (
 
 const (
 	groupFilter                 = "(cn=%s)"
-	groupFilterWithObjectClass  = "(&(objectclass=groupOfNames)(cn=%s))"
 	userFilter                  = "(%s=%s)"
 	userFilterWithObjectClass   = "(&(objectclass=%s)(%s=%s))"
 	userDNFilter                = "(%s)"
@@ -124,7 +123,7 @@ func (m *DefaultManager) IsGroup(userDN string) (bool, string, error) {
 		search := l.NewSearchRequest(
 			m.Config.GroupSearchBase,
 			l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
-			fmt.Sprintf(groupFilterWithObjectClass, cn),
+			fmt.Sprintf(groupFilter, cn),
 			attributes,
 			nil)
 		sr, err := m.Connection.Search(search)
