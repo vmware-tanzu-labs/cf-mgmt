@@ -75,6 +75,15 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
 
 cf-mgmt is a community supported cloud foundry add-on.  Opening issues for questions, feature requests and/or bugs is the best path to getting "support".  We strive to be active in keeping this tool working and meeting your needs in a timely fashion.
 
+### Debug Output
+When opening an issue please provide debug level output (scrubbed for any customer info) by using latest generated pipeline and setting LOG_LEVEL: debug or modifying current pipeline if you are not using latest pipeline to add the following to specific job step params
+
+```
+params:
+  LOG_LEVEL: debug
+  ... existing params
+```
+
 ## Install
 
 Compiled releases are available on Github.
