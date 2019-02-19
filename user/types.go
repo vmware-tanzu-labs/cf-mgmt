@@ -4,6 +4,7 @@ import (
 	"net/url"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 )
 
@@ -61,4 +62,11 @@ type CFClient interface {
 	AssociateOrgAuditor(orgGUID, userGUID string) (cfclient.Org, error)
 	AssociateOrgManager(orgGUID, userGUID string) (cfclient.Org, error)
 	AssociateOrgBillingManager(orgGUID, userGUID string) (cfclient.Org, error)
+}
+
+type LdapManager interface {
+	GetUserDNs(groupName string) ([]string, error)
+	GetUserByDN(userDN string) (*ldap.User, error)
+	GetUserByID(userID string) (*ldap.User, error)
+	Close()
 }

@@ -13,7 +13,7 @@ import (
 )
 
 var _ = Describe("Ldap", func() {
-	var ldapManager Manager
+	var ldapManager *Manager
 	Describe("given a ldap manager", func() {
 
 		BeforeEach(func() {

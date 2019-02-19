@@ -14,6 +14,7 @@ type LdapConfig struct {
 	UserObjectClass    string `yaml:"userObjectClass"`
 	GroupSearchBase    string `yaml:"groupSearchBase"`
 	GroupAttribute     string `yaml:"groupAttribute"`
+	GroupObjectClass   string `yaml:"groupObjectClass"`
 	Origin             string `yaml:"origin"`
 	InsecureSkipVerify string `yaml:"insecure_skip_verify"`
 	CACert             string `yaml:"ca_cert"`

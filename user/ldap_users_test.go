@@ -9,7 +9,6 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap"
-	ldapfakes "github.com/pivotalservices/cf-mgmt/ldap/fakes"
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
 	"github.com/pivotalservices/cf-mgmt/uaa"
@@ -22,7 +21,7 @@ var _ = Describe("given UserSpaces", func() {
 	var (
 		userManager *DefaultManager
 		client      *fakes.FakeCFClient
-		ldapFake    *ldapfakes.FakeManager
+		ldapFake    *fakes.FakeLdapManager
 		uaaFake     *uaafakes.FakeManager
 		fakeReader  *configfakes.FakeReader
 		spaceFake   *spacefakes.FakeManager
@@ -30,7 +29,7 @@ var _ = Describe("given UserSpaces", func() {
 	)
 	BeforeEach(func() {
 		client = new(fakes.FakeCFClient)
-		ldapFake = new(ldapfakes.FakeManager)
+		ldapFake = new(fakes.FakeLdapManager)
 		uaaFake = new(uaafakes.FakeManager)
 		fakeReader = new(configfakes.FakeReader)
 		spaceFake = new(spacefakes.FakeManager)

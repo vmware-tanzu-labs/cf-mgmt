@@ -5,15 +5,7 @@ import (
 )
 
 //Manager -
-type Manager interface {
-	GetUserDNs(groupName string) ([]string, error)
-	GetUserByID(userID string) (*User, error)
-	GetUserByDN(userDN string) (*User, error)
-	Close()
-}
-
-//DefaultManager -
-type DefaultManager struct {
+type Manager struct {
 	Config     *config.LdapConfig
 	Connection Connection
 }
