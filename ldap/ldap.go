@@ -120,7 +120,7 @@ func (m *DefaultManager) IsGroup(userDN string) (bool, string, error) {
 		if err != nil {
 			return false, "", err
 		}
-		filter := fmt.Sprintf(groupFilter, cn)
+		filter := fmt.Sprintf("(%s)", cn)
 		search := l.NewSearchRequest(
 			m.Config.GroupSearchBase,
 			l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
