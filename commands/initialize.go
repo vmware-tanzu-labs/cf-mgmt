@@ -47,6 +47,7 @@ func InitializeManagers(baseCommand BaseCFConfigCommand) (*CFMgmt, error) {
 }
 
 func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt, error) {
+	lo.G.Infof("Using version %s of cf-mgmt", configcommands.VERSION)
 	if baseCommand.SystemDomain == "" ||
 		baseCommand.UserID == "" ||
 		baseCommand.ClientSecret == "" {
