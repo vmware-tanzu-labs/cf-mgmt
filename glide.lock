@@ -1,8 +1,12 @@
-hash: 85e28b2e924ca8790b9680c7bdcfb3bbe85b3bc36266f0c25ee658bcdc1507ec
-updated: 2018-12-04T15:54:20.114614-05:00
+hash: 3dda5040327d6a58453b1fda38891cc5378f7fb86bd29e476e57ce78a048ccda
+updated: 2019-02-18T20:48:34.540987-05:00
 imports:
+- name: code.cloudfoundry.org/gofileutils
+  version: 4d0c80011a0f37da1711c184028bc40137cd45af
+  subpackages:
+  - fileutils
 - name: code.cloudfoundry.org/routing-api
-  version: b308b1a648d23d5bf691565fffc14524bda52680
+  version: ecb61bff5019adef3a4c00fcf8fc7d765cc97adc
   subpackages:
   - models
 - name: code.cloudfoundry.org/trace-logger
@@ -10,16 +14,12 @@ imports:
 - name: github.com/bmizerany/pat
   version: 6226ea591a40176dd3ff9cd8eff81ed6ca721a00
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: 2e98f76916cc6fa1de8477268d5111f81846ba83
-  repo: https://github.com/calebwashburn/go-cfclient
+  version: f136f9222381e2fea5099f62e4b751dcb660ff82
 - name: github.com/cloudfoundry-community/go-uaa
-  version: 06d965ffc8f595a3e739463e280b78eb6204ff3d
+  version: 0000288b7d3b7dbc382fb4610b183a36ebfd01f6
+  repo: https://github.com/calebwashburn/go-uaa
   subpackages:
   - passwordcredentials
-- name: github.com/cloudfoundry/gofileutils
-  version: 4d0c80011a0f37da1711c184028bc40137cd45af
-  subpackages:
-  - fileutils
 - name: github.com/fatih/color
   version: 3f9d52f7176a6927daacff70a3e8d1dc2025c53e
 - name: github.com/go-ldap/ldap
@@ -41,7 +41,7 @@ imports:
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9
 - name: github.com/pkg/errors
-  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+  version: ba968bfe8b2f7e042a574c888954fccecfa385b4
 - name: github.com/tedsuo/rata
   version: 07d200713958d05692ac35aa8b5f1949342fee80
 - name: github.com/vito/go-sse
