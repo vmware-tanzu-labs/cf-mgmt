@@ -120,17 +120,18 @@ func (m *DefaultManager) IsGroup(userDN string) (bool, string, error) {
 		if err != nil {
 			return false, "", err
 		}
+		filter := fmt.Sprintf(groupFilter, cn)
 		search := l.NewSearchRequest(
 			m.Config.GroupSearchBase,
 			l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
-			fmt.Sprintf(groupFilter, cn),
+			filter,
 			attributes,
 			nil)
 		sr, err := m.Connection.Search(search)
 		if err != nil {
 			return false, "", err
 		}
-		lo.G.Debugf("Found %d entries for userDN %s", len(sr.Entries), userDN)
+		lo.G.Debugf("Found %d entries for group filter", len(sr.Entries), filter)
 		return len(sr.Entries) == 1, cn, nil
 	} else {
 		return false, "", nil
