@@ -36,12 +36,14 @@ type User struct {
 }
 
 //NewDefaultUAAManager -
-func NewDefaultUAAManager(sysDomain, clientID, clientSecret string, peek bool) (Manager, error) {
+func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, peek bool) (Manager, error) {
 	target := fmt.Sprintf("https://uaa.%s", sysDomain)
 	client, err := uaaclient.NewWithClientCredentials(target, "", clientID, clientSecret, uaaclient.OpaqueToken, true)
 	if err != nil {
 		return nil, err
 	}
+
+	client.UserAgent = userAgent
 	return &DefaultUAAManager{
 		Client: client,
 		Peek:   peek,
@@ -79,10 +81,11 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 	users := &Users{}
 	lo.G.Debug("Getting users from Cloud Foundry")
-	userList, err := m.Client.ListAllUsers("", "", "", "")
+	userList, err := m.Client.ListAllUsers("", "", "userName,id,externalId,emails,origin", "")
 	if err != nil {
 		return nil, err
 	}
+
 	lo.G.Debugf("Found %d users in the CF instance", len(userList))
 	for _, user := range userList {
 		lo.G.Debugf("Adding to users userID [%s], externalID [%s], origin [%s], email [%s], GUID [%s]", user.Username, user.ExternalID, user.Origin, Email(user), user.ID)

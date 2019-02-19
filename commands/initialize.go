@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"code.cloudfoundry.org/routing-api"
@@ -61,7 +60,8 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	cfMgmt.SystemDomain = baseCommand.SystemDomain
 	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
 
-	uaaMgr, err := uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.ClientSecret, peek)
+	userAgent := fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION)
+	uaaMgr, err := uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.ClientSecret, userAgent, peek)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 			SkipSslValidation: true,
 			Username:          baseCommand.UserID,
 			Password:          baseCommand.Password,
-			UserAgent:         fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION),
+			UserAgent:         userAgent,
 		}
 	} else {
 		c = &cfclient.Config{
@@ -83,12 +83,12 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 			SkipSslValidation: true,
 			ClientID:          baseCommand.UserID,
 			ClientSecret:      baseCommand.ClientSecret,
-			UserAgent:         fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION),
+			UserAgent:         userAgent,
 		}
 	}
-	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "debug") {
-		c.Debug = true
-	}
+	// if strings.EqualFold(os.Getenv("LOG_LEVEL"), "debug") {
+	// 	c.Debug = true
+	// }
 	client, err := cfclient.NewClient(c)
 	if err != nil {
 		return nil, err
