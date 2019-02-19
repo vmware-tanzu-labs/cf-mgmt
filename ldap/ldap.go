@@ -131,7 +131,7 @@ func (m *DefaultManager) IsGroup(userDN string) (bool, string, error) {
 		if err != nil {
 			return false, "", err
 		}
-		lo.G.Debugf("Found %d entries for group filter", len(sr.Entries), filter)
+		lo.G.Debugf("Found %d entries for group filter %s", len(sr.Entries), filter)
 		return len(sr.Entries) == 1, cn, nil
 	} else {
 		return false, "", nil
