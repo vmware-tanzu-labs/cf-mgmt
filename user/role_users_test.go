@@ -13,7 +13,6 @@ import (
 
 	. "github.com/onsi/gomega"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	ldapfakes "github.com/pivotalservices/cf-mgmt/ldap/fakes"
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
 	uaafakes "github.com/pivotalservices/cf-mgmt/uaa/fakes"
@@ -23,7 +22,7 @@ var _ = Describe("RoleUsers", func() {
 	var (
 		userManager *DefaultManager
 		client      *fakes.FakeCFClient
-		ldapFake    *ldapfakes.FakeManager
+		ldapFake    *fakes.FakeLdapManager
 		uaaFake     *uaafakes.FakeManager
 		fakeReader  *configfakes.FakeReader
 		userList    []cfclient.User
@@ -33,7 +32,7 @@ var _ = Describe("RoleUsers", func() {
 	)
 	BeforeEach(func() {
 		client = new(fakes.FakeCFClient)
-		ldapFake = new(ldapfakes.FakeManager)
+		ldapFake = new(fakes.FakeLdapManager)
 		uaaFake = new(uaafakes.FakeManager)
 		fakeReader = new(configfakes.FakeReader)
 		spaceFake = new(spacefakes.FakeManager)

@@ -13,7 +13,7 @@ import (
 
 var _ = Describe("Ldap", func() {
 	Describe("given a ldap manager", func() {
-		var ldapManager ldap.Manager
+		var ldapManager *ldap.Manager
 		var connection *fakes.FakeConnection
 		var ldapConfig *config.LdapConfig
 		BeforeEach(func() {
@@ -26,7 +26,7 @@ var _ = Describe("Ldap", func() {
 				UserSearchBase:    "ou=users,dc=pivotal,dc=org",
 			}
 			connection = &fakes.FakeConnection{}
-			ldapManager = &ldap.DefaultManager{Config: ldapConfig, Connection: connection}
+			ldapManager = &ldap.Manager{Config: ldapConfig, Connection: connection}
 		})
 		Context("GetUserByID()", func() {
 			It("should return specified user", func() {
@@ -234,6 +234,47 @@ var _ = Describe("Ldap", func() {
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).Should(BeEquivalentTo("Error searching"))
 			})
+		})
+
+		Context("GroupFilter()", func() {
+			It("Should return expected group filter", func() {
+				filter, err := ldapManager.GroupFilter("cn=nested_group,ou=groups,dc=pivotal,dc=org")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(filter).Should(Equal("(&(objectclass=groupOfNames)(cn=nested_group))"))
+			})
+
+			It("Should error", func() {
+				_, err := ldapManager.GroupFilter("foo")
+				Expect(err).Should(MatchError("cannot find CN for DN: foo"))
+			})
+		})
+
+		Context("IsGroup()", func() {
+			It("Should return false", func() {
+				isGroup, groupName, err := ldapManager.IsGroup("foo")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(isGroup).Should(BeFalse())
+				Expect(groupName).Should(Equal(""))
+			})
+
+			It("Should return true", func() {
+				connection.SearchReturns(&l.SearchResult{
+					Entries: []*l.Entry{
+						&l.Entry{
+							Attributes: []*l.EntryAttribute{
+								&l.EntryAttribute{
+									Name:   "cn",
+									Values: []string{"nested_group"},
+								},
+							}},
+					},
+				}, nil)
+				isGroup, groupName, err := ldapManager.IsGroup("cn=nested_group,ou=groups,dc=pivotal,dc=org")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(isGroup).Should(BeTrue())
+				Expect(groupName).Should(Equal("nested_group"))
+			})
+
 		})
 	})
 })

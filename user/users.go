@@ -40,7 +40,7 @@ type DefaultManager struct {
 	OrgMgr     organization.Manager
 	UAAMgr     uaa.Manager
 	Peek       bool
-	LdapMgr    ldap.Manager
+	LdapMgr    LdapManager
 	LdapConfig *config.LdapConfig
 }
 
