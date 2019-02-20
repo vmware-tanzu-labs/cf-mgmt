@@ -23,7 +23,7 @@ var (
 
 const (
 	groupFilter                 = "(cn=%s)"
-	groupFilterWithObjectClass  = "(&(objectclass=%s)(cn=%s))"
+	groupFilterWithObjectClass  = "(&(objectclass=%s)(%s))"
 	userFilter                  = "(%s=%s)"
 	userFilterWithObjectClass   = "(&(objectclass=%s)(%s=%s))"
 	userDNFilter                = "(%s)"
@@ -107,8 +107,8 @@ func (m *Manager) GroupFilter(userDN string) (string, error) {
 	if len(indexes) == 0 {
 		return "", fmt.Errorf("cannot find CN for DN: %s", userDN)
 	}
-	cn := strings.Replace(userDN[:indexes[0]], "cn=", "", 1)
-	cnTemp := UnescapeFilterValue(cn)
+
+	cnTemp := UnescapeFilterValue(userDN[:indexes[0]])
 	lo.G.Debug("CN unescaped:", cnTemp)
 
 	escapedCN := l.EscapeFilter(strings.Replace(cnTemp, "\\", "", -1))
@@ -135,7 +135,7 @@ func (m *Manager) IsGroup(DN string) (bool, string, error) {
 		if err != nil {
 			return false, "", err
 		}
-		lo.G.Infof("Found %d entries for group filter %s", len(sr.Entries), filter)
+		lo.G.Debugf("Found %d entries for group filter %s", len(sr.Entries), filter)
 		if len(sr.Entries) == 1 {
 			return true, sr.Entries[0].GetAttributeValue("cn"), nil
 		}

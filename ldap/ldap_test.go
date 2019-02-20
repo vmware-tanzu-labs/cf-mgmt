@@ -243,6 +243,12 @@ var _ = Describe("Ldap", func() {
 				Expect(filter).Should(Equal("(&(objectclass=groupOfNames)(cn=nested_group))"))
 			})
 
+			It("Should return expected group filter", func() {
+				filter, err := ldapManager.GroupFilter("CN=nested_group,ou=groups,dc=pivotal,dc=org")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(filter).Should(Equal("(&(objectclass=groupOfNames)(CN=nested_group))"))
+			})
+
 			It("Should error", func() {
 				_, err := ldapManager.GroupFilter("foo")
 				Expect(err).Should(MatchError("cannot find CN for DN: foo"))
