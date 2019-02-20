@@ -104,6 +104,7 @@ func (m *yamlManager) GetOrgConfigs() ([]OrgConfig, error) {
 		result[i].TotalReservedRoutePorts = "0"
 		result[i].TotalPrivateDomains = unlimited
 		result[i].TotalServiceKeys = unlimited
+		result[i].InstanceMemoryLimit = unlimited
 
 		if err = LoadFile(f, &result[i]); err != nil {
 			lo.G.Error(err)
@@ -162,6 +163,7 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		result[i].AppTaskLimit = unlimited
 		result[i].TotalReservedRoutePorts = "0"
 		result[i].TotalServiceKeys = unlimited
+		result[i].InstanceMemoryLimit = unlimited
 
 		if err = LoadFile(f, &result[i]); err != nil {
 			return nil, err
