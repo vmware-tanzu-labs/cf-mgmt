@@ -295,9 +295,13 @@ use_tls: true
 bindDN: uid=admin,ou=system
 userSearchBase: ou=users,dc=example,dc=com
 userNameAttribute: uid
+# optional added in v1.0.20+
+userObjectClass: <object class that matches your ldap/active directory configuration for users (inetOrgPerson, organizationalPerson)>
 userMailAttribute: mail
 groupSearchBase: ou=groups,dc=example,dc=com
 groupAttribute: member
+# optional added in v1.0.20+
+groupObjectClass: <object class that matches your ldap/active directory configuration for groups (group, groupOfNames)>
 origin: <needs to match origin configured for elastic runtime>
 
 # optional added in 1.0.11+ - true/false
