@@ -2,12 +2,12 @@ resources:
 - name: config-repo
   type: git
   source:
-    uri: {{git_repo_uri}}
-    branch: {{git_repo_branch}}
+    uri: ((git_repo_uri))
+    branch: ((git_repo_branch))
 - name: time-trigger
   type: time
   source:
-    interval: {{time-trigger}}
+    interval: ((time-trigger))
 
 jobs:
 - name: create-orgs
@@ -17,12 +17,12 @@ jobs:
   - task: create-orgs
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: create-orgs
 
 - name: shared-domains
@@ -32,12 +32,12 @@ jobs:
   - task: shared-domains
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: shared-domains
 
 - name: create-security-groups
@@ -47,12 +47,12 @@ jobs:
   - task: create-security-groups
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: create-security-groups
 
 - name: assign-default-security-groups
@@ -63,12 +63,12 @@ jobs:
   - task: assign-default-security-groups
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: assign-default-security-groups
 
 - name: delete-orgs
@@ -80,12 +80,12 @@ jobs:
   - task: delete-orgs
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: delete-orgs
 
 - name: create-org-private-domains
@@ -96,12 +96,12 @@ jobs:
   - task: create-org-private-domains
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: create-org-private-domains
 
 - name: service-access
@@ -112,12 +112,12 @@ jobs:
   - task: service-access
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: service-access
 
 - name: share-org-private-domains
@@ -128,12 +128,12 @@ jobs:
   - task: share-org-private-domains
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: share-org-private-domains
 
 - name: create-spaces
@@ -144,13 +144,13 @@ jobs:
   - task: create-spaces
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LDAP_PASSWORD: {{ldap_password}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LDAP_PASSWORD: ((ldap_password))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: create-spaces
 
 - name: delete-spaces
@@ -163,12 +163,12 @@ jobs:
   - task: delete-spaces
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: delete-spaces
 
 - name: update-spaces
@@ -181,12 +181,12 @@ jobs:
   - task: update-spaces
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-spaces
 
 - name: update-space-users
@@ -199,13 +199,13 @@ jobs:
   - task: update-space-users
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LDAP_PASSWORD: {{ldap_password}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LDAP_PASSWORD: ((ldap_password))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-space-users
 
 - name: update-space-quotas
@@ -216,12 +216,12 @@ jobs:
   - task: update-space-quotas
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-space-quotas
 
 - name: update-space-security-groups
@@ -232,12 +232,12 @@ jobs:
   - task: update-space-security-groups
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-space-security-groups
 
 - name: update-org-users
@@ -250,13 +250,13 @@ jobs:
   - task: update-org-users
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LDAP_PASSWORD: {{ldap_password}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LDAP_PASSWORD: ((ldap_password))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-org-users
 
 - name: update-org-quotas
@@ -267,12 +267,12 @@ jobs:
   - task: update-org-quotas
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-org-quotas
 
 - name: isolation-segments
@@ -285,11 +285,11 @@ jobs:
   - task: isolation-segments
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      CLIENT_SECRET: {{client_secret}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      CLIENT_SECRET: ((client_secret))
       CONFIG_DIR: ./config
-      LOG_LEVEL: {{log_level}}
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: isolation-segments
 
 - name: cleanup-org-users
@@ -302,10 +302,10 @@ jobs:
   - task: cleanup-org-users
     file: config-repo/ci/tasks/cf-mgmt.yml
     params:
-      SYSTEM_DOMAIN: {{system_domain}}
-      USER_ID: {{user_id}}
-      PASSWORD: {{password}}
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
       CONFIG_DIR: ./config
-      CLIENT_SECRET: {{client_secret}}
-      LOG_LEVEL: {{log_level}}
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: cleanup-org-users
