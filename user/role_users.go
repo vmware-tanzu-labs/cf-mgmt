@@ -15,13 +15,15 @@ func NewRoleUsers(users []cfclient.User, uaaUsers *uaa.Users) (*RoleUsers, error
 	for _, user := range users {
 		uaaUser := uaaUsers.GetByID(user.Guid)
 		if uaaUser == nil {
-			return nil, fmt.Errorf("User with ID %s not found", user.Guid)
+			lo.G.Warningf("CF User with GUID %s not found in UAA", user.Guid)
+			continue
 		}
 		roleUser := RoleUser{
 			UserName: uaaUser.Username,
 			Origin:   uaaUser.Origin,
 			GUID:     uaaUser.GUID,
 		}
+
 		if roleUser.UserName == "" {
 			return nil, fmt.Errorf("Username is blank for user with id %s", user.Guid)
 		}
