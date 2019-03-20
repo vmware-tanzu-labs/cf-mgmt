@@ -90,6 +90,31 @@ var _ = Describe("RoleUsers", func() {
 			spaceGUID := client.ListSpaceAuditorsArgsForCall(0)
 			Expect(spaceGUID).To(Equal("foo"))
 		})
+		It("Should remove orphaned users from ListSpaceAuditors", func() {
+			userList = []cfclient.User{
+				cfclient.User{
+					Username: "hello",
+					Guid:     "world",
+				},
+				cfclient.User{
+					Username: "hello2",
+					Guid:     "world2",
+				},
+				cfclient.User{
+					Username: "orphaned_user",
+					Guid:     "orphaned_user_guid",
+				},
+			}
+			client.ListSpaceManagersReturns(userList, nil)
+			users, err := userManager.ListSpaceManagers("foo", uaaUsers)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(users.Users())).Should(Equal(2))
+			Expect(client.ListSpaceManagersCallCount()).To(Equal(1))
+			Expect(client.DeleteUserCallCount()).To(Equal(1))
+			Expect(client.DeleteUserArgsForCall(0)).To(Equal("orphaned_user_guid"))
+			spaceGUID := client.ListSpaceManagersArgsForCall(0)
+			Expect(spaceGUID).To(Equal("foo"))
+		})
 		It("Should error on ListSpaceAuditors", func() {
 			client.ListSpaceAuditorsReturns(nil, errors.New("error"))
 			_, err := userManager.ListSpaceAuditors("foo", uaaUsers)
@@ -130,6 +155,7 @@ var _ = Describe("RoleUsers", func() {
 			spaceGUID := client.ListSpaceManagersArgsForCall(0)
 			Expect(spaceGUID).To(Equal("foo"))
 		})
+
 		It("Should error on ListSpaceManagers", func() {
 			client.ListSpaceManagersReturns(nil, errors.New("error"))
 			_, err := userManager.ListSpaceManagers("foo", uaaUsers)
