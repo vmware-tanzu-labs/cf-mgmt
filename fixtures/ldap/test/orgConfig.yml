@@ -1,0 +1,25 @@
+org: test
+org-billingmanager:
+  ldap_users: []
+  users: []
+  saml_users: []
+  ldap_groups: []
+org-manager:
+  ldap_users: []
+  users: []
+  saml_users: []
+  ldap_groups: []
+org-auditor:
+  ldap_users: []
+  users: []
+  saml_users: []
+  ldap_groups: []
+private-domains: []
+enable-remove-private-domains: true
+shared-private-domains: []
+enable-remove-shared-private-domains: true
+enable-org-quota: false
+enable-remove-users: true
+default_isolation_segment: ""
+service-access: {}
+named_quota: ""

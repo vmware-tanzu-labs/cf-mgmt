@@ -1,0 +1,13 @@
+enabled: true
+ldapHost: 127.0.0.1
+ldapPort: 389
+use_tls: false
+bindDN: "cn=admin,dc=pivotal,dc=org"
+userSearchBase: "dc=pivotal,dc=org"
+userNameAttribute: "uid"
+userMailAttribute: "mail"
+groupSearchBase: "ou=groups,dc=pivotal,dc=org"
+groupAttribute: "member"
+origin: ldap
+insecure_skip_verify: false
+ca_cert: s

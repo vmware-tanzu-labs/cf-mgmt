@@ -1,0 +1,5 @@
+enable-delete-isolation-segments: true
+enable-unassign-security-groups: true
+enable-service-access: true
+running-security-groups: [all_access]
+staging-security-groups: [all_access]

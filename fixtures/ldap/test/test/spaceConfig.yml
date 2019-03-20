@@ -1,0 +1,24 @@
+org: test
+space: test
+space-developer:
+  ldap_users: [cwashburn]
+  users: []
+  saml_users: []
+  ldap_groups: []
+space-manager:
+  ldap_users: [cwashburn1]
+  users: []
+  saml_users: []
+  ldap_groups: []
+space-auditor:
+  ldap_users: [cwashburn2]
+  users: []
+  saml_users: []
+  ldap_groups: []
+allow-ssh: false
+enable-space-quota: false
+enable-security-group: false
+enable-remove-users: true
+isolation_segment: ""
+named-security-groups: []
+named_quota: ""

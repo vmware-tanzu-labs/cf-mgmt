@@ -10,12 +10,13 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func NewRoleUsers(users []cfclient.User, uaaUsers *uaa.Users) (*RoleUsers, error) {
+func NewRoleUsers(users []cfclient.User, uaaUsers *uaa.Users) (*RoleUsers, []string, error) {
 	roleUsers := InitRoleUsers()
+	orphanedUsers := []string{}
 	for _, user := range users {
 		uaaUser := uaaUsers.GetByID(user.Guid)
 		if uaaUser == nil {
-			lo.G.Warningf("CF User with GUID %s not found in UAA", user.Guid)
+			orphanedUsers = append(orphanedUsers, user.Guid)
 			continue
 		}
 		roleUser := RoleUser{
@@ -25,11 +26,11 @@ func NewRoleUsers(users []cfclient.User, uaaUsers *uaa.Users) (*RoleUsers, error
 		}
 
 		if roleUser.UserName == "" {
-			return nil, fmt.Errorf("Username is blank for user with id %s", user.Guid)
+			return nil, nil, fmt.Errorf("Username is blank for user with id %s", user.Guid)
 		}
 		roleUsers.addUser(roleUser)
 	}
-	return roleUsers, nil
+	return roleUsers, orphanedUsers, nil
 }
 
 func (r *RoleUsers) HasUser(userName string) bool {
@@ -94,7 +95,15 @@ func (m *DefaultManager) ListSpaceAuditors(spaceGUID string, uaaUsers *uaa.Users
 	if err != nil {
 		return nil, err
 	}
-	return NewRoleUsers(users, uaaUsers)
+	roleUsers, orphanedUsers, err := NewRoleUsers(users, uaaUsers)
+	if err != nil {
+		return nil, err
+	}
+	err = m.removeOrphanedUsers(orphanedUsers)
+	if err != nil {
+		return nil, err
+	}
+	return roleUsers, nil
 }
 func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
@@ -104,7 +113,15 @@ func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string, uaaUsers *uaa.Use
 	if err != nil {
 		return nil, err
 	}
-	return NewRoleUsers(users, uaaUsers)
+	roleUsers, orphanedUsers, err := NewRoleUsers(users, uaaUsers)
+	if err != nil {
+		return nil, err
+	}
+	err = m.removeOrphanedUsers(orphanedUsers)
+	if err != nil {
+		return nil, err
+	}
+	return roleUsers, nil
 }
 func (m *DefaultManager) ListSpaceManagers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
@@ -114,7 +131,15 @@ func (m *DefaultManager) ListSpaceManagers(spaceGUID string, uaaUsers *uaa.Users
 	if err != nil {
 		return nil, err
 	}
-	return NewRoleUsers(users, uaaUsers)
+	roleUsers, orphanedUsers, err := NewRoleUsers(users, uaaUsers)
+	if err != nil {
+		return nil, err
+	}
+	err = m.removeOrphanedUsers(orphanedUsers)
+	if err != nil {
+		return nil, err
+	}
+	return roleUsers, nil
 }
 
 func (m *DefaultManager) listSpaceAuditors(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
@@ -195,7 +220,15 @@ func (m *DefaultManager) ListOrgAuditors(orgGUID string, uaaUsers *uaa.Users) (*
 	if err != nil {
 		return nil, err
 	}
-	return NewRoleUsers(users, uaaUsers)
+	roleUsers, orphanedUsers, err := NewRoleUsers(users, uaaUsers)
+	if err != nil {
+		return nil, err
+	}
+	err = m.removeOrphanedUsers(orphanedUsers)
+	if err != nil {
+		return nil, err
+	}
+	return roleUsers, nil
 }
 func (m *DefaultManager) ListOrgBillingManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
@@ -205,7 +238,15 @@ func (m *DefaultManager) ListOrgBillingManagers(orgGUID string, uaaUsers *uaa.Us
 	if err != nil {
 		return nil, err
 	}
-	return NewRoleUsers(users, uaaUsers)
+	roleUsers, orphanedUsers, err := NewRoleUsers(users, uaaUsers)
+	if err != nil {
+		return nil, err
+	}
+	err = m.removeOrphanedUsers(orphanedUsers)
+	if err != nil {
+		return nil, err
+	}
+	return roleUsers, nil
 }
 func (m *DefaultManager) ListOrgManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
@@ -215,7 +256,27 @@ func (m *DefaultManager) ListOrgManagers(orgGUID string, uaaUsers *uaa.Users) (*
 	if err != nil {
 		return nil, err
 	}
-	return NewRoleUsers(users, uaaUsers)
+	roleUsers, orphanedUsers, err := NewRoleUsers(users, uaaUsers)
+	if err != nil {
+		return nil, err
+	}
+	err = m.removeOrphanedUsers(orphanedUsers)
+	if err != nil {
+		return nil, err
+	}
+	return roleUsers, nil
+}
+
+func (m *DefaultManager) removeOrphanedUsers(orphanedUsers []string) error {
+	for _, orphanedUser := range orphanedUsers {
+		lo.G.Infof("Deleting orphaned CF user with guid %s", orphanedUser)
+		err := m.Client.DeleteUser(orphanedUser)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 func (m *DefaultManager) listOrgAuditors(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers, err := m.ListOrgAuditors(input.OrgGUID, uaaUsers)

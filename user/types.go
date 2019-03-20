@@ -62,6 +62,7 @@ type CFClient interface {
 	AssociateOrgAuditor(orgGUID, userGUID string) (cfclient.Org, error)
 	AssociateOrgManager(orgGUID, userGUID string) (cfclient.Org, error)
 	AssociateOrgBillingManager(orgGUID, userGUID string) (cfclient.Org, error)
+	DeleteUser(userGuid string) error
 }
 
 type LdapManager interface {
