@@ -440,16 +440,29 @@ func (m *DefaultManager) SyncUsers(uaaUsers *uaa.Users, usersInput UsersInput) e
 	if err != nil {
 		return err
 	}
+	lo.G.Debugf("Current Users In Role %+v", roleUsers.Users())
 
 	if err := m.SyncLdapUsers(roleUsers, uaaUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding ldap users")
 	}
+	if len(roleUsers.Users()) > 0 {
+		lo.G.Debugf("Users after LDAP sync %+v", roleUsers.Users())
+	}
+
 	if err := m.SyncInternalUsers(roleUsers, uaaUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding internal users")
 	}
+	if len(roleUsers.Users()) > 0 {
+		lo.G.Debugf("Users after Internal sync %+v", roleUsers.Users())
+	}
+
 	if err := m.SyncSamlUsers(roleUsers, uaaUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding saml users")
 	}
+	if len(roleUsers.Users()) > 0 {
+		lo.G.Debugf("Users after SAML sync %+v", roleUsers.Users())
+	}
+
 	if err := m.RemoveUsers(roleUsers, usersInput); err != nil {
 		return errors.Wrap(err, "removing users")
 	}
@@ -517,6 +530,9 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 
 func (m *DefaultManager) RemoveUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
 	if usersInput.RemoveUsers {
+		if len(roleUsers.Users()) > 0 {
+			lo.G.Debugf("The following users are being removed %+v", roleUsers.Users())
+		}
 		for _, roleUser := range roleUsers.Users() {
 			if err := usersInput.RemoveUser(usersInput, roleUser.UserName, roleUser.GUID); err != nil {
 				return errors.Wrap(err, fmt.Sprintf("error removing user %s", roleUser.UserName))
