@@ -89,7 +89,7 @@ func (r *RoleUsers) Users() []RoleUser {
 
 func (m *DefaultManager) ListSpaceAuditors(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
-		return nil, nil
+		return InitRoleUsers(), nil
 	}
 	users, err := m.Client.ListSpaceAuditors(spaceGUID)
 	if err != nil {
@@ -107,7 +107,7 @@ func (m *DefaultManager) ListSpaceAuditors(spaceGUID string, uaaUsers *uaa.Users
 }
 func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
-		return nil, nil
+		return InitRoleUsers(), nil
 	}
 	users, err := m.Client.ListSpaceDevelopers(spaceGUID)
 	if err != nil {
@@ -125,7 +125,7 @@ func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string, uaaUsers *uaa.Use
 }
 func (m *DefaultManager) ListSpaceManagers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
-		return nil, nil
+		return InitRoleUsers(), nil
 	}
 	users, err := m.Client.ListSpaceManagers(spaceGUID)
 	if err != nil {
@@ -214,7 +214,7 @@ func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string, uaaUsers *uaa.
 
 func (m *DefaultManager) ListOrgAuditors(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
-		return nil, nil
+		return InitRoleUsers(), nil
 	}
 	users, err := m.Client.ListOrgAuditors(orgGUID)
 	if err != nil {
@@ -232,7 +232,7 @@ func (m *DefaultManager) ListOrgAuditors(orgGUID string, uaaUsers *uaa.Users) (*
 }
 func (m *DefaultManager) ListOrgBillingManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
-		return nil, nil
+		return InitRoleUsers(), nil
 	}
 	users, err := m.Client.ListOrgBillingManagers(orgGUID)
 	if err != nil {
@@ -250,7 +250,7 @@ func (m *DefaultManager) ListOrgBillingManagers(orgGUID string, uaaUsers *uaa.Us
 }
 func (m *DefaultManager) ListOrgManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
-		return nil, nil
+		return InitRoleUsers(), nil
 	}
 	users, err := m.Client.ListOrgManagers(orgGUID)
 	if err != nil {

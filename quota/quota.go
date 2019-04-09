@@ -2,11 +2,13 @@ package quota
 
 import (
 	"fmt"
+	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
+	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
 
@@ -47,12 +49,12 @@ func (m *Manager) CreateSpaceQuotas() error {
 		}
 		space, err := m.SpaceMgr.FindSpace(input.Org, input.Space)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "Finding spaces")
 		}
 
 		quotas, err := m.ListAllSpaceQuotasForOrg(space.OrganizationGuid)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "ListAllSpaceQuotasForOrg")
 		}
 
 		orgQuotas, err := m.Client.ListOrgQuotas()
@@ -195,6 +197,9 @@ func (m *Manager) hasSpaceQuotaChanged(quota cfclient.SpaceQuota, newQuota cfcli
 
 func (m *Manager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]cfclient.SpaceQuota, error) {
 	quotas := make(map[string]cfclient.SpaceQuota)
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return quotas, nil
+	}
 	spaceQuotas, err := m.Client.ListOrgSpaceQuotas(orgGUID)
 	if err != nil {
 		return nil, err
