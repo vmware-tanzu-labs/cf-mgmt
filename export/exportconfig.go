@@ -144,21 +144,18 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 				return err
 			}
 			if orgQuota != nil {
-				if orgQuota.Name == orgName {
-					orgConfig.EnableOrgQuota = true
-					orgConfig.MemoryLimit = config.ByteSize(orgQuota.MemoryLimit)
-					orgConfig.InstanceMemoryLimit = config.ByteSize(orgQuota.InstanceMemoryLimit)
-					orgConfig.TotalRoutes = config.AsString(orgQuota.TotalRoutes)
-					orgConfig.TotalServices = config.AsString(orgQuota.TotalServices)
-					orgConfig.PaidServicePlansAllowed = orgQuota.NonBasicServicesAllowed
-					orgConfig.TotalPrivateDomains = config.AsString(orgQuota.TotalPrivateDomains)
-					orgConfig.TotalReservedRoutePorts = config.AsString(orgQuota.TotalReservedRoutePorts)
-					orgConfig.TotalServiceKeys = config.AsString(orgQuota.TotalServiceKeys)
-					orgConfig.AppInstanceLimit = config.AsString(orgQuota.AppInstanceLimit)
-					orgConfig.AppTaskLimit = config.AsString(orgQuota.AppTaskLimit)
-				} else {
-					orgConfig.NamedQuota = orgQuota.Name
-				}
+				orgConfig.EnableOrgQuota = false
+				orgConfig.NamedQuota = orgQuota.Name
+				// orgConfig.MemoryLimit = config.ByteSize(orgQuota.MemoryLimit)
+				// orgConfig.InstanceMemoryLimit = config.ByteSize(orgQuota.InstanceMemoryLimit)
+				// orgConfig.TotalRoutes = config.AsString(orgQuota.TotalRoutes)
+				// orgConfig.TotalServices = config.AsString(orgQuota.TotalServices)
+				// orgConfig.PaidServicePlansAllowed = orgQuota.NonBasicServicesAllowed
+				// orgConfig.TotalPrivateDomains = config.AsString(orgQuota.TotalPrivateDomains)
+				// orgConfig.TotalReservedRoutePorts = config.AsString(orgQuota.TotalReservedRoutePorts)
+				// orgConfig.TotalServiceKeys = config.AsString(orgQuota.TotalServiceKeys)
+				// orgConfig.AppInstanceLimit = config.AsString(orgQuota.AppInstanceLimit)
+				// orgConfig.AppTaskLimit = config.AsString(orgQuota.AppTaskLimit)
 
 			}
 		}
@@ -346,23 +343,22 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	}
 
 	for _, orgQuota := range orgQuotas {
-		if !im.doesOrgExist(orgs, orgQuota.Name) {
-			err = configMgr.AddOrgQuota(config.OrgQuota{
-				Name:                    orgQuota.Name,
-				AppInstanceLimit:        config.AsString(orgQuota.AppInstanceLimit),
-				TotalPrivateDomains:     config.AsString(orgQuota.TotalPrivateDomains),
-				TotalReservedRoutePorts: config.AsString(orgQuota.TotalReservedRoutePorts),
-				TotalServiceKeys:        config.AsString(orgQuota.TotalServiceKeys),
-				AppTaskLimit:            config.AsString(orgQuota.AppTaskLimit),
-				MemoryLimit:             config.ByteSize(orgQuota.MemoryLimit),
-				InstanceMemoryLimit:     config.ByteSize(orgQuota.InstanceMemoryLimit),
-				TotalRoutes:             config.AsString(orgQuota.TotalRoutes),
-				TotalServices:           config.AsString(orgQuota.TotalServices),
-				PaidServicePlansAllowed: orgQuota.NonBasicServicesAllowed,
-			})
-			if err != nil {
-				return err
-			}
+
+		err = configMgr.AddOrgQuota(config.OrgQuota{
+			Name:                    orgQuota.Name,
+			AppInstanceLimit:        config.AsString(orgQuota.AppInstanceLimit),
+			TotalPrivateDomains:     config.AsString(orgQuota.TotalPrivateDomains),
+			TotalReservedRoutePorts: config.AsString(orgQuota.TotalReservedRoutePorts),
+			TotalServiceKeys:        config.AsString(orgQuota.TotalServiceKeys),
+			AppTaskLimit:            config.AsString(orgQuota.AppTaskLimit),
+			MemoryLimit:             config.ByteSize(orgQuota.MemoryLimit),
+			InstanceMemoryLimit:     config.ByteSize(orgQuota.InstanceMemoryLimit),
+			TotalRoutes:             config.AsString(orgQuota.TotalRoutes),
+			TotalServices:           config.AsString(orgQuota.TotalServices),
+			PaidServicePlansAllowed: orgQuota.NonBasicServicesAllowed,
+		})
+		if err != nil {
+			return err
 		}
 	}
 

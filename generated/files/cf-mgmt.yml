@@ -3,7 +3,7 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: {repository: pivotalservices/cf-mgmt, tag: "latest"}
+  source: {repository: pivotalservices/cf-mgmt, tag: "latest"} 
 
 inputs:
   - name: config-repo
