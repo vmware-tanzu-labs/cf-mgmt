@@ -20,7 +20,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: create-orgs
@@ -35,7 +35,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: shared-domains
@@ -50,7 +50,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: create-security-groups
@@ -66,7 +66,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: assign-default-security-groups
@@ -83,7 +83,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: delete-orgs
@@ -99,7 +99,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: create-org-private-domains
@@ -115,7 +115,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: service-access
@@ -131,7 +131,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: share-org-private-domains
@@ -147,7 +147,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LDAP_PASSWORD: ((ldap_password))
       LOG_LEVEL: ((log_level))
@@ -166,7 +166,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: delete-spaces
@@ -184,7 +184,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-spaces
@@ -202,7 +202,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LDAP_PASSWORD: ((ldap_password))
       LOG_LEVEL: ((log_level))
@@ -219,7 +219,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-space-quotas
@@ -235,7 +235,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-space-security-groups
@@ -253,7 +253,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LDAP_PASSWORD: ((ldap_password))
       LOG_LEVEL: ((log_level))
@@ -270,7 +270,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-org-quotas
@@ -288,7 +288,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       CLIENT_SECRET: ((client_secret))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: isolation-segments
 
@@ -305,7 +305,7 @@ jobs:
       SYSTEM_DOMAIN: ((system_domain))
       USER_ID: ((user_id))
       PASSWORD: ((password))
-      CONFIG_DIR: ./config
+      CONFIG_DIR: ((config_dir))
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: cleanup-org-users

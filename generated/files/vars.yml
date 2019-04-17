@@ -13,5 +13,7 @@ client_secret:
 ldap_password: ""
 # logging level for cf-mgmt commands in the pipeline
 log_level: INFO
-# time interval to trigger update/delete jobs on 
+# time interval to trigger update/delete jobs on
 time-trigger: 15m
+# configuration directory
+config_dir: ./config
