@@ -92,13 +92,14 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, usersInput UsersInput
 		if len(userList) > 0 {
 			lo.G.Debugf("UserID [%s] found in UAA, skipping ldap lookup", userID)
 			for _, uaaUser := range userList {
-				lo.G.Debugf("Checking if UserID [%s] with origin [%s] and externalID [%s] matches ldap origin", uaaUser.Username, uaaUser.Origin, uaaUser.ExternalID)
 				if strings.EqualFold(uaaUser.Origin, m.LdapConfig.Origin) {
 					ldapUsers = append(ldapUsers, ldap.User{
 						UserID: userID,
 						UserDN: uaaUser.ExternalID,
 						Email:  uaaUser.Email,
 					})
+				} else {
+					lo.G.Debugf("UserID [%s] with origin [%s] and externalID [%s] does not match ldap origin", uaaUser.Username, uaaUser.Origin, uaaUser.ExternalID)
 				}
 			}
 		} else {
