@@ -1,12 +1,16 @@
-hash: 3dda5040327d6a58453b1fda38891cc5378f7fb86bd29e476e57ce78a048ccda
-updated: 2019-02-18T20:48:34.540987-05:00
+hash: 2a79c1ab52ebb2eed42906cc138779be36ed9e34c6b6cd42b9bfe2e0f68744f2
+updated: 2019-04-25T11:55:12.947057-07:00
 imports:
+- name: code.cloudfoundry.org/cfhttp
+  version: 1f526aa7822e788b7e8b9dd097b0cf8c5b2fdb71
+  subpackages:
+  - v2
 - name: code.cloudfoundry.org/gofileutils
   version: 4d0c80011a0f37da1711c184028bc40137cd45af
   subpackages:
   - fileutils
 - name: code.cloudfoundry.org/routing-api
-  version: ecb61bff5019adef3a4c00fcf8fc7d765cc97adc
+  version: 905afb1c1b18d8fa810e0038b2023ac1b3842056
   subpackages:
   - models
 - name: code.cloudfoundry.org/trace-logger
@@ -94,7 +98,7 @@ testImports:
 - name: github.com/moul/http2curl
   version: 9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d
 - name: github.com/onsi/ginkgo
-  version: 2e1be8f7d90e9d3e3e58b0ce470f2f14d075406f
+  version: eea6ad008b96acdaa524f5b409513bf062b500ad
   subpackages:
   - config
   - internal/codelocation
@@ -114,7 +118,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 65fb64232476ad9046e57c26cd0bff3d3a8dc6cd
+  version: 90e289841c1ed79b7a598a7cd9959750cb5e89e2
   subpackages:
   - format
   - gbytes
