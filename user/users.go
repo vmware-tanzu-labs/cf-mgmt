@@ -548,8 +548,8 @@ func (m *DefaultManager) RemoveUsers(roleUsers *RoleUsers, usersInput UsersInput
 	return nil
 }
 
-func (m *DefaultManager) InitializeLdap(ldapBindPassword string) error {
-	ldapConfig, err := m.Cfg.LdapConfig(ldapBindPassword)
+func (m *DefaultManager) InitializeLdap(ldapBindPassword, ldapServer string) error {
+	ldapConfig, err := m.Cfg.LdapConfig(ldapBindPassword, ldapServer)
 	if err != nil {
 		return err
 	}

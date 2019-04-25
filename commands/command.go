@@ -16,6 +16,7 @@ type BaseCFConfigCommand struct {
 
 //BaseLDAPCommand - base command that has ldap password
 type BaseLDAPCommand struct {
+	LdapServer   string `long:"ldap-server" env:"LDAP_SERVER"  description:"LDAP server for binding"`
 	LdapPassword string `long:"ldap-password" env:"LDAP_PASSWORD"  description:"LDAP password for binding"`
 }
 

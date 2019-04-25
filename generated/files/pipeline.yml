@@ -149,7 +149,6 @@ jobs:
       PASSWORD: ((password))
       CONFIG_DIR: ./config
       CLIENT_SECRET: ((client_secret))
-      LDAP_PASSWORD: ((ldap_password))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: create-spaces
 
@@ -205,6 +204,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: ((client_secret))
       LDAP_PASSWORD: ((ldap_password))
+      LDAP_SERVER: ((ldap_server))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-space-users
 
@@ -256,6 +256,7 @@ jobs:
       CONFIG_DIR: ./config
       CLIENT_SECRET: ((client_secret))
       LDAP_PASSWORD: ((ldap_password))
+      LDAP_SERVER: ((ldap_server))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-org-users
 

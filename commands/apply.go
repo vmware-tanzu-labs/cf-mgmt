@@ -17,7 +17,7 @@ func (c *ApplyCommand) Execute([]string) error {
 	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err != nil {
 		return err
 	}
-	if err = cfMgmt.UserManager.InitializeLdap(c.LdapPassword); err != nil {
+	if err = cfMgmt.UserManager.InitializeLdap(c.LdapPassword, c.LdapServer); err != nil {
 		return err
 	}
 	defer cfMgmt.UserManager.DeinitializeLdap()
