@@ -15,10 +15,9 @@ ldap_password: ""
 log_level: INFO
 # time interval to trigger update/delete jobs on
 time-trigger: 15m
-<<<<<<< HEAD
+
 # configuration directory
 config_dir: ./config
-=======
+
 # allow specifying ldap server in pipeline vs in ldap.yml
 ldap_server: ""
->>>>>>> develop
