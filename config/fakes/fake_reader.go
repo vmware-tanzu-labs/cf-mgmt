@@ -159,10 +159,11 @@ type FakeReader struct {
 		result1 []config.SpaceQuota
 		result2 error
 	}
-	LdapConfigStub        func(string) (*config.LdapConfig, error)
+	LdapConfigStub        func(string, string) (*config.LdapConfig, error)
 	ldapConfigMutex       sync.RWMutex
 	ldapConfigArgsForCall []struct {
 		arg1 string
+		arg2 string
 	}
 	ldapConfigReturns struct {
 		result1 *config.LdapConfig
@@ -915,16 +916,17 @@ func (fake *FakeReader) GetSpaceQuotasReturnsOnCall(i int, result1 []config.Spac
 	}{result1, result2}
 }
 
-func (fake *FakeReader) LdapConfig(arg1 string) (*config.LdapConfig, error) {
+func (fake *FakeReader) LdapConfig(arg1 string, arg2 string) (*config.LdapConfig, error) {
 	fake.ldapConfigMutex.Lock()
 	ret, specificReturn := fake.ldapConfigReturnsOnCall[len(fake.ldapConfigArgsForCall)]
 	fake.ldapConfigArgsForCall = append(fake.ldapConfigArgsForCall, struct {
 		arg1 string
-	}{arg1})
-	fake.recordInvocation("LdapConfig", []interface{}{arg1})
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("LdapConfig", []interface{}{arg1, arg2})
 	fake.ldapConfigMutex.Unlock()
 	if fake.LdapConfigStub != nil {
-		return fake.LdapConfigStub(arg1)
+		return fake.LdapConfigStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -939,17 +941,17 @@ func (fake *FakeReader) LdapConfigCallCount() int {
 	return len(fake.ldapConfigArgsForCall)
 }
 
-func (fake *FakeReader) LdapConfigCalls(stub func(string) (*config.LdapConfig, error)) {
+func (fake *FakeReader) LdapConfigCalls(stub func(string, string) (*config.LdapConfig, error)) {
 	fake.ldapConfigMutex.Lock()
 	defer fake.ldapConfigMutex.Unlock()
 	fake.LdapConfigStub = stub
 }
 
-func (fake *FakeReader) LdapConfigArgsForCall(i int) string {
+func (fake *FakeReader) LdapConfigArgsForCall(i int) (string, string) {
 	fake.ldapConfigMutex.RLock()
 	defer fake.ldapConfigMutex.RUnlock()
 	argsForCall := fake.ldapConfigArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeReader) LdapConfigReturns(result1 *config.LdapConfig, result2 error) {

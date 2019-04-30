@@ -280,7 +280,12 @@ var _ = Describe("Ldap", func() {
 				Expect(isGroup).Should(BeTrue())
 				Expect(groupName).Should(Equal("nested_group"))
 			})
-
+		})
+	})
+	Context("Escaping user DN", func() {
+		It("Should provide escape special characters", func() {
+			escaped := ldap.EscapeFilterValue("CN=Caleb\\, Washburn\\, cwashburn")
+			Expect(escaped).Should(Equal("CN=Caleb, Washburn, cwashburn"))
 		})
 	})
 })

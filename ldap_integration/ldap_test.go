@@ -62,13 +62,14 @@ var _ = Describe("Ldap", func() {
 			It("then it should return 5 users", func() {
 				users, err := ldapManager.GetUserDNs("space_developers")
 				Expect(err).Should(BeNil())
-				Expect(len(users)).Should(Equal(5))
+				Expect(len(users)).Should(Equal(6))
 				Expect(users).To(ConsistOf([]string{
 					"cn=cwashburn,ou=users,dc=pivotal,dc=org",
 					"cn=Washburn\\2C Caleb,ou=users,dc=pivotal,dc=org",
 					"cn=special\\2C (char) - username,ou=users,dc=pivotal,dc=org",
 					"cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org",
-					"cn=cwashburn1,ou=users,dc=pivotal,dc=org"}))
+					"cn=cwashburn1,ou=users,dc=pivotal,dc=org",
+					"cn=Washburn\\2C Caleb\\2C cwashburn,ou=users,dc=pivotal,dc=org"}))
 			})
 		})
 		Context("when called with a valid group with special characters", func() {

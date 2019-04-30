@@ -92,6 +92,7 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, usersInput UsersInput
 		if len(userList) > 0 {
 			lo.G.Debugf("UserID [%s] found in UAA, skipping ldap lookup", userID)
 			for _, uaaUser := range userList {
+				lo.G.Debugf("Checking if userID [%s] with origin [%s] and externalID [%s] matches ldap origin", uaaUser.Username, uaaUser.Origin, uaaUser.ExternalID)
 				if strings.EqualFold(uaaUser.Origin, m.LdapConfig.Origin) {
 					ldapUsers = append(ldapUsers, ldap.User{
 						UserID: userID,
@@ -113,14 +114,17 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, usersInput UsersInput
 			}
 		}
 	}
-
+	lo.G.Debugf("LdapUsers before unique check: %+v", ldapUsers)
+	ldapUsersToReturn := []ldap.User{}
 	uniqueLDAPUsers := make(map[string]ldap.User)
 	for _, ldapUser := range ldapUsers {
-		uniqueLDAPUsers[strings.ToUpper(ldapUser.UserDN)] = ldapUser
+		if len(strings.TrimSpace(ldapUser.UserDN)) == 0 {
+			lo.G.Debugf("User [%s] has a blank externalID", ldapUser.UserID)
+			ldapUsersToReturn = append(ldapUsersToReturn, ldapUser)
+		} else {
+			uniqueLDAPUsers[strings.ToUpper(ldapUser.UserDN)] = ldapUser
+		}
 	}
-
-	ldapUsersToReturn := []ldap.User{}
-
 	for _, uniqueLDAPUser := range uniqueLDAPUsers {
 		ldapUsersToReturn = append(ldapUsersToReturn, uniqueLDAPUser)
 	}

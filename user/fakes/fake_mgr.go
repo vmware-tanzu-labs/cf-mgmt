@@ -29,10 +29,11 @@ type FakeManager struct {
 	deinitializeLdapReturnsOnCall map[int]struct {
 		result1 error
 	}
-	InitializeLdapStub        func(string) error
+	InitializeLdapStub        func(string, string) error
 	initializeLdapMutex       sync.RWMutex
 	initializeLdapArgsForCall []struct {
 		arg1 string
+		arg2 string
 	}
 	initializeLdapReturns struct {
 		result1 error
@@ -252,16 +253,17 @@ func (fake *FakeManager) DeinitializeLdapReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) InitializeLdap(arg1 string) error {
+func (fake *FakeManager) InitializeLdap(arg1 string, arg2 string) error {
 	fake.initializeLdapMutex.Lock()
 	ret, specificReturn := fake.initializeLdapReturnsOnCall[len(fake.initializeLdapArgsForCall)]
 	fake.initializeLdapArgsForCall = append(fake.initializeLdapArgsForCall, struct {
 		arg1 string
-	}{arg1})
-	fake.recordInvocation("InitializeLdap", []interface{}{arg1})
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("InitializeLdap", []interface{}{arg1, arg2})
 	fake.initializeLdapMutex.Unlock()
 	if fake.InitializeLdapStub != nil {
-		return fake.InitializeLdapStub(arg1)
+		return fake.InitializeLdapStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -276,17 +278,17 @@ func (fake *FakeManager) InitializeLdapCallCount() int {
 	return len(fake.initializeLdapArgsForCall)
 }
 
-func (fake *FakeManager) InitializeLdapCalls(stub func(string) error) {
+func (fake *FakeManager) InitializeLdapCalls(stub func(string, string) error) {
 	fake.initializeLdapMutex.Lock()
 	defer fake.initializeLdapMutex.Unlock()
 	fake.InitializeLdapStub = stub
 }
 
-func (fake *FakeManager) InitializeLdapArgsForCall(i int) string {
+func (fake *FakeManager) InitializeLdapArgsForCall(i int) (string, string) {
 	fake.initializeLdapMutex.RLock()
 	defer fake.initializeLdapMutex.RUnlock()
 	argsForCall := fake.initializeLdapArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeManager) InitializeLdapReturns(result1 error) {

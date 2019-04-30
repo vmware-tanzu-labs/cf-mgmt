@@ -155,7 +155,7 @@ func (m *Manager) GetUserByDN(userDN string) (*User, error) {
 	userCNTemp := UnescapeFilterValue(userDN[:index])
 	lo.G.Debug("CN unescaped:", userCNTemp)
 
-	userCN := l.EscapeFilter(strings.Replace(userCNTemp, "\\", "", 1))
+	userCN := EscapeFilterValue(userCNTemp)
 	lo.G.Debug("CN escaped:", userCN)
 	filter := m.getUserFilterWithCN(userCN)
 	return m.searchUser(filter, userDN[index+1:], "")
@@ -215,6 +215,10 @@ func UnescapeFilterValue(filter string) string {
 		},
 	)
 	return string(repl)
+}
+
+func EscapeFilterValue(filter string) string {
+	return l.EscapeFilter(strings.Replace(filter, "\\", "", -1))
 }
 
 func (m *Manager) getUserFilter(userID string) string {
