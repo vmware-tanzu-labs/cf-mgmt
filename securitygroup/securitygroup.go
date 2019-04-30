@@ -51,7 +51,7 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 		if err != nil {
 			return errors.Wrapf(err, "Unabled to list existing space security groups for org/space [%s/%s]", input.Org, input.Space)
 		}
-		lo.G.Infof("Existing space security groups %+v", existingSpaceSecurityGroups)
+		lo.G.Debugf("Existing space security groups %+v", existingSpaceSecurityGroups)
 		// iterate through and assign named security groups to the space - ensuring that they are up to date is
 		// done elsewhere.
 		for _, securityGroupName := range input.ASGs {
@@ -101,7 +101,7 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 		}
 
 		if input.EnableUnassignSecurityGroup {
-			lo.G.Infof("Existing space security groups after %+v", existingSpaceSecurityGroups)
+			lo.G.Debugf("Existing space security groups after %+v", existingSpaceSecurityGroups)
 			for sgName, _ := range existingSpaceSecurityGroups {
 				if sgInfo, ok := sgs[sgName]; ok {
 					err := m.UnassignSecurityGroupToSpace(space, sgInfo)

@@ -1,5 +1,5 @@
-hash: a73bcdf32d2c4d7db7b0d653f3aa4f587fe7185e3ffcb51c6db601c4d97b6a71
-updated: 2019-04-30T11:01:41.580292-07:00
+hash: 9f431f9c422f0b515d061fc882b6bf109986a4582ee0a862e61bbd99e9891629
+updated: 2019-04-30T15:32:37.075672-07:00
 imports:
 - name: code.cloudfoundry.org/cfhttp
   version: 1f526aa7822e788b7e8b9dd097b0cf8c5b2fdb71
@@ -18,7 +18,8 @@ imports:
 - name: github.com/bmizerany/pat
   version: 6226ea591a40176dd3ff9cd8eff81ed6ca721a00
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: f136f9222381e2fea5099f62e4b751dcb660ff82
+  version: c32c2009d2e1cc9cb1024fb76641e2629be19118
+  repo: https://github.com/calebwashburn/go-cfclient
 - name: github.com/cloudfoundry-community/go-uaa
   version: 10d9dedd9e3453da8bd404d938f4e1f52f12d589
   subpackages:

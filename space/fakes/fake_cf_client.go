@@ -60,6 +60,18 @@ type FakeCFClient struct {
 		result1 []cfclient.Space
 		result2 error
 	}
+	SupportsMetadataAPIStub        func() (bool, error)
+	supportsMetadataAPIMutex       sync.RWMutex
+	supportsMetadataAPIArgsForCall []struct {
+	}
+	supportsMetadataAPIReturns struct {
+		result1 bool
+		result2 error
+	}
+	supportsMetadataAPIReturnsOnCall map[int]struct {
+		result1 bool
+		result2 error
+	}
 	UpdateSpaceStub        func(string, cfclient.SpaceRequest) (cfclient.Space, error)
 	updateSpaceMutex       sync.RWMutex
 	updateSpaceArgsForCall []struct {
@@ -73,6 +85,18 @@ type FakeCFClient struct {
 	updateSpaceReturnsOnCall map[int]struct {
 		result1 cfclient.Space
 		result2 error
+	}
+	UpdateSpaceMetadataStub        func(string, cfclient.Metadata) error
+	updateSpaceMetadataMutex       sync.RWMutex
+	updateSpaceMetadataArgsForCall []struct {
+		arg1 string
+		arg2 cfclient.Metadata
+	}
+	updateSpaceMetadataReturns struct {
+		result1 error
+	}
+	updateSpaceMetadataReturnsOnCall map[int]struct {
+		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -321,6 +345,61 @@ func (fake *FakeCFClient) ListSpacesReturnsOnCall(i int, result1 []cfclient.Spac
 	}{result1, result2}
 }
 
+func (fake *FakeCFClient) SupportsMetadataAPI() (bool, error) {
+	fake.supportsMetadataAPIMutex.Lock()
+	ret, specificReturn := fake.supportsMetadataAPIReturnsOnCall[len(fake.supportsMetadataAPIArgsForCall)]
+	fake.supportsMetadataAPIArgsForCall = append(fake.supportsMetadataAPIArgsForCall, struct {
+	}{})
+	fake.recordInvocation("SupportsMetadataAPI", []interface{}{})
+	fake.supportsMetadataAPIMutex.Unlock()
+	if fake.SupportsMetadataAPIStub != nil {
+		return fake.SupportsMetadataAPIStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.supportsMetadataAPIReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCFClient) SupportsMetadataAPICallCount() int {
+	fake.supportsMetadataAPIMutex.RLock()
+	defer fake.supportsMetadataAPIMutex.RUnlock()
+	return len(fake.supportsMetadataAPIArgsForCall)
+}
+
+func (fake *FakeCFClient) SupportsMetadataAPICalls(stub func() (bool, error)) {
+	fake.supportsMetadataAPIMutex.Lock()
+	defer fake.supportsMetadataAPIMutex.Unlock()
+	fake.SupportsMetadataAPIStub = stub
+}
+
+func (fake *FakeCFClient) SupportsMetadataAPIReturns(result1 bool, result2 error) {
+	fake.supportsMetadataAPIMutex.Lock()
+	defer fake.supportsMetadataAPIMutex.Unlock()
+	fake.SupportsMetadataAPIStub = nil
+	fake.supportsMetadataAPIReturns = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFClient) SupportsMetadataAPIReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.supportsMetadataAPIMutex.Lock()
+	defer fake.supportsMetadataAPIMutex.Unlock()
+	fake.SupportsMetadataAPIStub = nil
+	if fake.supportsMetadataAPIReturnsOnCall == nil {
+		fake.supportsMetadataAPIReturnsOnCall = make(map[int]struct {
+			result1 bool
+			result2 error
+		})
+	}
+	fake.supportsMetadataAPIReturnsOnCall[i] = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeCFClient) UpdateSpace(arg1 string, arg2 cfclient.SpaceRequest) (cfclient.Space, error) {
 	fake.updateSpaceMutex.Lock()
 	ret, specificReturn := fake.updateSpaceReturnsOnCall[len(fake.updateSpaceArgsForCall)]
@@ -385,6 +464,67 @@ func (fake *FakeCFClient) UpdateSpaceReturnsOnCall(i int, result1 cfclient.Space
 	}{result1, result2}
 }
 
+func (fake *FakeCFClient) UpdateSpaceMetadata(arg1 string, arg2 cfclient.Metadata) error {
+	fake.updateSpaceMetadataMutex.Lock()
+	ret, specificReturn := fake.updateSpaceMetadataReturnsOnCall[len(fake.updateSpaceMetadataArgsForCall)]
+	fake.updateSpaceMetadataArgsForCall = append(fake.updateSpaceMetadataArgsForCall, struct {
+		arg1 string
+		arg2 cfclient.Metadata
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateSpaceMetadata", []interface{}{arg1, arg2})
+	fake.updateSpaceMetadataMutex.Unlock()
+	if fake.UpdateSpaceMetadataStub != nil {
+		return fake.UpdateSpaceMetadataStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateSpaceMetadataReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeCFClient) UpdateSpaceMetadataCallCount() int {
+	fake.updateSpaceMetadataMutex.RLock()
+	defer fake.updateSpaceMetadataMutex.RUnlock()
+	return len(fake.updateSpaceMetadataArgsForCall)
+}
+
+func (fake *FakeCFClient) UpdateSpaceMetadataCalls(stub func(string, cfclient.Metadata) error) {
+	fake.updateSpaceMetadataMutex.Lock()
+	defer fake.updateSpaceMetadataMutex.Unlock()
+	fake.UpdateSpaceMetadataStub = stub
+}
+
+func (fake *FakeCFClient) UpdateSpaceMetadataArgsForCall(i int) (string, cfclient.Metadata) {
+	fake.updateSpaceMetadataMutex.RLock()
+	defer fake.updateSpaceMetadataMutex.RUnlock()
+	argsForCall := fake.updateSpaceMetadataArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeCFClient) UpdateSpaceMetadataReturns(result1 error) {
+	fake.updateSpaceMetadataMutex.Lock()
+	defer fake.updateSpaceMetadataMutex.Unlock()
+	fake.UpdateSpaceMetadataStub = nil
+	fake.updateSpaceMetadataReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeCFClient) UpdateSpaceMetadataReturnsOnCall(i int, result1 error) {
+	fake.updateSpaceMetadataMutex.Lock()
+	defer fake.updateSpaceMetadataMutex.Unlock()
+	fake.UpdateSpaceMetadataStub = nil
+	if fake.updateSpaceMetadataReturnsOnCall == nil {
+		fake.updateSpaceMetadataReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateSpaceMetadataReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -396,8 +536,12 @@ func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	defer fake.getSpaceByGuidMutex.RUnlock()
 	fake.listSpacesMutex.RLock()
 	defer fake.listSpacesMutex.RUnlock()
+	fake.supportsMetadataAPIMutex.RLock()
+	defer fake.supportsMetadataAPIMutex.RUnlock()
 	fake.updateSpaceMutex.RLock()
 	defer fake.updateSpaceMutex.RUnlock()
+	fake.updateSpaceMetadataMutex.RLock()
+	defer fake.updateSpaceMetadataMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

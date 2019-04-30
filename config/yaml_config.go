@@ -88,6 +88,9 @@ func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 func (m *yamlManager) GetGlobalConfig() (*GlobalConfig, error) {
 	globalConfig := &GlobalConfig{}
 	LoadFile(path.Join(m.ConfigDir, "cf-mgmt.yml"), globalConfig)
+	if len(globalConfig.MetadataPrefix) == 0 {
+		globalConfig.MetadataPrefix = "cf-mgmt.pivotal.io"
+	}
 	return globalConfig, nil
 }
 

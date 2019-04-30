@@ -66,6 +66,16 @@ type FakeManager struct {
 	updateSpacesReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UpdateSpacesMetadataStub        func() error
+	updateSpacesMetadataMutex       sync.RWMutex
+	updateSpacesMetadataArgsForCall []struct {
+	}
+	updateSpacesMetadataReturns struct {
+		result1 error
+	}
+	updateSpacesMetadataReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -353,6 +363,58 @@ func (fake *FakeManager) UpdateSpacesReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeManager) UpdateSpacesMetadata() error {
+	fake.updateSpacesMetadataMutex.Lock()
+	ret, specificReturn := fake.updateSpacesMetadataReturnsOnCall[len(fake.updateSpacesMetadataArgsForCall)]
+	fake.updateSpacesMetadataArgsForCall = append(fake.updateSpacesMetadataArgsForCall, struct {
+	}{})
+	fake.recordInvocation("UpdateSpacesMetadata", []interface{}{})
+	fake.updateSpacesMetadataMutex.Unlock()
+	if fake.UpdateSpacesMetadataStub != nil {
+		return fake.UpdateSpacesMetadataStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateSpacesMetadataReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeManager) UpdateSpacesMetadataCallCount() int {
+	fake.updateSpacesMetadataMutex.RLock()
+	defer fake.updateSpacesMetadataMutex.RUnlock()
+	return len(fake.updateSpacesMetadataArgsForCall)
+}
+
+func (fake *FakeManager) UpdateSpacesMetadataCalls(stub func() error) {
+	fake.updateSpacesMetadataMutex.Lock()
+	defer fake.updateSpacesMetadataMutex.Unlock()
+	fake.UpdateSpacesMetadataStub = stub
+}
+
+func (fake *FakeManager) UpdateSpacesMetadataReturns(result1 error) {
+	fake.updateSpacesMetadataMutex.Lock()
+	defer fake.updateSpacesMetadataMutex.Unlock()
+	fake.UpdateSpacesMetadataStub = nil
+	fake.updateSpacesMetadataReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) UpdateSpacesMetadataReturnsOnCall(i int, result1 error) {
+	fake.updateSpacesMetadataMutex.Lock()
+	defer fake.updateSpacesMetadataMutex.Unlock()
+	fake.UpdateSpacesMetadataStub = nil
+	if fake.updateSpacesMetadataReturnsOnCall == nil {
+		fake.updateSpacesMetadataReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateSpacesMetadataReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -366,6 +428,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.listSpacesMutex.RUnlock()
 	fake.updateSpacesMutex.RLock()
 	defer fake.updateSpacesMutex.RUnlock()
+	fake.updateSpacesMetadataMutex.RLock()
+	defer fake.updateSpacesMetadataMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

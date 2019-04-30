@@ -22,6 +22,7 @@ type CfMgmtCommand struct {
 	CreateSpacesCommand              CreateSpacesCommand              `command:"create-spaces" description:"creates spaces in configuration"`
 	DeleteSpacesCommand              DeleteSpacesCommand              `command:"delete-spaces" description:"deletes spaces not in configurtion"`
 	UpdateSpacesCommand              UpdateSpacesCommand              `command:"update-spaces" description:"enables/disables ssh access at space level"`
+	UpdateSpacesMetadataCommand      UpdateSpacesMetadataCommand      `command:"update-spaces-metadata" description:"adds metadata for a space"`
 	UpdateSpaceQuotasCommand         UpdateSpaceQuotasCommand         `command:"update-space-quotas" description:"updates spaces quotas"`
 	UpdateSpaceUsersCommand          UpdateSpaceUsersCommand          `command:"update-space-users" description:"update space user roles"`
 	CreateSpaceSecurityGroupsCommand CreateSpaceSecurityGroupsCommand `command:"update-space-security-groups" description:"updates space specific security groups"`
@@ -29,6 +30,7 @@ type CfMgmtCommand struct {
 	SharePrivateDomainsCommand       SharePrivateDomainsCommand       `command:"share-org-private-domains" description:"shares an existing private domain with the specified org"`
 	ServiceAccessCommand             ServiceAccessCommand             `command:"service-access" description:"enables/disables service access for orgs"`
 	SharedDomainsCommand             SharedDomainsCommand             `command:"shared-domains" description:"adds/removes shared domains"`
+	UpdateOrgsMetadataCommand        UpdateOrgsMetadataCommand        `command:"update-orgs-metadata" description:"updates organizations metadata for each orgConfig.yml"`
 	ApplyCommand                     ApplyCommand                     `command:"apply" description:"applies the configuration to your target foundation"`
 }
 

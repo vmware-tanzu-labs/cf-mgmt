@@ -88,6 +88,22 @@ jobs:
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: delete-orgs
 
+- name: update-orgs-metadata
+  plan:
+  - get: config-repo
+    passed: [create-orgs]
+    trigger: true
+  - task: update-orgs-metadata
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
+      CONFIG_DIR: ((config_dir))
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
+      CF_MGMT_COMMAND: update-orgs-metadata
+
 - name: create-org-private-domains
   plan:
   - get: config-repo
@@ -187,6 +203,22 @@ jobs:
       CLIENT_SECRET: ((client_secret))
       LOG_LEVEL: ((log_level))
       CF_MGMT_COMMAND: update-spaces
+
+- name: update-spaces-metadata
+  plan:
+  - get: config-repo
+    passed: [create-spaces]
+    trigger: true
+  - task: update-spaces-metadata
+    file: config-repo/ci/tasks/cf-mgmt.yml
+    params:
+      SYSTEM_DOMAIN: ((system_domain))
+      USER_ID: ((user_id))
+      PASSWORD: ((password))
+      CONFIG_DIR: ((config_dir))
+      CLIENT_SECRET: ((client_secret))
+      LOG_LEVEL: ((log_level))
+      CF_MGMT_COMMAND: update-spaces-metadata
 
 - name: update-space-users
   plan:

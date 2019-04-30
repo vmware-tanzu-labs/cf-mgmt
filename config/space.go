@@ -15,34 +15,35 @@ type Spaces struct {
 
 // SpaceConfig describes attributes for a space.
 type SpaceConfig struct {
-	Org                         string   `yaml:"org"`
-	Space                       string   `yaml:"space"`
-	OriginalSpace               string   `yaml:"original-space,omitempty"`
-	Developer                   UserMgmt `yaml:"space-developer"`
-	Manager                     UserMgmt `yaml:"space-manager"`
-	Auditor                     UserMgmt `yaml:"space-auditor"`
-	DeveloperGroup              string   `yaml:"space-developer-group,omitempty"`
-	ManagerGroup                string   `yaml:"space-manager-group,omitempty"`
-	AuditorGroup                string   `yaml:"space-auditor-group,omitempty"`
-	AllowSSH                    bool     `yaml:"allow-ssh"`
-	AllowSSHUntil               string   `yaml:"allow-ssh-until,omitempty"`
-	EnableSpaceQuota            bool     `yaml:"enable-space-quota"`
-	EnableSecurityGroup         bool     `yaml:"enable-security-group"`
-	EnableUnassignSecurityGroup bool     `yaml:"enable-unassign-security-group"`
-	SecurityGroupContents       string   `yaml:"security-group-contents,omitempty"`
-	RemoveUsers                 bool     `yaml:"enable-remove-users"`
-	IsoSegment                  string   `yaml:"isolation_segment"`
-	ASGs                        []string `yaml:"named-security-groups"`
-	MemoryLimit                 string   `yaml:"memory-limit,omitempty"`
-	InstanceMemoryLimit         string   `yaml:"instance-memory-limit,omitempty"`
-	TotalRoutes                 string   `yaml:"total-routes,omitempty"`
-	TotalServices               string   `yaml:"total-services,omitempty"`
-	PaidServicePlansAllowed     bool     `yaml:"paid-service-plans-allowed,omitempty"`
-	TotalReservedRoutePorts     string   `yaml:"total_reserved_route_ports,omitempty"`
-	TotalServiceKeys            string   `yaml:"total_service_keys,omitempty"`
-	AppInstanceLimit            string   `yaml:"app_instance_limit,omitempty"`
-	AppTaskLimit                string   `yaml:"app_task_limit,omitempty"`
-	NamedQuota                  string   `yaml:"named_quota"`
+	Org                         string    `yaml:"org"`
+	Space                       string    `yaml:"space"`
+	OriginalSpace               string    `yaml:"original-space,omitempty"`
+	Developer                   UserMgmt  `yaml:"space-developer"`
+	Manager                     UserMgmt  `yaml:"space-manager"`
+	Auditor                     UserMgmt  `yaml:"space-auditor"`
+	DeveloperGroup              string    `yaml:"space-developer-group,omitempty"`
+	ManagerGroup                string    `yaml:"space-manager-group,omitempty"`
+	AuditorGroup                string    `yaml:"space-auditor-group,omitempty"`
+	AllowSSH                    bool      `yaml:"allow-ssh"`
+	AllowSSHUntil               string    `yaml:"allow-ssh-until,omitempty"`
+	EnableSpaceQuota            bool      `yaml:"enable-space-quota"`
+	EnableSecurityGroup         bool      `yaml:"enable-security-group"`
+	EnableUnassignSecurityGroup bool      `yaml:"enable-unassign-security-group"`
+	SecurityGroupContents       string    `yaml:"security-group-contents,omitempty"`
+	RemoveUsers                 bool      `yaml:"enable-remove-users"`
+	IsoSegment                  string    `yaml:"isolation_segment"`
+	ASGs                        []string  `yaml:"named-security-groups"`
+	MemoryLimit                 string    `yaml:"memory-limit,omitempty"`
+	InstanceMemoryLimit         string    `yaml:"instance-memory-limit,omitempty"`
+	TotalRoutes                 string    `yaml:"total-routes,omitempty"`
+	TotalServices               string    `yaml:"total-services,omitempty"`
+	PaidServicePlansAllowed     bool      `yaml:"paid-service-plans-allowed,omitempty"`
+	TotalReservedRoutePorts     string    `yaml:"total_reserved_route_ports,omitempty"`
+	TotalServiceKeys            string    `yaml:"total_service_keys,omitempty"`
+	AppInstanceLimit            string    `yaml:"app_instance_limit,omitempty"`
+	AppTaskLimit                string    `yaml:"app_task_limit,omitempty"`
+	NamedQuota                  string    `yaml:"named_quota"`
+	Metadata                    *Metadata `yaml:"metadata"`
 }
 
 func (s *SpaceConfig) GetSecurityGroupContents() string {

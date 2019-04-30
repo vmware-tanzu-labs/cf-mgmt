@@ -15,6 +15,7 @@ type Manager interface {
 	UpdateOrg(orgGUID string, orgRequest cfclient.OrgRequest) (cfclient.Org, error)
 	GetOrgByGUID(orgGUID string) (cfclient.Org, error)
 	RenameOrg(originalOrgName, newOrgName string) error
+	UpdateOrgsMetadata() error
 }
 
 type CFClient interface {
@@ -29,4 +30,6 @@ type CFClient interface {
 	ListOrgPrivateDomains(orgGUID string) ([]cfclient.Domain, error)
 	DeleteDomain(guid string) error
 	UnshareOrgPrivateDomain(orgGUID, privateDomainGUID string) error
+	SupportsMetadataAPI() (bool, error)
+	UpdateOrgMetadata(orgGUID string, metadata cfclient.Metadata) error
 }

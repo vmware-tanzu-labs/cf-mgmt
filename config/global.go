@@ -9,6 +9,7 @@ type GlobalConfig struct {
 	StagingSecurityGroups         []string                `yaml:"staging-security-groups"`
 	SharedDomains                 map[string]SharedDomain `yaml:"shared-domains"`
 	EnableDeleteSharedDomains     bool                    `yaml:"enable-remove-shared-domains"`
+	MetadataPrefix                string                  `yaml:"metadata-prefix"`
 }
 
 type SharedDomain struct {

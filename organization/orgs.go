@@ -6,6 +6,7 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
 
@@ -255,4 +256,67 @@ func (m *DefaultManager) UpdateOrg(orgGUID string, orgRequest cfclient.OrgReques
 
 func (m *DefaultManager) GetOrgByGUID(orgGUID string) (cfclient.Org, error) {
 	return m.Client.GetOrgByGuid(orgGUID)
+}
+
+func (m *DefaultManager) UpdateOrgsMetadata() error {
+	supports, err := m.Client.SupportsMetadataAPI()
+	if err != nil {
+		return errors.Wrap(err, "checking if supports v3 metadata api")
+	}
+	if !supports {
+		lo.G.Infof("Your deployment does not yet support v3 metadata api")
+		return nil
+	}
+
+	orgConfigList, err := m.Cfg.GetOrgConfigs()
+	if err != nil {
+		return err
+	}
+
+	globalCfg, err := m.Cfg.GetGlobalConfig()
+	if err != nil {
+		return err
+	}
+
+	for _, orgConfig := range orgConfigList {
+		if orgConfig.Metadata != nil {
+			org, err := m.FindOrg(orgConfig.Org)
+			if err != nil {
+				return err
+			}
+			metadata := cfclient.Metadata{}
+			if orgConfig.Metadata.Labels != nil {
+				for key, value := range orgConfig.Metadata.Labels {
+					if len(value) > 0 {
+						metadata.AddLabel(globalCfg.MetadataPrefix, key, value)
+					} else {
+						metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
+					}
+				}
+			}
+			if orgConfig.Metadata.Annotations != nil {
+				for key, value := range orgConfig.Metadata.Annotations {
+					if len(value) > 0 {
+						metadata.AddAnnotation(fmt.Sprintf("%s/%s", globalCfg.MetadataPrefix, key), value)
+					} else {
+						metadata.RemoveAnnotation(fmt.Sprintf("%s/%s", globalCfg.MetadataPrefix, key))
+					}
+				}
+			}
+			err = m.UpdateOrgMetadata(org, metadata)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (m *DefaultManager) UpdateOrgMetadata(org cfclient.Org, metadata cfclient.Metadata) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: update org %s metadata", org.Name)
+		return nil
+	}
+	lo.G.Infof("update org [%s] metadata", org.Name)
+	return m.Client.UpdateOrgMetadata(org.Guid, metadata)
 }

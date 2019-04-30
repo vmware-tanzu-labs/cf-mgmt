@@ -35,6 +35,7 @@ type OrgConfig struct {
 	DefaultIsoSegment          string              `yaml:"default_isolation_segment"`
 	ServiceAccess              map[string][]string `yaml:"service-access"`
 	NamedQuota                 string              `yaml:"named_quota"`
+	Metadata                   *Metadata           `yaml:"metadata"`
 }
 
 func (o *OrgConfig) GetQuota() OrgQuota {

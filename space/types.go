@@ -11,6 +11,7 @@ type Manager interface {
 	UpdateSpaces() (err error)
 	DeleteSpaces() (err error)
 	ListSpaces(orgGUID string) ([]cfclient.Space, error)
+	UpdateSpacesMetadata() error
 }
 
 type CFClient interface {
@@ -19,4 +20,6 @@ type CFClient interface {
 	CreateSpace(req cfclient.SpaceRequest) (cfclient.Space, error)
 	DeleteSpace(guid string, recursive, async bool) error
 	ListSpaces() ([]cfclient.Space, error)
+	SupportsMetadataAPI() (bool, error)
+	UpdateSpaceMetadata(spaceGUID string, metadata cfclient.Metadata) error
 }

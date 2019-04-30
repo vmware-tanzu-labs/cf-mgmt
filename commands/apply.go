@@ -26,6 +26,11 @@ func (c *ApplyCommand) Execute([]string) error {
 		return err
 	}
 
+	fmt.Println("*********  Update Orgs Metadata")
+	if err = cfMgmt.OrgManager.UpdateOrgsMetadata(); err != nil {
+		return err
+	}
+
 	fmt.Println("*********  Delete Orgs")
 	if err = cfMgmt.OrgManager.DeleteOrgs(); err != nil {
 		return err
@@ -73,6 +78,11 @@ func (c *ApplyCommand) Execute([]string) error {
 
 	fmt.Println("*********  Update Spaces")
 	if err = cfMgmt.SpaceManager.UpdateSpaces(); err != nil {
+		return err
+	}
+
+	fmt.Println("*********  Update Spaces Metadata")
+	if err = cfMgmt.SpaceManager.UpdateSpacesMetadata(); err != nil {
 		return err
 	}
 
