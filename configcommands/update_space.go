@@ -12,22 +12,23 @@ import (
 type UpdateSpaceConfigurationCommand struct {
 	ConfigManager config.Manager
 	BaseConfigCommand
-	OrgName               string     `long:"org" description:"Org name" required:"true"`
-	SpaceName             string     `long:"space" description:"Space name" required:"true"`
-	AllowSSH              string     `long:"allow-ssh" description:"Enable the application ssh" choice:"true" choice:"false"`
-	AllowSSHUntil         string     `long:"allow-ssh-until" description:"Temporarily allow application ssh until options are Days (1D), Hours (5H), or Minutes (10M)"`
-	EnableRemoveUsers     string     `long:"enable-remove-users" description:"Enable removing users from the space" choice:"true" choice:"false"`
-	EnableSecurityGroup   string     `long:"enable-security-group" description:"Enable space level security group definitions" choice:"true" choice:"false"`
-	IsoSegment            string     `long:"isolation-segment" description:"Isolation segment assigned to space"`
-	ClearIsolationSegment bool       `long:"clear-isolation-segment" description:"Sets the isolation segment to blank"`
-	ASGs                  []string   `long:"named-asg" description:"Named asg(s) to assign to space, specify multiple times"`
-	ASGsToRemove          []string   `long:"named-asg-to-remove" description:"Named asg(s) to remove, specify multiple times"`
-	NamedQuota            string     `long:"named-quota" description:"Named quota to assign to space"`
-	ClearNamedQuota       bool       `long:"clear-named-quota" description:"Sets the named quota to blank"`
-	Quota                 SpaceQuota `group:"quota"`
-	Developer             UserRole   `group:"developer" namespace:"developer"`
-	Manager               UserRole   `group:"manager" namespace:"manager"`
-	Auditor               UserRole   `group:"auditor" namespace:"auditor"`
+	OrgName                     string     `long:"org" description:"Org name" required:"true"`
+	SpaceName                   string     `long:"space" description:"Space name" required:"true"`
+	AllowSSH                    string     `long:"allow-ssh" description:"Enable the application ssh" choice:"true" choice:"false"`
+	AllowSSHUntil               string     `long:"allow-ssh-until" description:"Temporarily allow application ssh until options are Days (1D), Hours (5H), or Minutes (10M)"`
+	EnableRemoveUsers           string     `long:"enable-remove-users" description:"Enable removing users from the space" choice:"true" choice:"false"`
+	EnableSecurityGroup         string     `long:"enable-security-group" description:"Enable space level security group definitions" choice:"true" choice:"false"`
+	EnableUnassignSecurityGroup string     `long:"enable-unassign-security-group" description:"Enable unassigning security groups not in config" choice:"true" choice:"false"`
+	IsoSegment                  string     `long:"isolation-segment" description:"Isolation segment assigned to space"`
+	ClearIsolationSegment       bool       `long:"clear-isolation-segment" description:"Sets the isolation segment to blank"`
+	ASGs                        []string   `long:"named-asg" description:"Named asg(s) to assign to space, specify multiple times"`
+	ASGsToRemove                []string   `long:"named-asg-to-remove" description:"Named asg(s) to remove, specify multiple times"`
+	NamedQuota                  string     `long:"named-quota" description:"Named quota to assign to space"`
+	ClearNamedQuota             bool       `long:"clear-named-quota" description:"Sets the named quota to blank"`
+	Quota                       SpaceQuota `group:"quota"`
+	Developer                   UserRole   `group:"developer" namespace:"developer"`
+	Manager                     UserRole   `group:"manager" namespace:"manager"`
+	Auditor                     UserRole   `group:"auditor" namespace:"auditor"`
 }
 
 //Execute - updates space configuration`
@@ -50,6 +51,7 @@ func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 
 	convertToBool("enable-remove-users", &spaceConfig.RemoveUsers, c.EnableRemoveUsers, &errorString)
 	convertToBool("enable-security-group", &spaceConfig.EnableSecurityGroup, c.EnableSecurityGroup, &errorString)
+	convertToBool("enable-unassign-security-group", &spaceConfig.EnableUnassignSecurityGroup, c.EnableUnassignSecurityGroup, &errorString)
 	if c.IsoSegment != "" {
 		spaceConfig.IsoSegment = c.IsoSegment
 	}

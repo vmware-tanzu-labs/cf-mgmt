@@ -12,18 +12,19 @@ import (
 type AddSpaceToConfigurationCommand struct {
 	ConfigManager config.Manager
 	BaseConfigCommand
-	OrgName             string      `long:"org" description:"Org name" required:"true"`
-	SpaceName           string      `long:"space" description:"Space name" required:"true"`
-	AllowSSH            string      `long:"allow-ssh" description:"Enable the application ssh" choice:"true" choice:"false"`
-	AllowSSHUntil       string      `long:"allow-ssh-until" description:"Temporarily allow application ssh until options are Days (1D), Hours (5H), or Minutes (10M)"`
-	EnableSecurityGroup string      `long:"enable-security-group" description:"Enable space level security group definitions" choice:"true" choice:"false"`
-	IsoSegment          string      `long:"isolation-segment" description:"Isolation segment assigned to space"`
-	ASGs                []string    `long:"named-asg" description:"Named asg(s) to assign to space, specify multiple times"`
-	NamedQuota          string      `long:"named-quota" description:"Named quota to assign to space"`
-	Quota               SpaceQuota  `group:"quota"`
-	Developer           UserRoleAdd `group:"developer" namespace:"developer"`
-	Manager             UserRoleAdd `group:"manager" namespace:"manager"`
-	Auditor             UserRoleAdd `group:"auditor" namespace:"auditor"`
+	OrgName                     string      `long:"org" description:"Org name" required:"true"`
+	SpaceName                   string      `long:"space" description:"Space name" required:"true"`
+	AllowSSH                    string      `long:"allow-ssh" description:"Enable the application ssh" choice:"true" choice:"false"`
+	AllowSSHUntil               string      `long:"allow-ssh-until" description:"Temporarily allow application ssh until options are Days (1D), Hours (5H), or Minutes (10M)"`
+	EnableSecurityGroup         string      `long:"enable-security-group" description:"Enable space level security group definitions" choice:"true" choice:"false"`
+	EnableUnassignSecurityGroup string      `long:"enable-unassign-security-group" description:"Enable unassigning security groups not in config" choice:"true" choice:"false"`
+	IsoSegment                  string      `long:"isolation-segment" description:"Isolation segment assigned to space"`
+	ASGs                        []string    `long:"named-asg" description:"Named asg(s) to assign to space, specify multiple times"`
+	NamedQuota                  string      `long:"named-quota" description:"Named quota to assign to space"`
+	Quota                       SpaceQuota  `group:"quota"`
+	Developer                   UserRoleAdd `group:"developer" namespace:"developer"`
+	Manager                     UserRoleAdd `group:"manager" namespace:"manager"`
+	Auditor                     UserRoleAdd `group:"auditor" namespace:"auditor"`
 }
 
 //Execute - adds a named space to the configuration
@@ -47,6 +48,7 @@ func (c *AddSpaceToConfigurationCommand) Execute([]string) error {
 	spaceConfig.RemoveUsers = true
 
 	convertToBool("enable-security-group", &spaceConfig.EnableSecurityGroup, c.EnableSecurityGroup, &errorString)
+	convertToBool("enable-unassign-security-group", &spaceConfig.EnableUnassignSecurityGroup, c.EnableUnassignSecurityGroup, &errorString)
 	if c.IsoSegment != "" {
 		spaceConfig.IsoSegment = c.IsoSegment
 	}

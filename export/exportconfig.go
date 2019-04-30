@@ -240,7 +240,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			}
 			lo.G.Infof("Processing space: %s", spaceName)
 
-			spaceConfig := &config.SpaceConfig{Org: org.Name, Space: spaceName}
+			spaceConfig := &config.SpaceConfig{Org: org.Name, Space: spaceName, EnableUnassignSecurityGroup: true}
 			//Add users
 			im.addSpaceUsers(spaceConfig, uaaUsers, orgSpace.Guid)
 			//Add Quota definition if applicable

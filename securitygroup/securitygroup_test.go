@@ -111,9 +111,9 @@ var _ = Describe("given Security Group Manager", func() {
 		BeforeEach(func() {
 			spaceConfigs := []config.SpaceConfig{
 				config.SpaceConfig{
-					EnableSecurityGroup: true,
-					Space:               "space1",
-					Org:                 "org1",
+					EnableSecurityGroup:   true,
+					Space:                 "space1",
+					Org:                   "org1",
 					SecurityGroupContents: asg_config,
 				},
 				config.SpaceConfig{
@@ -152,6 +152,155 @@ var _ = Describe("given Security Group Manager", func() {
 			sgGUID, spaceGUID := fakeClient.BindSecGroupArgsForCall(0)
 			Expect(sgGUID).Should(Equal("dns-guid"))
 			Expect(spaceGUID).Should(Equal("space1-guid"))
+		})
+
+		It("Should not assign global group to space that is already assigned", func() {
+			spaceConfigs := []config.SpaceConfig{
+				config.SpaceConfig{
+					EnableSecurityGroup: false,
+					Space:               "space1",
+					Org:                 "org1",
+					ASGs:                []string{"dns"},
+				},
+			}
+			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
+			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
+				cfclient.SecGroup{
+					Name: "dns",
+					Guid: "dns-guid",
+				},
+			}, nil)
+			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
+				cfclient.SecGroup{
+					Name: "dns",
+					Guid: "dns-guid",
+				},
+			}, nil)
+			err := securityMgr.CreateApplicationSecurityGroups()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.ListSpaceSecGroupsCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
+		})
+
+		It("Should unbind global group to space that is not in configuration", func() {
+			spaceConfigs := []config.SpaceConfig{
+				config.SpaceConfig{
+					EnableSecurityGroup:         false,
+					Space:                       "space1",
+					Org:                         "org1",
+					ASGs:                        []string{"dns"},
+					EnableUnassignSecurityGroup: true,
+				},
+			}
+			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
+			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
+				cfclient.SecGroup{
+					Name: "dns",
+					Guid: "dns-guid",
+				},
+				cfclient.SecGroup{
+					Name: "ntp",
+					Guid: "ntp-guid",
+				},
+			}, nil)
+			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
+				cfclient.SecGroup{
+					Name: "dns",
+					Guid: "dns-guid",
+				},
+				cfclient.SecGroup{
+					Name: "ntp",
+					Guid: "ntp-guid",
+				},
+			}, nil)
+			err := securityMgr.CreateApplicationSecurityGroups()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.ListSpaceSecGroupsCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UnbindSecGroupCallCount()).Should(Equal(1))
+			secGroupGUID, spaceGUID := fakeClient.UnbindSecGroupArgsForCall(0)
+			Expect(secGroupGUID).Should(Equal("ntp-guid"))
+			Expect(spaceGUID).Should(Equal("space1-guid"))
+		})
+
+		It("Should not unbind space specific group to space", func() {
+			spaceConfigs := []config.SpaceConfig{
+				config.SpaceConfig{
+					EnableSecurityGroup:         true,
+					Space:                       "space1",
+					Org:                         "org1",
+					ASGs:                        []string{"dns"},
+					EnableUnassignSecurityGroup: true,
+				},
+			}
+			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
+			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
+				cfclient.SecGroup{
+					Name: "dns",
+					Guid: "dns-guid",
+				},
+				cfclient.SecGroup{
+					Name:  "org1-space1",
+					Guid:  "org1-space1-guid",
+					Rules: []cfclient.SecGroupRule{},
+				},
+			}, nil)
+			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
+				cfclient.SecGroup{
+					Name: "dns",
+					Guid: "dns-guid",
+				},
+				cfclient.SecGroup{
+					Name:  "org1-space1",
+					Guid:  "org1-space1-guid",
+					Rules: []cfclient.SecGroupRule{},
+				},
+			}, nil)
+			err := securityMgr.CreateApplicationSecurityGroups()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.ListSpaceSecGroupsCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UnbindSecGroupCallCount()).Should(Equal(0))
+		})
+
+		It("Should unbind space specific group to space", func() {
+			spaceConfigs := []config.SpaceConfig{
+				config.SpaceConfig{
+					EnableSecurityGroup:         false,
+					Space:                       "space1",
+					Org:                         "org1",
+					ASGs:                        []string{"dns"},
+					EnableUnassignSecurityGroup: true,
+				},
+			}
+			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
+			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
+				cfclient.SecGroup{
+					Name: "dns",
+					Guid: "dns-guid",
+				},
+				cfclient.SecGroup{
+					Name:  "org1-space1",
+					Guid:  "org1-space1-guid",
+					Rules: []cfclient.SecGroupRule{},
+				},
+			}, nil)
+			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
+				cfclient.SecGroup{
+					Name: "dns",
+					Guid: "dns-guid",
+				},
+				cfclient.SecGroup{
+					Name:  "org1-space1",
+					Guid:  "org1-space1-guid",
+					Rules: []cfclient.SecGroupRule{},
+				},
+			}, nil)
+			err := securityMgr.CreateApplicationSecurityGroups()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.ListSpaceSecGroupsCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UnbindSecGroupCallCount()).Should(Equal(1))
 		})
 
 		It("Should error assigning global group to space", func() {

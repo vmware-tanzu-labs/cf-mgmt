@@ -8,6 +8,7 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/space"
+	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
 
@@ -46,43 +47,70 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 			return err
 		}
 
+		existingSpaceSecurityGroups, err := m.ListSpaceSecurityGroups(space.Guid)
+		if err != nil {
+			return errors.Wrapf(err, "Unabled to list existing space security groups for org/space [%s/%s]", input.Org, input.Space)
+		}
+		lo.G.Infof("Existing space security groups %+v", existingSpaceSecurityGroups)
 		// iterate through and assign named security groups to the space - ensuring that they are up to date is
 		// done elsewhere.
 		for _, securityGroupName := range input.ASGs {
 			if sgInfo, ok := sgs[securityGroupName]; ok {
-				err := m.AssignSecurityGroupToSpace(space, sgInfo)
-				if err != nil {
-					return err
+				if _, ok := existingSpaceSecurityGroups[securityGroupName]; !ok {
+					err := m.AssignSecurityGroupToSpace(space, sgInfo)
+					if err != nil {
+						return err
+					}
+				} else {
+					delete(existingSpaceSecurityGroups, securityGroupName)
 				}
 			} else {
 				return fmt.Errorf("Security group [%s] does not exist", securityGroupName)
 			}
 		}
 
+		spaceSecurityGroupName := fmt.Sprintf("%s-%s", input.Org, input.Space)
 		if input.EnableSecurityGroup {
-			sgName := fmt.Sprintf("%s-%s", input.Org, input.Space)
 			var sgInfo cfclient.SecGroup
 			var ok bool
-			if sgInfo, ok = sgs[sgName]; ok {
-				changed, err := m.hasSecurityGroupChanged(sgInfo, input.SecurityGroupContents)
+			if sgInfo, ok = sgs[spaceSecurityGroupName]; ok {
+				changed, err := m.hasSecurityGroupChanged(sgInfo, input.GetSecurityGroupContents())
 				if err != nil {
-					return err
+					return errors.Wrapf(err, "Checking if security group %s has changed", spaceSecurityGroupName)
 				}
 				if changed {
-					if err := m.UpdateSecurityGroup(sgInfo, input.SecurityGroupContents); err != nil {
+					if err := m.UpdateSecurityGroup(sgInfo, input.GetSecurityGroupContents()); err != nil {
 						return err
 					}
 				}
 			} else {
-				securityGroup, err := m.CreateSecurityGroup(sgName, input.SecurityGroupContents)
+				securityGroup, err := m.CreateSecurityGroup(spaceSecurityGroupName, input.GetSecurityGroupContents())
 				if err != nil {
 					return err
 				}
 				sgInfo = *securityGroup
 			}
-			err := m.AssignSecurityGroupToSpace(space, sgInfo)
-			if err != nil {
-				return err
+			if _, ok := existingSpaceSecurityGroups[spaceSecurityGroupName]; !ok {
+				err := m.AssignSecurityGroupToSpace(space, sgInfo)
+				if err != nil {
+					return err
+				}
+			} else {
+				delete(existingSpaceSecurityGroups, spaceSecurityGroupName)
+			}
+		}
+
+		if input.EnableUnassignSecurityGroup {
+			lo.G.Infof("Existing space security groups after %+v", existingSpaceSecurityGroups)
+			for sgName, _ := range existingSpaceSecurityGroups {
+				if sgInfo, ok := sgs[sgName]; ok {
+					err := m.UnassignSecurityGroupToSpace(space, sgInfo)
+					if err != nil {
+						return err
+					}
+				} else {
+					return fmt.Errorf("Security group [%s] does not exist", sgName)
+				}
 			}
 		}
 	}
@@ -254,6 +282,20 @@ func (m *DefaultManager) AssignSecurityGroupToSpace(space cfclient.Space, secGro
 	}
 	lo.G.Infof("assigning security group %s to space %s", secGroup.Name, space.Name)
 	return m.Client.BindSecGroup(secGroup.Guid, space.Guid)
+}
+
+func (m *DefaultManager) UnassignSecurityGroupToSpace(space cfclient.Space, secGroup cfclient.SecGroup) error {
+	for _, configuredSpace := range secGroup.SpacesData {
+		if configuredSpace.Entity.Guid == space.Guid {
+			return nil
+		}
+	}
+	if m.Peek {
+		lo.G.Infof("[dry-run]: unassigning security group %s to space %s", secGroup.Name, space.Name)
+		return nil
+	}
+	lo.G.Infof("unassigning security group %s to space %s", secGroup.Name, space.Name)
+	return m.Client.UnbindSecGroup(secGroup.Guid, space.Guid)
 }
 
 func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (*cfclient.SecGroup, error) {

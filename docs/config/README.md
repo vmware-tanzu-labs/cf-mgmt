@@ -272,6 +272,9 @@ named-security-groups: []
 
 # added in 1.0.12+ allows specifying a named quota, cannot be used with enable-space-quota
 named-quota:
+
+# added in 1.0.26+ allows unassigning named security groups that are not in configuration
+enable-unassign-security-group: true/false
 ```
 
 #### Space Default Configuration

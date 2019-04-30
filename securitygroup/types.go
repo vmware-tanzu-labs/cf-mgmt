@@ -19,6 +19,7 @@ type CFClient interface {
 	CreateSecGroup(name string, rules []cfclient.SecGroupRule, spaceGuids []string) (*cfclient.SecGroup, error)
 	UpdateSecGroup(guid, name string, rules []cfclient.SecGroupRule, spaceGuids []string) (*cfclient.SecGroup, error)
 	BindSecGroup(secGUID, spaceGUID string) error
+	UnbindSecGroup(secGUID, spaceGUID string) error
 	BindRunningSecGroup(secGUID string) error
 	BindStagingSecGroup(secGUID string) error
 	UnbindRunningSecGroup(secGUID string) error
