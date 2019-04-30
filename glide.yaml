@@ -10,7 +10,7 @@ import:
 - package: github.com/pkg/errors
   version: ~0.8.0
 - package: github.com/cloudfoundry-community/go-uaa
-  repo: https://github.com/calebwashburn/go-uaa
+  #repo: https://github.com/calebwashburn/go-uaa
   version: master
 - package: code.cloudfoundry.org/routing-api
   version: master
