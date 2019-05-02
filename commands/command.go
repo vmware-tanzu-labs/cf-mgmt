@@ -18,6 +18,7 @@ type BaseCFConfigCommand struct {
 type BaseLDAPCommand struct {
 	LdapServer   string `long:"ldap-server" env:"LDAP_SERVER"  description:"LDAP server for binding"`
 	LdapPassword string `long:"ldap-password" env:"LDAP_PASSWORD"  description:"LDAP password for binding"`
+	LdapUser     string `long:"ldap-user" env:"LDAP_USER"  description:"LDAP user for binding"`
 }
 
 //BasePeekCommand - base command for non read-only operations

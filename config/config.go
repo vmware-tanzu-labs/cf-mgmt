@@ -58,7 +58,7 @@ type Reader interface {
 	GetSpaceDefaults() (*SpaceConfig, error)
 	GetOrgConfig(orgName string) (*OrgConfig, error)
 	GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, error)
-	LdapConfig(bindPassword, ldapServer string) (*LdapConfig, error)
+	LdapConfig(bindUser, bindPassword, ldapServer string) (*LdapConfig, error)
 	GetOrgQuotas() ([]OrgQuota, error)
 	GetSpaceQuotas(org string) ([]SpaceQuota, error)
 	GetOrgQuota(name string) (*OrgQuota, error)

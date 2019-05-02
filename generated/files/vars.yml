@@ -21,3 +21,6 @@ config_dir: ./config
 
 # allow specifying ldap server in pipeline vs in ldap.yml
 ldap_server: ""
+
+# allow specifying ldap bind user in pipeline vs in ldap.yml
+ldap_user: ""

@@ -25,7 +25,7 @@ type RoleUser struct {
 
 // Manager - interface type encapsulating Update space users behavior
 type Manager interface {
-	InitializeLdap(ldapBindPassword, ldapServer string) error
+	InitializeLdap(ldapBindUser, ldapBindPassword, ldapServer string) error
 	DeinitializeLdap() error
 	UpdateSpaceUsers() error
 	UpdateOrgUsers() error

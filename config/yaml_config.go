@@ -493,17 +493,24 @@ func (m *yamlManager) DeleteConfigIfExists() error {
 	return nil
 }
 
-func (m *yamlManager) LdapConfig(ldapBindPassword, ldapServer string) (*LdapConfig, error) {
+func (m *yamlManager) LdapConfig(ldapBindUser, ldapBindPassword, ldapServer string) (*LdapConfig, error) {
 	config := &LdapConfig{}
 	err := LoadFile(path.Join(m.ConfigDir, "ldap.yml"), config)
 	if err != nil {
 		return nil, err
 	}
+
+	if ldapBindUser != "" {
+		lo.G.Infof("Using environment provided ldap user %s instead of %s", ldapBindUser, config.BindDN)
+		config.BindDN = ldapBindUser
+	}
+
 	if ldapBindPassword != "" {
 		config.BindPassword = ldapBindPassword
 	} else {
 		lo.G.Warning("Ldap bind password should be removed from ldap.yml as this will be deprecated in a future release.  Use --ldap-password flag instead.")
 	}
+
 	if ldapServer != "" {
 		lo.G.Infof("Using environment provided ldap host %s instead of %s", ldapServer, config.LdapHost)
 		config.LdapHost = ldapServer
