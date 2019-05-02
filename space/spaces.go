@@ -59,6 +59,7 @@ func (m *DefaultManager) init() error {
 
 //UpdateSpaces -
 func (m *DefaultManager) UpdateSpaces() error {
+	m.spaces = nil
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		return err
@@ -111,6 +112,7 @@ func (m *DefaultManager) UpdateSpaces() error {
 			}
 		}
 	}
+	m.spaces = nil
 	return nil
 }
 
@@ -191,6 +193,7 @@ func (m *DefaultManager) RenameSpace(originalSpaceName, spaceName, orgName strin
 
 //CreateSpaces -
 func (m *DefaultManager) CreateSpaces() error {
+	m.spaces = nil
 	configSpaceList, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		return err
@@ -217,6 +220,7 @@ func (m *DefaultManager) CreateSpaces() error {
 			if err = m.RenameSpace(space.OriginalSpace, space.Space, space.Org); err != nil {
 				return err
 			}
+
 			continue
 		} else {
 			lo.G.Debugf("[%s] space doesn't exist in [%v]", space.Space, spaces)
@@ -225,8 +229,8 @@ func (m *DefaultManager) CreateSpaces() error {
 			lo.G.Error(err)
 			return err
 		}
-
 	}
+	m.spaces = nil
 	return nil
 }
 
@@ -249,6 +253,7 @@ func doesSpaceExistFromRename(spaceName string, spaces []cfclient.Space) bool {
 }
 
 func (m *DefaultManager) DeleteSpaces() error {
+	m.spaces = nil
 	configSpaceList, err := m.Cfg.Spaces()
 	if err != nil {
 		return err
@@ -291,7 +296,7 @@ func (m *DefaultManager) DeleteSpaces() error {
 			}
 		}
 	}
-
+	m.spaces = nil
 	return nil
 }
 

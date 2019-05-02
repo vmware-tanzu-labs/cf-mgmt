@@ -47,6 +47,7 @@ func (m *DefaultManager) GetOrgGUID(orgName string) (string, error) {
 
 //CreateOrgs -
 func (m *DefaultManager) CreateOrgs() error {
+	m.orgs = nil
 	desiredOrgs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return err
@@ -74,11 +75,13 @@ func (m *DefaultManager) CreateOrgs() error {
 			return err
 		}
 	}
+	m.orgs = nil
 	return nil
 }
 
 //DeleteOrgs -
 func (m *DefaultManager) DeleteOrgs() error {
+	m.orgs = nil
 	orgsConfig, err := m.Cfg.Orgs()
 	if err != nil {
 		return err
@@ -115,7 +118,7 @@ func (m *DefaultManager) DeleteOrgs() error {
 			return err
 		}
 	}
-
+	m.orgs = nil
 	return nil
 }
 
