@@ -18,7 +18,6 @@ type GenerateConcoursePipelineCommand struct {
 func (c *GenerateConcoursePipelineCommand) Execute([]string) error {
 	const varsFileName = "vars.yml"
 	const pipelineFileName = "pipeline.yml"
-	const cfMgmtYml = "cf-mgmt.yml"
 	const cfMgmtSh = "cf-mgmt.sh"
 	var targetFile string
 	fmt.Println("Generating pipeline....")
@@ -30,10 +29,10 @@ func (c *GenerateConcoursePipelineCommand) Execute([]string) error {
 		lo.G.Error("Error creating vars.yml", err)
 		return err
 	}
+
 	if err := os.MkdirAll("ci/tasks", 0755); err == nil {
-		targetFile = filepath.Join("ci", "tasks", cfMgmtYml)
 		lo.G.Debug("Creating", targetFile)
-		if err = createFile(cfMgmtYml, targetFile); err != nil {
+		if err = createTaskYml(); err != nil {
 			lo.G.Error("Error creating cf-mgmt.yml", err)
 			return err
 		}
@@ -63,4 +62,15 @@ func createFile(assetName, fileName string) error {
 		perm = 0755
 	}
 	return ioutil.WriteFile(fileName, bytes, perm)
+}
+
+func createTaskYml() error {
+	version := GetVersion()
+	bytes, err := generated.Asset("files/cf-mgmt.yml")
+	if err != nil {
+		return err
+	}
+	perm := os.FileMode(0666)
+	versioned := strings.Replace(string(bytes), "~VERSION~", version, -1)
+	return ioutil.WriteFile(filepath.Join("ci", "tasks", "cf-mgmt.yml"), []byte(versioned), perm)
 }
