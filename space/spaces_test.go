@@ -309,6 +309,7 @@ var _ = Describe("given SpaceManager", func() {
 					EnableDeleteSpaces: true,
 				},
 			}, nil)
+			fakeReader.GetSpaceConfigReturns(&config.SpaceConfig{}, nil)
 		})
 		It("should delete 1", func() {
 			spaces := []cfclient.Space{

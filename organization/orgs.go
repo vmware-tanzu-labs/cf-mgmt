@@ -92,8 +92,16 @@ func (m *DefaultManager) DeleteOrgs() error {
 		return nil
 	}
 
+	renamedOrgs := make(map[string]string)
 	configuredOrgs := make(map[string]bool)
 	for _, orgName := range orgsConfig.Orgs {
+		orgConfig, err := m.Cfg.GetOrgConfig(orgName)
+		if err != nil {
+			return err
+		}
+		if orgConfig.OriginalOrg != "" {
+			renamedOrgs[orgConfig.OriginalOrg] = orgName
+		}
 		configuredOrgs[orgName] = true
 	}
 
@@ -106,7 +114,9 @@ func (m *DefaultManager) DeleteOrgs() error {
 	for _, org := range orgs {
 		if _, exists := configuredOrgs[org.Name]; !exists {
 			if !Matches(org.Name, orgsConfig.ProtectedOrgList()) {
-				orgsToDelete = append(orgsToDelete, org)
+				if _, renamed := renamedOrgs[org.Name]; !renamed {
+					orgsToDelete = append(orgsToDelete, org)
+				}
 			} else {
 				lo.G.Infof("Protected org [%s] - will not be deleted", org.Name)
 			}

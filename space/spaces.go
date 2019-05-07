@@ -268,9 +268,16 @@ func (m *DefaultManager) DeleteSpaces() error {
 			lo.G.Debugf("Space deletion is not enabled for %s.  Set enable-delete-spaces: true in spaces.yml", input.Org)
 			continue //Skip all orgs that have not opted-in
 		}
-
+		renamedSpaces := make(map[string]string)
 		configuredSpaces := make(map[string]bool)
 		for _, spaceName := range input.Spaces {
+			spaceCfg, err := m.Cfg.GetSpaceConfig(input.Org, spaceName)
+			if err != nil {
+				return err
+			}
+			if spaceCfg.OriginalSpace != "" {
+				renamedSpaces[spaceCfg.OriginalSpace] = spaceName
+			}
 			configuredSpaces[spaceName] = true
 		}
 
@@ -286,7 +293,9 @@ func (m *DefaultManager) DeleteSpaces() error {
 		spacesToDelete := make([]cfclient.Space, 0)
 		for _, space := range spaces {
 			if _, exists := configuredSpaces[space.Name]; !exists {
-				spacesToDelete = append(spacesToDelete, space)
+				if _, renamed := renamedSpaces[space.Name]; !renamed {
+					spacesToDelete = append(spacesToDelete, space)
+				}
 			}
 		}
 

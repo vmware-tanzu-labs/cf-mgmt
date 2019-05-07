@@ -166,6 +166,8 @@ var _ = Describe("given OrgManager", func() {
 				EnableDeleteOrgs: true,
 				Orgs:             []string{"test"},
 			}, nil)
+
+			fakeReader.GetOrgConfigReturns(&config.OrgConfig{}, nil)
 			orgs := []cfclient.Org{
 				cfclient.Org{
 					Name: "system",

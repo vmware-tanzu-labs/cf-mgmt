@@ -77,6 +77,7 @@ jobs:
   plan:
   - get: config-repo
     trigger: true
+    passed: [create-orgs]
   - get: time-trigger
     trigger: true
   - task: delete-orgs
@@ -173,7 +174,7 @@ jobs:
 - name: delete-spaces
   plan:
   - get: config-repo
-    passed: [create-orgs]
+    passed: [create-orgs, create-spaces]
     trigger: true
   - get: time-trigger
     trigger: true
