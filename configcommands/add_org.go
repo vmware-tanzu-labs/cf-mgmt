@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/xchapter7x/lo"
 )
 
 type AddOrgToConfigurationCommand struct {
@@ -27,6 +28,7 @@ type AddOrgToConfigurationCommand struct {
 
 //Execute - adds a named org to the configuration
 func (c *AddOrgToConfigurationCommand) Execute([]string) error {
+	lo.G.Warning("*** Deprecated *** - Use `org` command instead for adding/updating org configurations")
 	orgConfig := &config.OrgConfig{
 		Org: c.OrgName,
 	}

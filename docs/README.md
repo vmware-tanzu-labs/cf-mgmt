@@ -1,11 +1,3 @@
-# Configuration Commands
-**(DEPRECATED use cf-mgmt-config instead)**
-* [add-org-to-config](add-org-to-config/README.md)
-* [add-space-to-config](add-space-to-config/README.md)
-* [generate-concourse-pipeline](generate-concourse-pipeline/README.md)
-* [init-config](init-config/README.md)
-
-
 # Commands
 
 The following commands are enabled with cf-mgmt that will leverage configuration interact with your Cloud Foundry installation and need to authenticate

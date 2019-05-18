@@ -2,6 +2,8 @@
 
 # `cf-mgmt-config add-org`
 
+*** Deprecated *** - Use `org` command instead
+
 `add-org` will add the specified org to orgs.yml and create folder based on the org name you specified.  Within this folder will be an orgConfig.yml and spaces.yml which will be empty but will eventually contain a list of spaces.  Any org listed in orgs.yml will be created when the create-orgs operation is ran.
 
 ## Command Usage

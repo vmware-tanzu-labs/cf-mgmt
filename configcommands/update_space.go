@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/xchapter7x/lo"
 )
 
 type UpdateSpaceConfigurationCommand struct {
@@ -33,6 +34,7 @@ type UpdateSpaceConfigurationCommand struct {
 
 //Execute - updates space configuration`
 func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
+	lo.G.Warning("*** Deprecated *** - Use `space` command instead for adding/updating space configurations")
 	c.initConfig()
 	spaceConfig, err := c.ConfigManager.GetSpaceConfig(c.OrgName, c.SpaceName)
 	if err != nil {

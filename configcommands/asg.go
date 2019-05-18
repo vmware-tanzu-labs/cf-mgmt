@@ -5,10 +5,9 @@ import (
 	"fmt"
 
 	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/xchapter7x/lo"
 )
 
-type AddASGToConfigurationCommand struct {
+type ASGToConfigurationCommand struct {
 	ConfigManager config.Manager
 	BaseConfigCommand
 	ASGName  string `long:"asg" description:"ASG name" required:"true"`
@@ -17,9 +16,8 @@ type AddASGToConfigurationCommand struct {
 	ASGType  string `long:"type" description:"Space asg or default asg" choice:"space" choice:"default" default:"space"`
 }
 
-//Execute - adds a named asg to the configuration
-func (c *AddASGToConfigurationCommand) Execute([]string) error {
-	lo.G.Warning("*** Deprecated *** - Use `asg` command instead for adding/updating asg configurations")
+//Execute - adds/updates a named asg to the configuration
+func (c *ASGToConfigurationCommand) Execute([]string) error {
 	c.initConfig()
 
 	errorString := ""
@@ -73,7 +71,7 @@ func (c *AddASGToConfigurationCommand) Execute([]string) error {
 	return nil
 }
 
-func (c *AddASGToConfigurationCommand) initConfig() {
+func (c *ASGToConfigurationCommand) initConfig() {
 	if c.ConfigManager == nil {
 		c.ConfigManager = config.NewManager(c.ConfigDirectory)
 	}

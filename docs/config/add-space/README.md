@@ -2,6 +2,8 @@
 
 # `cf-mgmt-config add-space`
 
+*** Deprecated *** - Use `space` command instead
+
 `add-space` allows for adding a space to a previously defined org.  This will generate a folder for each space inside the orgs folder.  In the spaces folder will contain a spaceConfig.yml and a security-group.json file.  Any space listed in spaces.yml will be created when the create-spaces operation is ran.  
 
 ## Command Usage

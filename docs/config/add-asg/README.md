@@ -2,6 +2,8 @@
 
 # `cf-mgmt-config add-asg`
 
+*** Deprecated *** - Use `asg` command instead
+
 `add-asg` will add a <asg-name>.json file in the asgs folder of the configuration
 
 ## Command Usage

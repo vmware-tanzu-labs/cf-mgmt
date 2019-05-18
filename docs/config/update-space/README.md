@@ -2,6 +2,8 @@
 
 # `cf-mgmt-config update-space`
 
+*** Deprecated *** - Use `space` command instead
+
 `update-space` command allows updating any property except name of org/space within spaceConfig.yml
 - quotas
 - user/role mappings

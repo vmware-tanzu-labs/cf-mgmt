@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/xchapter7x/lo"
 )
 
 type AddSpaceToConfigurationCommand struct {
@@ -29,6 +30,7 @@ type AddSpaceToConfigurationCommand struct {
 
 //Execute - adds a named space to the configuration
 func (c *AddSpaceToConfigurationCommand) Execute([]string) error {
+	lo.G.Warning("*** Deprecated *** - Use `space` command instead for adding/updating space configurations")
 	c.initConfig()
 	spaceConfig := &config.SpaceConfig{
 		Org:   c.OrgName,

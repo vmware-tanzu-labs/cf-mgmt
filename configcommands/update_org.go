@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/xchapter7x/lo"
 )
 
 type UpdateOrgConfigurationCommand struct {
@@ -32,6 +33,7 @@ type UpdateOrgConfigurationCommand struct {
 
 //Execute - updates org configuration`
 func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
+	lo.G.Warning("*** Deprecated *** - Use `org` command instead for adding/updating org configurations")
 	c.initConfig()
 	orgConfig, err := c.ConfigManager.GetOrgConfig(c.OrgName)
 	if err != nil {

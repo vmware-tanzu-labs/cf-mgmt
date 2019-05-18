@@ -2,6 +2,8 @@
 
 # `cf-mgmt-config update-org`
 
+*** Deprecated *** - Use `org` command instead
+
 `update-org` command allows updating any property except name of org within orgConfig.yml
 - quotas
 - user/role mappings
