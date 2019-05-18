@@ -1,13 +1,10 @@
 package commands
 
-//BaseConfigCommand - commmand that specifies config-dir
-type BaseConfigCommand struct {
-	ConfigDirectory string `long:"config-dir" env:"CONFIG_DIR" default:"config" description:"Name of the config directory"`
-}
+import "github.com/pivotalservices/cf-mgmt/configcommands"
 
 //BaseCFConfigCommand - base command that has details to connect to cloud foundry instance
 type BaseCFConfigCommand struct {
-	BaseConfigCommand
+	configcommands.BaseConfigCommand
 	SystemDomain string `long:"system-domain" env:"SYSTEM_DOMAIN"  description:"system domain"`
 	UserID       string `long:"user-id" env:"USER_ID"  description:"user id that has privileges to create/update/delete users, orgs and spaces"`
 	Password     string `long:"password" env:"PASSWORD"  description:"password for user account [optional if client secret is provided]"`
