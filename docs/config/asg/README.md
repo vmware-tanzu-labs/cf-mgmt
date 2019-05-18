@@ -8,7 +8,7 @@
 
 ```
 Usage:
-  cf-mgmt-config [OPTIONS] asg [add-asg-OPTIONS]
+  cf-mgmt-config [OPTIONS] asg [asg-OPTIONS]
 
 Help Options:
   -h, --help            Show this help message
