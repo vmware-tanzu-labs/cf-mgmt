@@ -1,18 +1,24 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 const (
 	MEGABYTE = 1.0
 	GIGABYTE = 1024 * MEGABYTE
-	TERABYTE = 1024 * GIGABYTE
+	TERABYTE = 1000000 * MEGABYTE
+)
+
+var (
+	bytesPattern = regexp.MustCompile(`(?i)^(-?\d+\.?\d*)([KMGT])B?$`)
+	timePattern  = regexp.MustCompile(`(?i)^(-?\d+)([DHM])$`)
 )
 
 func ByteSize(bytes int) string {
@@ -21,7 +27,6 @@ func ByteSize(bytes int) string {
 	}
 	unit := ""
 	value := float32(bytes)
-
 	switch {
 	case bytes >= TERABYTE:
 		unit = "T"
@@ -34,7 +39,6 @@ func ByteSize(bytes int) string {
 	case bytes < GIGABYTE:
 		unit = "M"
 	}
-
 	stringValue := fmt.Sprintf("%.1f", value)
 	stringValue = strings.TrimSuffix(stringValue, ".0")
 	return fmt.Sprintf("%s%s", stringValue, unit)
@@ -81,26 +85,26 @@ func ToMegabytes(s string) (int, error) {
 	}
 	parts := bytesPattern.FindStringSubmatch(strings.TrimSpace(s))
 	if len(parts) < 3 {
-		return 0, invalidByteQuantityError()
+		return 0, errors.Wrap(invalidByteQuantityError(), "Unable to find match by pattern")
 	}
 
-	value, err = strconv.Atoi(parts[1])
+	floatValue, err := strconv.ParseFloat(parts[1], 64)
 	if err != nil {
-		return 0, invalidByteQuantityError()
+		return 0, errors.Wrap(invalidByteQuantityError(), "Unable to convert to integer")
 	}
 
-	var bytes int
+	var bytes float64
 	unit := strings.ToUpper(parts[2])
 	switch unit {
 	case "T", "TB":
-		bytes = value * TERABYTE
+		bytes = floatValue * TERABYTE
 	case "G", "GB":
-		bytes = value * GIGABYTE
+		bytes = floatValue * GIGABYTE
 	case "M", "MB":
-		bytes = value * MEGABYTE
+		bytes = floatValue * MEGABYTE
 	}
 
-	return bytes / MEGABYTE, nil
+	return int(bytes / float64(MEGABYTE)), nil
 }
 
 func FutureTime(t time.Time, timeToAdd string) (string, error) {
@@ -129,11 +133,6 @@ func FutureTime(t time.Time, timeToAdd string) (string, error) {
 
 	return t.Format(time.RFC3339), nil
 }
-
-var (
-	bytesPattern = regexp.MustCompile(`(?i)^(-?\d+)([KMGT])B?$`)
-	timePattern  = regexp.MustCompile(`(?i)^(-?\d+)([DHM])$`)
-)
 
 func invalidByteQuantityError() error {
 	return errors.New("Byte quantity must be an integer with a unit of measurement like M, MB, G, or GB")

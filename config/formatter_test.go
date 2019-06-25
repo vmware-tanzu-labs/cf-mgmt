@@ -21,6 +21,11 @@ var _ = Describe("Formatter", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(val).Should(Equal("1G"))
 		})
+		It("Should return formatted value for 1.2T", func() {
+			val, err := StringToMegabytes("1200000")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(val).Should(Equal("1.2T"))
+		})
 	})
 
 	Context("ByteSize", func() {
@@ -32,6 +37,11 @@ var _ = Describe("Formatter", func() {
 			val := ByteSize(1024)
 			Expect(val).Should(Equal("1G"))
 		})
+		It("Should return formatted value for 1200GB", func() {
+			val := ByteSize(1200000)
+			Expect(val).Should(Equal("1.2T"))
+		})
+
 	})
 	Context("ToMegabytes", func() {
 		It("Should return int value for less than 1GB", func() {
@@ -43,6 +53,29 @@ var _ = Describe("Formatter", func() {
 			val, err := ToMegabytes("1G")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(val).Should(Equal(1024))
+		})
+		It("Should return value for decimal values of measurement", func() {
+			val, err := ToMegabytes("1.2T")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(val).Should(Equal(1200000))
+		})
+	})
+
+	Context("ToInteger", func() {
+		It("Should return int value of 1", func() {
+			val, err := ToInteger("1")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(val).Should(Equal(1))
+		})
+		It("Should return int value for 1024", func() {
+			val, err := ToInteger("1024")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(val).Should(Equal(1024))
+		})
+		It("Should return int value for 1200000", func() {
+			val, err := ToInteger("1200000")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(val).Should(Equal(1200000))
 		})
 	})
 
