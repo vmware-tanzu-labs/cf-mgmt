@@ -1,13 +1,13 @@
-#your git repo uri
+# your git repo uri
 git_repo_uri:
 git_repo_branch: master
-#your cf system domain
+# your cf system domain
 system_domain:
 # user account with permission to create orgs/spaces
 user_id:
 # DEPRECATED - Use client_secret - password of user account with permission to create orgs/spaces
 password: ""
-# client secret for uaac for user_id
+# client secret for uaa for user_id
 client_secret:
 # password to bind to ldap - only needed if using LDAP
 ldap_password: ""

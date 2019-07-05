@@ -32,7 +32,7 @@ Don't forget to `chmod +x` the file on Linux and macOS.
 
 ### Create UAA Client
 
-cf-mgmt needs a uaa client to be able to interact with cloud controller and uaa for create, updating, deleting, and listing entities.  
+cf-mgmt needs a uaa client to be able to interact with cloud controller and uaa for create, updating, deleting, and listing entities.
 
 ```
 uaac target uaa.<your system domain>
@@ -129,15 +129,14 @@ RUN_LDAP_TESTS=true go test ./ldap_integration/...
 ```
 
 The remaining integration tests require [PCF Dev](https://pivotal.io/pcf-dev)
-to be running and the CF CLI to be installed.
+to be running, the CF CLI, and the [UAA CLI](https://github.com/cloudfoundry-incubator/uaa-cli).
 
-```
+```sh
 cf dev start
-uaac target uaa.local.pcfdev.io
-uaac token client get admin -s admin-client-secret
-uaac client add cf-mgmt \
-  --name cf-mgmt \
-  --secret cf-mgmt-secret \
+uaa target http://uaa.local.pcfdev.io
+uaa get-client-credentials-token admin -s admin-client-secret
+uaa create-client cf-mgmt \
+  --client_secret cf-mgmt-secret \
   --authorized_grant_types client_credentials,refresh_token \
   --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
 RUN_INTEGRATION_TESTS=true go test ./integration/...
