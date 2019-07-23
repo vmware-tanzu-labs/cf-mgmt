@@ -133,9 +133,9 @@ func (c *SpaceConfigurationCommand) Execute(args []string) error {
 		return err
 	}
 	if newSpace {
-		fmt.Println(fmt.Sprintf("The org/space [%s/%s] has been updated", c.OrgName, c.SpaceName))
-	} else {
 		fmt.Println(fmt.Sprintf("The org/space [%s/%s] has been created", c.OrgName, c.SpaceName))
+	} else {
+		fmt.Println(fmt.Sprintf("The org/space [%s/%s] has been updated", c.OrgName, c.SpaceName))
 	}
 	return nil
 }

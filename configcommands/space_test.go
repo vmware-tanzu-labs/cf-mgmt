@@ -22,11 +22,11 @@ var _ = Describe("Space", func() {
 		configManager = config.NewManager(configDir)
 		err := configManager.CreateConfigIfNotExists("uaa")
 		Expect(err).ShouldNot(HaveOccurred())
-		updateCommand := &OrgConfigurationCommand{
+		orgCommand := &OrgConfigurationCommand{
 			OrgName: "test-org",
 		}
-		updateCommand.ConfigDirectory = configDir
-		err = updateCommand.Execute(nil)
+		orgCommand.ConfigDirectory = configDir
+		err = orgCommand.Execute(nil)
 		Expect(err).ShouldNot(HaveOccurred())
 		command = &SpaceConfigurationCommand{
 			OrgName:   "test-org",
@@ -39,13 +39,13 @@ var _ = Describe("Space", func() {
 		err := os.RemoveAll(configDir)
 		Expect(err).ShouldNot(HaveOccurred())
 	})
-	Context("Create Org that doesn't exist", func() {
+	Context("Create Space that doesn't exist", func() {
 		It("Should Succeed", func() {
 			err := command.Execute(nil)
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 	})
-	Context("Update Org that does exist", func() {
+	Context("Update Space that does exist", func() {
 		It("Should Succeed", func() {
 			err := command.Execute(nil)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -130,6 +130,19 @@ var _ = Describe("Space", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(space.Metadata.Annotations).ShouldNot(HaveKey("hello"))
 			Expect(space.Metadata.Annotations).ShouldNot(HaveKey("foo"))
+		})
+	})
+
+	Context("Should add a space developer to a space that has a period in name", func() {
+		It("Should Succeed", func() {
+			command.Developer.LDAPUsers = []string{"xxx.yyy"}
+			err := command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			space, err := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(len(space.Developer.LDAPUsers)).To(Equal(1))
+			Expect(space.Developer.LDAPUsers).To(ConsistOf([]string{"xxx.yyy"}))
 		})
 	})
 })
