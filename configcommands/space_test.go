@@ -13,12 +13,13 @@ import (
 
 var _ = Describe("Space", func() {
 	var (
-		command   *SpaceConfigurationCommand
-		pwd, _    = os.Getwd()
-		configDir = path.Join(pwd, "_testGen")
+		command       *SpaceConfigurationCommand
+		configManager config.Manager
+		pwd, _        = os.Getwd()
+		configDir     = path.Join(pwd, "_testGen")
 	)
 	BeforeEach(func() {
-		configManager := config.NewManager(configDir)
+		configManager = config.NewManager(configDir)
 		err := configManager.CreateConfigIfNotExists("uaa")
 		Expect(err).ShouldNot(HaveOccurred())
 		updateCommand := &OrgConfigurationCommand{
@@ -48,6 +49,87 @@ var _ = Describe("Space", func() {
 		It("Should Succeed", func() {
 			err := command.Execute(nil)
 			Expect(err).ShouldNot(HaveOccurred())
+		})
+	})
+
+	Context("Allow setting metadata labels", func() {
+		It("Should Add Labels", func() {
+			command.Metadata = Metadata{
+				LabelKey:   []string{"hello", "foo"},
+				LabelValue: []string{"world", "bar"},
+			}
+			err := command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			space, err := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(space.Metadata.Labels).Should(HaveKeyWithValue("hello", "world"))
+			Expect(space.Metadata.Labels).Should(HaveKeyWithValue("foo", "bar"))
+		})
+
+		It("Should Remove Existings Labels", func() {
+			command.Metadata = Metadata{
+				LabelKey:   []string{"hello", "foo"},
+				LabelValue: []string{"world", "bar"},
+			}
+			err := command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			space, err := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(space.Metadata.Labels).Should(HaveKeyWithValue("hello", "world"))
+			Expect(space.Metadata.Labels).Should(HaveKeyWithValue("foo", "bar"))
+
+			command.Metadata = Metadata{
+				LabelKey:       []string{},
+				LabelValue:     []string{},
+				LabelsToRemove: []string{"hello", "foo"},
+			}
+
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			space, err = configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(space.Metadata.Labels).ShouldNot(HaveKey("hello"))
+			Expect(space.Metadata.Labels).ShouldNot(HaveKey("foo"))
+		})
+	})
+
+	Context("Allow setting metadata annotations", func() {
+		It("Should Add Annotations", func() {
+			command.Metadata = Metadata{
+				AnnotationKey:   []string{"hello", "foo"},
+				AnnotationValue: []string{"world", "bar"},
+			}
+			err := command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			space, err := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(space.Metadata.Annotations).Should(HaveKeyWithValue("hello", "world"))
+			Expect(space.Metadata.Annotations).Should(HaveKeyWithValue("foo", "bar"))
+		})
+
+		It("Should remove Annotations", func() {
+			command.Metadata = Metadata{
+				AnnotationKey:   []string{"hello", "foo"},
+				AnnotationValue: []string{"world", "bar"},
+			}
+			err := command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			space, err := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(space.Metadata.Annotations).Should(HaveKeyWithValue("hello", "world"))
+			Expect(space.Metadata.Annotations).Should(HaveKeyWithValue("foo", "bar"))
+
+			command.Metadata = Metadata{
+				AnnotationKey:       []string{},
+				AnnotationValue:     []string{},
+				AnnotationsToRemove: []string{"hello", "foo"},
+			}
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			space, err = configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(space.Metadata.Annotations).ShouldNot(HaveKey("hello"))
+			Expect(space.Metadata.Annotations).ShouldNot(HaveKey("foo"))
 		})
 	})
 })

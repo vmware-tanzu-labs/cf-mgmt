@@ -71,4 +71,12 @@ auditor:
       --auditor-user-to-remove=                     User to remove, specify multiple times
       --auditor-saml-user-to-remove=                SAML user to remove, specify multiple times
       --auditor-ldap-group-to-remove=               Group to remove, specify multiple times
+
+metadata:
+      --label=                                      Label to add, can specify multiple
+      --label-value=                                Label value to add, can specify multiple but need to match number of label args
+      --annotation=                                 Annotation to add, can specify multiple
+      --annotation-value=                           Annotation value to add, can specify multiple but need to match number of annotation args
+      --labels-to-remove=                           name of label to remove
+      --annotations-to-remove=                      name of annotation to remove
 ```

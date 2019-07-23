@@ -37,6 +37,15 @@ type ServiceAccessAdd struct {
 	Plans       []string `long:"plans" description:"plans to add, empty list will add all plans"`
 }
 
+type Metadata struct {
+	LabelKey            []string `long:"label" description:"Label to add, can specify multiple"`
+	LabelValue          []string `long:"label-value" description:"Label value to add, can specify multiple but need to match number of label args"`
+	AnnotationKey       []string `long:"annotation" description:"Annotation to add, can specify multiple"`
+	AnnotationValue     []string `long:"annotation-value" description:"Annotation value to add, can specify multiple but need to match number of annotation args"`
+	LabelsToRemove      []string `long:"labels-to-remove" description:"name of label to remove"`
+	AnnotationsToRemove []string `long:"annotations-to-remove" description:"name of annotation to remove"`
+}
+
 type OrgQuota struct {
 	EnableOrgQuota          string `long:"enable-org-quota" description:"Enable the Org Quota in the config" choice:"true" choice:"false"`
 	MemoryLimit             string `long:"memory-limit" description:"An Org's memory limit in Megabytes"`
