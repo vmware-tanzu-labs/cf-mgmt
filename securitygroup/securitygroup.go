@@ -65,7 +65,7 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 					delete(existingSpaceSecurityGroups, securityGroupName)
 				}
 			} else {
-				return fmt.Errorf("Security group [%s] does not exist", securityGroupName)
+				return fmt.Errorf("Security group [%s] does not exist as a non-running and non-staging security group [%v+]", securityGroupName, sgs)
 			}
 		}
 
@@ -109,7 +109,7 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 						return err
 					}
 				} else {
-					return fmt.Errorf("Security group [%s] does not exist", sgName)
+					return fmt.Errorf("Security group [%s] does not exist as a non-running and non-staging security group [%v+]", sgName, sgs)
 				}
 			}
 		}

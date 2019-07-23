@@ -337,7 +337,7 @@ var _ = Describe("given Security Group Manager", func() {
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).Should(HaveOccurred())
-			Expect(err.Error()).Should(Equal("Security group [dns] does not exist"))
+			Expect(err.Error()).Should(ContainSubstring("Security group [dns] does not exist"))
 			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
 		})
 
