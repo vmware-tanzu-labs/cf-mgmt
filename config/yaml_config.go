@@ -436,6 +436,9 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 		lo.G.Errorf("Error creating config directory %s. Error : %s", asgDir, err)
 		return fmt.Errorf("cannot create directory %s: %v", asgDir, err)
 	}
+	if err := WriteFileBytes(fmt.Sprintf("%s/.gitkeep", asgDir), nil); err != nil {
+		return err
+	}
 	lo.G.Infof("ASG directory %s created", asgDir)
 
 	asgDir = path.Join(m.ConfigDir, "default_asgs")
@@ -443,12 +446,18 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 		lo.G.Errorf("Error creating config directory %s. Error : %s", asgDir, err)
 		return fmt.Errorf("cannot create directory %s: %v", asgDir, err)
 	}
+	if err := WriteFileBytes(fmt.Sprintf("%s/.gitkeep", asgDir), nil); err != nil {
+		return err
+	}
 	lo.G.Infof("ASG directory %s created", asgDir)
 
 	orgQuotasDir := path.Join(m.ConfigDir, "org_quotas")
 	if err := os.MkdirAll(orgQuotasDir, 0755); err != nil {
 		lo.G.Errorf("Error creating config directory %s. Error : %s", orgQuotasDir, err)
 		return fmt.Errorf("cannot create directory %s: %v", orgQuotasDir, err)
+	}
+	if err := WriteFileBytes(fmt.Sprintf("%s/.gitkeep", orgQuotasDir), nil); err != nil {
+		return err
 	}
 	lo.G.Infof("OrgQuotas directory %s created", orgQuotasDir)
 
