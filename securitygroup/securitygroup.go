@@ -176,7 +176,11 @@ func (m *DefaultManager) AssignDefaultSecurityGroups() error {
 				}
 			}
 		} else {
-			return fmt.Errorf("Running security group [%s] does not exist", runningGroup)
+			if !m.Peek {
+				return fmt.Errorf("Running security group [%s] does not exist", runningGroup)
+			} else {
+				lo.G.Infof("[dry-run]: assigning sg %s as running security group", runningGroup)
+			}
 		}
 	}
 
@@ -189,7 +193,11 @@ func (m *DefaultManager) AssignDefaultSecurityGroups() error {
 				}
 			}
 		} else {
-			return fmt.Errorf("Staging security group [%s] does not exist", stagingGroup)
+			if !m.Peek {
+				return fmt.Errorf("Staging security group [%s] does not exist", stagingGroup)
+			} else {
+				lo.G.Infof("[dry-run]: assigning sg %s as staging security group", stagingGroup)
+			}
 		}
 	}
 
