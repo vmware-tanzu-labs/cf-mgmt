@@ -7,6 +7,7 @@
 
 # Configuration Commands
 * [init](init/README.md)
+* [global](global/README.md)
 * [asg](asg/README.md)
 * [org](org/README.md)
 * [space](space/README.md)

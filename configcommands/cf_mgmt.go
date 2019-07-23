@@ -3,6 +3,7 @@ package configcommands
 type CfMgmtConfigCommand struct {
 	Version                             VersionCommand                      `command:"version" description:"Print version information and exit"`
 	InitConfigurationCommand            InitConfigurationCommand            `command:"init" description:"Initializes folder structure for configuration"`
+	GlobalConfigurationCommand          GlobalConfigurationCommand          `command:"global" description:"Updates values in cf-mgmt.yml"`
 	OrgConfigurationCommand             OrgConfigurationCommand             `command:"org" description:"Adds/updates specified org to configuration"`
 	SpaceConfigurationCommand           SpaceConfigurationCommand           `command:"space" description:"adds/updates space configuration"`
 	AddOrgToConfigurationCommand        AddOrgToConfigurationCommand        `command:"add-org" description:"Adds specified org to configuration"`
