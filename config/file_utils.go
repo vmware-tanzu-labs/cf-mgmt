@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -36,7 +37,11 @@ func FileOrDirectoryExists(path string) bool {
 
 //LoadFileBytes - Load a file and return the bytes
 func LoadFileBytes(path string) ([]byte, error) {
-	return ioutil.ReadFile(path)
+	bytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error reading file %s", path)
+	}
+	return bytes, nil
 }
 
 //LoadFile -
@@ -44,9 +49,13 @@ func LoadFile(configFile string, dataType interface{}) error {
 	var data []byte
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Error reading file %s", configFile)
 	}
-	return yaml.Unmarshal(data, dataType)
+	err = yaml.Unmarshal(data, dataType)
+	if err != nil {
+		return errors.Wrapf(err, "Error unmarshalling file %s", configFile)
+	}
+	return nil
 }
 
 //WriteFileBytes -
