@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
 
@@ -46,7 +46,7 @@ func (m *yamlManager) GetDefaultASGConfigs() ([]ASGConfig, error) {
 		lo.G.Debug("Loading security group contents", securityGroupFile)
 		bytes, err := ioutil.ReadFile(securityGroupFile)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "Error reading file %s", securityGroupFile)
 		}
 		asgConfig := ASGConfig{}
 		lo.G.Debug("setting security group contents", string(bytes))
@@ -73,7 +73,7 @@ func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 		lo.G.Debug("Loading security group contents", securityGroupFile)
 		bytes, err := ioutil.ReadFile(securityGroupFile)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "Error reading file %s", securityGroupFile)
 		}
 		asgConfig := ASGConfig{}
 		lo.G.Debug("setting security group contents", string(bytes))
