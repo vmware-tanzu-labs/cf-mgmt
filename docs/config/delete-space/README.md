@@ -10,7 +10,7 @@
 
 ```
 Usage:
-  main [OPTIONS] delete-space [delete-space-OPTIONS]
+  cf-mgmt-config [OPTIONS] delete-space [delete-space-OPTIONS]
 
 Help Options:
   -h, --help                  Show this help message

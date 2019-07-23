@@ -9,7 +9,7 @@
 ## Command Usage
 ```
 Usage:
-  main [OPTIONS] create-security-groups [create-security-groups-OPTIONS]
+  cf-mgmt [OPTIONS] create-security-groups [create-security-groups-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

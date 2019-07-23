@@ -10,7 +10,7 @@
 
 ```
 Usage:
-  main [OPTIONS] add-space [add-space-OPTIONS]
+  cf-mgmt-config [OPTIONS] add-space [add-space-OPTIONS]
 
 Help Options:
   -h, --help                                        Show this help message

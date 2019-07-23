@@ -7,7 +7,7 @@
 ## Command Usage
 ```
 error: Usage:
-  main [OPTIONS] rename-space [rename-space-OPTIONS]
+  cf-mgmt-config [OPTIONS] rename-space [rename-space-OPTIONS]
 
 Help Options:
   -h, --help            Show this help message

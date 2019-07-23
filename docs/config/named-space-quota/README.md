@@ -7,7 +7,7 @@
 ## Command Usage
 ```
 Usage:
-  main [OPTIONS] named-space-quota [named-space-quota-OPTIONS]
+  cf-mgmt-config [OPTIONS] named-space-quota [named-space-quota-OPTIONS]
 
 Help Options:
   -h, --help                                        Show this help message

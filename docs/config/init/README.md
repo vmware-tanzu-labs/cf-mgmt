@@ -8,7 +8,7 @@
 
 ```
 Usage:
-  main [OPTIONS] init [init-OPTIONS]
+  cf-mgmt-config [OPTIONS] init [init-OPTIONS]
 
 Help Options:
   -h, --help            Show this help message

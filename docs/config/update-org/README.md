@@ -12,7 +12,7 @@
 ## Command Usage
 ```
 Usage:
-  main [OPTIONS] update-org [update-org-OPTIONS]
+  cf-mgmt-config [OPTIONS] update-org [update-org-OPTIONS]
 
 Help Options:
   -h, --help                                           Show this help message

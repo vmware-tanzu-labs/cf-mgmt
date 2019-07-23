@@ -12,7 +12,7 @@
 ## Command Usage
 ```
 Usage:
-  main [OPTIONS] isolation-segments [isolation-segments-OPTIONS]
+  cf-mgmt [OPTIONS] isolation-segments [isolation-segments-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

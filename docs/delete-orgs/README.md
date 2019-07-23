@@ -11,7 +11,7 @@
 
 ```
 Usage:
-  main [OPTIONS] delete-orgs [delete-orgs-OPTIONS]
+  cf-mgmt [OPTIONS] delete-orgs [delete-orgs-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

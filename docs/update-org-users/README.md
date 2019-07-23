@@ -14,7 +14,7 @@
 
 ```
 Usage:
-  main [OPTIONS] update-org-users [update-org-users-OPTIONS]
+  cf-mgmt [OPTIONS] update-org-users [update-org-users-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

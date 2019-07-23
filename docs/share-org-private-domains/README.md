@@ -10,7 +10,7 @@
 
 ```
 Usage:
-  main [OPTIONS] share-org-private-domains [share-org-private-domains-OPTIONS]
+  cf-mgmt [OPTIONS] share-org-private-domains [share-org-private-domains-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

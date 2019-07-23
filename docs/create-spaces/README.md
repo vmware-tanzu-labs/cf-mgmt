@@ -9,7 +9,7 @@
 
 ```
 Usage:
-  main [OPTIONS] create-spaces [create-spaces-OPTIONS]
+  cf-mgmt [OPTIONS] create-spaces [create-spaces-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

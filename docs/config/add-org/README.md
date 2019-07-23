@@ -10,7 +10,7 @@
 
 ```
 Usage:
-  main [OPTIONS] add-org [add-org-OPTIONS]
+  cf-mgmt-config [OPTIONS] add-org [add-org-OPTIONS]
 
 Help Options:
   -h, --help                                        Show this help message

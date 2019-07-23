@@ -10,7 +10,7 @@
 
 ```
 Usage:
-  main [OPTIONS] update-spaces [update-spaces-OPTIONS]
+  cf-mgmt [OPTIONS] update-spaces [update-spaces-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

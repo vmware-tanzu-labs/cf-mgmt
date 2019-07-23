@@ -7,7 +7,7 @@
 ## Command Usage
 ```
 Usage:
-  main [OPTIONS] create-orgs [create-orgs-OPTIONS]
+  cf-mgmt [OPTIONS] create-orgs [create-orgs-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

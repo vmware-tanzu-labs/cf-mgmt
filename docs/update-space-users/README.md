@@ -14,7 +14,7 @@
 
 ```
 Usage:
-  main [OPTIONS] update-space-users [update-space-users-OPTIONS]
+  cf-mgmt [OPTIONS] update-space-users [update-space-users-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

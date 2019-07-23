@@ -8,7 +8,7 @@
 
 ```
 error: Usage:
-  main [OPTIONS] apply [apply-OPTIONS]
+  cf-mgmt [OPTIONS] apply [apply-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

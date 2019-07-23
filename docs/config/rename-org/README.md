@@ -7,7 +7,7 @@
 ## Command Usage
 ```
 error: Usage:
-  main [OPTIONS] rename-org [rename-org-OPTIONS]
+  cf-mgmt-config [OPTIONS] rename-org [rename-org-OPTIONS]
 
 Help Options:
   -h, --help            Show this help message
