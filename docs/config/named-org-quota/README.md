@@ -7,7 +7,7 @@
 ## Command Usage
 ```
 Usage:
-  main [OPTIONS] named-org-quota [named-org-quota-OPTIONS]
+  cf-mgmt-config [OPTIONS] named-org-quota [named-org-quota-OPTIONS]
 
 Help Options:
   -h, --help                                        Show this help message

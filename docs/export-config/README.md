@@ -18,7 +18,7 @@ WARNING : Running this command will delete existing config folder and will creat
 
 ```
 Usage:
-  main [OPTIONS] export-config [export-config-OPTIONS]
+  cf-mgmt [OPTIONS] export-config [export-config-OPTIONS]
 
 Help Options:
   -h, --help                Show this help message

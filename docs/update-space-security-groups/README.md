@@ -10,7 +10,7 @@
 
 ```
 Usage:
-  main [OPTIONS] update-space-security-groups [update-space-security-groups-OPTIONS]
+  cf-mgmt [OPTIONS] update-space-security-groups [update-space-security-groups-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

@@ -10,7 +10,7 @@
 
 ```
 Usage:
-  main [OPTIONS] create-org-private-domains [create-org-private-domains-OPTIONS]
+  cf-mgmt [OPTIONS] create-org-private-domains [create-org-private-domains-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

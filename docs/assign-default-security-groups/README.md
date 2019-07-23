@@ -10,7 +10,7 @@
 ## Command Usage
 ```
 Usage:
-  main [OPTIONS] assign-default-security-groups [assign-default-security-groups-OPTIONS]
+  cf-mgmt [OPTIONS] assign-default-security-groups [assign-default-security-groups-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

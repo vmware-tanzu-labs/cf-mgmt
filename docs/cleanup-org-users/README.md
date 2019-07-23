@@ -12,7 +12,7 @@ Included with v1.0.7+
 
 ```
 error: Usage:
-  main [OPTIONS] cleanup-org-users [cleanup-org-users-OPTIONS]
+  cf-mgmt [OPTIONS] cleanup-org-users [cleanup-org-users-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

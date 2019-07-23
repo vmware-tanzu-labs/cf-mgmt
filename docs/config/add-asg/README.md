@@ -10,7 +10,7 @@
 
 ```
 Usage:
-  main [OPTIONS] add-asg [add-asg-OPTIONS]
+  cf-mgmt-config [OPTIONS] add-asg [add-asg-OPTIONS]
 
 Help Options:
   -h, --help            Show this help message

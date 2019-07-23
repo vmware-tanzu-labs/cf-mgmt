@@ -9,7 +9,7 @@
 
 ```
 Usage:
-  main [OPTIONS] update-space-quotas [update-space-quotas-OPTIONS]
+  cf-mgmt [OPTIONS] update-space-quotas [update-space-quotas-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

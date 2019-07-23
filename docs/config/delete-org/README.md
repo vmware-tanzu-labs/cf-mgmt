@@ -10,7 +10,7 @@
 
 ```
 Usage:
-  main [OPTIONS] delete-org [delete-org-OPTIONS]
+  cf-mgmt-config [OPTIONS] delete-org [delete-org-OPTIONS]
 
 Help Options:
   -h, --help                  Show this help message

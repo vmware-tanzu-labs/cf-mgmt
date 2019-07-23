@@ -11,7 +11,7 @@
 ## Command Usage
 ```
 Usage:
-  main [OPTIONS] update-space [update-space-OPTIONS]
+  cf-mgmt-config [OPTIONS] update-space [update-space-OPTIONS]
 
 Help Options:
   -h, --help                                        Show this help message

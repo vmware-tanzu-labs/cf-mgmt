@@ -9,7 +9,7 @@
 
 ```
 Usage:
-  main [OPTIONS] update-org-quotas [update-org-quotas-OPTIONS]
+  cf-mgmt [OPTIONS] update-org-quotas [update-org-quotas-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message

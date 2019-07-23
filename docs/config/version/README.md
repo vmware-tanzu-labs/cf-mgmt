@@ -8,7 +8,7 @@ Displays version
 
 ```
 Usage:
-  main [OPTIONS] version
+  cf-mgmt-config [OPTIONS] version
 
 Help Options:
   -h, --help      Show this help message
