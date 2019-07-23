@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	systemDomain = "local.pcfdev.io"
+	systemDomain = "dev.cfdev.sh"
 	userId       = "admin"
 	password     = "admin"
 	clientSecret = "admin-client-secret"
