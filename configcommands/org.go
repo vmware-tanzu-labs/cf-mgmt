@@ -29,6 +29,7 @@ type OrgConfigurationCommand struct {
 	Manager                          UserRole      `group:"manager" namespace:"manager"`
 	Auditor                          UserRole      `group:"auditor" namespace:"auditor"`
 	ServiceAccess                    ServiceAccess `group:"service-access"`
+	Metadata                         Metadata      `group:"metadata"`
 }
 
 //Execute - updates org configuration`
@@ -48,9 +49,12 @@ func (c *OrgConfigurationCommand) Execute(args []string) error {
 			RemovePrivateDomains:       true,
 			RemoveSharedPrivateDomains: true,
 		}
-
 	} else {
 		newOrg = false
+	}
+
+	if orgConfig.Metadata == nil {
+		orgConfig.Metadata = &config.Metadata{}
 	}
 
 	if c.Quota.EnableOrgQuota == "true" && c.NamedQuota != "" {
@@ -98,6 +102,42 @@ func (c *OrgConfigurationCommand) Execute(args []string) error {
 			orgConfig.ServiceAccess[c.ServiceAccess.ServiceName] = c.ServiceAccess.Plans
 		} else {
 			orgConfig.ServiceAccess[c.ServiceAccess.ServiceName] = []string{"*"}
+		}
+	}
+
+	if len(c.Metadata.LabelKey) > 0 {
+		if len(c.Metadata.LabelKey) != len(c.Metadata.LabelValue) {
+			return fmt.Errorf("Must specify same number of label args as label-value args")
+		}
+		if orgConfig.Metadata.Labels == nil {
+			orgConfig.Metadata.Labels = make(map[string]string)
+		}
+		for index, label := range c.Metadata.LabelKey {
+			orgConfig.Metadata.Labels[label] = c.Metadata.LabelValue[index]
+		}
+	}
+
+	if len(c.Metadata.LabelsToRemove) > 0 && orgConfig.Metadata.Labels != nil {
+		for _, label := range c.Metadata.LabelsToRemove {
+			delete(orgConfig.Metadata.Labels, label)
+		}
+	}
+
+	if len(c.Metadata.AnnotationKey) > 0 {
+		if len(c.Metadata.AnnotationKey) != len(c.Metadata.AnnotationValue) {
+			return fmt.Errorf("Must specify same number of annotation args as annotation-value args")
+		}
+		if orgConfig.Metadata.Annotations == nil {
+			orgConfig.Metadata.Annotations = make(map[string]string)
+		}
+		for index, annotation := range c.Metadata.AnnotationKey {
+			orgConfig.Metadata.Annotations[annotation] = c.Metadata.AnnotationValue[index]
+		}
+	}
+
+	if len(c.Metadata.AnnotationsToRemove) > 0 && orgConfig.Metadata.Annotations != nil {
+		for _, annotation := range c.Metadata.AnnotationsToRemove {
+			delete(orgConfig.Metadata.Annotations, annotation)
 		}
 	}
 
