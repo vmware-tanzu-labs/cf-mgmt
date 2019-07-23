@@ -20,11 +20,11 @@ $ uaac client add cf-mgmt \
 Or with the [golang-based UAA CLI](https://github.com/cloudfoundry-incubator/uaa-cli):
 
 ```sh
-$ uaa target https://uaa.<system-domain>
+$ uaa-cli target https://uaa.<system-domain>
 
-$ uaa get-client-credentials-token <adminuserid> -s <admin-client-secret>
+$ uaa-cli get-client-credentials-token <adminuserid> -s <admin-client-secret>
 
-$ uaa create-client cf-mgmt \
+$ uaa-cli create-client cf-mgmt \
   --client_secret <cf-mgmt-secret> \
   --authorized_grant_types client_credentials,refresh_token \
   --authorities cloud_controller.admin,scim.read,scim.write

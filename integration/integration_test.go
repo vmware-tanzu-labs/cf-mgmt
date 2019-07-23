@@ -101,7 +101,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				orgs, err = cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(orgs, []byte("system"))).Should(BeTrue())
-				Expect(bytes.Contains(orgs, []byte("pcfdev-org"))).Should(BeTrue())
+				Expect(bytes.Contains(orgs, []byte("cfdev-org"))).Should(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org1"))).ShouldNot(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org1"))).ShouldNot(BeTrue())
 
@@ -190,7 +190,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				orgs, err = cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(orgs, []byte("system"))).Should(BeTrue())
-				Expect(bytes.Contains(orgs, []byte("pcfdev-org"))).Should(BeTrue())
+				Expect(bytes.Contains(orgs, []byte("cfdev-org"))).Should(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org1"))).ShouldNot(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org2"))).ShouldNot(BeTrue())
 

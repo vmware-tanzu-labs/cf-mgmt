@@ -34,14 +34,32 @@ Don't forget to `chmod +x` the file on Linux and macOS.
 
 cf-mgmt needs a uaa client to be able to interact with cloud controller and uaa for create, updating, deleting, and listing entities.
 
-```
-uaac target uaa.<your system domain>
-uaac token client get admin -s <your uaa admin client secret>
+To create a non-admin client execute the following command with [Cloud Foundry UAA Client](https://github.com/cloudfoundry/cf-uaac).
+
+```sh
+uaac target uaa.<system-domain>
+uaac token client get <adminuserid> -s <admin-client-secret>
+
 uaac client add cf-mgmt \
   --name cf-mgmt \
-  --secret <client secret from cf-mgmt client> \
+  --secret <cf-mgmt-secret> \
   --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
+  --authorities cloud_controller.admin,scim.read,scim.write
+```
+
+Or with the [golang-based UAA CLI](https://github.com/cloudfoundry-incubator/uaa-cli):
+
+`go install github.com/cloudfoundry-incubator/uaa-cli`
+
+```sh   
+uaa-cli target https://uaa.<system-domain>
+
+uaa-cli get-client-credentials-token <adminuserid> -s <admin-client-secret>
+
+uaa-cli create-client cf-mgmt \
+  --client_secret <cf-mgmt-secret> \
+  --authorized_grant_types client_credentials,refresh_token \
+  --authorities cloud_controller.admin,scim.read,scim.write
 ```
 
 ### Setup Configuration
@@ -133,12 +151,14 @@ to be running, the CF CLI, and the [UAA CLI](https://github.com/cloudfoundry-inc
 
 ```sh
 cf dev start
-uaa target http://uaa.local.pcfdev.io
-uaa get-client-credentials-token admin -s admin-client-secret
-uaa create-client cf-mgmt \
+uaa-cli target https://uaa.dev.cfdev.sh -k
+
+uaa-cli get-client-credentials-token admin -s admin-client-secret
+
+uaa-cli create-client cf-mgmt \
   --client_secret cf-mgmt-secret \
   --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
+  --authorities cloud_controller.admin,scim.read,scim.write
 RUN_INTEGRATION_TESTS=true go test ./integration/...
 ```
 
