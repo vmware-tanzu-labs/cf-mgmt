@@ -179,7 +179,7 @@ func (m *DefaultManager) AssignDefaultSecurityGroups() error {
 			if !m.Peek {
 				return fmt.Errorf("Running security group [%s] does not exist", runningGroup)
 			} else {
-				lo.G.Infof("[dry-run]: assigning yet to be created sg %s as running security group", runningGroup)
+				lo.G.Infof("[dry-run]: assigning sg %s as running security group", runningGroup)
 			}
 		}
 	}
@@ -196,7 +196,7 @@ func (m *DefaultManager) AssignDefaultSecurityGroups() error {
 			if !m.Peek {
 				return fmt.Errorf("Staging security group [%s] does not exist", stagingGroup)
 			} else {
-				lo.G.Infof("[dry-run]: assigning yet to be created sg %s as staging security group", stagingGroup)
+				lo.G.Infof("[dry-run]: assigning sg %s as staging security group", stagingGroup)
 			}
 		}
 	}
