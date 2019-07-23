@@ -29,7 +29,6 @@ type SpaceConfigurationCommand struct {
 	Developer                   UserRole   `group:"developer" namespace:"developer"`
 	Manager                     UserRole   `group:"manager" namespace:"manager"`
 	Auditor                     UserRole   `group:"auditor" namespace:"auditor"`
-	Metadata                    Metadata   `group:"metadata"`
 }
 
 //Execute - updates space configuration`
@@ -85,48 +84,6 @@ func (c *SpaceConfigurationCommand) Execute(args []string) error {
 	c.updateUsers(spaceConfig, &errorString)
 	c.sshConfig(spaceConfig, &errorString)
 
-	if len(c.Metadata.LabelKey) > 0 {
-		if len(c.Metadata.LabelKey) != len(c.Metadata.LabelValue) {
-			return fmt.Errorf("Must specify same number of label args as label-value args")
-		}
-		if spaceConfig.Metadata == nil {
-			spaceConfig.Metadata = &config.Metadata{}
-		}
-		if spaceConfig.Metadata.Labels == nil {
-			spaceConfig.Metadata.Labels = make(map[string]string)
-		}
-		for index, label := range c.Metadata.LabelKey {
-			spaceConfig.Metadata.Labels[label] = c.Metadata.LabelValue[index]
-		}
-	}
-
-	if len(c.Metadata.LabelsToRemove) > 0 && spaceConfig.Metadata.Labels != nil {
-		for _, label := range c.Metadata.LabelsToRemove {
-			delete(spaceConfig.Metadata.Labels, label)
-		}
-	}
-
-	if len(c.Metadata.AnnotationKey) > 0 {
-		if len(c.Metadata.AnnotationKey) != len(c.Metadata.AnnotationValue) {
-			return fmt.Errorf("Must specify same number of annotation args as annotation-value args")
-		}
-		if spaceConfig.Metadata == nil {
-			spaceConfig.Metadata = &config.Metadata{}
-		}
-		if spaceConfig.Metadata.Annotations == nil {
-			spaceConfig.Metadata.Annotations = make(map[string]string)
-		}
-		for index, annotation := range c.Metadata.AnnotationKey {
-			spaceConfig.Metadata.Annotations[annotation] = c.Metadata.AnnotationValue[index]
-		}
-	}
-
-	if len(c.Metadata.AnnotationsToRemove) > 0 && spaceConfig.Metadata.Annotations != nil {
-		for _, annotation := range c.Metadata.AnnotationsToRemove {
-			delete(spaceConfig.Metadata.Annotations, annotation)
-		}
-	}
-
 	if errorString != "" {
 		return errors.New(errorString)
 	}
@@ -135,9 +92,9 @@ func (c *SpaceConfigurationCommand) Execute(args []string) error {
 		return err
 	}
 	if newSpace {
-		fmt.Println(fmt.Sprintf("The org/space [%s/%s] has been created", c.OrgName, c.SpaceName))
-	} else {
 		fmt.Println(fmt.Sprintf("The org/space [%s/%s] has been updated", c.OrgName, c.SpaceName))
+	} else {
+		fmt.Println(fmt.Sprintf("The org/space [%s/%s] has been created", c.OrgName, c.SpaceName))
 	}
 	return nil
 }

@@ -78,12 +78,4 @@ service-access:
       --service=                                          Service Name to add
       --plans=                                            plans to add, empty list will add all plans
       --service-to-remove=                                name of service to remove
-
-metadata:
-      --label=                                      Label to add, can specify multiple
-      --label-value=                                Label value to add, can specify multiple but need to match number of label args
-      --annotation=                                 Annotation to add, can specify multiple
-      --annotation-value=                           Annotation value to add, can specify multiple but need to match number of annotation args
-      --labels-to-remove=                           name of label to remove
-      --annotations-to-remove=                      name of annotation to remove
 ```
