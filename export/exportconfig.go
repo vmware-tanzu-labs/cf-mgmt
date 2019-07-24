@@ -126,6 +126,35 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 	lo.G.Debugf("Orgs to process: %s", orgs)
 
 	globalConfig.EnableServiceAccess = true
+
+	serviceInfo, err := im.ServiceAccessManager.ListServiceInfo()
+	if err != nil {
+		return err
+	}
+	for service, plans := range serviceInfo.AllPlans() {
+		for _, plan := range plans {
+			serviceVisibility := config.ServiceVisibility{
+				Service: service,
+				Plan:    plan.Name,
+			}
+
+			for _, orgAccess := range plan.ListVisibilities() {
+				orgName, err := im.getOrgName(orgs, orgAccess.OrganizationGuid)
+				if err != nil {
+					return err
+				}
+
+				if !organization.Matches(orgName, config.DefaultProtectedOrgs) {
+					serviceVisibility.Orgs = append(serviceVisibility.Orgs, orgName)
+				}
+			}
+			if !plan.Public && len(plan.ListVisibilities()) == 0 {
+				serviceVisibility.Disable = true
+			}
+			globalConfig.ServiceAccess = append(globalConfig.ServiceAccess, serviceVisibility)
+		}
+
+	}
 	for _, org := range orgs {
 		orgName := org.Name
 		if _, ok := excludedOrgs[orgName]; ok {
@@ -181,21 +210,6 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		}
 		for privatedomain, _ := range privatedomains {
 			orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, privatedomain)
-		}
-
-		orgConfig.ServiceAccess = make(map[string][]string)
-		serviceInfo, err := im.ServiceAccessManager.ListServiceInfo()
-		if err != nil {
-			return err
-		}
-		for service, plans := range serviceInfo.AllPlans() {
-			accessPlans := []string{}
-			for _, plan := range plans {
-				if plan.Public || plan.OrgHasAccess(org.Guid) {
-					accessPlans = append(accessPlans, plan.Name)
-				}
-			}
-			orgConfig.ServiceAccess[service] = accessPlans
 		}
 
 		spacesConfig := &config.Spaces{Org: orgConfig.Org, EnableDeleteSpaces: true}
@@ -397,6 +411,15 @@ func (im *DefaultImportManager) doesOrgExist(orgs []cfclient.Org, orgName string
 		}
 	}
 	return false
+}
+
+func (im *DefaultImportManager) getOrgName(orgs []cfclient.Org, orgGUID string) (string, error) {
+	for _, org := range orgs {
+		if org.Guid == orgGUID {
+			return org.Name, nil
+		}
+	}
+	return "", fmt.Errorf("No org exists for org guid %s", orgGUID)
 }
 
 func (im *DefaultImportManager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
