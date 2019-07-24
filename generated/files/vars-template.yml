@@ -1,26 +1,28 @@
 # your git repo uri
-git_repo_uri:
+git_repo_uri: ""
 git_repo_branch: master
 # your cf system domain
-system_domain:
+system_domain: ""
 # user account with permission to create orgs/spaces
-user_id:
+user_id: ""
 # DEPRECATED - Use client_secret - password of user account with permission to create orgs/spaces
 password: ""
 # client secret for uaa for user_id
-client_secret:
-# password to bind to ldap - only needed if using LDAP
-ldap_password: ""
+client_secret: ""
+
 # logging level for cf-mgmt commands in the pipeline
 log_level: INFO
 # time interval to trigger update/delete jobs on
 time-trigger: 15m
 
 # configuration directory
-config_dir: ./config
+config_dir: ~CONFIGDIR~
 
-# allow specifying ldap server in pipeline vs in ldap.yml
+# allow specifying ldap server in pipeline vs in ldap.yml only needed if using LDAP
 ldap_server: ""
 
-# allow specifying ldap bind user in pipeline vs in ldap.yml
+# allow specifying ldap bind user in pipeline vs in ldap.yml only needed if using LDAP
 ldap_user: ""
+
+# password to bind to ldap - only needed if using LDAP
+ldap_password: ""
