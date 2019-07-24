@@ -10,9 +10,17 @@ type GlobalConfig struct {
 	SharedDomains                 map[string]SharedDomain `yaml:"shared-domains"`
 	EnableDeleteSharedDomains     bool                    `yaml:"enable-remove-shared-domains"`
 	MetadataPrefix                string                  `yaml:"metadata-prefix"`
+	ServiceAccess                 []ServiceVisibility     `yaml:"service-access"`
 }
 
 type SharedDomain struct {
 	Internal    bool   `yaml:"internal"`
 	RouterGroup string `yaml:"router-group,omitempty"`
+}
+
+type ServiceVisibility struct {
+	Service string   `yaml:"service"`
+	Plan    string   `yaml:"plan,omitempty"`
+	Orgs    []string `yaml:"orgs,omitempty"`
+	Disable bool     `yaml:"disable,omitempty"`
 }

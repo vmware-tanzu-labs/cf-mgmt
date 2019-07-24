@@ -42,66 +42,159 @@ func (m *Manager) Apply() error {
 	if err != nil {
 		return err
 	}
-	err = m.DisablePublicServiceAccess(serviceInfo)
-	if err != nil {
-		return err
-	}
-	orgConfig, err := m.Cfg.Orgs()
-	if err != nil {
-		return err
-	}
-	err = m.EnableProtectedOrgServiceAccess(serviceInfo, orgConfig.ProtectedOrgList())
+
+	protectedOrgList, err := m.ProtectedOrgList()
 	if err != nil {
 		return err
 	}
 
-	orgConfigs, err := m.Cfg.GetOrgConfigs()
-	if err != nil {
-		return err
-	}
-
-	err = m.EnableOrgServiceAccess(serviceInfo, orgConfigs)
-	if err != nil {
-		return err
-	}
-
-	err = m.RemoveUnknownVisibilites(serviceInfo)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-//RemoveUnknownVisibilites - will remove any service plan visiblities that are not known by cf-mgmt
-func (m *Manager) RemoveUnknownVisibilites(serviceInfo *ServiceInfo) error {
-	for servicePlanName, servicePlan := range serviceInfo.AllPlans() {
-		for _, plan := range servicePlan {
-			for _, visibility := range plan.ListVisibilities() {
-				if m.Peek {
-					lo.G.Infof("[dry-run]: removing plan %s for service %s to org with guid %s", plan.Name, servicePlanName, visibility.OrganizationGuid)
-					continue
+	for _, serviceVisibility := range globalCfg.ServiceAccess {
+		servicePlans, err := m.GetServicePlans(serviceInfo, serviceVisibility)
+		if err != nil {
+			return err
+		}
+		for _, servicePlan := range servicePlans {
+			if serviceVisibility.Disable {
+				err = m.DisableServiceAccess(servicePlan)
+				if err != nil {
+					return err
 				}
-				lo.G.Infof("removing plan %s for service %s to org with guid %s", plan.Name, servicePlanName, visibility.OrganizationGuid)
-				err := m.Client.DeleteServicePlanVisibilityByPlanAndOrg(visibility.ServicePlanGuid, visibility.OrganizationGuid, false)
+			} else {
+				err = m.EnableOrgServiceAccess(servicePlan, serviceVisibility.Orgs, protectedOrgList)
 				if err != nil {
 					return err
 				}
 			}
 		}
 	}
+
 	return nil
 }
 
-//DisablePublicServiceAccess - will ensure any public plan is made private
-func (m *Manager) DisablePublicServiceAccess(serviceInfo *ServiceInfo) error {
-	for _, servicePlan := range serviceInfo.AllPlans() {
-		for _, plan := range servicePlan {
-			if plan.Public {
-				err := m.Client.MakeServicePlanPrivate(plan.GUID)
-				if err != nil {
-					return err
-				}
+func (m *Manager) GetServicePlans(serviceInfo *ServiceInfo, serviceVisibility config.ServiceVisibility) ([]*ServicePlanInfo, error) {
+	servicePlans := []*ServicePlanInfo{}
+	var plans []string
+	var err error
+	if serviceVisibility.Plan != "" {
+		plans = append(plans, serviceVisibility.Plan)
+	} else {
+		plans, err = serviceInfo.GetPlanNames(serviceVisibility.Service)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, plan := range plans {
+		servicePlan, err := serviceInfo.GetPlan(serviceVisibility.Service, plan)
+		if err != nil {
+			return nil, err
+		}
+		servicePlans = append(servicePlans, servicePlan)
+	}
+
+	return servicePlans, nil
+}
+
+func (m *Manager) ProtectedOrgList() ([]string, error) {
+	orgConfig, err := m.Cfg.Orgs()
+	if err != nil {
+		return nil, err
+	}
+	orgs, err := m.OrgMgr.ListOrgs()
+	if err != nil {
+		return nil, err
+	}
+	orgList := []string{}
+	for _, org := range orgs {
+		if organization.Matches(org.Name, orgConfig.ProtectedOrgList()) {
+			orgList = append(orgList, org.Name)
+		}
+	}
+	return orgList, nil
+}
+
+func (m *Manager) MakePublic(servicePlan *ServicePlanInfo) error {
+	if !servicePlan.Public {
+		if m.Peek {
+			lo.G.Infof("[dry-run]: Making plan %s for service %s public", servicePlan.Name, servicePlan.ServiceName)
+			return nil
+		}
+		lo.G.Infof("Making plan %s for service %s public", servicePlan.Name, servicePlan.ServiceName)
+		err := m.Client.MakeServicePlanPublic(servicePlan.GUID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (m *Manager) MakePrivate(servicePlan *ServicePlanInfo) error {
+	if servicePlan.Public {
+		if m.Peek {
+			lo.G.Infof("[dry-run]: Making plan %s for service %s private", servicePlan.Name, servicePlan.ServiceName)
+			return nil
+		}
+		lo.G.Infof("Making plan %s for service %s private", servicePlan.Name, servicePlan.ServiceName)
+		err := m.Client.MakeServicePlanPrivate(servicePlan.GUID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (m *Manager) DisableServiceAccess(servicePlan *ServicePlanInfo) error {
+	err := m.MakePrivate(servicePlan)
+	if err != nil {
+		return err
+	}
+	return m.RemoveVisibilities(servicePlan)
+
+}
+func (m *Manager) EnableOrgServiceAccess(servicePlan *ServicePlanInfo, orgs, protectedOrgs []string) error {
+
+	if len(orgs) == 0 {
+		return m.MakePublic(servicePlan)
+	}
+
+	err := m.MakePrivate(servicePlan)
+	if err != nil {
+		return err
+	}
+
+	orgs = append(orgs, protectedOrgs...)
+	for _, orgName := range orgs {
+		org, err := m.OrgMgr.FindOrg(orgName)
+		if err != nil {
+			return err
+		}
+		if !servicePlan.OrgHasAccess(org.Guid) {
+			if m.Peek {
+				lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", servicePlan.Name, servicePlan.ServiceName, org.Name)
+				continue
 			}
+			lo.G.Infof("adding plan %s for service %s to org %s", servicePlan.Name, servicePlan.ServiceName, org.Name)
+			_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.Guid)
+			if err != nil {
+				return err
+			}
+		} else {
+			servicePlan.RemoveOrg(org.Guid)
+		}
+	}
+
+	return m.RemoveVisibilities(servicePlan)
+}
+
+func (m *Manager) RemoveVisibilities(servicePlan *ServicePlanInfo) error {
+	for _, visibility := range servicePlan.ListVisibilities() {
+		if m.Peek {
+			lo.G.Infof("[dry-run]: removing plan %s for service %s to org with guid %s", servicePlan.Name, servicePlan.ServiceName, visibility.OrganizationGuid)
+			continue
+		}
+		lo.G.Infof("removing plan %s for service %s to org with guid %s", servicePlan.Name, servicePlan.ServiceName, visibility.OrganizationGuid)
+		err := m.Client.DeleteServicePlanVisibilityByPlanAndOrg(visibility.ServicePlanGuid, visibility.OrganizationGuid, false)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
@@ -135,68 +228,4 @@ func (m *Manager) ListServiceInfo() (*ServiceInfo, error) {
 		}
 	}
 	return serviceInfo, nil
-}
-
-func (m *Manager) EnableProtectedOrgServiceAccess(serviceInfo *ServiceInfo, protectedOrgs []string) error {
-	orgs, err := m.OrgMgr.ListOrgs()
-	if err != nil {
-		return err
-	}
-	for _, org := range orgs {
-		if organization.Matches(org.Name, protectedOrgs) {
-			for serviceName, plans := range serviceInfo.AllPlans() {
-				for _, servicePlan := range plans {
-					if !servicePlan.OrgHasAccess(org.Guid) {
-						if m.Peek {
-							lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
-							continue
-						}
-						lo.G.Infof("adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
-						_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.Guid)
-						if err != nil {
-							return err
-						}
-					} else {
-						servicePlan.RemoveOrg(org.Guid)
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
-
-func (m *Manager) EnableOrgServiceAccess(serviceInfo *ServiceInfo, orgConfigs []config.OrgConfig) error {
-	for _, orgConfig := range orgConfigs {
-		if orgConfig.ServiceAccess != nil {
-			org, err := m.OrgMgr.FindOrg(orgConfig.Org)
-			if err != nil {
-				return err
-			}
-			for serviceName, plans := range orgConfig.ServiceAccess {
-				servicePlans, err := serviceInfo.GetPlans(serviceName, plans)
-				if err != nil {
-					lo.G.Warning(err.Error())
-					continue
-				}
-				for _, servicePlan := range servicePlans {
-					if !servicePlan.OrgHasAccess(org.Guid) {
-						if m.Peek {
-							lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
-							continue
-						}
-						lo.G.Infof("adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
-						_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.Guid)
-						if err != nil {
-							return err
-						}
-					} else {
-						servicePlan.RemoveOrg(org.Guid)
-					}
-				}
-			}
-		}
-	}
-
-	return nil
 }

@@ -10,6 +10,7 @@ import (
 type CFClient interface {
 	ListServicePlansByQuery(query url.Values) ([]cfclient.ServicePlan, error)
 	MakeServicePlanPrivate(servicePlanGUID string) error
+	MakeServicePlanPublic(servicePlanGUID string) error
 	ListServices() ([]cfclient.Service, error)
 	ListServicePlanVisibilitiesByQuery(query url.Values) ([]cfclient.ServicePlanVisibility, error)
 	CreateServicePlanVisibility(servicePlanGuid string, organizationGuid string) (cfclient.ServicePlanVisibility, error)

@@ -12,10 +12,11 @@ type ServiceInfo struct {
 }
 
 type ServicePlanInfo struct {
-	GUID   string
-	Name   string
-	Public bool
-	m      map[string]*cfclient.ServicePlanVisibility
+	GUID        string
+	Name        string
+	ServiceName string
+	Public      bool
+	m           map[string]*cfclient.ServicePlanVisibility
 }
 
 func (s *ServicePlanInfo) ListVisibilities() []cfclient.ServicePlanVisibility {
@@ -50,9 +51,39 @@ func (s *ServiceInfo) AddPlan(serviceName string, servicePlan cfclient.ServicePl
 		plans = make(map[string]*ServicePlanInfo)
 		s.m[serviceName] = plans
 	}
-	servicePlanInfo := &ServicePlanInfo{GUID: servicePlan.Guid, Name: servicePlan.Name, Public: servicePlan.Public}
+	servicePlanInfo := &ServicePlanInfo{
+		GUID:        servicePlan.Guid,
+		Name:        servicePlan.Name,
+		Public:      servicePlan.Public,
+		ServiceName: serviceName,
+	}
 	plans[servicePlan.Name] = servicePlanInfo
 	return servicePlanInfo
+}
+
+func (s *ServiceInfo) GetPlan(serviceName string, plan string) (*ServicePlanInfo, error) {
+	plans, ok := s.m[serviceName]
+	if !ok {
+		return nil, fmt.Errorf("Service %s does not exist", serviceName)
+	}
+	for planName, servicePlan := range plans {
+		if strings.EqualFold(planName, plan) {
+			return servicePlan, nil
+		}
+	}
+	return nil, nil
+}
+
+func (s *ServiceInfo) GetPlanNames(serviceName string) ([]string, error) {
+	plans, ok := s.m[serviceName]
+	if !ok {
+		return nil, fmt.Errorf("Service %s does not exist", serviceName)
+	}
+	planNames := []string{}
+	for planName := range plans {
+		planNames = append(planNames, planName)
+	}
+	return planNames, nil
 }
 
 func (s *ServiceInfo) GetPlans(serviceName string, planNames []string) ([]*ServicePlanInfo, error) {
