@@ -34,7 +34,7 @@ Don't forget to `chmod +x` the file on Linux and macOS.
 
 cf-mgmt needs a uaa client to be able to interact with cloud controller and uaa for create, updating, deleting, and listing entities.
 
-To create a non-admin client execute the following command with [Cloud Foundry UAA Client](https://github.com/cloudfoundry/cf-uaac).
+To create a non-admin client execute the following command with [Cloud Foundry UAA Client](https://github.com/cloudfoundry/cf-uaac).  Recent addition of 2 authorities needed to setup shared domains with tcp routing `routing.router_groups.read`
 
 ```sh
 uaac target uaa.<system-domain>
@@ -44,7 +44,7 @@ uaac client add cf-mgmt \
   --name cf-mgmt \
   --secret <cf-mgmt-secret> \
   --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write
+  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
 ```
 
 Or with the [golang-based UAA CLI](https://github.com/cloudfoundry-incubator/uaa-cli):
@@ -59,7 +59,7 @@ uaa-cli get-client-credentials-token <adminuserid> -s <admin-client-secret>
 uaa-cli create-client cf-mgmt \
   --client_secret <cf-mgmt-secret> \
   --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write
+  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
 ```
 
 Or the [golang-based UAA CLI](https://github.com/cloudfoundry-incubator/uaa-cli):
@@ -169,7 +169,7 @@ uaa-cli get-client-credentials-token admin -s admin-client-secret
 uaa-cli create-client cf-mgmt \
   --client_secret cf-mgmt-secret \
   --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write
+  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
 RUN_INTEGRATION_TESTS=true go test ./integration/...
 ```
 
