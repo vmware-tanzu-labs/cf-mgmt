@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/generated"
+	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
 
 type GenerateConcoursePipelineCommand struct {
+	BaseConfigCommand
+	TargetDirectory string `long:"target-dir" default:"." description:"Name of the target directory to generate into"`
 }
 
 //Execute - generates concourse pipeline and tasks
@@ -20,39 +24,48 @@ func (c *GenerateConcoursePipelineCommand) Execute([]string) error {
 	const pipelineFileName = "pipeline.yml"
 	const cfMgmtSh = "cf-mgmt.sh"
 	var targetFile string
-	fmt.Println("Generating pipeline....")
-	if err := createFile(pipelineFileName, pipelineFileName); err != nil {
-		lo.G.Error("Error creating pipeline.yml", err)
-		return err
+	if c.TargetDirectory == "" {
+		pwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		c.TargetDirectory = pwd
 	}
-	if err := createFile(varsFileName, varsFileName); err != nil {
-		lo.G.Error("Error creating vars.yml", err)
-		return err
+	fmt.Println(fmt.Sprintf("Generating pipeline into %s", path.Join(c.TargetDirectory)))
+
+	if err := os.MkdirAll(c.TargetDirectory, 0755); err != nil {
+		return errors.Wrapf(err, "Error creating directory %s", c.TargetDirectory)
+	}
+	if err := os.MkdirAll(c.ConfigDirectory, 0755); err != nil {
+		return errors.Wrapf(err, "Error creating directory %s", c.ConfigDirectory)
+	}
+	if err := c.createFile(pipelineFileName, pipelineFileName); err != nil {
+		return errors.Wrap(err, "Error creating pipeline.yml")
+	}
+	if err := c.createVarsYml(); err != nil {
+		return errors.Wrap(err, "Error creating vars.yml")
 	}
 
-	if err := os.MkdirAll("ci/tasks", 0755); err == nil {
+	if err := os.MkdirAll(path.Join(c.TargetDirectory, "ci", "tasks"), 0755); err == nil {
 		lo.G.Debug("Creating", targetFile)
-		if err = createTaskYml(); err != nil {
-			lo.G.Error("Error creating cf-mgmt.yml", err)
-			return err
+		if err = c.createTaskYml(); err != nil {
+			return errors.Wrap(err, "Error creating cf-mgmt.yml")
 		}
 		targetFile = filepath.Join("ci", "tasks", cfMgmtSh)
 		lo.G.Debug("Creating", targetFile)
-		if err = createFile(cfMgmtSh, targetFile); err != nil {
-			lo.G.Error("Error creating cf-mgmt.sh", err)
-			return err
+		if err = c.createFile(cfMgmtSh, targetFile); err != nil {
+			return errors.Wrap(err, "Error creating cf-mgmt.sh")
 		}
 	} else {
-		lo.G.Error("Error making directories", err)
-		return err
+		return errors.Wrap(err, "Error making directories")
 	}
-	fmt.Println("1) Update vars.yml with the appropriate values")
+	fmt.Println(fmt.Sprintf("1) Update %s/vars.yml with the appropriate values", c.ConfigDirectory))
 	fmt.Println("2) Using following command to set your pipeline in concourse after you have checked all files in to git")
-	fmt.Println("fly -t lite set-pipeline -p cf-mgmt -c pipeline.yml --load-vars-from=vars.yml")
+	fmt.Println(fmt.Sprintf("fly -t <target> set-pipeline -p cf-mgmt -c %s/pipeline.yml --load-vars-from=%s/vars.yml", c.TargetDirectory, c.ConfigDirectory))
 	return nil
 }
 
-func createFile(assetName, fileName string) error {
+func (c *GenerateConcoursePipelineCommand) createFile(assetName, fileName string) error {
 	bytes, err := generated.Asset(fmt.Sprintf("files/%s", assetName))
 	if err != nil {
 		return err
@@ -61,10 +74,10 @@ func createFile(assetName, fileName string) error {
 	if strings.HasSuffix(fileName, ".sh") {
 		perm = 0755
 	}
-	return ioutil.WriteFile(fileName, bytes, perm)
+	return ioutil.WriteFile(path.Join(c.TargetDirectory, fileName), bytes, perm)
 }
 
-func createTaskYml() error {
+func (c *GenerateConcoursePipelineCommand) createTaskYml() error {
 	version := GetVersion()
 	bytes, err := generated.Asset("files/cf-mgmt.yml")
 	if err != nil {
@@ -72,5 +85,15 @@ func createTaskYml() error {
 	}
 	perm := os.FileMode(0666)
 	versioned := strings.Replace(string(bytes), "~VERSION~", version, -1)
-	return ioutil.WriteFile(filepath.Join("ci", "tasks", "cf-mgmt.yml"), []byte(versioned), perm)
+	return ioutil.WriteFile(filepath.Join(c.TargetDirectory, "ci", "tasks", "cf-mgmt.yml"), []byte(versioned), perm)
+}
+
+func (c *GenerateConcoursePipelineCommand) createVarsYml() error {
+	bytes, err := generated.Asset("files/vars-template.yml")
+	if err != nil {
+		return err
+	}
+	perm := os.FileMode(0666)
+	processedBytes := strings.Replace(string(bytes), "~CONFIGDIR~", c.ConfigDirectory, -1)
+	return ioutil.WriteFile(filepath.Join(c.ConfigDirectory, "vars.yml"), []byte(processedBytes), perm)
 }
