@@ -8,7 +8,7 @@
 
 ```
 Usage:
-  cf-mgmt-config [OPTIONS] generate-concourse-pipeline
+  cf-mgmt-config [OPTIONS] generate-concourse-pipeline [generate-concourse-pipeline-OPTIONS]
 
 Help Options:
   -h, --help            Show this help message
