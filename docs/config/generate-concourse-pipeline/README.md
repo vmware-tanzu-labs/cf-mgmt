@@ -8,10 +8,14 @@
 
 ```
 Usage:
-  cf-mgmt-config [OPTIONS] generate-concourse-pipeline
+  cf-mgmt-config [OPTIONS] generate-concourse-pipeline [generate-concourse-pipeline-OPTIONS]
 
 Help Options:
-  -h, --help      Show this help message
+  -h, --help            Show this help message
+
+[generate-concourse-pipeline command options]
+  --config-dir= Name of the config directory (default: config) [$CONFIG_DIR]
+  --target-dir= Name of the target directory to generate into (default: .)
 ```
 
 Once the pipeline files are generated, you can create a pipeline as follows:
