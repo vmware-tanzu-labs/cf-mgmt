@@ -16,6 +16,7 @@ var _ = Describe("cf-mgmt cli", func() {
 			err     error
 		)
 		BeforeEach(func() {
+			os.RemoveAll("./config")
 			outPath, err = Build("github.com/pivotalservices/cf-mgmt/cmd/cf-mgmt-config")
 			Ω(err).ShouldNot(HaveOccurred())
 		})
@@ -84,7 +85,7 @@ var _ = Describe("cf-mgmt cli", func() {
 			_, err = os.Stat("pipeline.yml")
 			Expect(err).ShouldNot(HaveOccurred())
 
-			_, err = os.Stat("vars.yml")
+			_, err = os.Stat("config/vars.yml")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			_, err = os.Stat("./ci/tasks/cf-mgmt.sh")
