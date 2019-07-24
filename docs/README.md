@@ -14,7 +14,7 @@ $ uaac client add cf-mgmt \
   --name cf-mgmt \
   --secret <cf-mgmt-secret> \
   --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write
+  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
 ```
 
 Or with the [golang-based UAA CLI](https://github.com/cloudfoundry-incubator/uaa-cli):
@@ -27,7 +27,7 @@ $ uaa-cli get-client-credentials-token <adminuserid> -s <admin-client-secret>
 $ uaa-cli create-client cf-mgmt \
   --client_secret <cf-mgmt-secret> \
   --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write
+  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
 ```
 
 As you can see, `cloud_controller.admin,scim.read,scim.write` gives this user just enough rights to add/update/delete users, orgs and space and still being a non-admin user. Learn more about the scopes authorized by UAA at [UAA Scopes](https://github.com/cloudfoundry/uaa/blob/master/docs/UAA-APIs.rst#scopes-authorized-by-the-uaa)
