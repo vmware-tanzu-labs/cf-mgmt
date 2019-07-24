@@ -4,7 +4,7 @@ The following commands are enabled with cf-mgmt that will leverage configuration
 
 ## Authentication requirements
 
-Introduced in cf-mgmt 0.0.66+ is the ability to definee a non admin uaa client.  With this release the password field has been deprecated. To create a non-admin client execute the following command with [Cloud Foundry UAA Client](https://github.com/cloudfoundry/cf-uaac).
+Introduced in cf-mgmt 0.0.66+ is the ability to define a non admin uaa client.  With this release the password field has been deprecated. To create a non-admin client execute the following command with [Cloud Foundry UAA Client](https://github.com/cloudfoundry/cf-uaac).
 
 ```sh
 $ uaac target uaa.<system-domain>
