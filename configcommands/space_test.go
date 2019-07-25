@@ -145,4 +145,22 @@ var _ = Describe("Space", func() {
 			Expect(space.Developer.LDAPUsers).To(ConsistOf([]string{"xxx.yyy"}))
 		})
 	})
+
+	Context("No options provided", func() {
+		It("Nothing should change", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:   "test-org",
+				Space: "test-space",
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			spaceBefore, err := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(err).ShouldNot(HaveOccurred())
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceBefore).Should(BeEquivalentTo(spaceAfter))
+		})
+	})
 })
