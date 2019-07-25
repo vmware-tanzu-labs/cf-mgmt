@@ -50,10 +50,6 @@ func (c *SpaceConfigurationCommand) Execute(args []string) error {
 		newSpace = false
 	}
 
-	if spaceConfig.Metadata == nil {
-		spaceConfig.Metadata = &config.Metadata{}
-	}
-
 	asgConfigs, err := c.ConfigManager.GetASGConfigs()
 	if err != nil {
 		return err
@@ -93,6 +89,9 @@ func (c *SpaceConfigurationCommand) Execute(args []string) error {
 		if len(c.Metadata.LabelKey) != len(c.Metadata.LabelValue) {
 			return fmt.Errorf("Must specify same number of label args as label-value args")
 		}
+		if spaceConfig.Metadata == nil {
+			spaceConfig.Metadata = &config.Metadata{}
+		}
 		if spaceConfig.Metadata.Labels == nil {
 			spaceConfig.Metadata.Labels = make(map[string]string)
 		}
@@ -110,6 +109,9 @@ func (c *SpaceConfigurationCommand) Execute(args []string) error {
 	if len(c.Metadata.AnnotationKey) > 0 {
 		if len(c.Metadata.AnnotationKey) != len(c.Metadata.AnnotationValue) {
 			return fmt.Errorf("Must specify same number of annotation args as annotation-value args")
+		}
+		if spaceConfig.Metadata == nil {
+			spaceConfig.Metadata = &config.Metadata{}
 		}
 		if spaceConfig.Metadata.Annotations == nil {
 			spaceConfig.Metadata.Annotations = make(map[string]string)
