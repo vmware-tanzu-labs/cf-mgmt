@@ -11,7 +11,7 @@ import (
 	. "github.com/pivotalservices/cf-mgmt/configcommands"
 )
 
-var _ = Describe("given update orgs config command", func() {
+var _ = Describe("given update space config command", func() {
 	var (
 		mockConfig    *fakes.FakeManager
 		configuration UpdateSpaceConfigurationCommand
@@ -26,8 +26,39 @@ var _ = Describe("given update orgs config command", func() {
 			ConfigManager: mockConfig,
 		}
 	})
-	Context("Updating basic org config", func() {
+	Context("Allow SSH options", func() {
+		It("should stay false", func() {
+			mockConfig.GetSpaceConfigReturns(&config.SpaceConfig{
+				Org:      orgName,
+				Space:    spaceName,
+				AllowSSH: false,
+			}, nil)
 
+			err := configuration.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(1))
+			Expect(mockConfig.SaveSpaceConfigArgsForCall(0)).To(BeEquivalentTo(&config.SpaceConfig{
+				Org:      orgName,
+				Space:    spaceName,
+				AllowSSH: false,
+			}))
+		})
+		It("should stay true", func() {
+			mockConfig.GetSpaceConfigReturns(&config.SpaceConfig{
+				Org:      orgName,
+				Space:    spaceName,
+				AllowSSH: true,
+			}, nil)
+
+			err := configuration.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(1))
+			Expect(mockConfig.SaveSpaceConfigArgsForCall(0)).To(BeEquivalentTo(&config.SpaceConfig{
+				Org:      orgName,
+				Space:    spaceName,
+				AllowSSH: true,
+			}))
+		})
 	})
 	Context("Updating Quotas", func() {
 		It("should succeed", func() {

@@ -91,6 +91,9 @@ func (c *UpdateSpaceConfigurationCommand) sshConfig(spaceConfig *config.SpaceCon
 		*errorString += fmt.Sprintf("\nCannot set --allow-ssh and --allow-ssh-until")
 		return
 	}
+	if c.AllowSSH == "" {
+		return
+	}
 	if strings.EqualFold(c.AllowSSH, "true") {
 		spaceConfig.AllowSSH = true
 		spaceConfig.AllowSSHUntil = ""
