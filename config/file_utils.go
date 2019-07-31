@@ -15,7 +15,7 @@ func FindFiles(configDir, pattern string) ([]string, error) {
 	var foundFiles = make([]string, 0)
 	err := filepath.Walk(configDir,
 		func(path string, info os.FileInfo, e error) error {
-			if strings.Contains(path, pattern) {
+			if strings.HasSuffix(path, pattern) {
 				foundFiles = append(foundFiles, path)
 			}
 			return e

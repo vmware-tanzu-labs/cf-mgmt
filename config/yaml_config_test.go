@@ -104,6 +104,13 @@ var _ = Describe("CF-Mgmt Config", func() {
 			})
 
 			It("should return a list of 1", func() {
+				m := config.NewManager("./fixtures/duplicate-files")
+				c, err := m.GetOrgConfigs()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(c).Should(HaveLen(1))
+			})
+
+			It("should return a list of 1", func() {
 				m := config.NewManager("./fixtures/user_config")
 				c, err := m.GetOrgConfigs()
 				Expect(err).ShouldNot(HaveOccurred())
