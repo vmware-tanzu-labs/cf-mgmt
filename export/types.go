@@ -8,5 +8,5 @@ const SAML string = "saml"
 
 //Manager -
 type Manager interface {
-	ExportConfig(excludedOrgs map[string]string, excludedSpaces map[string]string) error
+	ExportConfig(excludedOrgs, excludedSpaces map[string]string, skipSpaces bool) error
 }

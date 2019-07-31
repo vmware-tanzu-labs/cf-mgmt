@@ -15,6 +15,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/pivotalservices/cf-mgmt/user"
+	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
 
@@ -32,7 +33,7 @@ func NewExportManager(
 	serviceAccessMgr *serviceaccess.Manager,
 	quotaMgr *quota.Manager) Manager {
 	return &DefaultImportManager{
-		ConfigDir:            configDir,
+		ConfigMgr:            config.NewManager(configDir),
 		UAAMgr:               uaaMgr,
 		SpaceManager:         spaceManager,
 		UserManager:          userManager,
@@ -48,7 +49,7 @@ func NewExportManager(
 
 //DefaultImportManager  -
 type DefaultImportManager struct {
-	ConfigDir            string
+	ConfigMgr            config.Manager
 	UAAMgr               uaa.Manager
 	SpaceManager         space.Manager
 	UserManager          user.Manager
@@ -59,11 +60,12 @@ type DefaultImportManager struct {
 	SharedDomainManager  *shareddomain.Manager
 	ServiceAccessManager *serviceaccess.Manager
 	QuotaManager         *quota.Manager
+	SkipSpaces           bool
 }
 
 //ExportConfig Imports org and space configuration from an existing CF instance
 //Entries part of excludedOrgs and excludedSpaces are not included in the import
-func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, excludedSpaces map[string]string) error {
+func (im *DefaultImportManager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, skipSpaces bool) error {
 	//Get all the users from the foundation
 	uaaUsers, err := im.UAAMgr.ListUsers()
 	if err != nil {
@@ -95,10 +97,9 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		lo.G.Errorf("Unable to retrieve isolation segments. Error : %s", err)
 		return err
 	}
-	configMgr := config.NewManager(im.ConfigDir)
 	lo.G.Info("Trying to delete existing config directory")
 	//Delete existing config directory
-	err = configMgr.DeleteConfigIfExists()
+	err = im.ConfigMgr.DeleteConfigIfExists()
 	if err != nil {
 		return err
 	}
@@ -113,12 +114,12 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		}
 	}
 	lo.G.Infof("Using UAA user origin: %s", uaaUserOrigin)
-	err = configMgr.CreateConfigIfNotExists(uaaUserOrigin)
+	err = im.ConfigMgr.CreateConfigIfNotExists(uaaUserOrigin)
 	if err != nil {
 		return err
 	}
 
-	globalConfig, err := configMgr.GetGlobalConfig()
+	globalConfig, err := im.ConfigMgr.GetGlobalConfig()
 	if err != nil {
 		return err
 	}
@@ -146,17 +147,6 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			if orgQuota != nil {
 				orgConfig.EnableOrgQuota = false
 				orgConfig.NamedQuota = orgQuota.Name
-				// orgConfig.MemoryLimit = config.ByteSize(orgQuota.MemoryLimit)
-				// orgConfig.InstanceMemoryLimit = config.ByteSize(orgQuota.InstanceMemoryLimit)
-				// orgConfig.TotalRoutes = config.AsString(orgQuota.TotalRoutes)
-				// orgConfig.TotalServices = config.AsString(orgQuota.TotalServices)
-				// orgConfig.PaidServicePlansAllowed = orgQuota.NonBasicServicesAllowed
-				// orgConfig.TotalPrivateDomains = config.AsString(orgQuota.TotalPrivateDomains)
-				// orgConfig.TotalReservedRoutePorts = config.AsString(orgQuota.TotalReservedRoutePorts)
-				// orgConfig.TotalServiceKeys = config.AsString(orgQuota.TotalServiceKeys)
-				// orgConfig.AppInstanceLimit = config.AsString(orgQuota.AppInstanceLimit)
-				// orgConfig.AppTaskLimit = config.AsString(orgQuota.AppTaskLimit)
-
 			}
 		}
 		if org.DefaultIsolationSegmentGuid != "" {
@@ -198,116 +188,15 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 			orgConfig.ServiceAccess[service] = accessPlans
 		}
 
-		spacesConfig := &config.Spaces{Org: orgConfig.Org, EnableDeleteSpaces: true}
-		configMgr.AddOrgToConfig(orgConfig, spacesConfig)
+		spacesConfig := &config.Spaces{Org: orgConfig.Org, EnableDeleteSpaces: !skipSpaces}
 
+		im.ConfigMgr.AddOrgToConfig(orgConfig, spacesConfig)
 		lo.G.Infof("Done creating org %s", orgConfig.Org)
-		lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
-		spaces, _ := im.SpaceManager.ListSpaces(org.Guid)
-		lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
-
-		spaceQuotas, err := im.QuotaManager.ListAllSpaceQuotasForOrg(org.Guid)
-		if err != nil {
-			return err
-		}
-
-		for _, spaceQuota := range spaceQuotas {
-			if !im.doesSpaceExist(spaces, spaceQuota.Name) {
-				err = configMgr.AddSpaceQuota(config.SpaceQuota{
-					Org:                     org.Name,
-					Name:                    spaceQuota.Name,
-					AppInstanceLimit:        config.AsString(spaceQuota.AppInstanceLimit),
-					TotalReservedRoutePorts: config.AsString(spaceQuota.TotalReservedRoutePorts),
-					TotalServiceKeys:        config.AsString(spaceQuota.TotalServiceKeys),
-					AppTaskLimit:            config.AsString(spaceQuota.AppTaskLimit),
-					MemoryLimit:             config.ByteSize(spaceQuota.MemoryLimit),
-					InstanceMemoryLimit:     config.ByteSize(spaceQuota.InstanceMemoryLimit),
-					TotalRoutes:             config.AsString(spaceQuota.TotalRoutes),
-					TotalServices:           config.AsString(spaceQuota.TotalServices),
-					PaidServicePlansAllowed: spaceQuota.NonBasicServicesAllowed,
-				})
-				if err != nil {
-					return err
-				}
+		if !skipSpaces {
+			err := im.processSpaces(orgConfig, org.Guid, excludedSpaces, uaaUsers, isolationSegments, securityGroups)
+			if err != nil {
+				return errors.Wrapf(err, "Processing org %s", orgConfig.Org)
 			}
-		}
-
-		for _, orgSpace := range spaces {
-			spaceName := orgSpace.Name
-			if _, ok := excludedSpaces[spaceName]; ok {
-				lo.G.Infof("Skipping space: %s as it is ignored from export", spaceName)
-				continue
-			}
-			lo.G.Infof("Processing space: %s", spaceName)
-
-			spaceConfig := &config.SpaceConfig{Org: org.Name, Space: spaceName, EnableUnassignSecurityGroup: true}
-			//Add users
-			im.addSpaceUsers(spaceConfig, uaaUsers, orgSpace.Guid)
-			//Add Quota definition if applicable
-			if orgSpace.QuotaDefinitionGuid != "" {
-				quota, err := orgSpace.Quota()
-				if err != nil {
-					return err
-				}
-				if quota != nil {
-					if quota.Name == orgSpace.Name {
-						spaceConfig.EnableSpaceQuota = true
-						spaceConfig.MemoryLimit = config.ByteSize(quota.MemoryLimit)
-						spaceConfig.InstanceMemoryLimit = config.ByteSize(quota.InstanceMemoryLimit)
-						spaceConfig.TotalRoutes = config.AsString(quota.TotalRoutes)
-						spaceConfig.TotalServices = config.AsString(quota.TotalServices)
-						spaceConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
-						spaceConfig.TotalReservedRoutePorts = config.AsString(quota.TotalReservedRoutePorts)
-						spaceConfig.TotalServiceKeys = config.AsString(quota.TotalServiceKeys)
-						spaceConfig.AppInstanceLimit = config.AsString(quota.AppInstanceLimit)
-						spaceConfig.AppTaskLimit = config.AsString(quota.AppTaskLimit)
-					} else {
-						spaceConfig.NamedQuota = quota.Name
-					}
-				}
-			} else {
-				spaceConfig.MemoryLimit = orgConfig.MemoryLimit
-				spaceConfig.InstanceMemoryLimit = orgConfig.InstanceMemoryLimit
-				spaceConfig.TotalRoutes = orgConfig.TotalRoutes
-				spaceConfig.TotalServices = orgConfig.TotalServices
-				spaceConfig.PaidServicePlansAllowed = orgConfig.PaidServicePlansAllowed
-				spaceConfig.TotalReservedRoutePorts = orgConfig.TotalReservedRoutePorts
-				spaceConfig.TotalServiceKeys = orgConfig.TotalServiceKeys
-				spaceConfig.AppInstanceLimit = orgConfig.AppInstanceLimit
-				spaceConfig.AppTaskLimit = orgConfig.AppTaskLimit
-			}
-
-			if orgSpace.IsolationSegmentGuid != "" {
-				for _, isosegment := range isolationSegments {
-					if isosegment.GUID == orgSpace.IsolationSegmentGuid {
-						spaceConfig.IsoSegment = isosegment.Name
-					}
-				}
-
-			}
-			if orgSpace.AllowSSH {
-				spaceConfig.AllowSSH = true
-			}
-
-			spaceSGName := fmt.Sprintf("%s-%s", orgName, spaceName)
-			if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.Guid); err == nil {
-				for securityGroupName, _ := range spaceSGNames {
-					lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
-					if securityGroupName != spaceSGName {
-						spaceConfig.ASGs = append(spaceConfig.ASGs, securityGroupName)
-					}
-				}
-			}
-
-			configMgr.AddSpaceToConfig(spaceConfig)
-
-			if sgInfo, ok := securityGroups[spaceSGName]; ok {
-				delete(securityGroups, spaceSGName)
-				if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
-					configMgr.AddSecurityGroupToSpace(orgName, spaceName, rules)
-				}
-			}
-
 		}
 	}
 
@@ -315,7 +204,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		lo.G.Infof("Adding security group %s", sgName)
 		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
 			lo.G.Infof("Adding rules for %s", sgName)
-			configMgr.AddSecurityGroup(sgName, rules)
+			im.ConfigMgr.AddSecurityGroup(sgName, rules)
 		} else {
 			lo.G.Error(err)
 		}
@@ -331,7 +220,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		}
 		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
 			lo.G.Infof("Adding rules for %s", sgName)
-			configMgr.AddDefaultSecurityGroup(sgName, rules)
+			im.ConfigMgr.AddDefaultSecurityGroup(sgName, rules)
 		} else {
 			lo.G.Error(err)
 		}
@@ -344,7 +233,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 
 	for _, orgQuota := range orgQuotas {
 
-		err = configMgr.AddOrgQuota(config.OrgQuota{
+		err = im.ConfigMgr.AddOrgQuota(config.OrgQuota{
 			Name:                    orgQuota.Name,
 			AppInstanceLimit:        config.AsString(orgQuota.AppInstanceLimit),
 			TotalPrivateDomains:     config.AsString(orgQuota.TotalPrivateDomains),
@@ -387,7 +276,117 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs map[string]string, exc
 		}
 		globalConfig.SharedDomains[sharedDomain.Name] = sharedDomainConfig
 	}
-	return configMgr.SaveGlobalConfig(globalConfig)
+	return im.ConfigMgr.SaveGlobalConfig(globalConfig)
+}
+
+func (im *DefaultImportManager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, uaaUsers *uaa.Users, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]cfclient.SecGroup) error {
+	lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
+	spaces, _ := im.SpaceManager.ListSpaces(orgGUID)
+	lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
+
+	spaceQuotas, err := im.QuotaManager.ListAllSpaceQuotasForOrg(orgGUID)
+	if err != nil {
+		return err
+	}
+
+	for _, spaceQuota := range spaceQuotas {
+		if !im.doesSpaceExist(spaces, spaceQuota.Name) {
+			err = im.ConfigMgr.AddSpaceQuota(config.SpaceQuota{
+				Org:                     orgConfig.Org,
+				Name:                    spaceQuota.Name,
+				AppInstanceLimit:        config.AsString(spaceQuota.AppInstanceLimit),
+				TotalReservedRoutePorts: config.AsString(spaceQuota.TotalReservedRoutePorts),
+				TotalServiceKeys:        config.AsString(spaceQuota.TotalServiceKeys),
+				AppTaskLimit:            config.AsString(spaceQuota.AppTaskLimit),
+				MemoryLimit:             config.ByteSize(spaceQuota.MemoryLimit),
+				InstanceMemoryLimit:     config.ByteSize(spaceQuota.InstanceMemoryLimit),
+				TotalRoutes:             config.AsString(spaceQuota.TotalRoutes),
+				TotalServices:           config.AsString(spaceQuota.TotalServices),
+				PaidServicePlansAllowed: spaceQuota.NonBasicServicesAllowed,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	for _, orgSpace := range spaces {
+		spaceName := orgSpace.Name
+		if _, ok := excludedSpaces[spaceName]; ok {
+			lo.G.Infof("Skipping space: %s as it is ignored from export", spaceName)
+			continue
+		}
+		lo.G.Infof("Processing space: %s", spaceName)
+
+		spaceConfig := &config.SpaceConfig{Org: orgConfig.Org, Space: spaceName, EnableUnassignSecurityGroup: true}
+		//Add users
+		im.addSpaceUsers(spaceConfig, uaaUsers, orgSpace.Guid)
+		//Add Quota definition if applicable
+		if orgSpace.QuotaDefinitionGuid != "" {
+			quota, err := orgSpace.Quota()
+			if err != nil {
+				return err
+			}
+			if quota != nil {
+				if quota.Name == orgSpace.Name {
+					spaceConfig.EnableSpaceQuota = true
+					spaceConfig.MemoryLimit = config.ByteSize(quota.MemoryLimit)
+					spaceConfig.InstanceMemoryLimit = config.ByteSize(quota.InstanceMemoryLimit)
+					spaceConfig.TotalRoutes = config.AsString(quota.TotalRoutes)
+					spaceConfig.TotalServices = config.AsString(quota.TotalServices)
+					spaceConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
+					spaceConfig.TotalReservedRoutePorts = config.AsString(quota.TotalReservedRoutePorts)
+					spaceConfig.TotalServiceKeys = config.AsString(quota.TotalServiceKeys)
+					spaceConfig.AppInstanceLimit = config.AsString(quota.AppInstanceLimit)
+					spaceConfig.AppTaskLimit = config.AsString(quota.AppTaskLimit)
+				} else {
+					spaceConfig.NamedQuota = quota.Name
+				}
+			}
+		} else {
+			spaceConfig.MemoryLimit = orgConfig.MemoryLimit
+			spaceConfig.InstanceMemoryLimit = orgConfig.InstanceMemoryLimit
+			spaceConfig.TotalRoutes = orgConfig.TotalRoutes
+			spaceConfig.TotalServices = orgConfig.TotalServices
+			spaceConfig.PaidServicePlansAllowed = orgConfig.PaidServicePlansAllowed
+			spaceConfig.TotalReservedRoutePorts = orgConfig.TotalReservedRoutePorts
+			spaceConfig.TotalServiceKeys = orgConfig.TotalServiceKeys
+			spaceConfig.AppInstanceLimit = orgConfig.AppInstanceLimit
+			spaceConfig.AppTaskLimit = orgConfig.AppTaskLimit
+		}
+
+		if orgSpace.IsolationSegmentGuid != "" {
+			for _, isosegment := range isolationSegments {
+				if isosegment.GUID == orgSpace.IsolationSegmentGuid {
+					spaceConfig.IsoSegment = isosegment.Name
+				}
+			}
+
+		}
+		if orgSpace.AllowSSH {
+			spaceConfig.AllowSSH = true
+		}
+
+		spaceSGName := fmt.Sprintf("%s-%s", orgConfig.Org, spaceName)
+		if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.Guid); err == nil {
+			for securityGroupName, _ := range spaceSGNames {
+				lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
+				if securityGroupName != spaceSGName {
+					spaceConfig.ASGs = append(spaceConfig.ASGs, securityGroupName)
+				}
+			}
+		}
+
+		im.ConfigMgr.AddSpaceToConfig(spaceConfig)
+
+		if sgInfo, ok := securityGroups[spaceSGName]; ok {
+			delete(securityGroups, spaceSGName)
+			if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
+				im.ConfigMgr.AddSecurityGroupToSpace(orgConfig.Org, spaceName, rules)
+			}
+		}
+	}
+	return nil
 }
 
 func (im *DefaultImportManager) doesOrgExist(orgs []cfclient.Org, orgName string) bool {

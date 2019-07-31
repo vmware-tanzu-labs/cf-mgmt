@@ -32,4 +32,5 @@ Help Options:
                     orgs and spaces] [$CLIENT_SECRET]
   --excluded-org=   Org to be excluded from export. Repeat the flag to specify multiple orgs
   --excluded-space= Space to be excluded from export. Repeat the flag to specify multiple spaces
+  --skip-spaces=    Will not export space configurations
 ```
