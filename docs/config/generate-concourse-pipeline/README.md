@@ -22,6 +22,7 @@ fly -t <targetname> set-pipeline -p <pipeline_name> \
    -c pipeline.yml \
    -l vars.yml \
    —-var "ldap_password=<ldap_password>" \
-   --var "client_secret=<client_sercret>" \
+   --var "client_secret=<client_secret>" \
    —-var "password=<org/space_admin_password>"
 ```
+Note: If using a _client_secret_ set your _password_ in the ```vars.yml``` to an empty string ```""```
