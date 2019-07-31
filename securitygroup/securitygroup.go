@@ -34,7 +34,7 @@ type DefaultManager struct {
 func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Getting space configs")
 	}
 	sgs, err := m.ListNonDefaultSecurityGroups()
 	if err != nil {
@@ -44,9 +44,8 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 	for _, input := range spaceConfigs {
 		space, err := m.SpaceManager.FindSpace(input.Org, input.Space)
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "Finding org/space %s/%s", input.Org, input.Space)
 		}
-
 		existingSpaceSecurityGroups, err := m.ListSpaceSecurityGroups(space.Guid)
 		if err != nil {
 			return errors.Wrapf(err, "Unabled to list existing space security groups for org/space [%s/%s]", input.Org, input.Space)
@@ -86,7 +85,7 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 			} else {
 				securityGroup, err := m.CreateSecurityGroup(spaceSecurityGroupName, input.GetSecurityGroupContents())
 				if err != nil {
-					return err
+					return errors.Wrapf(err, "Creating security group %s for %s/%s security-group.json", spaceSecurityGroupName, input.Org, input.Space)
 				}
 				sgInfo = *securityGroup
 			}
@@ -138,11 +137,11 @@ func (m *DefaultManager) CreateGlobalSecurityGroups() error {
 	}
 	securityGroupConfigs, err := m.Cfg.GetASGConfigs()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Getting ASG Configs")
 	}
 	defaultSecurityGroupConfigs, err := m.Cfg.GetDefaultASGConfigs()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Getting Default ASG Configs")
 	}
 	err = m.processSecurityGroups(securityGroupConfigs, sgs)
 	if err != nil {
@@ -240,7 +239,7 @@ func (m *DefaultManager) processSecurityGroups(securityGroupConfigs []config.ASG
 		if sgInfo, ok := sgs[sgName]; ok {
 			changed, err := m.hasSecurityGroupChanged(sgInfo, input.Rules)
 			if err != nil {
-				return err
+				return errors.Wrapf(err, "Processing %s security group", sgName)
 			}
 			if changed {
 				if err := m.UpdateSecurityGroup(sgInfo, input.Rules); err != nil {
