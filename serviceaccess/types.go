@@ -11,7 +11,8 @@ type CFClient interface {
 	ListServicePlansByQuery(query url.Values) ([]cfclient.ServicePlan, error)
 	MakeServicePlanPrivate(servicePlanGUID string) error
 	MakeServicePlanPublic(servicePlanGUID string) error
-	ListServices() ([]cfclient.Service, error)
+	ListServiceBrokers() ([]cfclient.ServiceBroker, error)
+	ListServicesByQuery(query url.Values) ([]cfclient.Service, error)
 	ListServicePlanVisibilitiesByQuery(query url.Values) ([]cfclient.ServicePlanVisibility, error)
 	CreateServicePlanVisibility(servicePlanGuid string, organizationGuid string) (cfclient.ServicePlanVisibility, error)
 	DeleteServicePlanVisibilityByPlanAndOrg(servicePlanGuid string, organizationGuid string, async bool) error

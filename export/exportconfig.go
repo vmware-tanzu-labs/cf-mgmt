@@ -132,29 +132,42 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs, excludedSpaces map[st
 	if err != nil {
 		return err
 	}
-	for service, plans := range serviceInfo.AllPlans() {
-		for _, plan := range plans {
-			serviceVisibility := config.ServiceVisibility{
-				Service: service,
-				Plan:    plan.Name,
-			}
-
-			for _, orgAccess := range plan.ListVisibilities() {
-				orgName, err := im.getOrgName(orgs, orgAccess.OrganizationGuid)
-				if err != nil {
-					return err
-				}
-
-				if !organization.Matches(orgName, config.DefaultProtectedOrgs) {
-					serviceVisibility.Orgs = append(serviceVisibility.Orgs, orgName)
-				}
-			}
-			if !plan.Public && len(plan.ListVisibilities()) == 0 {
-				serviceVisibility.Disable = true
-			}
-			globalConfig.ServiceAccess = append(globalConfig.ServiceAccess, serviceVisibility)
+	for _, broker := range serviceInfo.Brokers() {
+		brokerConfig := config.Broker{
+			Name: broker.Name,
 		}
+		for _, service := range broker.Services() {
+			serviceVisibility := config.Service{
+				Name: service.Name,
+			}
+			for _, plan := range service.Plans() {
+				if plan.Public {
+					serviceVisibility.AllAccessPlans = append(serviceVisibility.AllAccessPlans, plan.Name)
+					continue
+				}
+				if len(plan.ListVisibilities()) == 0 {
+					serviceVisibility.NoAccessPlans = append(serviceVisibility.NoAccessPlans, plan.Name)
+					continue
+				}
 
+				privatePlan := config.PlanVisibility{
+					Name: plan.Name,
+				}
+				for _, orgAccess := range plan.ListVisibilities() {
+					orgName, err := im.getOrgName(orgs, orgAccess.OrgGUID)
+					if err != nil {
+						return err
+					}
+
+					if !organization.Matches(orgName, config.DefaultProtectedOrgs) {
+						privatePlan.Orgs = append(privatePlan.Orgs, orgName)
+					}
+				}
+				serviceVisibility.LimitedAccessPlans = append(serviceVisibility.LimitedAccessPlans, privatePlan)
+			}
+			brokerConfig.Services = append(brokerConfig.Services, serviceVisibility)
+		}
+		globalConfig.ServiceAccess = append(globalConfig.ServiceAccess, brokerConfig)
 	}
 	for _, org := range orgs {
 		orgName := org.Name
@@ -200,21 +213,6 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs, excludedSpaces map[st
 		}
 		for privatedomain, _ := range privatedomains {
 			orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, privatedomain)
-		}
-
-		orgConfig.ServiceAccess = make(map[string][]string)
-		serviceInfo, err := im.ServiceAccessManager.ListServiceInfo()
-		if err != nil {
-			return err
-		}
-		for service, plans := range serviceInfo.AllPlans() {
-			accessPlans := []string{}
-			for _, plan := range plans {
-				if plan.Public || plan.OrgHasAccess(org.Guid) {
-					accessPlans = append(accessPlans, plan.Name)
-				}
-			}
-			orgConfig.ServiceAccess[service] = accessPlans
 		}
 
 		spacesConfig := &config.Spaces{Org: orgConfig.Org, EnableDeleteSpaces: !skipSpaces}
