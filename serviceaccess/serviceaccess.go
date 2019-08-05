@@ -1,6 +1,9 @@
 package serviceaccess
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/xchapter7x/lo"
@@ -28,6 +31,23 @@ func (m *Manager) Apply() error {
 	globalCfg, err := m.Cfg.GetGlobalConfig()
 	if err != nil {
 		return err
+	}
+
+	if globalCfg.EnableServiceAccess {
+		orgConfigs, err := m.Cfg.GetOrgConfigs()
+		if err != nil {
+			return err
+		}
+		orgList := []string{}
+		for _, orgConfig := range orgConfigs {
+			if len(orgConfig.ServiceAccess) > 0 {
+				orgList = append(orgList, orgConfig.Org)
+			}
+		}
+
+		if len(orgList) > 0 {
+			return fmt.Errorf("Must run `cf-mgmt export-service-access-config` and check in configuration changes as services-access for orgs [%s] is no longer supported in orgConfig.yml", strings.Join(orgList, ","))
+		}
 	}
 	serviceInfo, err := m.ListServiceInfo()
 	if err != nil {

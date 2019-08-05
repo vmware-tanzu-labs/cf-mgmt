@@ -31,8 +31,8 @@ func NewExportManager(
 	privateDomainMgr privatedomain.Manager,
 	sharedDomainMgr *shareddomain.Manager,
 	serviceAccessMgr *serviceaccess.Manager,
-	quotaMgr *quota.Manager) Manager {
-	return &DefaultImportManager{
+	quotaMgr *quota.Manager) *Manager {
+	return &Manager{
 		ConfigMgr:            config.NewManager(configDir),
 		UAAMgr:               uaaMgr,
 		SpaceManager:         spaceManager,
@@ -47,8 +47,7 @@ func NewExportManager(
 	}
 }
 
-//DefaultImportManager  -
-type DefaultImportManager struct {
+type Manager struct {
 	ConfigMgr            config.Manager
 	UAAMgr               uaa.Manager
 	SpaceManager         space.Manager
@@ -63,9 +62,47 @@ type DefaultImportManager struct {
 	SkipSpaces           bool
 }
 
+func (im *Manager) ExportServiceAccess() error {
+
+	orgConfigs, err := im.ConfigMgr.GetOrgConfigs()
+	if err != nil {
+		return err
+	}
+	for _, orgConfig := range orgConfigs {
+		if orgConfig.ServiceAccess != nil {
+			orgConfig.ServiceAccess = nil
+			err = im.ConfigMgr.SaveOrgConfig(&orgConfig)
+			if err != nil {
+				return err
+			}
+			fmt.Println(fmt.Sprintf("Updated orgConfig.yml for org [%s] to remove service-access configuration", orgConfig.Org))
+		}
+	}
+
+	globalConfig, err := im.ConfigMgr.GetGlobalConfig()
+	if err != nil {
+		return err
+	}
+	orgs, err := im.OrgManager.ListOrgs()
+	if err != nil {
+		lo.G.Errorf("Unable to retrieve orgs. Error : %s", err)
+		return err
+	}
+	err = im.exportServiceAccess(globalConfig, orgs)
+	if err != nil {
+		return err
+	}
+	err = im.ConfigMgr.SaveGlobalConfig(globalConfig)
+
+	if err == nil {
+		fmt.Println("Updated cf-mgmt.yml with service-access configuration")
+	}
+	return err
+}
+
 //ExportConfig Imports org and space configuration from an existing CF instance
 //Entries part of excludedOrgs and excludedSpaces are not included in the import
-func (im *DefaultImportManager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, skipSpaces bool) error {
+func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, skipSpaces bool) error {
 	//Get all the users from the foundation
 	uaaUsers, err := im.UAAMgr.ListUsers()
 	if err != nil {
@@ -128,47 +165,11 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs, excludedSpaces map[st
 
 	globalConfig.EnableServiceAccess = true
 
-	serviceInfo, err := im.ServiceAccessManager.ListServiceInfo()
+	err = im.exportServiceAccess(globalConfig, orgs)
 	if err != nil {
 		return err
 	}
-	for _, broker := range serviceInfo.Brokers() {
-		brokerConfig := config.Broker{
-			Name: broker.Name,
-		}
-		for _, service := range broker.Services() {
-			serviceVisibility := config.Service{
-				Name: service.Name,
-			}
-			for _, plan := range service.Plans() {
-				if plan.Public {
-					serviceVisibility.AllAccessPlans = append(serviceVisibility.AllAccessPlans, plan.Name)
-					continue
-				}
-				if len(plan.ListVisibilities()) == 0 {
-					serviceVisibility.NoAccessPlans = append(serviceVisibility.NoAccessPlans, plan.Name)
-					continue
-				}
 
-				privatePlan := config.PlanVisibility{
-					Name: plan.Name,
-				}
-				for _, orgAccess := range plan.ListVisibilities() {
-					orgName, err := im.getOrgName(orgs, orgAccess.OrgGUID)
-					if err != nil {
-						return err
-					}
-
-					if !organization.Matches(orgName, config.DefaultProtectedOrgs) {
-						privatePlan.Orgs = append(privatePlan.Orgs, orgName)
-					}
-				}
-				serviceVisibility.LimitedAccessPlans = append(serviceVisibility.LimitedAccessPlans, privatePlan)
-			}
-			brokerConfig.Services = append(brokerConfig.Services, serviceVisibility)
-		}
-		globalConfig.ServiceAccess = append(globalConfig.ServiceAccess, brokerConfig)
-	}
 	for _, org := range orgs {
 		orgName := org.Name
 		if _, ok := excludedOrgs[orgName]; ok {
@@ -306,7 +307,7 @@ func (im *DefaultImportManager) ExportConfig(excludedOrgs, excludedSpaces map[st
 	return im.ConfigMgr.SaveGlobalConfig(globalConfig)
 }
 
-func (im *DefaultImportManager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, uaaUsers *uaa.Users, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]cfclient.SecGroup) error {
+func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, uaaUsers *uaa.Users, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]cfclient.SecGroup) error {
 	lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
 	spaces, _ := im.SpaceManager.ListSpaces(orgGUID)
 	lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
@@ -416,7 +417,53 @@ func (im *DefaultImportManager) processSpaces(orgConfig *config.OrgConfig, orgGU
 	return nil
 }
 
-func (im *DefaultImportManager) doesOrgExist(orgs []cfclient.Org, orgName string) bool {
+func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs []cfclient.Org) error {
+	globalConfig.ServiceAccess = nil
+	serviceInfo, err := im.ServiceAccessManager.ListServiceInfo()
+	if err != nil {
+		return err
+	}
+	for _, broker := range serviceInfo.Brokers() {
+		brokerConfig := config.Broker{
+			Name: broker.Name,
+		}
+		for _, service := range broker.Services() {
+			serviceVisibility := config.Service{
+				Name: service.Name,
+			}
+			for _, plan := range service.Plans() {
+				if plan.Public {
+					serviceVisibility.AllAccessPlans = append(serviceVisibility.AllAccessPlans, plan.Name)
+					continue
+				}
+				if len(plan.ListVisibilities()) == 0 {
+					serviceVisibility.NoAccessPlans = append(serviceVisibility.NoAccessPlans, plan.Name)
+					continue
+				}
+
+				privatePlan := config.PlanVisibility{
+					Name: plan.Name,
+				}
+				for _, orgAccess := range plan.ListVisibilities() {
+					orgName, err := im.getOrgName(orgs, orgAccess.OrgGUID)
+					if err != nil {
+						return err
+					}
+
+					if !organization.Matches(orgName, config.DefaultProtectedOrgs) {
+						privatePlan.Orgs = append(privatePlan.Orgs, orgName)
+					}
+				}
+				serviceVisibility.LimitedAccessPlans = append(serviceVisibility.LimitedAccessPlans, privatePlan)
+			}
+			brokerConfig.Services = append(brokerConfig.Services, serviceVisibility)
+		}
+		globalConfig.ServiceAccess = append(globalConfig.ServiceAccess, brokerConfig)
+	}
+	return nil
+}
+
+func (im *Manager) doesOrgExist(orgs []cfclient.Org, orgName string) bool {
 	for _, org := range orgs {
 		if org.Name == orgName {
 			return true
@@ -425,7 +472,7 @@ func (im *DefaultImportManager) doesOrgExist(orgs []cfclient.Org, orgName string
 	return false
 }
 
-func (im *DefaultImportManager) getOrgName(orgs []cfclient.Org, orgGUID string) (string, error) {
+func (im *Manager) getOrgName(orgs []cfclient.Org, orgGUID string) (string, error) {
 	for _, org := range orgs {
 		if org.Guid == orgGUID {
 			return org.Name, nil
@@ -434,7 +481,7 @@ func (im *DefaultImportManager) getOrgName(orgs []cfclient.Org, orgGUID string) 
 	return "", fmt.Errorf("No org exists for org guid %s", orgGUID)
 }
 
-func (im *DefaultImportManager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
+func (im *Manager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
 	for _, space := range spaces {
 		if space.Name == spaceName {
 			return true
@@ -443,49 +490,49 @@ func (im *DefaultImportManager) doesSpaceExist(spaces []cfclient.Space, spaceNam
 	return false
 }
 
-func (im *DefaultImportManager) addOrgUsers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
+func (im *Manager) addOrgUsers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
 	im.addOrgManagers(orgConfig, uaaUsers, orgGUID)
 	im.addBillingManagers(orgConfig, uaaUsers, orgGUID)
 	im.addOrgAuditors(orgConfig, uaaUsers, orgGUID)
 }
 
-func (im *DefaultImportManager) addSpaceUsers(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
+func (im *Manager) addSpaceUsers(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
 	im.addSpaceDevelopers(spaceConfig, uaaUsers, spaceGUID)
 	im.addSpaceManagers(spaceConfig, uaaUsers, spaceGUID)
 	im.addSpaceAuditors(spaceConfig, uaaUsers, spaceGUID)
 }
 
-func (im *DefaultImportManager) addOrgManagers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
+func (im *Manager) addOrgManagers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
 	orgMgrs, _ := im.UserManager.ListOrgManagers(orgGUID, uaaUsers)
 	lo.G.Debugf("Found %d Org Managers for Org: %s", len(orgMgrs.Users()), orgConfig.Org)
 	doAddUsers(orgMgrs, &orgConfig.Manager.Users, &orgConfig.Manager.LDAPUsers, &orgConfig.Manager.SamlUsers)
 }
 
-func (im *DefaultImportManager) addBillingManagers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
+func (im *Manager) addBillingManagers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
 	orgBillingMgrs, _ := im.UserManager.ListOrgBillingManagers(orgGUID, uaaUsers)
 	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs.Users()), orgConfig.Org)
 	doAddUsers(orgBillingMgrs, &orgConfig.BillingManager.Users, &orgConfig.BillingManager.LDAPUsers, &orgConfig.BillingManager.SamlUsers)
 }
 
-func (im *DefaultImportManager) addOrgAuditors(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
+func (im *Manager) addOrgAuditors(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
 	orgAuditors, _ := im.UserManager.ListOrgAuditors(orgGUID, uaaUsers)
 	lo.G.Debugf("Found %d Org Auditors for Org: %s", len(orgAuditors.Users()), orgConfig.Org)
 	doAddUsers(orgAuditors, &orgConfig.Auditor.Users, &orgConfig.Auditor.LDAPUsers, &orgConfig.Auditor.SamlUsers)
 }
 
-func (im *DefaultImportManager) addSpaceManagers(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
+func (im *Manager) addSpaceManagers(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
 	spaceMgrs, _ := im.UserManager.ListSpaceManagers(spaceGUID, uaaUsers)
 	lo.G.Debugf("Found %d Space Managers for Org: %s and  Space:  %s", len(spaceMgrs.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceMgrs, &spaceConfig.Manager.Users, &spaceConfig.Manager.LDAPUsers, &spaceConfig.Manager.SamlUsers)
 }
 
-func (im *DefaultImportManager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
+func (im *Manager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
 	spaceDevs, _ := im.UserManager.ListSpaceDevelopers(spaceGUID, uaaUsers)
 	lo.G.Debugf("Found %d Space Developers for Org: %s and  Space:  %s", len(spaceDevs.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceDevs, &spaceConfig.Developer.Users, &spaceConfig.Developer.LDAPUsers, &spaceConfig.Developer.SamlUsers)
 }
 
-func (im *DefaultImportManager) addSpaceAuditors(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
+func (im *Manager) addSpaceAuditors(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
 	spaceAuditors, _ := im.UserManager.ListSpaceAuditors(spaceGUID, uaaUsers)
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceAuditors, &spaceConfig.Auditor.Users, &spaceConfig.Auditor.LDAPUsers, &spaceConfig.Auditor.SamlUsers)

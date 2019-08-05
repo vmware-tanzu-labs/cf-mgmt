@@ -50,6 +50,7 @@ Prior to v0.0.66 a **password** was also needed as you had to provide both a uaa
 * [delete-orgs](delete-orgs/README.md)
 * [delete-spaces](delete-spaces/README.md)
 * [export-config](export-config/README.md)
+* [export-service-access-config](export-service-access-config/README.md)
 * [isolation-segments](isolation-segments/README.md)
 * [update-org-quotas](update-org-quotas/README.md)
 * [update-org-users](update-org-users/README.md)
