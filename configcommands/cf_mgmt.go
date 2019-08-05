@@ -6,14 +6,14 @@ type CfMgmtConfigCommand struct {
 	GlobalConfigurationCommand          GlobalConfigurationCommand          `command:"global" description:"Updates values in cf-mgmt.yml"`
 	OrgConfigurationCommand             OrgConfigurationCommand             `command:"org" description:"Adds/updates specified org to configuration"`
 	SpaceConfigurationCommand           SpaceConfigurationCommand           `command:"space" description:"adds/updates space configuration"`
-	AddOrgToConfigurationCommand        AddOrgToConfigurationCommand        `command:"add-org" description:"Adds specified org to configuration"`
-	AddSpaceToConfigurationCommand      AddSpaceToConfigurationCommand      `command:"add-space" description:"Adds specified space to configuration for org"`
+	AddOrgToConfigurationCommand        AddOrgToConfigurationCommand        `command:"add-org" description:"*****DEPRECATED, use 'cf-mgmt-config org instead' - Adds specified org to configuration"`
+	AddSpaceToConfigurationCommand      AddSpaceToConfigurationCommand      `command:"add-space" description:"*****DEPRECATED, use 'cf-mgmt-config space instead' - Adds specified space to configuration for org"`
 	GenerateConcoursePipelineCommand    GenerateConcoursePipelineCommand    `command:"generate-concourse-pipeline" description:"generates a concourse pipline to be used to drive cf-mgmt"`
-	UpdateOrgConfigurationCommand       UpdateOrgConfigurationCommand       `command:"update-org" description:"updates org configuration"`
-	UpdateSpaceConfigurationCommand     UpdateSpaceConfigurationCommand     `command:"update-space" description:"updates space configuration"`
+	UpdateOrgConfigurationCommand       UpdateOrgConfigurationCommand       `command:"update-org" description:"*****DEPRECATED, use 'cf-mgmt-config org instead' - updates org configuration"`
+	UpdateSpaceConfigurationCommand     UpdateSpaceConfigurationCommand     `command:"update-space" description:"*****DEPRECATED, use 'cf-mgmt-config space instead' - updates space configuration"`
 	DeleteOrgConfigurationCommand       DeleteOrgConfigurationCommand       `command:"delete-org" description:"deletes org configuration"`
 	DeleteSpaceConfigurationCommand     DeleteSpaceConfigurationCommand     `command:"delete-space" description:"deletes space configuration"`
-	AddASGToConfigurationCommand        AddASGToConfigurationCommand        `command:"add-asg" description:"add a named asg to configuration"`
+	AddASGToConfigurationCommand        AddASGToConfigurationCommand        `command:"add-asg" description:"*****DEPRECATED, use 'cf-mgmt-config asg instead' - add a named asg to configuration"`
 	ASGToConfigurationCommand           ASGToConfigurationCommand           `command:"asg" description:"creates/updates a named asg"`
 	UpdateOrgsConfigurationCommand      UpdateOrgsConfigurationCommand      `command:"update-orgs" description:"updates orgs.yml"`
 	RenameOrgConfigurationCommand       RenameOrgConfigurationCommand       `command:"rename-org" description:"renames an org"`

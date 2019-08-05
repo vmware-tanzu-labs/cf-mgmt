@@ -94,11 +94,11 @@ func (c *OrgConfigurationCommand) Execute(args []string) error {
 	c.updateUsers(orgConfig, &errorString)
 
 	if c.ServiceAccess.ServiceNameToRemove != "" {
-		return errors.New("Service access is managed with cf-mgmt-config service-access command")
+		return errors.New("Service access is managed with 'cf-mgmt-config global service-access' command")
 	}
 
 	if c.ServiceAccess.ServiceName != "" {
-		return errors.New("Service access is managed with cf-mgmt-config service-access command")
+		return errors.New("Service access is managed with 'cf-mgmt-config global service-access' command")
 	}
 
 	if len(c.Metadata.LabelKey) > 0 {

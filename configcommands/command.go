@@ -29,12 +29,12 @@ type UserRoleAdd struct {
 
 type ServiceAccess struct {
 	ServiceAccessAdd
-	ServiceNameToRemove string `long:"service-to-remove" description:"*****DEPRECATED, use cf-mgmt-config service-access ***** - name of service to remove"`
+	ServiceNameToRemove string `long:"service-to-remove" description:"*****DEPRECATED, use 'cf-mgmt-config global service-access' ***** - name of service to remove"`
 }
 
 type ServiceAccessAdd struct {
-	ServiceName string   `long:"service" description:"*****DEPRECATED, use cf-mgmt-config service-access ***** - Service Name to add"`
-	Plans       []string `long:"plans" description:"*****DEPRECATED, use cf-mgmt-config service-access ***** - plans to add, empty list will add all plans"`
+	ServiceName string   `long:"service" description:"*****DEPRECATED, use 'cf-mgmt-config global service-access' ***** - Service Name to add"`
+	Plans       []string `long:"plans" description:"*****DEPRECATED, use 'cf-mgmt-config global service-access' ***** - plans to add, empty list will add all plans"`
 }
 
 type Metadata struct {
