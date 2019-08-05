@@ -441,7 +441,7 @@ func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs [
 					continue
 				}
 
-				privatePlan := config.PlanVisibility{
+				privatePlan := &config.PlanVisibility{
 					Name: plan.Name,
 				}
 				for _, orgAccess := range plan.ListVisibilities() {

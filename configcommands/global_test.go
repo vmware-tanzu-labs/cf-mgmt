@@ -252,7 +252,7 @@ var _ = Describe("Global", func() {
 			})
 		})
 	})
-	FContext("ServiceAccess", func() {
+	Context("ServiceAccess", func() {
 		var (
 			command      *GlobalConfigurationCommand
 			globalConfig *config.GlobalConfig
@@ -433,7 +433,7 @@ var _ = Describe("Global", func() {
 			command.ServiceAccess.Broker = "test-broker"
 			command.ServiceAccess.Service = "test-service"
 			command.ServiceAccess.LimitedAccessPlan = "test-plan"
-			command.ServiceAccess.Orgs = []string{"org1", "org2"}
+			command.ServiceAccess.OrgsToAdd = []string{"org1", "org2"}
 			errList := command.UpdateServiceAccess(globalConfig)
 			Expect(len(errList)).Should(Equal(0))
 			Expect(len(globalConfig.ServiceAccess)).Should(Equal(1))
@@ -468,7 +468,7 @@ var _ = Describe("Global", func() {
 			command.ServiceAccess.Broker = "test-broker"
 			command.ServiceAccess.Service = "test-service"
 			command.ServiceAccess.LimitedAccessPlan = "test-plan"
-			command.ServiceAccess.Orgs = []string{"org1", "org2"}
+			command.ServiceAccess.OrgsToAdd = []string{"org1", "org2"}
 			errList := command.UpdateServiceAccess(globalConfig)
 			Expect(len(errList)).Should(Equal(0))
 			Expect(len(globalConfig.ServiceAccess)).Should(Equal(1))
@@ -499,7 +499,7 @@ var _ = Describe("Global", func() {
 			command.ServiceAccess.Broker = "test-broker"
 			command.ServiceAccess.Service = "test-service"
 			command.ServiceAccess.LimitedAccessPlan = "test-plan"
-			command.ServiceAccess.Orgs = []string{"org1", "org2"}
+			command.ServiceAccess.OrgsToAdd = []string{"org1", "org2"}
 			errList := command.UpdateServiceAccess(globalConfig)
 			Expect(len(errList)).Should(Equal(0))
 			Expect(len(globalConfig.ServiceAccess)).Should(Equal(1))
@@ -534,7 +534,7 @@ var _ = Describe("Global", func() {
 			command.ServiceAccess.Broker = "test-broker"
 			command.ServiceAccess.Service = "test-service"
 			command.ServiceAccess.LimitedAccessPlan = "test-plan"
-			command.ServiceAccess.Orgs = []string{"org3"}
+			command.ServiceAccess.OrgsToAdd = []string{"org3"}
 			errList := command.UpdateServiceAccess(globalConfig)
 			Expect(len(errList)).Should(Equal(0))
 			Expect(len(globalConfig.ServiceAccess)).Should(Equal(1))
@@ -544,6 +544,42 @@ var _ = Describe("Global", func() {
 			Expect(globalConfig.ServiceAccess[0].Services[0].LimitedAccessPlans).Should(ConsistOf([]*config.PlanVisibility{
 				&config.PlanVisibility{
 					Name: "test-plan", Orgs: []string{"org1", "org2", "org3"},
+				},
+			}))
+			Expect(len(globalConfig.ServiceAccess[0].Services[0].NoAccessPlans)).Should(Equal(0))
+			Expect(len(globalConfig.ServiceAccess[0].Services[0].AllAccessPlans)).Should(Equal(0))
+		})
+
+		It("Will add an org and remove an org to already limited plan", func() {
+			globalConfig.ServiceAccess = []*config.Broker{
+				&config.Broker{
+					Name: "test-broker",
+					Services: []*config.Service{
+						&config.Service{
+							Name: "test-service",
+							LimitedAccessPlans: []*config.PlanVisibility{
+								&config.PlanVisibility{
+									Name: "test-plan", Orgs: []string{"org1", "org2"},
+								},
+							},
+						},
+					},
+				},
+			}
+			command.ServiceAccess.Broker = "test-broker"
+			command.ServiceAccess.Service = "test-service"
+			command.ServiceAccess.LimitedAccessPlan = "test-plan"
+			command.ServiceAccess.OrgsToAdd = []string{"org3"}
+			command.ServiceAccess.OrgsToRemove = []string{"org2"}
+			errList := command.UpdateServiceAccess(globalConfig)
+			Expect(len(errList)).Should(Equal(0))
+			Expect(len(globalConfig.ServiceAccess)).Should(Equal(1))
+			Expect(globalConfig.ServiceAccess[0].Name).Should(Equal("test-broker"))
+			Expect(len(globalConfig.ServiceAccess[0].Services)).Should(Equal(1))
+			Expect(globalConfig.ServiceAccess[0].Services[0].Name).Should(Equal("test-service"))
+			Expect(globalConfig.ServiceAccess[0].Services[0].LimitedAccessPlans).Should(ConsistOf([]*config.PlanVisibility{
+				&config.PlanVisibility{
+					Name: "test-plan", Orgs: []string{"org1", "org3"},
 				},
 			}))
 			Expect(len(globalConfig.ServiceAccess[0].Services[0].NoAccessPlans)).Should(Equal(0))

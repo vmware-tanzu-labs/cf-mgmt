@@ -141,7 +141,7 @@ func (c *GlobalConfigurationCommand) UpdateServiceAccess(globalConfig *config.Gl
 		}
 
 		if len(c.ServiceAccess.LimitedAccessPlan) > 0 {
-			service.AddLimitedAccessPlan(c.ServiceAccess.LimitedAccessPlan, c.ServiceAccess.Orgs)
+			service.AddLimitedAccessPlan(c.ServiceAccess.LimitedAccessPlan, c.ServiceAccess.OrgsToAdd, c.ServiceAccess.OrgsToRemove)
 		}
 	}
 
@@ -154,6 +154,7 @@ type GlobalServiceAccess struct {
 
 	AllAccessPlan     string   `long:"all-access-plan" description:"Plan to give access to all orgs"`
 	LimitedAccessPlan string   `long:"limited-access-plan" description:"Plan to give limited access to, must also provide org list"`
-	Orgs              []string `long:"org" description:"Orgs to add to limited plan"`
+	OrgsToAdd         []string `long:"org" description:"Orgs to add to limited plan"`
+	OrgsToRemove      []string `long:"remove-org" description:"Orgs to remove from limited plan"`
 	NoAccessPlan      string   `long:"no-access-plan" description:"Plan to give access to all orgs"`
 }

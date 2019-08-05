@@ -117,8 +117,8 @@ var _ = Describe("Serviceaccess", func() {
 						Services: []*config.Service{
 							&config.Service{
 								Name: "p-mysql",
-								LimitedAccessPlans: []config.PlanVisibility{
-									config.PlanVisibility{
+								LimitedAccessPlans: []*config.PlanVisibility{
+									&config.PlanVisibility{
 										Name: "small",
 										Orgs: []string{"test-org"},
 									},

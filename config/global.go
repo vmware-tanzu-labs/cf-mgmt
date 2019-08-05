@@ -113,7 +113,7 @@ func (s *Service) AddNoAccessPlan(planName string) {
 	}
 }
 
-func (s *Service) AddLimitedAccessPlan(planName string, orgs []string) {
+func (s *Service) AddLimitedAccessPlan(planName string, orgsToAdd, orgsToRemove []string) {
 	if s.contains(s.AllAccessPlans, planName) {
 		s.AllAccessPlans = s.remove(s.AllAccessPlans, planName)
 	}
@@ -121,15 +121,19 @@ func (s *Service) AddLimitedAccessPlan(planName string, orgs []string) {
 		s.NoAccessPlans = s.remove(s.NoAccessPlans, planName)
 	}
 	if !s.contains(s.LimitedAccessPlanNames(), planName) {
-		s.LimitedAccessPlans = append(s.LimitedAccessPlans, &PlanVisibility{Name: planName, Orgs: orgs})
+		s.LimitedAccessPlans = append(s.LimitedAccessPlans, &PlanVisibility{Name: planName, Orgs: orgsToAdd})
 	} else {
 		planVisibility := s.GetLimitedPlan(planName)
-		for _, org := range orgs {
+		for _, org := range orgsToAdd {
 			if !s.contains(planVisibility.Orgs, org) {
 				planVisibility.Orgs = append(planVisibility.Orgs, org)
 			}
 		}
+		for _, org := range orgsToRemove {
+			planVisibility.Orgs = s.remove(planVisibility.Orgs, org)
+		}
 	}
+
 }
 
 func (s *Service) contains(slice []string, e string) bool {
