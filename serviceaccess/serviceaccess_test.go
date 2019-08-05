@@ -42,7 +42,7 @@ var _ = Describe("Serviceaccess", func() {
 		It("Will do nothing as all plans are already public", func() {
 			globalCfg := &config.GlobalConfig{
 				EnableServiceAccess: true,
-				ServiceAccess:       []config.Broker{},
+				ServiceAccess:       []*config.Broker{},
 			}
 			serviceInfo := &ServiceInfo{}
 			broker := &ServiceBroker{Name: "mysql"}
@@ -61,7 +61,7 @@ var _ = Describe("Serviceaccess", func() {
 		It("Will change private plan to public", func() {
 			globalCfg := &config.GlobalConfig{
 				EnableServiceAccess: true,
-				ServiceAccess:       []config.Broker{},
+				ServiceAccess:       []*config.Broker{},
 			}
 			serviceInfo := &ServiceInfo{}
 			broker := &ServiceBroker{Name: "mysql"}
@@ -81,11 +81,11 @@ var _ = Describe("Serviceaccess", func() {
 		It("Will change public plan to private with no access", func() {
 			globalCfg := &config.GlobalConfig{
 				EnableServiceAccess: true,
-				ServiceAccess: []config.Broker{
-					config.Broker{
+				ServiceAccess: []*config.Broker{
+					&config.Broker{
 						Name: "mysql-broker",
-						Services: []config.Service{
-							config.Service{
+						Services: []*config.Service{
+							&config.Service{
 								Name:          "p-mysql",
 								NoAccessPlans: []string{"small"},
 							},
@@ -111,11 +111,11 @@ var _ = Describe("Serviceaccess", func() {
 		It("Will change public plan to private with access to 2 orgs", func() {
 			globalCfg := &config.GlobalConfig{
 				EnableServiceAccess: true,
-				ServiceAccess: []config.Broker{
-					config.Broker{
+				ServiceAccess: []*config.Broker{
+					&config.Broker{
 						Name: "mysql-broker",
-						Services: []config.Service{
-							config.Service{
+						Services: []*config.Service{
+							&config.Service{
 								Name: "p-mysql",
 								LimitedAccessPlans: []config.PlanVisibility{
 									config.PlanVisibility{

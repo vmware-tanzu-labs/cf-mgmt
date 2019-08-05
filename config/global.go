@@ -13,7 +13,7 @@ type GlobalConfig struct {
 	MetadataPrefix                string                  `yaml:"metadata-prefix"`
 	EnableServiceAccess           bool                    `yaml:"enable-service-access"`
 	// DefaultServiceAccessNone      bool                    `yaml:"default-service-access-none"`
-	ServiceAccess []Broker `yaml:"service-access"`
+	ServiceAccess []*Broker `yaml:"service-access"`
 }
 
 type PlanInfo struct {
@@ -21,6 +21,27 @@ type PlanInfo struct {
 	AllAccess bool
 	NoAccess  bool
 	Orgs      []string
+}
+
+func (g *GlobalConfig) GetBroker(brokerName string) *Broker {
+	for _, broker := range g.ServiceAccess {
+		if strings.EqualFold(brokerName, broker.Name) {
+			return broker
+		}
+	}
+	newBroker := &Broker{Name: brokerName}
+	g.ServiceAccess = append(g.ServiceAccess, newBroker)
+	return newBroker
+}
+func (b *Broker) GetService(serviceName string) *Service {
+	for _, service := range b.Services {
+		if strings.EqualFold(serviceName, service.Name) {
+			return service
+		}
+	}
+	newService := &Service{Name: serviceName}
+	b.Services = append(b.Services, newService)
+	return newService
 }
 
 func (g *GlobalConfig) GetPlanInfo(brokerName, serviceName, planName string) PlanInfo {
@@ -58,14 +79,97 @@ type SharedDomain struct {
 
 type Broker struct {
 	Name     string `yaml:"broker"`
-	Services []Service
+	Services []*Service
 }
 
 type Service struct {
-	Name               string           `yaml:"service"`
-	AllAccessPlans     []string         `yaml:"all_access_plans,omitempty"`
-	LimitedAccessPlans []PlanVisibility `yaml:"limited_access_plans,omitempty"`
-	NoAccessPlans      []string         `yaml:"no_access_plans,omitempty"`
+	Name               string            `yaml:"service"`
+	AllAccessPlans     []string          `yaml:"all_access_plans,omitempty"`
+	LimitedAccessPlans []*PlanVisibility `yaml:"limited_access_plans,omitempty"`
+	NoAccessPlans      []string          `yaml:"no_access_plans,omitempty"`
+}
+
+func (s *Service) AddAllAccessPlan(planName string) {
+	if s.contains(s.NoAccessPlans, planName) {
+		s.NoAccessPlans = s.remove(s.NoAccessPlans, planName)
+	}
+	if s.contains(s.LimitedAccessPlanNames(), planName) {
+		s.LimitedAccessPlans = s.removePlan(s.LimitedAccessPlans, planName)
+	}
+	if !s.contains(s.AllAccessPlans, planName) {
+		s.AllAccessPlans = append(s.AllAccessPlans, planName)
+	}
+}
+
+func (s *Service) AddNoAccessPlan(planName string) {
+	if s.contains(s.AllAccessPlans, planName) {
+		s.AllAccessPlans = s.remove(s.AllAccessPlans, planName)
+	}
+	if s.contains(s.LimitedAccessPlanNames(), planName) {
+		s.LimitedAccessPlans = s.removePlan(s.LimitedAccessPlans, planName)
+	}
+	if !s.contains(s.NoAccessPlans, planName) {
+		s.NoAccessPlans = append(s.NoAccessPlans, planName)
+	}
+}
+
+func (s *Service) AddLimitedAccessPlan(planName string, orgs []string) {
+	if s.contains(s.AllAccessPlans, planName) {
+		s.AllAccessPlans = s.remove(s.AllAccessPlans, planName)
+	}
+	if s.contains(s.NoAccessPlans, planName) {
+		s.NoAccessPlans = s.remove(s.NoAccessPlans, planName)
+	}
+	if !s.contains(s.LimitedAccessPlanNames(), planName) {
+		s.LimitedAccessPlans = append(s.LimitedAccessPlans, &PlanVisibility{Name: planName, Orgs: orgs})
+	} else {
+		planVisibility := s.GetLimitedPlan(planName)
+		for _, org := range orgs {
+			if !s.contains(planVisibility.Orgs, org) {
+				planVisibility.Orgs = append(planVisibility.Orgs, org)
+			}
+		}
+	}
+}
+
+func (s *Service) contains(slice []string, e string) bool {
+	for _, a := range slice {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Service) remove(slice []string, e string) []string {
+	sliceToReturn := []string{}
+	for _, a := range slice {
+		if a != e {
+			sliceToReturn = append(sliceToReturn, a)
+		}
+	}
+	return sliceToReturn
+}
+
+func (s *Service) removePlan(slice []*PlanVisibility, e string) []*PlanVisibility {
+	sliceToReturn := []*PlanVisibility{}
+	for _, a := range slice {
+		if a.Name != e {
+			sliceToReturn = append(sliceToReturn, a)
+		}
+	}
+	return sliceToReturn
+}
+
+func (s *Service) GetLimitedPlan(planName string) *PlanVisibility {
+	for _, plan := range s.LimitedAccessPlans {
+		if strings.EqualFold(planName, plan.Name) {
+			return plan
+		}
+	}
+	newPlan := &PlanVisibility{Name: planName}
+	s.LimitedAccessPlans = append(s.LimitedAccessPlans, newPlan)
+	return newPlan
 }
 
 func (s *Service) LimitedAccessPlanNames() []string {

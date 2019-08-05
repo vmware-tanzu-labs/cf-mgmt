@@ -424,11 +424,11 @@ func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs [
 		return err
 	}
 	for _, broker := range serviceInfo.Brokers() {
-		brokerConfig := config.Broker{
+		brokerConfig := &config.Broker{
 			Name: broker.Name,
 		}
 		for _, service := range broker.Services() {
-			serviceVisibility := config.Service{
+			serviceVisibility := &config.Service{
 				Name: service.Name,
 			}
 			for _, plan := range service.Plans() {
