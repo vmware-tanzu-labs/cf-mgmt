@@ -92,6 +92,7 @@ func (im *Manager) ExportServiceAccess() error {
 	if err != nil {
 		return err
 	}
+	globalConfig.IgnoreLegacyServiceAccess = true
 	err = im.ConfigMgr.SaveGlobalConfig(globalConfig)
 
 	if err == nil {
