@@ -1,11 +1,11 @@
 package serviceaccess
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/serviceaccess/legacy"
 	"github.com/xchapter7x/lo"
 )
 
@@ -13,18 +13,20 @@ func NewManager(client CFClient,
 	orgMgr organization.Manager,
 	cfg config.Reader, peek bool) *Manager {
 	return &Manager{
-		Client: client,
-		OrgMgr: orgMgr,
-		Cfg:    cfg,
-		Peek:   peek,
+		Client:    client,
+		OrgMgr:    orgMgr,
+		Cfg:       cfg,
+		Peek:      peek,
+		LegacyMgr: legacy.NewManager(client, orgMgr, cfg, peek),
 	}
 }
 
 type Manager struct {
-	Client CFClient
-	Cfg    config.Reader
-	OrgMgr organization.Manager
-	Peek   bool
+	Client    CFClient
+	Cfg       config.Reader
+	OrgMgr    organization.Manager
+	Peek      bool
+	LegacyMgr *legacy.Manager
 }
 
 func (m *Manager) Apply() error {
@@ -46,7 +48,8 @@ func (m *Manager) Apply() error {
 		}
 
 		if len(orgList) > 0 {
-			return fmt.Errorf("Must run `cf-mgmt export-service-access-config` and check in configuration changes as services-access for orgs [%s] is no longer supported in orgConfig.yml", strings.Join(orgList, ","))
+			lo.G.Warning("**** Deprecated **** - run `cf-mgmt export-service-access-config` and check in configuration changes as services-access for orgs [%s] is no longer supported in orgConfig.yml", strings.Join(orgList, ","))
+			return m.LegacyMgr.Apply()
 		}
 	}
 	serviceInfo, err := m.ListServiceInfo()

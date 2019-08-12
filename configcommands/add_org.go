@@ -21,7 +21,7 @@ type AddOrgToConfigurationCommand struct {
 	Auditor                 UserRoleAdd `group:"auditor" namespace:"auditor"`
 	NamedQuota              string      `long:"named-quota" description:"Named quota to assign to org"`
 	ServiceAccess           struct {
-		ServiceNames []string `long:"service" description:"Service Name to add, specify multiple times"`
+		ServiceNames []string `long:"service" description:"*** Deprecated **** - Service Name to add, specify multiple times"`
 	} `group:"service-access"`
 	EnableRemoveSpaces string `long:"enable-remove-spaces" description:"Enable removing spaces" choice:"true" choice:"false"`
 }
@@ -55,7 +55,11 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 
 	c.updateUsers(orgConfig, &errorString)
 
-	orgConfig.ServiceAccess = make(map[string][]string)
+	if len(c.ServiceAccess.ServiceNames) > 0 {
+		lo.G.Warning("Service access is managed with 'cf-mgmt-config global service-access' command")
+		orgConfig.ServiceAccess = make(map[string][]string)
+	}
+
 	for _, service := range c.ServiceAccess.ServiceNames {
 		orgConfig.ServiceAccess[service] = []string{"*"}
 	}

@@ -54,5 +54,5 @@ auditor:
   --auditor-saml-user=                      SAML user to add, specify multiple times
   --auditor-ldap-group=                     Group to add, specify multiple times
 service-access:
-  --service=                                Service Name to add, specify multiple times
+  --service=                                *** Deprecated *** Service Name to add, specify multiple times
 ```
