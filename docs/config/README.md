@@ -47,6 +47,8 @@ enable-remove-shared-domains: true #true/false
 enable-service-access: true #true/false
 
 # added in v1.0.31
+ignore-legacy-service-access: false #true/false will ignore any service access in orgConfig.yml files
+# added in v1.0.31
 service-access:
 - broker: dedicated-mysql-broker
   services:

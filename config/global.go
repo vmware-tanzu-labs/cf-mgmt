@@ -12,8 +12,8 @@ type GlobalConfig struct {
 	EnableDeleteSharedDomains     bool                    `yaml:"enable-remove-shared-domains"`
 	MetadataPrefix                string                  `yaml:"metadata-prefix"`
 	EnableServiceAccess           bool                    `yaml:"enable-service-access"`
-	// DefaultServiceAccessNone      bool                    `yaml:"default-service-access-none"`
-	ServiceAccess []*Broker `yaml:"service-access"`
+	IgnoreLegacyServiceAccess     bool                    `yaml:"ignore-legacy-service-access"`
+	ServiceAccess                 []*Broker               `yaml:"service-access"`
 }
 
 type PlanInfo struct {

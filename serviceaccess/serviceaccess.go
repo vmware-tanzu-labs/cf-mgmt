@@ -47,7 +47,7 @@ func (m *Manager) Apply() error {
 			}
 		}
 
-		if len(orgList) > 0 {
+		if len(orgList) > 0 && !globalCfg.IgnoreLegacyServiceAccess {
 			lo.G.Warning("**** Deprecated **** - run `cf-mgmt export-service-access-config` and check in configuration changes as services-access for orgs [%s] is no longer supported in orgConfig.yml", strings.Join(orgList, ","))
 			return m.LegacyMgr.Apply()
 		}
