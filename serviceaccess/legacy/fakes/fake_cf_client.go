@@ -6,7 +6,7 @@ import (
 	sync "sync"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	serviceaccess "github.com/pivotalservices/cf-mgmt/serviceaccess"
+	legacy "github.com/pivotalservices/cf-mgmt/serviceaccess/legacy"
 )
 
 type FakeCFClient struct {
@@ -36,18 +36,6 @@ type FakeCFClient struct {
 	}
 	deleteServicePlanVisibilityByPlanAndOrgReturnsOnCall map[int]struct {
 		result1 error
-	}
-	ListServiceBrokersStub        func() ([]cfclient.ServiceBroker, error)
-	listServiceBrokersMutex       sync.RWMutex
-	listServiceBrokersArgsForCall []struct {
-	}
-	listServiceBrokersReturns struct {
-		result1 []cfclient.ServiceBroker
-		result2 error
-	}
-	listServiceBrokersReturnsOnCall map[int]struct {
-		result1 []cfclient.ServiceBroker
-		result2 error
 	}
 	ListServicePlanVisibilitiesByQueryStub        func(url.Values) ([]cfclient.ServicePlanVisibility, error)
 	listServicePlanVisibilitiesByQueryMutex       sync.RWMutex
@@ -87,19 +75,6 @@ type FakeCFClient struct {
 		result1 []cfclient.Service
 		result2 error
 	}
-	ListServicesByQueryStub        func(url.Values) ([]cfclient.Service, error)
-	listServicesByQueryMutex       sync.RWMutex
-	listServicesByQueryArgsForCall []struct {
-		arg1 url.Values
-	}
-	listServicesByQueryReturns struct {
-		result1 []cfclient.Service
-		result2 error
-	}
-	listServicesByQueryReturnsOnCall map[int]struct {
-		result1 []cfclient.Service
-		result2 error
-	}
 	MakeServicePlanPrivateStub        func(string) error
 	makeServicePlanPrivateMutex       sync.RWMutex
 	makeServicePlanPrivateArgsForCall []struct {
@@ -109,17 +84,6 @@ type FakeCFClient struct {
 		result1 error
 	}
 	makeServicePlanPrivateReturnsOnCall map[int]struct {
-		result1 error
-	}
-	MakeServicePlanPublicStub        func(string) error
-	makeServicePlanPublicMutex       sync.RWMutex
-	makeServicePlanPublicArgsForCall []struct {
-		arg1 string
-	}
-	makeServicePlanPublicReturns struct {
-		result1 error
-	}
-	makeServicePlanPublicReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
@@ -250,61 +214,6 @@ func (fake *FakeCFClient) DeleteServicePlanVisibilityByPlanAndOrgReturnsOnCall(i
 	fake.deleteServicePlanVisibilityByPlanAndOrgReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
-}
-
-func (fake *FakeCFClient) ListServiceBrokers() ([]cfclient.ServiceBroker, error) {
-	fake.listServiceBrokersMutex.Lock()
-	ret, specificReturn := fake.listServiceBrokersReturnsOnCall[len(fake.listServiceBrokersArgsForCall)]
-	fake.listServiceBrokersArgsForCall = append(fake.listServiceBrokersArgsForCall, struct {
-	}{})
-	fake.recordInvocation("ListServiceBrokers", []interface{}{})
-	fake.listServiceBrokersMutex.Unlock()
-	if fake.ListServiceBrokersStub != nil {
-		return fake.ListServiceBrokersStub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listServiceBrokersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListServiceBrokersCallCount() int {
-	fake.listServiceBrokersMutex.RLock()
-	defer fake.listServiceBrokersMutex.RUnlock()
-	return len(fake.listServiceBrokersArgsForCall)
-}
-
-func (fake *FakeCFClient) ListServiceBrokersCalls(stub func() ([]cfclient.ServiceBroker, error)) {
-	fake.listServiceBrokersMutex.Lock()
-	defer fake.listServiceBrokersMutex.Unlock()
-	fake.ListServiceBrokersStub = stub
-}
-
-func (fake *FakeCFClient) ListServiceBrokersReturns(result1 []cfclient.ServiceBroker, result2 error) {
-	fake.listServiceBrokersMutex.Lock()
-	defer fake.listServiceBrokersMutex.Unlock()
-	fake.ListServiceBrokersStub = nil
-	fake.listServiceBrokersReturns = struct {
-		result1 []cfclient.ServiceBroker
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListServiceBrokersReturnsOnCall(i int, result1 []cfclient.ServiceBroker, result2 error) {
-	fake.listServiceBrokersMutex.Lock()
-	defer fake.listServiceBrokersMutex.Unlock()
-	fake.ListServiceBrokersStub = nil
-	if fake.listServiceBrokersReturnsOnCall == nil {
-		fake.listServiceBrokersReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.ServiceBroker
-			result2 error
-		})
-	}
-	fake.listServiceBrokersReturnsOnCall[i] = struct {
-		result1 []cfclient.ServiceBroker
-		result2 error
-	}{result1, result2}
 }
 
 func (fake *FakeCFClient) ListServicePlanVisibilitiesByQuery(arg1 url.Values) ([]cfclient.ServicePlanVisibility, error) {
@@ -488,69 +397,6 @@ func (fake *FakeCFClient) ListServicesReturnsOnCall(i int, result1 []cfclient.Se
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) ListServicesByQuery(arg1 url.Values) ([]cfclient.Service, error) {
-	fake.listServicesByQueryMutex.Lock()
-	ret, specificReturn := fake.listServicesByQueryReturnsOnCall[len(fake.listServicesByQueryArgsForCall)]
-	fake.listServicesByQueryArgsForCall = append(fake.listServicesByQueryArgsForCall, struct {
-		arg1 url.Values
-	}{arg1})
-	fake.recordInvocation("ListServicesByQuery", []interface{}{arg1})
-	fake.listServicesByQueryMutex.Unlock()
-	if fake.ListServicesByQueryStub != nil {
-		return fake.ListServicesByQueryStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listServicesByQueryReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListServicesByQueryCallCount() int {
-	fake.listServicesByQueryMutex.RLock()
-	defer fake.listServicesByQueryMutex.RUnlock()
-	return len(fake.listServicesByQueryArgsForCall)
-}
-
-func (fake *FakeCFClient) ListServicesByQueryCalls(stub func(url.Values) ([]cfclient.Service, error)) {
-	fake.listServicesByQueryMutex.Lock()
-	defer fake.listServicesByQueryMutex.Unlock()
-	fake.ListServicesByQueryStub = stub
-}
-
-func (fake *FakeCFClient) ListServicesByQueryArgsForCall(i int) url.Values {
-	fake.listServicesByQueryMutex.RLock()
-	defer fake.listServicesByQueryMutex.RUnlock()
-	argsForCall := fake.listServicesByQueryArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) ListServicesByQueryReturns(result1 []cfclient.Service, result2 error) {
-	fake.listServicesByQueryMutex.Lock()
-	defer fake.listServicesByQueryMutex.Unlock()
-	fake.ListServicesByQueryStub = nil
-	fake.listServicesByQueryReturns = struct {
-		result1 []cfclient.Service
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListServicesByQueryReturnsOnCall(i int, result1 []cfclient.Service, result2 error) {
-	fake.listServicesByQueryMutex.Lock()
-	defer fake.listServicesByQueryMutex.Unlock()
-	fake.ListServicesByQueryStub = nil
-	if fake.listServicesByQueryReturnsOnCall == nil {
-		fake.listServicesByQueryReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.Service
-			result2 error
-		})
-	}
-	fake.listServicesByQueryReturnsOnCall[i] = struct {
-		result1 []cfclient.Service
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeCFClient) MakeServicePlanPrivate(arg1 string) error {
 	fake.makeServicePlanPrivateMutex.Lock()
 	ret, specificReturn := fake.makeServicePlanPrivateReturnsOnCall[len(fake.makeServicePlanPrivateArgsForCall)]
@@ -611,66 +457,6 @@ func (fake *FakeCFClient) MakeServicePlanPrivateReturnsOnCall(i int, result1 err
 	}{result1}
 }
 
-func (fake *FakeCFClient) MakeServicePlanPublic(arg1 string) error {
-	fake.makeServicePlanPublicMutex.Lock()
-	ret, specificReturn := fake.makeServicePlanPublicReturnsOnCall[len(fake.makeServicePlanPublicArgsForCall)]
-	fake.makeServicePlanPublicArgsForCall = append(fake.makeServicePlanPublicArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("MakeServicePlanPublic", []interface{}{arg1})
-	fake.makeServicePlanPublicMutex.Unlock()
-	if fake.MakeServicePlanPublicStub != nil {
-		return fake.MakeServicePlanPublicStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.makeServicePlanPublicReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeCFClient) MakeServicePlanPublicCallCount() int {
-	fake.makeServicePlanPublicMutex.RLock()
-	defer fake.makeServicePlanPublicMutex.RUnlock()
-	return len(fake.makeServicePlanPublicArgsForCall)
-}
-
-func (fake *FakeCFClient) MakeServicePlanPublicCalls(stub func(string) error) {
-	fake.makeServicePlanPublicMutex.Lock()
-	defer fake.makeServicePlanPublicMutex.Unlock()
-	fake.MakeServicePlanPublicStub = stub
-}
-
-func (fake *FakeCFClient) MakeServicePlanPublicArgsForCall(i int) string {
-	fake.makeServicePlanPublicMutex.RLock()
-	defer fake.makeServicePlanPublicMutex.RUnlock()
-	argsForCall := fake.makeServicePlanPublicArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) MakeServicePlanPublicReturns(result1 error) {
-	fake.makeServicePlanPublicMutex.Lock()
-	defer fake.makeServicePlanPublicMutex.Unlock()
-	fake.MakeServicePlanPublicStub = nil
-	fake.makeServicePlanPublicReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) MakeServicePlanPublicReturnsOnCall(i int, result1 error) {
-	fake.makeServicePlanPublicMutex.Lock()
-	defer fake.makeServicePlanPublicMutex.Unlock()
-	fake.MakeServicePlanPublicStub = nil
-	if fake.makeServicePlanPublicReturnsOnCall == nil {
-		fake.makeServicePlanPublicReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.makeServicePlanPublicReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -678,20 +464,14 @@ func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	defer fake.createServicePlanVisibilityMutex.RUnlock()
 	fake.deleteServicePlanVisibilityByPlanAndOrgMutex.RLock()
 	defer fake.deleteServicePlanVisibilityByPlanAndOrgMutex.RUnlock()
-	fake.listServiceBrokersMutex.RLock()
-	defer fake.listServiceBrokersMutex.RUnlock()
 	fake.listServicePlanVisibilitiesByQueryMutex.RLock()
 	defer fake.listServicePlanVisibilitiesByQueryMutex.RUnlock()
 	fake.listServicePlansByQueryMutex.RLock()
 	defer fake.listServicePlansByQueryMutex.RUnlock()
 	fake.listServicesMutex.RLock()
 	defer fake.listServicesMutex.RUnlock()
-	fake.listServicesByQueryMutex.RLock()
-	defer fake.listServicesByQueryMutex.RUnlock()
 	fake.makeServicePlanPrivateMutex.RLock()
 	defer fake.makeServicePlanPrivateMutex.RUnlock()
-	fake.makeServicePlanPublicMutex.RLock()
-	defer fake.makeServicePlanPublicMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
@@ -711,4 +491,4 @@ func (fake *FakeCFClient) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ serviceaccess.CFClient = new(FakeCFClient)
+var _ legacy.CFClient = new(FakeCFClient)

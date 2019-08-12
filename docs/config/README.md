@@ -27,7 +27,6 @@ There is global configuration that is managed in `cf-mgmt.yml`.  The following o
 ```
 enable-delete-isolation-segments: false #true/false
 enable-unassign-security-groups: false #true/false
-enable-service-access: true #true/false
 running-security-groups: # array of security groups to apply to running
 - all_access
 - public_networks
@@ -44,6 +43,34 @@ shared-domains: # map of shared domains and their configuration 1.0.12+
     internal: false
     router-group: default-tcp #router group to associate with domain
 enable-remove-shared-domains: true #true/false
+
+enable-service-access: true #true/false
+
+# added in v1.0.31
+ignore-legacy-service-access: false #true/false will ignore any service access in orgConfig.yml files
+# added in v1.0.31
+service-access:
+- broker: dedicated-mysql-broker
+  services:
+  - service: p.mysql
+    all_access_plans: # db-small plan is available to all orgs
+    - db-small  
+    limited_access_plans:# db-medium is only available to cfdev-org as well as any org that is in `protected` orgs list
+    - plan: db-medium
+      orgs:
+      - cfdev-org
+    no_access_plans: # disables db-large plan for all orgs
+    - db-large
+- broker: rabbitmq-odb
+  services:
+  - service: p.rabbitmq
+    all_access_plans:
+    - single-node-3.7
+- broker: p-rabbitmq
+  services:
+  - service: p-rabbitmq
+    all_access_plans:
+    - standard
 ```
 
 #### Org Configuration
@@ -154,11 +181,6 @@ enable-remove-users: true/false
 # added in 0.0.64+ which will remove users from roles if not configured in cf-mgmt
 private-domains: ["test.com", "test2.com"]
 enable-remove-private-domains: true/false
-
-# added in 1.0.9+ which allows configuration of service access
-service-access:
-  p-mysql: ["small","large"]
-  p-rabbit: ["*"]
 
 # added in 1.0.12+ allows specifying a named quota, cannot be used with enable-org-quota
 named-quota:

@@ -75,9 +75,15 @@ auditor:
       --auditor-ldap-group-to-remove=                     Group to remove, specify multiple times
 
 service-access:
+<<<<<<< HEAD
       --service=                                          Service Name to add
       --plans=                                            plans to add, empty list will add all plans
       --service-to-remove=                                name of service to remove
+=======
+      --service=                                          *** Deprecated *** Service Name to add
+      --plans=                                            *** Deprecated *** plans to add, empty list will add all plans
+      --service-to-remove=                                *** Deprecated *** name of service to remove
+>>>>>>> develop
 
 metadata:
       --label=                                      Label to add, can specify multiple

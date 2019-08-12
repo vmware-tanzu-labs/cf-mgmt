@@ -2,98 +2,111 @@ package serviceaccess
 
 import (
 	"fmt"
-	"strings"
-
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"net/url"
 )
 
-type ServiceInfo struct {
-	m map[string]map[string]*ServicePlanInfo
-}
-
-type ServicePlanInfo struct {
-	GUID   string
-	Name   string
-	Public bool
-	m      map[string]*cfclient.ServicePlanVisibility
-}
-
-func (s *ServicePlanInfo) ListVisibilities() []cfclient.ServicePlanVisibility {
-	var result []cfclient.ServicePlanVisibility
-	for _, visibility := range s.m {
-		result = append(result, *visibility)
+//GetServiceInfo - returns broker, it's services and their plans
+func GetServiceInfo(client CFClient) (*ServiceInfo, error) {
+	serviceInfo := &ServiceInfo{}
+	brokers, err := client.ListServiceBrokers()
+	if err != nil {
+		return nil, err
 	}
-	return result
-}
-func (s *ServicePlanInfo) AddOrg(orgGUID string, visibility cfclient.ServicePlanVisibility) {
-	if s.m == nil {
-		s.m = make(map[string]*cfclient.ServicePlanVisibility)
-	}
-	s.m[orgGUID] = &visibility
-}
-
-func (s *ServicePlanInfo) RemoveOrg(orgGUID string) {
-	delete(s.m, orgGUID)
-}
-
-func (s *ServicePlanInfo) OrgHasAccess(orgGUID string) bool {
-	_, ok := s.m[orgGUID]
-	return ok
-}
-
-func (s *ServiceInfo) AddPlan(serviceName string, servicePlan cfclient.ServicePlan) *ServicePlanInfo {
-	if s.m == nil {
-		s.m = make(map[string]map[string]*ServicePlanInfo)
-	}
-	plans, ok := s.m[serviceName]
-	if !ok {
-		plans = make(map[string]*ServicePlanInfo)
-		s.m[serviceName] = plans
-	}
-	servicePlanInfo := &ServicePlanInfo{GUID: servicePlan.Guid, Name: servicePlan.Name, Public: servicePlan.Public}
-	plans[servicePlan.Name] = servicePlanInfo
-	return servicePlanInfo
-}
-
-func (s *ServiceInfo) GetPlans(serviceName string, planNames []string) ([]*ServicePlanInfo, error) {
-	plans, ok := s.m[serviceName]
-	if !ok {
-		return nil, fmt.Errorf("Service %s does not exist", serviceName)
-	}
-	var servicePlans []*ServicePlanInfo
-	for planName, plan := range plans {
-		if Matches(planName, planNames) {
-			servicePlans = append(servicePlans, plan)
+	for _, broker := range brokers {
+		serviceBroker := &ServiceBroker{
+			Name: broker.Name,
 		}
+		services, err := client.ListServicesByQuery(url.Values{
+			"q": []string{fmt.Sprintf("%s:%s", "service_broker_guid", broker.Guid)},
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, svc := range services {
+			service := &Service{
+				Name: svc.Label,
+			}
+			plans, err := client.ListServicePlansByQuery(url.Values{
+				"q": []string{fmt.Sprintf("%s:%s", "service_guid", svc.Guid)},
+			})
+			if err != nil {
+				return nil, err
+			}
+			for _, plan := range plans {
+				servicePlan := &ServicePlanInfo{
+					Name:        plan.Name,
+					GUID:        plan.Guid,
+					ServiceName: service.Name,
+					Public:      plan.Public,
+				}
+				visibilities, err := client.ListServicePlanVisibilitiesByQuery(url.Values{
+					"q": []string{fmt.Sprintf("%s:%s", "service_plan_guid", plan.Guid)},
+				})
+				if err != nil {
+					return nil, err
+				}
+				for _, visibility := range visibilities {
+					orgVisibility := &Visibility{
+						OrgGUID:         visibility.OrganizationGuid,
+						ServicePlanGUID: visibility.ServicePlanGuid,
+					}
+					servicePlan.AddOrg(orgVisibility)
+				}
+
+				service.AddPlan(servicePlan)
+			}
+
+			serviceBroker.AddService(service)
+		}
+
+		serviceInfo.AddBroker(serviceBroker)
 	}
 
-	if len(servicePlans) == 0 {
-		return nil, fmt.Errorf("No plans for for service %s with expected plans %v", serviceName, planNames)
+	return serviceInfo, nil
+}
+
+type ServiceInfo struct {
+	brokers map[string]*ServiceBroker
+}
+
+func (s *ServiceInfo) Brokers() []*ServiceBroker {
+	brokerList := []*ServiceBroker{}
+	for _, broker := range s.brokers {
+		brokerList = append(brokerList, broker)
+	}
+	return brokerList
+}
+
+func (s *ServiceInfo) GetBroker(brokerName string) (*ServiceBroker, error) {
+	if broker, ok := s.brokers[brokerName]; ok {
+		return broker, nil
+	}
+	return nil, fmt.Errorf("Broker %s is not found", brokerName)
+}
+func (s *ServiceInfo) AddBroker(serviceBroker *ServiceBroker) {
+	if s.brokers == nil {
+		s.brokers = make(map[string]*ServiceBroker)
+	}
+	s.brokers[serviceBroker.Name] = serviceBroker
+}
+
+func (s *ServiceInfo) GetServicePlans(brokerName, serviceName string, plans []string) ([]*ServicePlanInfo, error) {
+	servicePlans := []*ServicePlanInfo{}
+	broker, err := s.GetBroker(brokerName)
+	if err != nil {
+		return nil, err
+	}
+	service, err := broker.GetService(serviceName)
+	if err != nil {
+		return nil, err
+	}
+	for _, plan := range plans {
+		servicePlan, err := service.GetPlan(plan)
+		if err != nil {
+			return nil, err
+		}
+		servicePlans = append(servicePlans, servicePlan)
 	}
 
 	return servicePlans, nil
-}
-
-func Matches(planName string, planList []string) bool {
-	for _, name := range planList {
-		if name == "*" {
-			return true
-		}
-		if strings.EqualFold(planName, name) {
-			return true
-		}
-	}
-	return false
-}
-
-func (s *ServiceInfo) AllPlans() map[string][]*ServicePlanInfo {
-	allPlans := make(map[string][]*ServicePlanInfo)
-	for serviceName, planMap := range s.m {
-		var plans []*ServicePlanInfo
-		for _, plan := range planMap {
-			plans = append(plans, plan)
-		}
-		allPlans[serviceName] = plans
-	}
-	return allPlans
 }

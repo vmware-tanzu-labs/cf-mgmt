@@ -6,7 +6,6 @@ import (
 
 type CfMgmtCommand struct {
 	Version                          configcommands.VersionCommand    `command:"version" description:"Print version information and exit"`
-	ExportConfigurationCommand       ExportConfigurationCommand       `command:"export-config" description:"Exports org and space configurations from an existing Cloud Foundry instance. [Warning: This operation will delete existing config folder]"`
 	CreateOrgsCommand                CreateOrgsCommand                `command:"create-orgs" description:"creates organizations for each orgConfig.yml"`
 	CreateSecurityGroupsCommand      CreateSecurityGroupsCommand      `command:"create-security-groups" description:"creates named security groups that can be assigned to spaces"`
 	AssignDefaultSecurityGroups      AssignDefaultSecurityGroups      `command:"assign-default-security-groups" description:"assigns security groups to default running or default staging"`
@@ -28,6 +27,8 @@ type CfMgmtCommand struct {
 	SharedDomainsCommand             SharedDomainsCommand             `command:"shared-domains" description:"adds/removes shared domains"`
 	UpdateOrgsMetadataCommand        UpdateOrgsMetadataCommand        `command:"update-orgs-metadata" description:"updates organizations metadata for each orgConfig.yml"`
 	ApplyCommand                     ApplyCommand                     `command:"apply" description:"applies the configuration to your target foundation"`
+	ExportConfigurationCommand       ExportConfigurationCommand       `command:"export-config" description:"Exports org and space configurations from an existing Cloud Foundry instance. [Warning: This operation will delete existing config folder]"`
+	ExportServiceAccessCommand       ExportServiceAccessCommand       `command:"export-service-access-config" description:"reverse engineer service access into cf-mgmt.yml and remove from orgConfig.yml(s) if present"`
 }
 
 var CfMgmt CfMgmtCommand

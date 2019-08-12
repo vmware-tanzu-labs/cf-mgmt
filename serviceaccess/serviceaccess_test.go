@@ -2,13 +2,11 @@ package serviceaccess_test
 
 import (
 	"errors"
-	"fmt"
-	"net/url"
 
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	. "github.com/pivotalservices/cf-mgmt/serviceaccess"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 	"github.com/pivotalservices/cf-mgmt/serviceaccess/fakes"
@@ -29,318 +27,429 @@ var _ = Describe("Serviceaccess", func() {
 		manager = NewManager(fakeCFClient, fakeOrgMgr, fakeReader, false)
 	})
 
-	Context("Apply", func() {
-		It("Should succeed", func() {
-			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{EnableServiceAccess: true}, nil)
-			servicesToReturn := []cfclient.Service{
-				cfclient.Service{Label: "p-mysql", Guid: "p-mysql-guid"},
+	Context("UpdateServiceAccess", func() {
+		It("Will do nothing as not enabled", func() {
+			globalCfg := &config.GlobalConfig{
+				EnableServiceAccess: false,
 			}
-			plansToReturn := []cfclient.ServicePlan{
-				cfclient.ServicePlan{Name: "small", Guid: "small-guid", Public: true},
+			serviceInfo := &ServiceInfo{}
+			err := manager.UpdateServiceAccess(globalCfg, serviceInfo, []string{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(0))
+		})
+		It("Will do nothing as all plans are already public", func() {
+			globalCfg := &config.GlobalConfig{
+				EnableServiceAccess: true,
+				ServiceAccess:       []*config.Broker{},
 			}
-			visibilitiesToReturn := []cfclient.ServicePlanVisibility{
-				cfclient.ServicePlanVisibility{OrganizationGuid: "org1-guid", Guid: "org1-visibility-guid"},
-				cfclient.ServicePlanVisibility{OrganizationGuid: "org2-guid", Guid: "org2-visibility-guid"},
+			serviceInfo := &ServiceInfo{}
+			broker := &ServiceBroker{Name: "mysql"}
+			serviceInfo.AddBroker(broker)
+			service := &Service{Name: "p-mysql"}
+			broker.AddService(service)
+			servicePlan := &ServicePlanInfo{Name: "small", ServiceName: "p-mysql", GUID: "small-guid", Public: true}
+			service.AddPlan(servicePlan)
+			protectedOrgs := []string{"system"}
+			err := manager.UpdateServiceAccess(globalCfg, serviceInfo, protectedOrgs)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(0))
+		})
+		It("Will change private plan to public", func() {
+			globalCfg := &config.GlobalConfig{
+				EnableServiceAccess: true,
+				ServiceAccess:       []*config.Broker{},
 			}
-			fakeCFClient.ListServicesReturns(servicesToReturn, nil)
-			fakeCFClient.ListServicePlansByQueryReturns(plansToReturn, nil)
-			fakeCFClient.ListServicePlanVisibilitiesByQueryReturns(visibilitiesToReturn, nil)
-			fakeReader.OrgsReturns(&config.Orgs{}, nil)
-			fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-				config.OrgConfig{Org: "test-org", ServiceAccess: map[string][]string{
-					"p-mysql": []string{"small"},
-				}},
-			}, nil)
+			serviceInfo := &ServiceInfo{}
+			broker := &ServiceBroker{Name: "mysql"}
+			serviceInfo.AddBroker(broker)
+			service := &Service{Name: "p-mysql"}
+			broker.AddService(service)
+			servicePlan := &ServicePlanInfo{Name: "small", ServiceName: "p-mysql", GUID: "small-guid", Public: false}
+			service.AddPlan(servicePlan)
+			protectedOrgs := []string{"system"}
+			err := manager.UpdateServiceAccess(globalCfg, serviceInfo, protectedOrgs)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(1))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(0))
+		})
+
+		It("Will change public plan to private with no access", func() {
+			globalCfg := &config.GlobalConfig{
+				EnableServiceAccess: true,
+				ServiceAccess: []*config.Broker{
+					&config.Broker{
+						Name: "mysql-broker",
+						Services: []*config.Service{
+							&config.Service{
+								Name:          "p-mysql",
+								NoAccessPlans: []string{"small"},
+							},
+						},
+					},
+				},
+			}
+			serviceInfo := &ServiceInfo{}
+			broker := &ServiceBroker{Name: "mysql-broker"}
+			serviceInfo.AddBroker(broker)
+			service := &Service{Name: "p-mysql"}
+			broker.AddService(service)
+			servicePlan := &ServicePlanInfo{Name: "small", ServiceName: "p-mysql", GUID: "small-guid", Public: true}
+			service.AddPlan(servicePlan)
+			protectedOrgs := []string{"system"}
+			err := manager.UpdateServiceAccess(globalCfg, serviceInfo, protectedOrgs)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(0))
+		})
+
+		It("Will change public plan to private with access to 2 orgs", func() {
+			globalCfg := &config.GlobalConfig{
+				EnableServiceAccess: true,
+				ServiceAccess: []*config.Broker{
+					&config.Broker{
+						Name: "mysql-broker",
+						Services: []*config.Service{
+							&config.Service{
+								Name: "p-mysql",
+								LimitedAccessPlans: []*config.PlanVisibility{
+									&config.PlanVisibility{
+										Name: "small",
+										Orgs: []string{"test-org"},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			serviceInfo := &ServiceInfo{}
+			broker := &ServiceBroker{Name: "mysql-broker"}
+			serviceInfo.AddBroker(broker)
+			service := &Service{Name: "p-mysql"}
+			broker.AddService(service)
+			servicePlan := &ServicePlanInfo{Name: "small", ServiceName: "p-mysql", GUID: "small-guid", Public: true}
+			service.AddPlan(servicePlan)
+			protectedOrgs := []string{"system"}
+
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			err := manager.UpdateServiceAccess(globalCfg, serviceInfo, protectedOrgs)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(2))
+			planGUID, orgGUID := fakeCFClient.CreateServicePlanVisibilityArgsForCall(0)
+			Expect(planGUID).Should(Equal("small-guid"))
+			Expect(orgGUID).Should(Equal("test-org-guid"))
+		})
+	})
+
+	Context("EnsurePublicAccess", func() {
+		It("Should make 1 plan public", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      false,
+				ServiceName: "a-service",
+			}
+			err := manager.EnsurePublicAccess(plan)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(1))
+			planGUID := fakeCFClient.MakeServicePlanPublicArgsForCall(0)
+			Expect(planGUID).Should(Equal("a-plan-guid"))
+		})
+		It("Should return an error", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      false,
+				ServiceName: "a-service",
+			}
+			fakeCFClient.MakeServicePlanPublicReturns(errors.New("error making plan public"))
+			err := manager.EnsurePublicAccess(plan)
+			Expect(err).Should(MatchError("error making plan public"))
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(1))
+			planGUID := fakeCFClient.MakeServicePlanPublicArgsForCall(0)
+			Expect(planGUID).Should(Equal("a-plan-guid"))
+		})
+
+		It("Should peek 1 plan public", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      false,
+				ServiceName: "a-service",
+			}
+			manager.Peek = true
+			err := manager.EnsurePublicAccess(plan)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+		})
+	})
+
+	Context("EnsureNoAccessAccess", func() {
+		It("Should make 1 plan noaccess", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      true,
+				ServiceName: "a-service",
+			}
+			err := manager.EnsureNoAccess(plan)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			planGUID := fakeCFClient.MakeServicePlanPrivateArgsForCall(0)
+			Expect(planGUID).Should(Equal("a-plan-guid"))
+		})
+		It("Should return an error", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      true,
+				ServiceName: "a-service",
+			}
+			fakeCFClient.MakeServicePlanPrivateReturns(errors.New("error making plan private"))
+			err := manager.EnsureNoAccess(plan)
+			Expect(err).Should(MatchError("error making plan private"))
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			planGUID := fakeCFClient.MakeServicePlanPrivateArgsForCall(0)
+			Expect(planGUID).Should(Equal("a-plan-guid"))
+		})
+		It("Should peek 1 plan noaccess", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      true,
+				ServiceName: "a-service",
+			}
+			manager.Peek = true
+			err := manager.EnsureNoAccess(plan)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+		})
+	})
+
+	Context("EnsureLimitedAccess", func() {
+		It("Should make 1 plan limited access", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      true,
+				ServiceName: "a-service",
+			}
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			err := manager.EnsureLimitedAccess(plan, []string{"test-org"}, []string{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			planGUID := fakeCFClient.MakeServicePlanPrivateArgsForCall(0)
+			Expect(planGUID).Should(Equal("a-plan-guid"))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(1))
+			planGUID, orgGUID := fakeCFClient.CreateServicePlanVisibilityArgsForCall(0)
+			Expect(planGUID).Should(Equal("a-plan-guid"))
+			Expect(orgGUID).Should(Equal("test-org-guid"))
+		})
+		It("Should make 0 orgs limited access", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      true,
+				ServiceName: "a-service",
+			}
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			err := manager.EnsureLimitedAccess(plan, []string{}, []string{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			planGUID := fakeCFClient.MakeServicePlanPrivateArgsForCall(0)
+			Expect(planGUID).Should(Equal("a-plan-guid"))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(0))
+		})
+
+		It("Should peek 1 plan limited access", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      true,
+				ServiceName: "a-service",
+			}
+			manager.Peek = true
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			err := manager.EnsureLimitedAccess(plan, []string{"test-org"}, []string{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(0))
+		})
+		It("Should return an error making private", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      true,
+				ServiceName: "a-service",
+			}
+			fakeCFClient.MakeServicePlanPrivateReturns(errors.New("error making private"))
+			err := manager.EnsureLimitedAccess(plan, []string{"test-org"}, []string{})
+			Expect(err).Should(MatchError("error making private"))
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(0))
+		})
+		It("Should return an error retrieving org", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      true,
+				ServiceName: "a-service",
+			}
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{}, errors.New("error getting org"))
+			err := manager.EnsureLimitedAccess(plan, []string{"test-org"}, []string{})
+			Expect(err).Should(MatchError("error getting org"))
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(0))
+		})
+	})
+	Context("ProtectedOrgList", func() {
+		It("Should return a list", func() {
 			fakeOrgMgr.ListOrgsReturns([]cfclient.Org{
-				cfclient.Org{Name: "system", Guid: "system-guid"},
-				cfclient.Org{Name: "test-org", Guid: "test-org-guid"},
+				cfclient.Org{Name: "foo"},
+				cfclient.Org{Name: "system"},
+				cfclient.Org{Name: "bar"},
 			}, nil)
-
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
-			err := manager.Apply()
+			fakeReader.OrgsReturns(&config.Orgs{}, nil)
+			protectedOrgsList, err := manager.ProtectedOrgList()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).To(Equal(1))
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(2))
-			Expect(fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgCallCount()).To(Equal(2))
-			privatePlanArgs := fakeCFClient.MakeServicePlanPrivateArgsForCall(0)
-			Expect(privatePlanArgs).To(Equal("small-guid"))
-			servicePlanGUID, orgGUID := fakeCFClient.CreateServicePlanVisibilityArgsForCall(0)
-			Expect(servicePlanGUID).To(Equal("small-guid"))
-			Expect(orgGUID).To(Equal("system-guid"))
-			servicePlanGUID, orgGUID = fakeCFClient.CreateServicePlanVisibilityArgsForCall(1)
-			Expect(servicePlanGUID).To(Equal("small-guid"))
-			Expect(orgGUID).To(Equal("test-org-guid"))
+			Expect(len(protectedOrgsList)).Should(BeEquivalentTo(1))
+		})
+		It("Should error getting org config", func() {
+			fakeOrgMgr.ListOrgsReturns([]cfclient.Org{
+				cfclient.Org{Name: "foo"},
+				cfclient.Org{Name: "system"},
+				cfclient.Org{Name: "bar"},
+			}, nil)
+			fakeReader.OrgsReturns(&config.Orgs{}, errors.New("Getting org config"))
+			protectedOrgsList, err := manager.ProtectedOrgList()
+			Expect(err).Should(MatchError("Getting org config"))
+			Expect(len(protectedOrgsList)).Should(BeEquivalentTo(0))
+		})
+		It("Should error getting orgs", func() {
+			fakeOrgMgr.ListOrgsReturns([]cfclient.Org{
+				cfclient.Org{Name: "foo"},
+				cfclient.Org{Name: "system"},
+				cfclient.Org{Name: "bar"},
+			}, errors.New("Getting orgs"))
+			fakeReader.OrgsReturns(&config.Orgs{}, nil)
+			protectedOrgsList, err := manager.ProtectedOrgList()
+			Expect(err).Should(MatchError("Getting orgs"))
+			Expect(len(protectedOrgsList)).Should(BeEquivalentTo(0))
+		})
+	})
+	Context("CreateServiceVisibility", func() {
+		It("Creates visibility from org that doesn't have access", func() {
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			servicePlan := &ServicePlanInfo{
+				GUID: "a-plan-guid",
+			}
+			err := manager.CreatePlanVisibility(servicePlan, "test-org")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(1))
+			planGUID, orgGUID := fakeCFClient.CreateServicePlanVisibilityArgsForCall(0)
+			Expect(planGUID).Should(Equal("a-plan-guid"))
+			Expect(orgGUID).Should(Equal("test-org-guid"))
+		})
+
+		It("Skips creating visibility from org that already has access", func() {
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			servicePlan := &ServicePlanInfo{
+				GUID: "a-plan-guid",
+			}
+			servicePlan.AddOrg(&Visibility{OrgGUID: "test-org-guid"})
+			err := manager.CreatePlanVisibility(servicePlan, "test-org")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(0))
+			Expect(servicePlan.OrgHasAccess("test-org-guid")).Should(BeFalse())
+		})
+
+		It("errors creating visibility from org that doesn't have access", func() {
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			servicePlan := &ServicePlanInfo{
+				GUID: "a-plan-guid",
+			}
+			fakeCFClient.CreateServicePlanVisibilityReturns(cfclient.ServicePlanVisibility{}, errors.New("creating visiblity"))
+			err := manager.CreatePlanVisibility(servicePlan, "test-org")
+			Expect(err).Should(MatchError("creating visiblity"))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(1))
+			planGUID, orgGUID := fakeCFClient.CreateServicePlanVisibilityArgsForCall(0)
+			Expect(planGUID).Should(Equal("a-plan-guid"))
+			Expect(orgGUID).Should(Equal("test-org-guid"))
 		})
 	})
 
-	Context("RemoveUnknownVisibilites", func() {
-		It("Should remove 1 visibility", func() {
-			serviceInfo := &ServiceInfo{}
-			servicePlanInfo := serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-			servicePlanInfo.AddOrg("system-org-guid", cfclient.ServicePlanVisibility{ServicePlanGuid: "service-plan-guid", OrganizationGuid: "unknown_org_guid"})
-
-			err := manager.RemoveUnknownVisibilites(serviceInfo)
+	Context("RemoveServiceVisibility", func() {
+		It("Removes visibility from org that shouldn't have access", func() {
+			fakeOrgMgr.GetOrgByGUIDReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
+			servicePlan := &ServicePlanInfo{
+				GUID: "a-plan-guid",
+			}
+			servicePlan.AddOrg(&Visibility{OrgGUID: "test-org-guid", ServicePlanGUID: "service-plan-guid"})
+			err := manager.RemoveVisibilities(servicePlan)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgCallCount()).To(Equal(1))
-			visibilityGUID, orgGUID, async := fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgArgsForCall(0)
-			Expect(visibilityGUID).To(Equal("service-plan-guid"))
-			Expect(orgGUID).To(Equal("unknown_org_guid"))
-			Expect(async).To(Equal(false))
+			Expect(fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgCallCount()).Should(Equal(1))
+			planGUID, orgGUID, async := fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgArgsForCall(0)
+			Expect(planGUID).Should(Equal("service-plan-guid"))
+			Expect(orgGUID).Should(Equal("test-org-guid"))
+			Expect(async).Should(BeFalse())
 		})
-	})
 
-	Context("EnableOrgServiceAccess", func() {
-		It("Should add when no visibilities exist", func() {
-			serviceInfo := &ServiceInfo{}
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "20mb-guid", Name: "20mb"})
-
-			fakeOrgMgr.ListOrgsReturns([]cfclient.Org{cfclient.Org{Guid: "system-org-guid", Name: "system"}}, nil)
-			err := manager.EnableProtectedOrgServiceAccess(serviceInfo, []string{"system"})
+		It("Peeks Removes visibility from org that shouldn't have access", func() {
+			fakeOrgMgr.GetOrgByGUIDReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
+			servicePlan := &ServicePlanInfo{
+				GUID: "a-plan-guid",
+			}
+			servicePlan.AddOrg(&Visibility{OrgGUID: "test-org-guid", ServicePlanGUID: "service-plan-guid"})
+			manager.Peek = true
+			err := manager.RemoveVisibilities(servicePlan)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(2))
-		})
-		It("Should add when only 1 visibilities exist", func() {
-			serviceInfo := &ServiceInfo{}
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-			servicePlanInfo := serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "20mb-guid", Name: "20mb"})
-			servicePlanInfo.AddOrg("system-org-guid", cfclient.ServicePlanVisibility{Guid: "visibility-guid"})
-
-			fakeOrgMgr.ListOrgsReturns([]cfclient.Org{cfclient.Org{Guid: "system-org-guid", Name: "system"}}, nil)
-			err := manager.EnableProtectedOrgServiceAccess(serviceInfo, []string{"system"})
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(1))
-			servicePlanGUID, orgGUID := fakeCFClient.CreateServicePlanVisibilityArgsForCall(0)
-			Expect(servicePlanGUID).To(Equal("10mb-guid"))
-			Expect(orgGUID).To(Equal("system-org-guid"))
-		})
-		It("Should not add when visibilities exist", func() {
-			serviceInfo := &ServiceInfo{}
-			servicePlanInfo := serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-			servicePlanInfo.AddOrg("system-org-guid", cfclient.ServicePlanVisibility{Guid: "visibility-guid"})
-
-			fakeOrgMgr.ListOrgsReturns([]cfclient.Org{cfclient.Org{Guid: "system-org-guid", Name: "system"}}, nil)
-			err := manager.EnableProtectedOrgServiceAccess(serviceInfo, []string{"system"})
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(0))
+			Expect(fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgCallCount()).Should(Equal(0))
 		})
 
-		It("Should error when listing orgs", func() {
-			serviceInfo := &ServiceInfo{}
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-			fakeOrgMgr.ListOrgsReturns(nil, errors.New("Org not found"))
-			err := manager.EnableProtectedOrgServiceAccess(serviceInfo, []string{"system"})
-			Expect(err).Should(MatchError("Org not found"))
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(0))
-		})
-
-		It("Should error when adding visiblity", func() {
-			serviceInfo := &ServiceInfo{}
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-
-			fakeOrgMgr.ListOrgsReturns([]cfclient.Org{cfclient.Org{Guid: "system-org-guid", Name: "system"}}, nil)
-			fakeCFClient.CreateServicePlanVisibilityReturns(cfclient.ServicePlanVisibility{}, errors.New("Error creating visibility"))
-			err := manager.EnableProtectedOrgServiceAccess(serviceInfo, []string{"system"})
-			Expect(err).Should(MatchError("Error creating visibility"))
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(1))
-		})
-	})
-	Context("EnableOrgServiceAccess", func() {
-		It("Should add when no visibilities exist", func() {
-			serviceInfo := &ServiceInfo{}
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-
-			orgConfigs := []config.OrgConfig{
-				config.OrgConfig{
-					Org: "test-org",
-					ServiceAccess: map[string][]string{
-						"p-mysql": []string{"10mb"},
-					},
-				},
+		It("Errors getting org", func() {
+			fakeOrgMgr.GetOrgByGUIDReturns(cfclient.Org{}, errors.New("getting org by guid"))
+			servicePlan := &ServicePlanInfo{
+				GUID: "a-plan-guid",
 			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid", Name: "test-org"}, nil)
-			err := manager.EnableOrgServiceAccess(serviceInfo, orgConfigs)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(1))
-			servicePlanGUID, orgGUID := fakeCFClient.CreateServicePlanVisibilityArgsForCall(0)
-			Expect(servicePlanGUID).To(Equal("10mb-guid"))
-			Expect(orgGUID).To(Equal("test-org-guid"))
+			servicePlan.AddOrg(&Visibility{OrgGUID: "test-org-guid", ServicePlanGUID: "service-plan-guid"})
+			err := manager.RemoveVisibilities(servicePlan)
+			Expect(err).Should(MatchError("getting org by guid"))
+			Expect(fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgCallCount()).Should(Equal(0))
 		})
 
-		It("Should not add when visibility already exist", func() {
-			serviceInfo := &ServiceInfo{}
-			servicePlanInfo := serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-			servicePlanInfo.AddOrg("test-org-guid", cfclient.ServicePlanVisibility{Guid: "visibility-guid"})
-
-			orgConfigs := []config.OrgConfig{
-				config.OrgConfig{
-					Org: "test-org",
-					ServiceAccess: map[string][]string{
-						"p-mysql": []string{"10mb"},
-					},
-				},
+		It("errors removing visibility from org that shouldn't have access", func() {
+			fakeOrgMgr.GetOrgByGUIDReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
+			servicePlan := &ServicePlanInfo{
+				GUID: "a-plan-guid",
 			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid", Name: "test-org"}, nil)
-			err := manager.EnableOrgServiceAccess(serviceInfo, orgConfigs)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(0))
-		})
-
-		It("Should warn but not do anything when config doesn't match existing service names", func() {
-			serviceInfo := &ServiceInfo{}
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-
-			orgConfigs := []config.OrgConfig{
-				config.OrgConfig{
-					Org: "test-org",
-					ServiceAccess: map[string][]string{
-						"p-random": []string{"10mb"},
-					},
-				},
-			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid", Name: "test-org"}, nil)
-			err := manager.EnableOrgServiceAccess(serviceInfo, orgConfigs)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(0))
-		})
-
-		It("Should error when finding org", func() {
-			serviceInfo := &ServiceInfo{}
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-
-			orgConfigs := []config.OrgConfig{
-				config.OrgConfig{
-					Org: "test-org",
-					ServiceAccess: map[string][]string{
-						"p-random": []string{"10mb"},
-					},
-				},
-			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid", Name: "test-org"}, errors.New("Org not found"))
-			err := manager.EnableOrgServiceAccess(serviceInfo, orgConfigs)
-			Expect(err).Should(MatchError("Org not found"))
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(0))
-		})
-
-		It("Should error when adding visiblity", func() {
-			serviceInfo := &ServiceInfo{}
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
-
-			orgConfigs := []config.OrgConfig{
-				config.OrgConfig{
-					Org: "test-org",
-					ServiceAccess: map[string][]string{
-						"p-mysql": []string{"10mb"},
-					},
-				},
-			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid", Name: "test-org"}, nil)
-			fakeCFClient.CreateServicePlanVisibilityReturns(cfclient.ServicePlanVisibility{}, errors.New("Error creating visibility"))
-			err := manager.EnableOrgServiceAccess(serviceInfo, orgConfigs)
-			Expect(err).Should(MatchError("Error creating visibility"))
-			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(1))
-		})
-	})
-
-	Context("ListServiceInfo", func() {
-		It("Should return a map of services by name with guid", func() {
-			servicesToReturn := []cfclient.Service{
-				cfclient.Service{Label: "p-mysql", Guid: "p-mysql-guid"},
-				cfclient.Service{Label: "p-rabbit", Guid: "p-rabbit-guid"},
-				cfclient.Service{Label: "p-redis", Guid: "p-redis-guid"},
-			}
-			plansToReturn := []cfclient.ServicePlan{
-				cfclient.ServicePlan{Name: "small", Guid: "small-guid"},
-				cfclient.ServicePlan{Name: "large", Guid: "large-guid"},
-			}
-			visibilitiesToReturn := []cfclient.ServicePlanVisibility{
-				cfclient.ServicePlanVisibility{OrganizationGuid: "org1-guid", Guid: "org1-visibility-guid"},
-				cfclient.ServicePlanVisibility{OrganizationGuid: "org2-guid", Guid: "org2-visibility-guid"},
-				cfclient.ServicePlanVisibility{OrganizationGuid: "org3-guid", Guid: "org3-visibility-guid"},
-			}
-			fakeCFClient.ListServicesReturns(servicesToReturn, nil)
-			fakeCFClient.ListServicePlansByQueryReturns(plansToReturn, nil)
-			fakeCFClient.ListServicePlanVisibilitiesByQueryReturns(visibilitiesToReturn, nil)
-			servicesPlanInfo, err := manager.ListServiceInfo()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(servicesPlanInfo).ToNot(BeNil())
-
-			for i, service := range servicesToReturn {
-				plans, err := servicesPlanInfo.GetPlans(service.Label, []string{"small", "large"})
-				Expect(err).ToNot(HaveOccurred())
-				Expect(len(plans)).To(Equal(2))
-				for range plans {
-					args := fakeCFClient.ListServicePlansByQueryArgsForCall(i)
-					Expect(args).To(BeEquivalentTo(url.Values{
-						"q": []string{fmt.Sprintf("%s:%s", "service_guid", service.Guid)},
-					}))
-				}
-			}
-
-		})
-		It("Should error listing services", func() {
-			fakeCFClient.ListServicesReturns(nil, errors.New("error listing services"))
-			_, err := manager.ListServiceInfo()
-			Expect(err).To(MatchError("error listing services"))
-		})
-
-		It("Should return a map of services by name with guid", func() {
-			servicesToReturn := []cfclient.Service{
-				cfclient.Service{Label: "p-mysql", Guid: "p-mysql-guid"},
-				cfclient.Service{Label: "p-rabbit", Guid: "p-rabbit-guid"},
-				cfclient.Service{Label: "p-redis", Guid: "p-redis-guid"},
-			}
-
-			fakeCFClient.ListServicesReturns(servicesToReturn, nil)
-			fakeCFClient.ListServicePlansByQueryReturns(nil, errors.New("error listing plans"))
-			_, err := manager.ListServiceInfo()
-			Expect(err).To(MatchError("error listing plans"))
-		})
-
-		It("Should return an error listing visibilities", func() {
-			servicesToReturn := []cfclient.Service{
-				cfclient.Service{Label: "p-mysql", Guid: "p-mysql-guid"},
-				cfclient.Service{Label: "p-rabbit", Guid: "p-rabbit-guid"},
-				cfclient.Service{Label: "p-redis", Guid: "p-redis-guid"},
-			}
-			plansToReturn := []cfclient.ServicePlan{
-				cfclient.ServicePlan{Name: "small", Guid: "small-guid"},
-				cfclient.ServicePlan{Name: "large", Guid: "large-guid"},
-			}
-			fakeCFClient.ListServicesReturns(servicesToReturn, nil)
-			fakeCFClient.ListServicePlansByQueryReturns(plansToReturn, nil)
-			fakeCFClient.ListServicePlanVisibilitiesByQueryReturns(nil, errors.New("errors listing visibilities"))
-			servicesPlanInfo, err := manager.ListServiceInfo()
-			Expect(err).To(MatchError("errors listing visibilities"))
-			Expect(servicesPlanInfo).To(BeNil())
-		})
-	})
-	Context("DisablePublicServiceAccess", func() {
-		It("Disable plans that are public", func() {
-			serviceInfo := &ServiceInfo{}
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "guid-1", Name: "10mb", Public: false})
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "guid-2", Name: "20mb", Public: false})
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "guid-3", Name: "30mb", Public: true})
-
-			err := manager.DisablePublicServiceAccess(serviceInfo)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).To(Equal(1))
-			servicePlanToDisableGUID := fakeCFClient.MakeServicePlanPrivateArgsForCall(0)
-			Expect(servicePlanToDisableGUID).To(Equal("guid-3"))
-		})
-
-		It("Should error disabling service plan", func() {
-			serviceInfo := &ServiceInfo{}
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "guid-1", Name: "10mb", Public: false})
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "guid-2", Name: "20mb", Public: false})
-			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "guid-3", Name: "30mb", Public: true})
-
-			fakeCFClient.MakeServicePlanPrivateReturns(errors.New("error disabling service plan"))
-			err := manager.DisablePublicServiceAccess(serviceInfo)
-			Expect(err).To(MatchError("error disabling service plan"))
-			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).To(Equal(1))
-			servicePlanToDisableGUID := fakeCFClient.MakeServicePlanPrivateArgsForCall(0)
-			Expect(servicePlanToDisableGUID).To(Equal("guid-3"))
+			fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgReturns(errors.New("deleting visibility"))
+			servicePlan.AddOrg(&Visibility{OrgGUID: "test-org-guid", ServicePlanGUID: "service-plan-guid"})
+			err := manager.RemoveVisibilities(servicePlan)
+			Expect(err).Should(MatchError("deleting visibility"))
+			Expect(fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgCallCount()).Should(Equal(1))
+			planGUID, orgGUID, async := fakeCFClient.DeleteServicePlanVisibilityByPlanAndOrgArgsForCall(0)
+			Expect(planGUID).Should(Equal("service-plan-guid"))
+			Expect(orgGUID).Should(Equal("test-org-guid"))
+			Expect(async).Should(BeFalse())
 		})
 	})
 })

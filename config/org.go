@@ -33,7 +33,7 @@ type OrgConfig struct {
 	AppInstanceLimit           string              `yaml:"app_instance_limit,omitempty"`
 	AppTaskLimit               string              `yaml:"app_task_limit,omitempty"`
 	DefaultIsoSegment          string              `yaml:"default_isolation_segment"`
-	ServiceAccess              map[string][]string `yaml:"service-access"`
+	ServiceAccess              map[string][]string `yaml:"service-access,omitempty"`
 	NamedQuota                 string              `yaml:"named_quota"`
 	Metadata                   *Metadata           `yaml:"metadata"`
 }
