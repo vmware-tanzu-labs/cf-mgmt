@@ -55,8 +55,16 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 
 	c.updateUsers(orgConfig, &errorString)
 
+	globalCfg, err := c.ConfigManager.GetGlobalConfig()
+	if err != nil {
+		return err
+	}
 	if len(c.ServiceAccess.ServiceNames) > 0 {
-		lo.G.Warning("Service access is managed with 'cf-mgmt-config global service-access' command")
+		if globalCfg.IgnoreLegacyServiceAccess {
+			return fmt.Errorf("Service access is managed with 'cf-mgmt-config global service-access' command")
+		} else {
+			lo.G.Warning("Service access is managed with 'cf-mgmt-config global service-access' command")
+		}
 		orgConfig.ServiceAccess = make(map[string][]string)
 	}
 

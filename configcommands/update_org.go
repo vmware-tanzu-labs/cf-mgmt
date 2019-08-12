@@ -73,13 +73,25 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 	}
 	c.updateUsers(orgConfig, &errorString)
 
+	globalCfg, err := c.ConfigManager.GetGlobalConfig()
+	if err != nil {
+		return err
+	}
 	if c.ServiceAccess.ServiceNameToRemove != "" {
-		lo.G.Warning("Service access is managed with 'cf-mgmt-config global service-access' command")
+		if globalCfg.IgnoreLegacyServiceAccess {
+			return fmt.Errorf("Service access is managed with 'cf-mgmt-config global service-access' command")
+		} else {
+			lo.G.Warning("Service access is managed with 'cf-mgmt-config global service-access' command")
+		}
 		delete(orgConfig.ServiceAccess, c.ServiceAccess.ServiceNameToRemove)
 	}
 
 	if c.ServiceAccess.ServiceName != "" {
-		lo.G.Warning("Service access is managed with 'cf-mgmt-config global service-access' command")
+		if globalCfg.IgnoreLegacyServiceAccess {
+			return fmt.Errorf("Service access is managed with 'cf-mgmt-config global service-access' command")
+		} else {
+			lo.G.Warning("Service access is managed with 'cf-mgmt-config global service-access' command")
+		}
 		if len(c.ServiceAccess.Plans) > 0 {
 			orgConfig.ServiceAccess[c.ServiceAccess.ServiceName] = c.ServiceAccess.Plans
 		} else {
