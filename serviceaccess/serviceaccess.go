@@ -108,6 +108,7 @@ func (m *Manager) EnsurePublicAccess(plan *ServicePlanInfo) error {
 }
 
 func (m *Manager) EnsureLimitedAccess(plan *ServicePlanInfo, orgs, protectedOrgs []string) error {
+	lo.G.Debugf("Current Visiblities %+v for plan %s", plan.ListVisibilities(), plan.ServiceName)
 	err := m.MakePrivate(plan)
 	if err != nil {
 		return err

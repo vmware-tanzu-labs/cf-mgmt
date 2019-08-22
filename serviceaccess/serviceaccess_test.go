@@ -260,6 +260,24 @@ var _ = Describe("Serviceaccess", func() {
 			Expect(planGUID).Should(Equal("a-plan-guid"))
 			Expect(orgGUID).Should(Equal("test-org-guid"))
 		})
+		FIt("Should not change existing limited access", func() {
+			plan := &ServicePlanInfo{
+				Name:        "a-plan",
+				GUID:        "a-plan-guid",
+				Public:      false,
+				ServiceName: "a-service",
+			}
+			plan.AddOrg(&Visibility{
+				OrgGUID:         "test-org-guid",
+				ServicePlanGUID: "a-plan-guid",
+			})
+			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			err := manager.EnsureLimitedAccess(plan, []string{"test-org"}, []string{})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).Should(Equal(0))
+		})
 		It("Should make 0 orgs limited access", func() {
 			plan := &ServicePlanInfo{
 				Name:        "a-plan",
