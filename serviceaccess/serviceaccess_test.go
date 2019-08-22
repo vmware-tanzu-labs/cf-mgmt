@@ -260,7 +260,7 @@ var _ = Describe("Serviceaccess", func() {
 			Expect(planGUID).Should(Equal("a-plan-guid"))
 			Expect(orgGUID).Should(Equal("test-org-guid"))
 		})
-		FIt("Should not change existing limited access", func() {
+		It("Should not change existing limited access", func() {
 			plan := &ServicePlanInfo{
 				Name:        "a-plan",
 				GUID:        "a-plan-guid",
