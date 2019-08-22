@@ -156,7 +156,7 @@ func (m *DefaultManager) FindOrg(orgName string) (cfclient.Org, error) {
 		return cfclient.Org{}, err
 	}
 	for _, theOrg := range orgs {
-		if theOrg.Name == orgName {
+		if strings.EqualFold(theOrg.Name, orgName) {
 			return theOrg, nil
 		}
 	}
