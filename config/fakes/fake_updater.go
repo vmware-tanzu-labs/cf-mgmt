@@ -31,11 +31,10 @@ type FakeUpdater struct {
 	addOrgQuotaReturnsOnCall map[int]struct {
 		result1 error
 	}
-	AddOrgToConfigStub        func(*config.OrgConfig, *config.Spaces) error
+	AddOrgToConfigStub        func(*config.OrgConfig) error
 	addOrgToConfigMutex       sync.RWMutex
 	addOrgToConfigArgsForCall []struct {
 		arg1 *config.OrgConfig
-		arg2 *config.Spaces
 	}
 	addOrgToConfigReturns struct {
 		result1 error
@@ -363,17 +362,16 @@ func (fake *FakeUpdater) AddOrgQuotaReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeUpdater) AddOrgToConfig(arg1 *config.OrgConfig, arg2 *config.Spaces) error {
+func (fake *FakeUpdater) AddOrgToConfig(arg1 *config.OrgConfig) error {
 	fake.addOrgToConfigMutex.Lock()
 	ret, specificReturn := fake.addOrgToConfigReturnsOnCall[len(fake.addOrgToConfigArgsForCall)]
 	fake.addOrgToConfigArgsForCall = append(fake.addOrgToConfigArgsForCall, struct {
 		arg1 *config.OrgConfig
-		arg2 *config.Spaces
-	}{arg1, arg2})
-	fake.recordInvocation("AddOrgToConfig", []interface{}{arg1, arg2})
+	}{arg1})
+	fake.recordInvocation("AddOrgToConfig", []interface{}{arg1})
 	fake.addOrgToConfigMutex.Unlock()
 	if fake.AddOrgToConfigStub != nil {
-		return fake.AddOrgToConfigStub(arg1, arg2)
+		return fake.AddOrgToConfigStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -388,17 +386,17 @@ func (fake *FakeUpdater) AddOrgToConfigCallCount() int {
 	return len(fake.addOrgToConfigArgsForCall)
 }
 
-func (fake *FakeUpdater) AddOrgToConfigCalls(stub func(*config.OrgConfig, *config.Spaces) error) {
+func (fake *FakeUpdater) AddOrgToConfigCalls(stub func(*config.OrgConfig) error) {
 	fake.addOrgToConfigMutex.Lock()
 	defer fake.addOrgToConfigMutex.Unlock()
 	fake.AddOrgToConfigStub = stub
 }
 
-func (fake *FakeUpdater) AddOrgToConfigArgsForCall(i int) (*config.OrgConfig, *config.Spaces) {
+func (fake *FakeUpdater) AddOrgToConfigArgsForCall(i int) *config.OrgConfig {
 	fake.addOrgToConfigMutex.RLock()
 	defer fake.addOrgToConfigMutex.RUnlock()
 	argsForCall := fake.addOrgToConfigArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
 func (fake *FakeUpdater) AddOrgToConfigReturns(result1 error) {

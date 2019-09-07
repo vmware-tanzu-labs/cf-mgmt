@@ -20,7 +20,7 @@ type Manager interface {
 
 // Updater is used to update the cf-mgmt configuration.
 type Updater interface {
-	AddOrgToConfig(orgConfig *OrgConfig, spaces *Spaces) error
+	AddOrgToConfig(orgConfig *OrgConfig) error
 	AddSpaceToConfig(spaceConfig *SpaceConfig) error
 	AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error
 	AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error

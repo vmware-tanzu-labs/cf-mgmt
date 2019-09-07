@@ -148,16 +148,19 @@ var _ = Describe("CF-Mgmt Config", func() {
 		})
 
 		Context("SaveOrgConfig", func() {
-			var tempDir string
-			var err error
-			var configManager config.Manager
+			var (
+				err           error
+				configManager config.Manager
+				pwd, _        = os.Getwd()
+				configDir     = path.Join(pwd, "_testGen")
+			)
 			BeforeEach(func() {
-				tempDir, err = ioutil.TempDir("", "cf-mgmt")
+				configManager = config.NewManager(configDir)
+				err = configManager.CreateConfigIfNotExists("uaa")
 				Expect(err).ShouldNot(HaveOccurred())
-				configManager = config.NewManager(tempDir)
 			})
 			AfterEach(func() {
-				os.RemoveAll(tempDir)
+				os.RemoveAll(configDir)
 			})
 			It("should succeed", func() {
 				orgName := "foo"
@@ -169,6 +172,9 @@ var _ = Describe("CF-Mgmt Config", func() {
 				retrieveConfig, retrieveError := configManager.GetOrgConfig(orgName)
 				Expect(retrieveError).ShouldNot(HaveOccurred())
 				Expect(retrieveConfig).ShouldNot(BeNil())
+				orgs, err := configManager.Orgs()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(orgs.Orgs).Should(ConsistOf("foo"))
 			})
 		})
 
@@ -186,12 +192,14 @@ var _ = Describe("CF-Mgmt Config", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
 				configManager.CreateConfigIfNotExists("ldap")
-				addError := configManager.AddOrgToConfig(orgConfig, spaces)
+				addError := configManager.AddOrgToConfig(orgConfig)
 				Expect(addError).ShouldNot(HaveOccurred())
 				addError = configManager.AddOrgToConfig(&config.OrgConfig{
 					Org: "sdfasdfdf",
-				}, &config.Spaces{Org: "sdfasdfdf"})
+				})
 				Expect(addError).ShouldNot(HaveOccurred())
+				err := configManager.SaveOrgSpaces(spaces)
+				Expect(err).ShouldNot(HaveOccurred())
 			})
 			AfterEach(func() {
 				os.RemoveAll(tempDir)
@@ -273,16 +281,25 @@ var _ = Describe("CF-Mgmt Config", func() {
 			})
 
 			Context("SaveSpaceConfig", func() {
-				var tempDir string
-				var err error
-				var configManager config.Manager
+				var (
+					configManager config.Manager
+					pwd, _        = os.Getwd()
+					configDir     = path.Join(pwd, "_testGen")
+				)
 				BeforeEach(func() {
-					tempDir, err = ioutil.TempDir("", "cf-mgmt")
+					configManager = config.NewManager(configDir)
+					err := configManager.CreateConfigIfNotExists("uaa")
 					Expect(err).ShouldNot(HaveOccurred())
-					configManager = config.NewManager(tempDir)
+					err = configManager.SaveOrgConfig(&config.OrgConfig{
+						Org: "foo",
+					})
+					Expect(err).ShouldNot(HaveOccurred())
+
+					err = configManager.SaveOrgSpaces(&config.Spaces{Org: "foo"})
+					Expect(err).ShouldNot(HaveOccurred())
 				})
 				AfterEach(func() {
-					os.RemoveAll(tempDir)
+					os.RemoveAll(configDir)
 				})
 				It("should succeed", func() {
 					orgName := "foo"
@@ -300,9 +317,11 @@ var _ = Describe("CF-Mgmt Config", func() {
 			})
 
 			Context("DeleteSpaceConfig", func() {
-				var tempDir string
-				var err error
-				var configManager config.Manager
+				var (
+					configManager config.Manager
+					pwd, _        = os.Getwd()
+					configDir     = path.Join(pwd, "_testGen")
+				)
 				orgName := "foo"
 				spaceName := "bar"
 				orgConfig := &config.OrgConfig{
@@ -317,12 +336,12 @@ var _ = Describe("CF-Mgmt Config", func() {
 					Space: spaceName,
 				}
 				BeforeEach(func() {
-					tempDir, err = ioutil.TempDir("", "cf-mgmt")
-					Expect(err).ShouldNot(HaveOccurred())
-					configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
+					configManager = config.NewManager(configDir)
 					configManager.CreateConfigIfNotExists("ldap")
-					addError := configManager.AddOrgToConfig(orgConfig, spaces)
+					addError := configManager.AddOrgToConfig(orgConfig)
 					Expect(addError).ShouldNot(HaveOccurred())
+					err := configManager.SaveOrgSpaces(spaces)
+					Expect(err).ShouldNot(HaveOccurred())
 					addError = configManager.AddSpaceToConfig(spaceConfig)
 					Expect(addError).ShouldNot(HaveOccurred())
 					addError = configManager.AddSpaceToConfig(&config.SpaceConfig{
@@ -332,7 +351,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 					Expect(addError).ShouldNot(HaveOccurred())
 				})
 				AfterEach(func() {
-					os.RemoveAll(tempDir)
+					os.RemoveAll(configDir)
 				})
 				It("should fail to find space", func() {
 					err := configManager.DeleteSpaceConfig(orgName, spaceName)
@@ -362,9 +381,6 @@ var _ = Describe("CF-Mgmt Config", func() {
 				It("should succeed adding an org that doesn't exist", func() {
 					err := configManager.AddOrgToConfig(&config.OrgConfig{
 						Org: "foo",
-					}, &config.Spaces{
-						Org:                "foo",
-						EnableDeleteSpaces: true,
 					})
 					Expect(err).ShouldNot(HaveOccurred())
 					orgs, err := configManager.Orgs()
@@ -376,11 +392,11 @@ var _ = Describe("CF-Mgmt Config", func() {
 				It("should fail adding an org with different case", func() {
 					err := configManager.AddOrgToConfig(&config.OrgConfig{
 						Org: "foo",
-					}, &config.Spaces{Org: "foo"})
+					})
 					Expect(err).ShouldNot(HaveOccurred())
 					err = configManager.AddOrgToConfig(&config.OrgConfig{
 						Org: "Foo",
-					}, &config.Spaces{Org: "Foo"})
+					})
 					Expect(err).Should(HaveOccurred())
 					orgs, err := configManager.Orgs()
 					Expect(err).ShouldNot(HaveOccurred())
@@ -389,21 +405,23 @@ var _ = Describe("CF-Mgmt Config", func() {
 			})
 
 			Context("AddSpaceConfig", func() {
-				var tempDir string
-				var err error
-				var configManager config.Manager
+				var (
+					configManager config.Manager
+					pwd, _        = os.Getwd()
+					configDir     = path.Join(pwd, "_testGen")
+				)
 				BeforeEach(func() {
-					tempDir, err = ioutil.TempDir("", "cf-mgmt")
-					Expect(err).ShouldNot(HaveOccurred())
-					configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
+					configManager = config.NewManager(configDir)
 					configManager.CreateConfigIfNotExists("ldap")
 					err := configManager.AddOrgToConfig(&config.OrgConfig{
 						Org: "foo",
-					}, &config.Spaces{Org: "foo"})
+					})
+					Expect(err).ShouldNot(HaveOccurred())
+					err = configManager.SaveOrgSpaces(&config.Spaces{Org: "foo"})
 					Expect(err).ShouldNot(HaveOccurred())
 				})
 				AfterEach(func() {
-					os.RemoveAll(tempDir)
+					os.RemoveAll(configDir)
 				})
 				It("should succeed adding an space that doesn't exist", func() {
 					err := configManager.AddSpaceToConfig(&config.SpaceConfig{

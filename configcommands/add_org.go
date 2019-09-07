@@ -78,7 +78,10 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 		return errors.New(errorString)
 	}
 
-	if err := config.NewManager(c.ConfigDirectory).AddOrgToConfig(orgConfig, orgSpaces); err != nil {
+	if err := config.NewManager(c.ConfigDirectory).AddOrgToConfig(orgConfig); err != nil {
+		return err
+	}
+	if err := config.NewManager(c.ConfigDirectory).SaveOrgSpaces(orgSpaces); err != nil {
 		return err
 	}
 	fmt.Println(fmt.Sprintf("The org [%s] has been added", c.OrgName))
