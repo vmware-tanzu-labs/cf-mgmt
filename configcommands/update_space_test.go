@@ -159,11 +159,17 @@ var _ = Describe("given update space config command", func() {
 				Space: spaceName,
 				ASGs:  []string{"hello", "world"},
 			}, nil)
-
+			mockConfig.GetASGConfigsReturns([]config.ASGConfig{
+				config.ASGConfig{
+					Name: "hello",
+				},
+				config.ASGConfig{
+					Name: "world",
+				},
+			}, nil)
 			err := configuration.Execute(nil)
-			Expect(err).Should(HaveOccurred())
-			Expect(err.Error()).Should(ContainSubstring("--value [hello] already exists in [hello world]"))
-			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(0))
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(1))
 		})
 
 		It("should not duplicates", func() {
@@ -228,11 +234,12 @@ var _ = Describe("given update space config command", func() {
 
 			err := configuration.Execute(nil)
 
-			Expect(err).Should(HaveOccurred())
-			Expect(err.Error()).Should(ContainSubstring("--value [world] already exists in [hello world]"))
-			Expect(err.Error()).Should(ContainSubstring("--value [value] already exists in [test value]"))
-			Expect(err.Error()).Should(ContainSubstring("--value [bar] already exists in [foo bar]"))
-			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(0))
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveSpaceConfigCallCount()).To(Equal(1))
+			savedConfig := mockConfig.SaveSpaceConfigArgsForCall(0)
+			Expect(savedConfig.Manager.Users).Should(ConsistOf([]string{"foo", "bar"}))
+			Expect(savedConfig.Developer.Users).Should(ConsistOf([]string{"hello", "world"}))
+			Expect(savedConfig.Auditor.Users).Should(ConsistOf([]string{"test", "value"}))
 		})
 
 		It("should not duplicates", func() {

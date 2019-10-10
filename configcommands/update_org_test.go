@@ -194,7 +194,7 @@ var _ = Describe("given update orgs config command", func() {
 				Org: orgName,
 			}, nil)
 			mockConfig.GetOrgConfigReturns(&config.OrgConfig{
-				Org: orgName,
+				Org:                        orgName,
 				RemoveSharedPrivateDomains: false,
 			}, nil)
 			mockConfig.SaveOrgConfigReturns(nil)
@@ -202,7 +202,7 @@ var _ = Describe("given update orgs config command", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(1))
 			Expect(mockConfig.SaveOrgConfigArgsForCall(0)).To(BeEquivalentTo(&config.OrgConfig{
-				Org: orgName,
+				Org:                        orgName,
 				RemoveSharedPrivateDomains: true,
 			}))
 			Expect(mockConfig.SaveOrgSpacesCallCount()).To(Equal(1))
@@ -217,7 +217,7 @@ var _ = Describe("given update orgs config command", func() {
 				Org: orgName,
 			}, nil)
 			mockConfig.GetOrgConfigReturns(&config.OrgConfig{
-				Org: orgName,
+				Org:                        orgName,
 				RemoveSharedPrivateDomains: true,
 			}, nil)
 			mockConfig.SaveOrgConfigReturns(nil)
@@ -225,7 +225,7 @@ var _ = Describe("given update orgs config command", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(1))
 			Expect(mockConfig.SaveOrgConfigArgsForCall(0)).To(BeEquivalentTo(&config.OrgConfig{
-				Org: orgName,
+				Org:                        orgName,
 				RemoveSharedPrivateDomains: false,
 			}))
 			Expect(mockConfig.SaveOrgSpacesCallCount()).To(Equal(1))
@@ -239,7 +239,7 @@ var _ = Describe("given update orgs config command", func() {
 				Org: orgName,
 			}, nil)
 			mockConfig.GetOrgConfigReturns(&config.OrgConfig{
-				Org: orgName,
+				Org:                        orgName,
 				RemoveSharedPrivateDomains: true,
 			}, nil)
 			err := configuration.Execute(nil)
@@ -361,12 +361,13 @@ var _ = Describe("given update orgs config command", func() {
 			}, nil)
 
 			err := configuration.Execute(nil)
-			Expect(err).Should(HaveOccurred())
-			Expect(err.Error()).Should(ContainSubstring("--value [world] already exists in [hello world]"))
-			Expect(err.Error()).Should(ContainSubstring("--value [value] already exists in [test value]"))
-			Expect(err.Error()).Should(ContainSubstring("--value [bar] already exists in [foo bar]"))
-			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(0))
-			Expect(mockConfig.SaveOrgSpacesCallCount()).To(Equal(0))
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mockConfig.SaveOrgConfigCallCount()).To(Equal(1))
+			Expect(mockConfig.SaveOrgSpacesCallCount()).To(Equal(1))
+			savedConfig := mockConfig.SaveOrgConfigArgsForCall(0)
+			Expect(savedConfig.Manager.Users).Should(ConsistOf([]string{"foo", "bar"}))
+			Expect(savedConfig.BillingManager.Users).Should(ConsistOf([]string{"hello", "world"}))
+			Expect(savedConfig.Auditor.Users).Should(ConsistOf([]string{"test", "value"}))
 		})
 
 		It("should not duplicates", func() {
