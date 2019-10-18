@@ -296,6 +296,15 @@ func (m *yamlManager) SaveSpaceConfig(spaceConfig *SpaceConfig) error {
 	if err := os.MkdirAll(fmt.Sprintf("%s/%s/%s", m.ConfigDir, spaceConfig.Org, spaceConfig.Space), 0755); err != nil {
 		return err
 	}
+
+	if spaceConfig.EnableSecurityGroup {
+		securityGroupFilePath := fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName)
+		if !FileOrDirectoryExists(securityGroupFilePath) {
+			if err := WriteFileBytes(securityGroupFilePath, []byte("[]")); err != nil {
+				return err
+			}
+		}
+	}
 	return WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.ConfigDir, spaceConfig.Org, spaceConfig.Space), spaceConfig)
 }
 
@@ -393,9 +402,6 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 		return fmt.Errorf("space [%s] already added to config -> [%v]", spaceName, spaceList.Spaces)
 	}
 	if err := m.SaveSpaceConfig(spaceConfig); err != nil {
-		return err
-	}
-	if err := WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName), []byte("[]")); err != nil {
 		return err
 	}
 	return nil
