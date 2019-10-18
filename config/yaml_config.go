@@ -296,14 +296,9 @@ func (m *yamlManager) SaveSpaceConfig(spaceConfig *SpaceConfig) error {
 	if err := os.MkdirAll(fmt.Sprintf("%s/%s/%s", m.ConfigDir, spaceConfig.Org, spaceConfig.Space), 0755); err != nil {
 		return err
 	}
-
-	if spaceConfig.EnableSecurityGroup {
-		securityGroupFilePath := fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName)
-		if !FileOrDirectoryExists(securityGroupFilePath) {
-			if err := WriteFileBytes(securityGroupFilePath, []byte("[]")); err != nil {
-				return err
-			}
-		}
+	err = m.AddSecurityGroupToSpace(orgName, spaceName, []byte("[]"))
+	if err != nil {
+		return err
 	}
 	return WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.ConfigDir, spaceConfig.Org, spaceConfig.Space), spaceConfig)
 }
@@ -409,10 +404,17 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 
 //AddSecurityGroupToSpace - adds security group json to org/space location
 func (m *yamlManager) AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error {
-	return WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName), securityGroupDefinition)
+	securityGroupFilePath := fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName)
+	if !FileOrDirectoryExists(securityGroupFilePath) {
+		if err := WriteFileBytes(securityGroupFilePath, securityGroupDefinition); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-//AddSecurityGroupToSpace - adds security group json to org/space location
+//AddSecurityGroup - adds security group json to org/space location
 func (m *yamlManager) AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error {
 	lo.G.Infof("Writing out bytes for security group %s", securityGroupName)
 	return WriteFileBytes(fmt.Sprintf("%s/asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)
