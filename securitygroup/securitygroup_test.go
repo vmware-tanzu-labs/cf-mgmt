@@ -30,6 +30,25 @@ const asg_config = `[
   }
 ]`
 
+const asg_config_with_trailing_space = `[
+  {
+    "protocol": "icmp",
+    "destination": "0.0.0.0/0 ",
+    "type": 0,
+    "code": 1
+  }
+]`
+
+const asg_config_with_space = `[
+  {
+    "protocol": "tcp",
+    "destination": "10.0.11.0 - 10.0.11.2",
+    "ports": "80,443",
+    "log": true,
+    "description": "Allow http and https traffic from ZoneA"
+  }
+]`
+
 var _ = Describe("given Security Group Manager", func() {
 	var (
 		fakeReader   *configfakes.FakeReader
@@ -574,6 +593,40 @@ var _ = Describe("given Security Group Manager", func() {
 			fakeClient.ListSecGroupsReturns(nil, errors.New("errorr"))
 			err := securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).Should(HaveOccurred())
+		})
+
+		It("should create 1 asg from asg config and remove trailing spaces", func() {
+			asgConfigs := []config.ASGConfig{
+				config.ASGConfig{
+					Name:  "asg-1",
+					Rules: asg_config_with_trailing_space,
+				},
+			}
+			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
+			err := securityMgr.CreateGlobalSecurityGroups()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.CreateSecGroupCallCount()).Should(Equal(1))
+			name, securityGroups, _ := fakeClient.CreateSecGroupArgsForCall(0)
+			Expect(name).Should(Equal("asg-1"))
+			Expect(len(securityGroups)).Should(Equal(1))
+			Expect(securityGroups[0].Destination).Should(Equal("0.0.0.0/0"))
+		})
+
+		It("should create 1 asg from asg config and remove trailing spaces", func() {
+			asgConfigs := []config.ASGConfig{
+				config.ASGConfig{
+					Name:  "asg-1",
+					Rules: asg_config_with_space,
+				},
+			}
+			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
+			err := securityMgr.CreateGlobalSecurityGroups()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.CreateSecGroupCallCount()).Should(Equal(1))
+			name, securityGroups, _ := fakeClient.CreateSecGroupArgsForCall(0)
+			Expect(name).Should(Equal("asg-1"))
+			Expect(len(securityGroups)).Should(Equal(1))
+			Expect(securityGroups[0].Destination).Should(Equal("10.0.11.0-10.0.11.2"))
 		})
 	})
 

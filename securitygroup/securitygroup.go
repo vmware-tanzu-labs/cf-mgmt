@@ -305,6 +305,22 @@ func (m *DefaultManager) UnassignSecurityGroupToSpace(space cfclient.Space, secG
 	return m.Client.UnbindSecGroup(secGroup.Guid, space.Guid)
 }
 
+func (m *DefaultManager) removeDestinationWhitespace(rules []cfclient.SecGroupRule) []cfclient.SecGroupRule {
+	rulesToReturn := []cfclient.SecGroupRule{}
+	for _, rule := range rules {
+		rulesToReturn = append(rulesToReturn, cfclient.SecGroupRule{
+			Protocol:    rule.Protocol,
+			Ports:       rule.Ports,
+			Destination: strings.Replace(rule.Destination, " ", "", -1),
+			Description: rule.Description,
+			Code:        rule.Code,
+			Type:        rule.Type,
+			Log:         rule.Log,
+		})
+	}
+	return rulesToReturn
+}
+
 func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (*cfclient.SecGroup, error) {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: creating securityGroup %s with contents %s", sgName, contents)
@@ -315,8 +331,9 @@ func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (*cfclient
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Infof("creating securityGroup %s with contents %s", sgName, contents)
-	return m.Client.CreateSecGroup(sgName, securityGroupRules, nil)
+	rulesToUse := m.removeDestinationWhitespace(securityGroupRules)
+	lo.G.Infof("creating securityGroup %s with contents %+v", sgName, rulesToUse)
+	return m.Client.CreateSecGroup(sgName, rulesToUse, nil)
 }
 
 func (m *DefaultManager) UpdateSecurityGroup(sg cfclient.SecGroup, contents string) error {
@@ -329,8 +346,9 @@ func (m *DefaultManager) UpdateSecurityGroup(sg cfclient.SecGroup, contents stri
 	if err != nil {
 		return err
 	}
-	lo.G.Infof("[dry-run]: updating securityGroup %s with contents %s", sg.Name, contents)
-	_, err = m.Client.UpdateSecGroup(sg.Guid, sg.Name, securityGroupRules, nil)
+	rulesToUse := m.removeDestinationWhitespace(securityGroupRules)
+	lo.G.Infof("[dry-run]: updating securityGroup %s with contents %+v", sg.Name, rulesToUse)
+	_, err = m.Client.UpdateSecGroup(sg.Guid, sg.Name, rulesToUse, nil)
 	return err
 }
 func (m *DefaultManager) ListNonDefaultSecurityGroups() (map[string]cfclient.SecGroup, error) {
