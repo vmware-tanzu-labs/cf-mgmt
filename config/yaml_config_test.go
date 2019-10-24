@@ -14,13 +14,14 @@ var _ = Describe("CF-Mgmt Config", func() {
 	Context("Protected Org Defaults", func() {
 		Describe("Defaults", func() {
 			It("should setup default protected orgs", func() {
+				Expect(config.DefaultProtectedOrgs).Should(HaveLen(7))
 				Expect(config.DefaultProtectedOrgs).Should(ContainElement("system"))
 				Expect(config.DefaultProtectedOrgs).Should(ContainElement("p-spring-cloud-services"))
 				Expect(config.DefaultProtectedOrgs).Should(ContainElement("splunk-nozzle-org"))
 				Expect(config.DefaultProtectedOrgs).Should(ContainElement("redis-test-ORG*"))
 				Expect(config.DefaultProtectedOrgs).Should(ContainElement("appdynamics-org"))
 				Expect(config.DefaultProtectedOrgs).Should(ContainElement("credhub-service-broker-org"))
-				Expect(config.DefaultProtectedOrgs).Should(HaveLen(6))
+				Expect(config.DefaultProtectedOrgs).Should(ContainElement("p-dataflow"))
 			})
 		})
 	})

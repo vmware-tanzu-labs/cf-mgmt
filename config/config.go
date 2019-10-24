@@ -10,6 +10,7 @@ var DefaultProtectedOrgs = []string{
 	"redis-test-ORG*",
 	"appdynamics-org",
 	"credhub-service-broker-org",
+	"p-dataflow",
 }
 
 // Manager can read and write the cf-mgmt configuration.
