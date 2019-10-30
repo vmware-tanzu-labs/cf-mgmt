@@ -62,17 +62,6 @@ uaa-cli create-client cf-mgmt \
   --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
 ```
 
-Or the [golang-based UAA CLI](https://github.com/cloudfoundry-incubator/uaa-cli):
-
-```sh
-uaa target https://uaa.<your system domain>
-uaa get-client-credentials-token admin -s <your uaa admin client secret>
-uaa create-client cf-mgmt \
-  --client_secret <client secret from cf-mgmt client> \
-  --authorized_grant_types client_credentials,refresh_token \
-  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
-```
-
 ### Setup Configuration
 
 Navigate into a directory in which will become your git repository for cf-mgmt configuration
