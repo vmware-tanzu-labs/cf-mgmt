@@ -2,12 +2,13 @@
 
 Go automation for managing orgs, spaces, users (from ldap groups or internal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
 
-# New Major Release Information
+## New Major Release Information
+
 There has been major refactoring to internals of cf-mgmt to remove duplicate code that is not supported by go-cfclient library.  This release SHOULD be backward compatible but wanting to make community aware of a major change.  This will be released as the latest tag on dockerhub.  If you experience any problems you can revert your cf-mgmt to use the previously released version with tag `0.0.91`.
 
 This can be done by modifying you cf-mgmt.yml concourse task with the following:
 
-```
+```yml
 ---
 platform: linux
 
@@ -51,7 +52,7 @@ Or with the [golang-based UAA CLI](https://github.com/cloudfoundry-incubator/uaa
 
 `go install github.com/cloudfoundry-incubator/uaa-cli`
 
-```sh   
+```sh
 uaa-cli target https://uaa.<system-domain>
 
 uaa-cli get-client-credentials-token <adminuserid> -s <admin-client-secret>
@@ -69,13 +70,15 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
 1. Initialize git repository by either cloning a remote or using `git init`
 
 2. You can either setup your configuration by using
-  - [init](docs/config/init/README.md) command from cf-mgmt-config if you are wanting to start with a blank configuration and add the config using cf-mgmt-config operations
-  - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.
+
+   - [init](docs/config/init/README.md) command from cf-mgmt-config if you are wanting to start with a blank configuration and add the config using cf-mgmt-config operations
+   - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.
 
 3. *(optional)* Configure LDAP/SAML Options. If your foundation uses LDAP and/or SAML, you will need to configure ldap.yml with the correct values.
-	- [LDAP only config](docs/config/README.md#ldap-configuration)
-	- [SAML with LDAP groups](docs/config/README.md#saml-configuration-with-ldap-group-lookups)
-	- [SAML only](docs/config/README.md#saml-configuration)
+
+   - [LDAP only config](docs/config/README.md#ldap-configuration)
+   - [SAML with LDAP groups](docs/config/README.md#saml-configuration-with-ldap-group-lookups)
+   - [SAML only](docs/config/README.md#saml-configuration)
 
 4. [Generate the concourse pipeline](docs/config/generate-concourse-pipeline/README.md) using cf-mgmt-config
 
@@ -87,22 +90,23 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
 
 ## Maintainer
 
-* [Caleb Washburn](https://github.com/calebwashburn)
+- [Caleb Washburn](https://github.com/calebwashburn)
 
 ## Support
 
 cf-mgmt is a community supported cloud foundry add-on.  Opening issues for questions, feature requests and/or bugs is the best path to getting "support".  We strive to be active in keeping this tool working and meeting your needs in a timely fashion.
 
 ### Debug Output
+
 When opening an issue please provide debug level output (scrubbed for any customer info) by using latest generated pipeline and setting LOG_LEVEL: debug or modifying current pipeline if you are not using latest pipeline to add the following to specific job step params
 
-```
+```yml
 params:
   LOG_LEVEL: debug
   ... existing params
 ```
 
-## Install
+## Install Binary
 
 Compiled releases are available on Github.
 Download the binary for your platform and place it somewhere on your path.
@@ -115,13 +119,13 @@ Alternatively, you may wish to build from source.
 `cf-mgmt` is written in [Go](https://golang.org/).
 To build the binary yourself, follow these steps:
 
-* Install `Go`.
-* Install [Glide](https://github.com/Masterminds/glide), a dependency management tool for Go.
-* Clone the repo:
+- Install `Go`.
+- Install [Glide](https://github.com/Masterminds/glide), a dependency management tool for Go.
+- Clone the repo:
   - `mkdir -p $(go env GOPATH)/src/github.com/pivotalservices`
   - `cd $(go env GOPATH)/src/github.com/pivotalservices`
   - `git clone git@github.com:pivotalservices/cf-mgmt.git`
-* Install dependencies:
+- Install dependencies:
   - `cd cf-mgmt`
   - `glide install`
   - `go build -o cf-mgmt cmd/cf-mgmt/main.go`
@@ -140,7 +144,7 @@ There are integration tests that require some additional configuration.
 
 The LDAP tests require an LDAP server, which can be started with Docker:
 
-```
+```docker
 docker pull cwashburn/ldap
 docker run -d -p 389:389 --name ldap -t cwashburn/ldap
 RUN_LDAP_TESTS=true go test ./ldap_integration/...
