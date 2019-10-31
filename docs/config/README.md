@@ -328,18 +328,22 @@ Note that this is actually processed at runtime, not when spaces are added to th
 ### LDAP Configuration
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
 
-```
+```yml
 enabled: true
+
+# IP address or DNS Record (without ldap:// protocol)
 ldapHost: 127.0.0.1
 ldapPort: 10389
 #true/false (default false)
 use_tls: true
+
 bindDN: uid=admin,ou=system
 userSearchBase: ou=users,dc=example,dc=com
 userNameAttribute: uid
 # optional added in v1.0.20+
 userObjectClass: <object class that matches your ldap/active directory configuration for users (inetOrgPerson, organizationalPerson)>
 userMailAttribute: mail
+
 groupSearchBase: ou=groups,dc=example,dc=com
 groupAttribute: member
 # optional added in v1.0.20+
@@ -352,10 +356,13 @@ insecure_skip_verify: false
 ca_cert: |
 ```
 
+* When using LDAP with Active Directory, the `uid` for `userNameAttribute` should be a `samAccountName`
+
 ### SAML Configuration with ldap group lookups
+
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users.  In orgConfig.yml and spaceConfig.yml leverage either/or `ldap_users` or `ldap_group(s)`  
 
-```
+```yml
 enabled: true
 ldapHost: 127.0.0.1
 ldapPort: 10389
