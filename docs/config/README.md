@@ -364,7 +364,7 @@ insecure_skip_verify: false
 ca_cert: |
 ```
 
-* When using LDAP with Active Directory, the `uid` for `userNameAttribute` should be a `samAccountName`
+>When using LDAP with Active Directory, the `uid` for `userNameAttribute` should be a `samAccountName`
 
 ### SAML Configuration with ldap group lookups
 
