@@ -130,6 +130,10 @@ fly -t <targetname> set-pipeline -p <pipeline_name> \
 >You now have a Pipeline ready to apply configuration changes to your foundation. Explore the [docs](docs/config/README.md) to learn the available commands in `cf-mgmt-config`, try creating new workspace configs, then 
 commit and push the files to you git repository. Your pipeline should kick in and apply the changes.
 
+9. Look for your new Pipeline in your Concourse console. If everything was properly configured all tasks of your pipeline should execute successfully.
+
+>You now have a Pipeline ready to apply configuration changes to your foundation. Explore the [docs](docs/config/README.md) to learn the available commands in `cf-mgmt-config`, try creating new workspace configs, then commit and push the files to you git repository. Your pipeline should kick in and apply the changes.
+
 ## Maintainer
 
 - [Caleb Washburn](https://github.com/calebwashburn)
