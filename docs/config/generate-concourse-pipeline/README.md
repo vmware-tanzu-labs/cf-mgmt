@@ -6,7 +6,7 @@
 
 ## Command Usage
 
-```
+```sh
 Usage:
   cf-mgmt-config [OPTIONS] generate-concourse-pipeline [generate-concourse-pipeline-OPTIONS]
 
@@ -21,7 +21,7 @@ Help Options:
 Once the pipeline files are generated, you can create a pipeline as follows:
 
 ```
-fly -t  login -c <concourse_instance>
+fly -t <targetname> login -c <concourse_instance>
 fly -t <targetname> set-pipeline -p <pipeline_name> \
    -c pipeline.yml \
    -l vars.yml \
