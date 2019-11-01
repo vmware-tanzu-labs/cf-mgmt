@@ -92,6 +92,8 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
    - [init](docs/config/init/README.md) command from `cf-mgmt-config` if you are wanting to start with a blank configuration and add the config using `cf-mgmt-config` operations
    - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.
 
+> Check the [config docs](docs/config/README.md#global-config) to understand the configuration files structure
+
 3. *(optional)* Configure LDAP/SAML Options. If your foundation uses LDAP and/or SAML, you will need to configure ldap.yml with the correct values.
 
    - [LDAP only config](docs/config/README.md#ldap-configuration)
@@ -104,7 +106,7 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
 5. Make sure you __.gitingore the vars.yml__ file that is generated: `echo vars.yml >> .gitignore`
 
 6. Update your `vars.yml` file with your config git repo info, domains and the UAA client info you created in the [previous section](#create-uaa-client).
-    - Use the UAA Client name as `user_id`.
+    - Use the UAA Client name as `user_id`
 
 7. Commit and push your changes to your git repository.
     - After you `fly` the pipeline in the next step, the pipeline will observe this repository and start a new run everytime you push new configurations to the repository.
