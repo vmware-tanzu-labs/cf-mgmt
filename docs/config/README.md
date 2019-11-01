@@ -1,4 +1,5 @@
 # DEPRECATED Commands
+
 * [add-org](add-org/README.md), use [org](org/README.md)
 * [add-space](add-space/README.md), use [space](space/README.md)
 * [add-asg](add-asg/README.md), use [asg](asg/README.md)
@@ -6,6 +7,7 @@
 * [update-space](update-space/README.md), use [space](space/README.md)
 
 # Configuration Commands
+
 * [init](init/README.md)
 * [global](global/README.md)
 * [asg](asg/README.md)
@@ -19,12 +21,13 @@
 * [rename-space](rename-space/README.md)
 * [named-org-quota](named-org-quota/README.md)
 * [named-space-quota](named-space-quota/README.md)
-* [version ](version/README.md)
+* [version](version/README.md)
 
-### Global Config
+## Global Config
+
 There is global configuration that is managed in `cf-mgmt.yml`.  The following options exist in that configuration.
 
-```
+```yml
 enable-delete-isolation-segments: false #true/false
 enable-unassign-security-groups: false #true/false
 running-security-groups: # array of security groups to apply to running
@@ -73,10 +76,11 @@ service-access:
     - standard
 ```
 
-#### Org Configuration
+### Org Configuration
+
 There is a orgs.yml that contains list of orgs that will be created.  This should have a corresponding folder with name of the orgs cf-mgmt is managing. orgs.yml also can be configured with a list of protected orgs which would never be deleted when using the the `delete-orgs` command. An example of how orgs.yml could be configured is seen below.
 
-```
+```yml
 orgs:
 - foo-org
 - bar-org
@@ -90,7 +94,8 @@ protected_orgs:
 ```
 
 This will contain a orgConfig.yml and folder for each space.  Each orgConfig.yml consists of the following.
-```
+
+```yml
 # org name
 org: test
 
@@ -193,16 +198,18 @@ metadata:
     hello: world
 ```
 
-#### Space Configuration
+### Space Configuration
+
 There will be a spaces.yml that will list all the spaces for each org.  There will also be a folder for each space with the same name.  Each folder will contain a spaceConfig.yml and security-group.json file with an empty json file.  
 
 Each spaceConfig.yml will have the following configuration options:
-- allow ssh at space level
-- map ldap group names to SpaceDeveloper, SpaceManager, SpaceAuditor role
-- setup quotas at a space level (if enabled)
-- apply application security group config at space level (if enabled)    
 
-```
+* allow ssh at space level
+* map ldap group names to SpaceDeveloper, SpaceManager, SpaceAuditor role
+* setup quotas at a space level (if enabled)
+* apply application security group config at space level (if enabled)
+
+```yml
 # org that is space belongs to
 org: test
 
@@ -326,20 +333,25 @@ This will be merged with the space-specific roles.
 Note that this is actually processed at runtime, not when spaces are added to the config.  
 
 ### LDAP Configuration
+
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
 
-```
+```yml
 enabled: true
+
+# IP address or DNS Record (without ldap:// protocol)
 ldapHost: 127.0.0.1
 ldapPort: 10389
 #true/false (default false)
 use_tls: true
+
 bindDN: uid=admin,ou=system
 userSearchBase: ou=users,dc=example,dc=com
 userNameAttribute: uid
 # optional added in v1.0.20+
 userObjectClass: <object class that matches your ldap/active directory configuration for users (inetOrgPerson, organizationalPerson)>
 userMailAttribute: mail
+
 groupSearchBase: ou=groups,dc=example,dc=com
 groupAttribute: member
 # optional added in v1.0.20+
@@ -352,10 +364,13 @@ insecure_skip_verify: false
 ca_cert: |
 ```
 
+>When using LDAP with Active Directory, the `uid` for `userNameAttribute` should be a `samAccountName`
+
 ### SAML Configuration with ldap group lookups
+
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users.  In orgConfig.yml and spaceConfig.yml leverage either/or `ldap_users` or `ldap_group(s)`  
 
-```
+```yml
 enabled: true
 ldapHost: 127.0.0.1
 ldapPort: 10389
@@ -380,9 +395,10 @@ ca_cert: |
 ```
 
 ### SAML Configuration
+
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users you can disable ldap integration for looking up users in ldap groups with v0.0.66+ as orgConfig.yml and spaceConfig.yml now includes a saml_users array attribute which can contain a list of email addresses.
 
-```
+```yml
 enabled: false
 origin: <needs to match origin configured for elastic runtime>
 ldapHost:
@@ -396,19 +412,23 @@ groupAttribute:
 ```
 
 ### Enable Temporary Application SSH Access
+
 With 1.0.13+ there is ability to grant applicaiton ssh access for a specific duration.  Durations supported are in number of Days (D), Hours (H) or Minutes (M).  Use the cf-mgmt-config cli to update a given space with one of these metrics.  This will generate the timestamp in the correct format for you.  You must also use the latest generated concourse pipeline as this places update-space command on a timer to run every 15m (by default) to check to see if time has elapsed to re-disable application ssh access
 
 The following will enable for 2 days:
-```
+
+```sh
 cf-mgmt-config update-space --config-dir <your directory> --org <org> --space <space> --allow-ssh false --allow-ssh-until 2D  
 ```
 
 The following will enable for 5 hours:
-```
+
+```sh
 cf-mgmt-config update-space --config-dir <your directory> --org <org> --space <space> --allow-ssh false --allow-ssh-until 5H
 ```
 
 The following will enable for 95 minutes:
-```
+
+```sh
 cf-mgmt-config update-space --config-dir <your directory> --org <org> --space <space> --allow-ssh false --allow-ssh-until 95M
 ```
