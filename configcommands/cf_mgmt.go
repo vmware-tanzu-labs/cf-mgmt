@@ -8,7 +8,7 @@ type CfMgmtConfigCommand struct {
 	SpaceConfigurationCommand           SpaceConfigurationCommand           `command:"space" description:"adds/updates space configuration"`
 	AddOrgToConfigurationCommand        AddOrgToConfigurationCommand        `command:"add-org" description:"*****DEPRECATED, use 'cf-mgmt-config org instead' - Adds specified org to configuration"`
 	AddSpaceToConfigurationCommand      AddSpaceToConfigurationCommand      `command:"add-space" description:"*****DEPRECATED, use 'cf-mgmt-config space instead' - Adds specified space to configuration for org"`
-	GenerateConcoursePipelineCommand    GenerateConcoursePipelineCommand    `command:"generate-concourse-pipeline" description:"generates a concourse pipline to be used to drive cf-mgmt"`
+	GenerateConcoursePipelineCommand    GenerateConcoursePipelineCommand    `command:"generate-concourse-pipeline" description:"generates a concourse pipeline to be used to drive cf-mgmt"`
 	UpdateOrgConfigurationCommand       UpdateOrgConfigurationCommand       `command:"update-org" description:"*****DEPRECATED, use 'cf-mgmt-config org instead' - updates org configuration"`
 	UpdateSpaceConfigurationCommand     UpdateSpaceConfigurationCommand     `command:"update-space" description:"*****DEPRECATED, use 'cf-mgmt-config space instead' - updates space configuration"`
 	DeleteOrgConfigurationCommand       DeleteOrgConfigurationCommand       `command:"delete-org" description:"deletes org configuration"`
