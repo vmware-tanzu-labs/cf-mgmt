@@ -52,7 +52,7 @@ var _ = Describe("SamlUsers", func() {
 			uaaUsers = &uaa.Users{}
 			uaaUsers.Add(uaa.User{Username: "test@test.com", Origin: "saml_origin", GUID: "test-id"})
 			uaaUsers.Add(uaa.User{Username: "test@test2.com", Origin: "saml_origin", GUID: "test2-id"})
-			roleUsers, _, _ = NewRoleUsers(
+			roleUsers, _ = NewRoleUsers(
 				[]cfclient.User{
 					cfclient.User{Username: "test@test.com", Guid: "test-id"},
 				},

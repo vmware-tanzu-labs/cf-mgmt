@@ -129,7 +129,7 @@ var _ = Describe("given UserSpaces", func() {
 				uaaUsers = &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "test", Origin: "uaa", GUID: "test-user-guid"})
 				uaaUsers.Add(uaa.User{Username: "test-existing", Origin: "uaa", GUID: "test-existing-id"})
-				roleUsers, _, _ = NewRoleUsers([]cfclient.User{
+				roleUsers, _ = NewRoleUsers([]cfclient.User{
 					cfclient.User{Username: "test-existing", Guid: "test-existing-id"},
 				}, uaaUsers)
 			})
@@ -197,7 +197,7 @@ var _ = Describe("given UserSpaces", func() {
 			BeforeEach(func() {
 				uaaUsers := &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "test", Origin: "uaa", GUID: "test-id"})
-				roleUsers, _, _ = NewRoleUsers([]cfclient.User{
+				roleUsers, _ = NewRoleUsers([]cfclient.User{
 					cfclient.User{Username: "test", Guid: "test-id"},
 				}, uaaUsers)
 			})

@@ -2,10 +2,8 @@ package user
 
 import (
 	"fmt"
-	"net/url"
 	"strings"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
 	"github.com/pivotalservices/cf-mgmt/organization"
@@ -300,77 +298,6 @@ func (m *DefaultManager) UpdateOrgUsers() error {
 	}
 
 	return nil
-}
-
-//CleanupOrgUsers -
-func (m *DefaultManager) CleanupOrgUsers() error {
-	orgConfigs, err := m.Cfg.GetOrgConfigs()
-	if err != nil {
-		return err
-	}
-	uaaUsers, err := m.UAAMgr.ListUsers()
-	if err != nil {
-		return err
-	}
-
-	for _, input := range orgConfigs {
-		if err := m.cleanupOrgUsers(uaaUsers, &input); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgConfig) error {
-	org, err := m.OrgMgr.FindOrg(input.Org)
-	if err != nil {
-		return err
-	}
-	orgUsers, err := m.Client.ListOrgUsers(org.Guid)
-	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("Error listing org users for org %s", input.Org))
-	}
-
-	usersInRoles, err := m.usersInOrgRoles(org.Name, org.Guid, uaaUsers)
-	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("Error usersInOrgRoles for org %s", input.Org))
-	}
-
-	lo.G.Debugf("Users In Roles %+v", usersInRoles)
-
-	for _, orgUser := range orgUsers {
-		uaaUser := uaaUsers.GetByID(orgUser.Guid)
-		var guid string
-		if uaaUser == nil {
-			lo.G.Infof("Unable to find user (%s) GUID from uaa, using org user guid instead", orgUser.Username)
-			guid = orgUser.Guid
-		} else {
-			guid = uaaUser.GUID
-		}
-		if !usersInRoles.HasUser(orgUser.Username) {
-			if m.Peek {
-				lo.G.Infof("[dry-run]: Removing User %s from org %s", orgUser.Username, input.Org)
-				continue
-			}
-			lo.G.Infof("Removing User %s from org %s", orgUser.Username, input.Org)
-			err := m.Client.RemoveOrgUser(org.Guid, guid)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
-			}
-		}
-	}
-	return nil
-}
-
-func (m *DefaultManager) listSpaces(orgGUID string) ([]cfclient.Space, error) {
-	spaces, err := m.Client.ListSpacesByQuery(url.Values{
-		"q": []string{fmt.Sprintf("%s:%s", "organization_guid", orgGUID)},
-	})
-	if err != nil {
-		return nil, err
-	}
-	return spaces, err
-
 }
 
 func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.Users) error {

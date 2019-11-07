@@ -58,7 +58,7 @@ var _ = Describe("given UserSpaces", func() {
 				uaaUsers = &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap", GUID: "test_ldap-id"})
 				uaaUsers.Add(uaa.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2", GUID: "test_ldap2-id"})
-				roleUsers, _, _ = NewRoleUsers([]cfclient.User{
+				roleUsers, _ = NewRoleUsers([]cfclient.User{
 					cfclient.User{Username: "test_ldap", Guid: "test_ldap-id"},
 				}, uaaUsers)
 			})
@@ -101,7 +101,7 @@ var _ = Describe("given UserSpaces", func() {
 				uaaUsers = &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap", GUID: "test_ldap-id"})
 				uaaUsers.Add(uaa.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2", GUID: "test_ldap2-id"})
-				roleUsers, _, _ = NewRoleUsers([]cfclient.User{
+				roleUsers, _ = NewRoleUsers([]cfclient.User{
 					cfclient.User{Username: "test_ldap", Guid: "test_ldap-id"},
 				}, uaaUsers)
 

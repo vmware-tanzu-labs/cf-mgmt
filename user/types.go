@@ -10,12 +10,14 @@ import (
 
 func InitRoleUsers() *RoleUsers {
 	return &RoleUsers{
-		users: make(map[string][]RoleUser),
+		users:         make(map[string][]RoleUser),
+		orphanedUsers: make(map[string]string),
 	}
 }
 
 type RoleUsers struct {
-	users map[string][]RoleUser
+	users         map[string][]RoleUser
+	orphanedUsers map[string]string
 }
 type RoleUser struct {
 	UserName string
