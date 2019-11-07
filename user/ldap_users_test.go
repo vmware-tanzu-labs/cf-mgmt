@@ -95,12 +95,12 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should add ldap user to role", func() {
 
 				userManager.LdapConfig = &config.LdapConfig{
-					Origin:  "custom_ldap",
+					Origin:  "ldap",
 					Enabled: true,
 				}
 				uaaUsers = &uaa.Users{}
-				uaaUsers.Add(uaa.User{Username: "test_ldap", Origin: "custom_ldap", ExternalID: "cn=test_ldap", GUID: "test_ldap-id"})
-				uaaUsers.Add(uaa.User{Username: "test_ldap2", Origin: "custom_ldap", ExternalID: "cn=test_ldap2", GUID: "test_ldap2-id"})
+				uaaUsers.Add(uaa.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap", GUID: "test_ldap-id"})
+				uaaUsers.Add(uaa.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2", GUID: "test_ldap2-id"})
 				roleUsers, _, _ = NewRoleUsers([]cfclient.User{
 					cfclient.User{Username: "test_ldap", Guid: "test_ldap-id"},
 				}, uaaUsers)
@@ -334,8 +334,8 @@ var _ = Describe("given UserSpaces", func() {
 					UserDN: "testUserDN",
 				})
 				Expect(userInfo.Email).Should(Equal("test@test.com"))
-				Expect(userInfo.UserDN).Should(Equal("testUserDN"))
-				Expect(userInfo.UserID).Should(Equal("testuser"))
+				Expect(userInfo.UserDN).Should(Equal("test@test.com"))
+				Expect(userInfo.UserID).Should(Equal("test@test.com"))
 			})
 		})
 	})

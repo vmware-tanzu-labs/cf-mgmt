@@ -92,6 +92,7 @@ func (im *Manager) ExportServiceAccess() error {
 	if err != nil {
 		return err
 	}
+	globalConfig.IgnoreLegacyServiceAccess = true
 	err = im.ConfigMgr.SaveGlobalConfig(globalConfig)
 
 	if err == nil {
@@ -216,9 +217,14 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 			orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, privatedomain)
 		}
 
-		spacesConfig := &config.Spaces{Org: orgConfig.Org, EnableDeleteSpaces: !skipSpaces}
-
-		im.ConfigMgr.AddOrgToConfig(orgConfig, spacesConfig)
+		err = im.ConfigMgr.SaveOrgConfig(orgConfig)
+		if err != nil {
+			return err
+		}
+		err = im.ConfigMgr.SaveOrgSpaces(&config.Spaces{Org: orgConfig.Org, EnableDeleteSpaces: !skipSpaces})
+		if err != nil {
+			return err
+		}
 		lo.G.Infof("Done creating org %s", orgConfig.Org)
 		if !skipSpaces {
 			err := im.processSpaces(orgConfig, org.Guid, excludedSpaces, uaaUsers, isolationSegments, securityGroups)

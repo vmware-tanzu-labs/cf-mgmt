@@ -16,7 +16,7 @@ var _ = Describe("Space", func() {
 		command       *SpaceConfigurationCommand
 		configManager config.Manager
 		pwd, _        = os.Getwd()
-		configDir     = path.Join(pwd, "_testGen")
+		configDir     = path.Join(pwd, "_testGenSpaces")
 	)
 	BeforeEach(func() {
 		configManager = config.NewManager(configDir)
@@ -43,6 +43,9 @@ var _ = Describe("Space", func() {
 		It("Should Succeed", func() {
 			err := command.Execute(nil)
 			Expect(err).ShouldNot(HaveOccurred())
+			spaces, err := configManager.OrgSpaces("test-org")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(spaces.Spaces).Should(ConsistOf("test-space"))
 		})
 	})
 	Context("Update Space that does exist", func() {

@@ -16,7 +16,7 @@ var _ = Describe("Org", func() {
 		configManager config.Manager
 		command       *OrgConfigurationCommand
 		pwd, _        = os.Getwd()
-		configDir     = path.Join(pwd, "_testGen")
+		configDir     = path.Join(pwd, "_testGenOrgs")
 	)
 	BeforeEach(func() {
 		configManager = config.NewManager(configDir)
@@ -35,6 +35,9 @@ var _ = Describe("Org", func() {
 		It("Should Succeed", func() {
 			err := command.Execute(nil)
 			Expect(err).ShouldNot(HaveOccurred())
+			orgs, err := configManager.Orgs()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(orgs.Orgs).Should(ConsistOf("test"))
 		})
 	})
 	Context("Update Org that does exist", func() {

@@ -216,6 +216,20 @@ func (m *yamlManager) GetOrgConfig(orgName string) (*OrgConfig, error) {
 }
 
 func (m *yamlManager) SaveOrgConfig(orgConfig *OrgConfig) error {
+	orgName := orgConfig.Org
+	orgList, err := m.Orgs()
+	if err != nil {
+		return err
+	}
+
+	if !orgList.Contains(orgName) {
+		lo.G.Infof("Adding org: %s ", orgName)
+		orgList.Orgs = append(orgList.Orgs, orgName)
+		if err = m.SaveOrgs(orgList); err != nil {
+			return err
+		}
+	}
+
 	directory := fmt.Sprintf("%s/%s", m.ConfigDir, orgConfig.Org)
 	if _, err := os.Stat(directory); os.IsNotExist(err) {
 		if err := os.MkdirAll(directory, 0755); err != nil {
@@ -266,7 +280,24 @@ func (m *yamlManager) GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, e
 }
 
 func (m *yamlManager) SaveSpaceConfig(spaceConfig *SpaceConfig) error {
+	spaceName := spaceConfig.Space
+	orgName := spaceConfig.Org
+	spaceList, err := m.OrgSpaces(orgName)
+	if err != nil {
+		return err
+	}
+	if !spaceList.Contains(spaceName) {
+		lo.G.Infof("Adding space: %s ", spaceName)
+		spaceList.Spaces = append(spaceList.Spaces, spaceName)
+		if err := m.SaveOrgSpaces(spaceList); err != nil {
+			return err
+		}
+	}
 	if err := os.MkdirAll(fmt.Sprintf("%s/%s/%s", m.ConfigDir, spaceConfig.Org, spaceConfig.Space), 0755); err != nil {
+		return err
+	}
+	err = m.AddSecurityGroupToSpace(orgName, spaceName, []byte("[]"))
+	if err != nil {
 		return err
 	}
 	return WriteFile(fmt.Sprintf("%s/%s/%s/spaceConfig.yml", m.ConfigDir, spaceConfig.Org, spaceConfig.Space), spaceConfig)
@@ -335,7 +366,7 @@ func (m *yamlManager) SaveOrgs(orgs *Orgs) error {
 }
 
 // AddOrgToConfig adds an organization to the cf-mgmt configuration.
-func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig, spaces *Spaces) error {
+func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig) error {
 	orgList, err := m.Orgs()
 	if err != nil {
 		return err
@@ -348,39 +379,24 @@ func (m *yamlManager) AddOrgToConfig(orgConfig *OrgConfig, spaces *Spaces) error
 	if orgList.Contains(orgName) {
 		return fmt.Errorf("org [%s] already added to config -> %v", orgName, orgList.Orgs)
 	}
-	lo.G.Infof("Adding org: %s ", orgName)
-	orgList.Orgs = append(orgList.Orgs, orgName)
-	if err = m.SaveOrgs(orgList); err != nil {
-		return err
-	}
-	m.SaveOrgConfig(orgConfig)
-	return m.SaveOrgSpaces(spaces)
+
+	return m.SaveOrgConfig(orgConfig)
 }
 
 // AddSpaceToConfig adds a space to the cf-mgmt configuration, so long as a
 // space with the specified name doesn't already exist.
 func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	orgName := spaceConfig.Org
-	spaceFileName := filepath.Join(m.ConfigDir, orgName, "spaces.yml")
-	spaceList := &Spaces{}
-	spaceName := spaceConfig.Space
-
-	if err := LoadFile(spaceFileName, spaceList); err != nil {
+	spaceList, err := m.OrgSpaces(orgName)
+	if err != nil {
 		return err
 	}
+	spaceName := spaceConfig.Space
+
 	if spaceList.Contains(spaceName) {
 		return fmt.Errorf("space [%s] already added to config -> [%v]", spaceName, spaceList.Spaces)
 	}
-	lo.G.Infof("Adding space: %s ", spaceName)
-	spaceList.Spaces = append(spaceList.Spaces, spaceName)
-	if err := WriteFile(spaceFileName, spaceList); err != nil {
-		return err
-	}
-
 	if err := m.SaveSpaceConfig(spaceConfig); err != nil {
-		return err
-	}
-	if err := WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName), []byte("[]")); err != nil {
 		return err
 	}
 	return nil
@@ -388,10 +404,17 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 
 //AddSecurityGroupToSpace - adds security group json to org/space location
 func (m *yamlManager) AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error {
-	return WriteFileBytes(fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName), securityGroupDefinition)
+	securityGroupFilePath := fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName)
+	if !FileOrDirectoryExists(securityGroupFilePath) {
+		if err := WriteFileBytes(securityGroupFilePath, securityGroupDefinition); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-//AddSecurityGroupToSpace - adds security group json to org/space location
+//AddSecurityGroup - adds security group json to org/space location
 func (m *yamlManager) AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error {
 	lo.G.Infof("Writing out bytes for security group %s", securityGroupName)
 	return WriteFileBytes(fmt.Sprintf("%s/asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)

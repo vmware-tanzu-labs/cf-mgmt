@@ -108,18 +108,38 @@ func (m *Manager) EnsurePublicAccess(plan *ServicePlanInfo) error {
 }
 
 func (m *Manager) EnsureLimitedAccess(plan *ServicePlanInfo, orgs, protectedOrgs []string) error {
+	lo.G.Debugf("Current Visiblities %+v for plan %s", plan.ListVisibilities(), plan.ServiceName)
 	err := m.MakePrivate(plan)
 	if err != nil {
 		return err
 	}
-	orgs = append(orgs, protectedOrgs...)
-	for _, orgName := range orgs {
+	for _, orgName := range m.uniqueOrgs(orgs, protectedOrgs) {
 		err = m.CreatePlanVisibility(plan, orgName)
 		if err != nil {
 			return err
 		}
 	}
 	return m.RemoveVisibilities(plan)
+}
+
+func (m *Manager) uniqueOrgs(orgs, protectedOrgs []string) []string {
+	orgMap := make(map[string]string)
+	allOrgs := append(orgs, protectedOrgs...)
+	for _, org := range allOrgs {
+		orgLower := strings.ToLower(org)
+		_, ok := orgMap[orgLower]
+		if !ok {
+			orgMap[orgLower] = orgLower
+		} else {
+			lo.G.Debugf("Duplicate org %s in %+v", orgLower, allOrgs)
+		}
+	}
+	orgList := []string{}
+	for _, org := range orgMap {
+		orgList = append(orgList, org)
+	}
+
+	return orgList
 }
 
 func (m *Manager) EnsureNoAccess(plan *ServicePlanInfo) error {
@@ -166,6 +186,7 @@ func (m *Manager) CreatePlanVisibility(servicePlan *ServicePlanInfo, orgName str
 			return err
 		}
 	} else {
+		lo.G.Debugf("plan %s for service %s already visible to org %s", servicePlan.Name, servicePlan.ServiceName, orgName)
 		servicePlan.RemoveOrg(org.Guid)
 	}
 	return nil

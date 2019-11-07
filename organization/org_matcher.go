@@ -1,6 +1,8 @@
 package organization
 
-import "regexp"
+import (
+	"regexp"
+)
 
 func Matches(orgName string, orgList []string) bool {
 	for _, name := range orgList {

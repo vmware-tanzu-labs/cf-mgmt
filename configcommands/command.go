@@ -172,8 +172,6 @@ func addToSlice(theSlice, sliceToAdd []string, errorString *string) []string {
 	for _, val := range sliceToAdd {
 		if _, ok := valuesThatExist[val]; !ok && val != "" {
 			sliceToReturn = append(sliceToReturn, val)
-		} else {
-			*errorString += fmt.Sprintf("\n--value [%s] already exists in %v", val, theSlice)
 		}
 	}
 	return sliceToReturn
