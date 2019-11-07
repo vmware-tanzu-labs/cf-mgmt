@@ -143,6 +143,9 @@ func (c *SpaceConfigurationCommand) Execute(args []string) error {
 }
 
 func (c *SpaceConfigurationCommand) sshConfig(spaceConfig *config.SpaceConfig, errorString *string) {
+	if strings.EqualFold(c.AllowSSH, "") {
+		return
+	}
 	if strings.EqualFold(c.AllowSSH, "true") && c.AllowSSHUntil != "" {
 		*errorString += fmt.Sprintf("\nCannot set --allow-ssh and --allow-ssh-until")
 		return

@@ -166,4 +166,95 @@ var _ = Describe("Space", func() {
 			Expect(spaceBefore).Should(BeEquivalentTo(spaceAfter))
 		})
 	})
+	Context("Allow ssh", func() {
+		It("allow ssh should stay true when nothing specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: true,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeTrue())
+		})
+		It("allow ssh should stay true when true is specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: true,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			command.AllowSSH = "true"
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeTrue())
+		})
+		It("allow ssh should change to true when true is specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: false,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			command.AllowSSH = "true"
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeTrue())
+		})
+		It("allow ssh should stay false when nothing specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: false,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeFalse())
+		})
+		It("allow ssh should stay false when false specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: false,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			command.AllowSSH = "false"
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeFalse())
+		})
+		It("allow ssh should change to false when false specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: true,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			command.AllowSSH = "false"
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeFalse())
+		})
+	})
+
 })
