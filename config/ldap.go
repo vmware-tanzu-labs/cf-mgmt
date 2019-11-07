@@ -18,4 +18,5 @@ type LdapConfig struct {
 	Origin             string `yaml:"origin"`
 	InsecureSkipVerify string `yaml:"insecure_skip_verify"`
 	CACert             string `yaml:"ca_cert"`
+	UseIDForSAMLUser   bool   `yaml:"useIDForSAMLUser"`
 }
