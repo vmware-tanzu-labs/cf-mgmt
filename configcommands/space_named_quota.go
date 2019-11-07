@@ -45,15 +45,15 @@ func (c *SpaceNamedQuotaConfigurationCommand) Execute(args []string) error {
 }
 
 func updateSpaceNamedQuotaConfig(namedSpaceQuota *config.SpaceQuota, spaceQuota NamedSpaceQuota, errorString *string) {
-	convertToGB("memory-limit", &namedSpaceQuota.MemoryLimit, spaceQuota.MemoryLimit, errorString)
-	convertToGB("instance-memory-limit", &namedSpaceQuota.InstanceMemoryLimit, spaceQuota.InstanceMemoryLimit, errorString)
-	convertToFormattedInt("total-routes", &namedSpaceQuota.TotalRoutes, spaceQuota.TotalRoutes, errorString)
-	convertToFormattedInt("total-services", &namedSpaceQuota.TotalServices, spaceQuota.TotalServices, errorString)
+	convertToGB("memory-limit", &namedSpaceQuota.MemoryLimit, spaceQuota.MemoryLimit, config.UNLIMITED, errorString)
+	convertToGB("instance-memory-limit", &namedSpaceQuota.InstanceMemoryLimit, spaceQuota.InstanceMemoryLimit, config.UNLIMITED, errorString)
+	convertToFormattedInt("total-routes", &namedSpaceQuota.TotalRoutes, spaceQuota.TotalRoutes, config.UNLIMITED, errorString)
+	convertToFormattedInt("total-services", &namedSpaceQuota.TotalServices, spaceQuota.TotalServices, config.UNLIMITED, errorString)
 	convertToBool("paid-service-plans-allowed", &namedSpaceQuota.PaidServicePlansAllowed, spaceQuota.PaidServicesAllowed, errorString)
-	convertToFormattedInt("total-reserved-route-ports", &namedSpaceQuota.TotalReservedRoutePorts, spaceQuota.TotalReservedRoutePorts, errorString)
-	convertToFormattedInt("total-service-keys", &namedSpaceQuota.TotalServiceKeys, spaceQuota.TotalServiceKeys, errorString)
-	convertToFormattedInt("app-instance-limit", &namedSpaceQuota.AppInstanceLimit, spaceQuota.AppInstanceLimit, errorString)
-	convertToFormattedInt("app-task-limit", &namedSpaceQuota.AppTaskLimit, spaceQuota.AppTaskLimit, errorString)
+	convertToFormattedInt("total-reserved-route-ports", &namedSpaceQuota.TotalReservedRoutePorts, spaceQuota.TotalReservedRoutePorts, config.UNLIMITED, errorString)
+	convertToFormattedInt("total-service-keys", &namedSpaceQuota.TotalServiceKeys, spaceQuota.TotalServiceKeys, config.UNLIMITED, errorString)
+	convertToFormattedInt("app-instance-limit", &namedSpaceQuota.AppInstanceLimit, spaceQuota.AppInstanceLimit, config.UNLIMITED, errorString)
+	convertToFormattedInt("app-task-limit", &namedSpaceQuota.AppTaskLimit, spaceQuota.AppTaskLimit, config.UNLIMITED, errorString)
 }
 
 func (c *SpaceNamedQuotaConfigurationCommand) initConfig() {

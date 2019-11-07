@@ -25,7 +25,7 @@ type OrgConfig struct {
 	InstanceMemoryLimit        string              `yaml:"instance-memory-limit,omitempty"`
 	TotalRoutes                string              `yaml:"total-routes,omitempty"`
 	TotalServices              string              `yaml:"total-services,omitempty"`
-	PaidServicePlansAllowed    bool                `yaml:"paid-service-plans-allowed,omitempty"`
+	PaidServicePlansAllowed    bool                `yaml:"paid-service-plans-allowed"`
 	RemoveUsers                bool                `yaml:"enable-remove-users"`
 	TotalPrivateDomains        string              `yaml:"total_private_domains,omitempty"`
 	TotalReservedRoutePorts    string              `yaml:"total_reserved_route_ports,omitempty"`
