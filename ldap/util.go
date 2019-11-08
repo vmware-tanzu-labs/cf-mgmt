@@ -3,10 +3,15 @@ package ldap
 import (
 	"encoding/hex"
 	"fmt"
+	"regexp"
 	"strings"
 
 	l "github.com/go-ldap/ldap"
 	"github.com/pkg/errors"
+)
+
+var (
+	unescapeFilterRegex = regexp.MustCompile(`\\([\da-fA-F]{2}|[()\\*])`) // only match \[)*\] or \xx x=a-fA-F
 )
 
 func ParseUserCN(userDN string) (string, error) {

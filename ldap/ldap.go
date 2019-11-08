@@ -2,7 +2,6 @@ package ldap
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	l "github.com/go-ldap/ldap"
@@ -12,10 +11,6 @@ import (
 
 var (
 	attributes = []string{"*"}
-)
-
-var (
-	unescapeFilterRegex = regexp.MustCompile(`\\([\da-fA-F]{2}|[()\\*])`) // only match \[)*\] or \xx x=a-fA-F
 )
 
 const (
