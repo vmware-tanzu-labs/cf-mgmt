@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"regexp"
+	"strings"
 
 	l "github.com/go-ldap/ldap"
 	"github.com/pkg/errors"
@@ -24,8 +25,7 @@ func ParseUserCN(userDN string) (string, error) {
 }
 
 func EscapeFilterValue(filter string) string {
-	//return l.EscapeFilter(strings.Replace(filter, "\\", "", -1))
-	return l.EscapeFilter(filter)
+	return l.EscapeFilter(strings.Replace(filter, "\\", "", -1))
 }
 
 func UnescapeFilterValue(filter string) string {
