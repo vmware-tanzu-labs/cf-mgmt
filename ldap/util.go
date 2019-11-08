@@ -3,15 +3,10 @@ package ldap
 import (
 	"encoding/hex"
 	"fmt"
-	"regexp"
 	"strings"
 
 	l "github.com/go-ldap/ldap"
 	"github.com/pkg/errors"
-)
-
-var (
-	userRegexp = regexp.MustCompile(",[A-Z]+=")
 )
 
 func ParseUserCN(userDN string) (string, error) {
