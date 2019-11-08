@@ -55,8 +55,7 @@ func (c *AddSpaceToConfigurationCommand) Execute([]string) error {
 		spaceConfig.IsoSegment = c.IsoSegment
 	}
 
-	updateSpaceQuotaConfig(spaceConfig, c.Quota, &errorString)
-	spaceConfig.NamedQuota = c.NamedQuota
+	updateSpaceQuotaConfig(c.NamedQuota, strings.EqualFold(c.NamedQuota, ""), spaceConfig, c.Quota, &errorString)
 
 	spaceConfig.ASGs = addToSlice(spaceConfig.ASGs, c.ASGs, &errorString)
 	validateASGsExist(asgConfigs, spaceConfig.ASGs, &errorString)

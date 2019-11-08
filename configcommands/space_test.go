@@ -152,8 +152,18 @@ var _ = Describe("Space", func() {
 	Context("No options provided", func() {
 		It("Nothing should change", func() {
 			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
-				Org:   "test-org",
-				Space: "test-space",
+				Org:                     "test-org",
+				Space:                   "test-space",
+				MemoryLimit:             "unlimited",
+				InstanceMemoryLimit:     "unlimited",
+				TotalRoutes:             "100",
+				TotalServices:           "100",
+				PaidServicePlansAllowed: true,
+				TotalReservedRoutePorts: "unlimited",
+				TotalServiceKeys:        "unlimited",
+				AppInstanceLimit:        "unlimited",
+				AppTaskLimit:            "unlimited",
+				EnableSpaceQuota:        true,
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			spaceBefore, err := configManager.GetSpaceConfig("test-org", "test-space")
@@ -164,6 +174,232 @@ var _ = Describe("Space", func() {
 			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
 			Expect(errAfter).ShouldNot(HaveOccurred())
 			Expect(spaceBefore).Should(BeEquivalentTo(spaceAfter))
+		})
+	})
+	Context("Allow ssh", func() {
+		It("allow ssh should stay true when nothing specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: true,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeTrue())
+		})
+		It("allow ssh should stay true when true is specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: true,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			command.AllowSSH = "true"
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeTrue())
+		})
+		It("allow ssh should change to true when true is specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: false,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			command.AllowSSH = "true"
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeTrue())
+		})
+		It("allow ssh should stay false when nothing specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: false,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeFalse())
+		})
+		It("allow ssh should stay false when false specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: false,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			command.AllowSSH = "false"
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeFalse())
+		})
+		It("allow ssh should change to false when false specified", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:      "test-org",
+				Space:    "test-space",
+				AllowSSH: true,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			command.AllowSSH = "false"
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.AllowSSH).Should(BeFalse())
+		})
+	})
+
+	Context("Named Quota", func() {
+		It("if present removes quota elements", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:                     "test-org",
+				Space:                   "test-space",
+				MemoryLimit:             "unlimited",
+				InstanceMemoryLimit:     "unlimited",
+				TotalRoutes:             "100",
+				TotalServices:           "100",
+				PaidServicePlansAllowed: true,
+				TotalReservedRoutePorts: "unlimited",
+				TotalServiceKeys:        "unlimited",
+				AppInstanceLimit:        "unlimited",
+				AppTaskLimit:            "unlimited",
+				EnableSpaceQuota:        true,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			command.NamedQuota = "small"
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.NamedQuota).Should(BeEquivalentTo("small"))
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.MemoryLimit).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.InstanceMemoryLimit).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.TotalRoutes).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.TotalServices).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.PaidServicePlansAllowed).Should(BeFalse())
+			Expect(spaceAfter.TotalReservedRoutePorts).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.TotalServiceKeys).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.AppInstanceLimit).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.AppTaskLimit).Should(BeEquivalentTo(""))
+		})
+
+		It("if cleared named quotes sets back to defaults", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:              "test-org",
+				Space:            "test-space",
+				NamedQuota:       "small",
+				EnableSpaceQuota: false,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			command.ClearNamedQuota = true
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.NamedQuota).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.MemoryLimit).Should(BeEquivalentTo("unlimited"))
+			Expect(spaceAfter.InstanceMemoryLimit).Should(BeEquivalentTo("unlimited"))
+			Expect(spaceAfter.TotalRoutes).Should(BeEquivalentTo("unlimited"))
+			Expect(spaceAfter.TotalServices).Should(BeEquivalentTo("unlimited"))
+			Expect(spaceAfter.PaidServicePlansAllowed).Should(BeFalse())
+			Expect(spaceAfter.TotalReservedRoutePorts).Should(BeEquivalentTo("unlimited"))
+			Expect(spaceAfter.TotalServiceKeys).Should(BeEquivalentTo("unlimited"))
+			Expect(spaceAfter.AppInstanceLimit).Should(BeEquivalentTo("unlimited"))
+			Expect(spaceAfter.AppTaskLimit).Should(BeEquivalentTo("unlimited"))
+		})
+	})
+
+	Context("Space Quota", func() {
+		It("if memory limit not set default is set", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:   "test-org",
+				Space: "test-space",
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.NamedQuota).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.MemoryLimit).Should(BeEquivalentTo("unlimited"))
+		})
+		It("if memory limit is set left alone", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:         "test-org",
+				Space:       "test-space",
+				MemoryLimit: "100MB",
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.NamedQuota).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.MemoryLimit).Should(BeEquivalentTo("100MB"))
+		})
+
+		It("if total services not set default is set", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:   "test-org",
+				Space: "test-space",
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.NamedQuota).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.TotalServices).Should(BeEquivalentTo("unlimited"))
+		})
+
+		It("if total services set don't change", func() {
+			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
+				Org:           "test-org",
+				Space:         "test-space",
+				TotalServices: "50",
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			err = command.Execute(nil)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			spaceAfter, errAfter := configManager.GetSpaceConfig("test-org", "test-space")
+			Expect(errAfter).ShouldNot(HaveOccurred())
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.NamedQuota).Should(BeEquivalentTo(""))
+			Expect(spaceAfter.EnableSpaceQuota).Should(BeFalse())
+			Expect(spaceAfter.TotalServices).Should(BeEquivalentTo("50"))
 		})
 	})
 })

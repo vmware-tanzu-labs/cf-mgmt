@@ -73,14 +73,7 @@ func (c *SpaceConfigurationCommand) Execute(args []string) error {
 
 	spaceConfig.ASGs = removeFromSlice(addToSlice(spaceConfig.ASGs, c.ASGs, &errorString), c.ASGsToRemove)
 	validateASGsExist(asgConfigs, spaceConfig.ASGs, &errorString)
-	updateSpaceQuotaConfig(spaceConfig, c.Quota, &errorString)
-
-	if c.NamedQuota != "" {
-		spaceConfig.NamedQuota = c.NamedQuota
-	}
-	if c.ClearNamedQuota {
-		spaceConfig.NamedQuota = ""
-	}
+	updateSpaceQuotaConfig(c.NamedQuota, c.ClearNamedQuota, spaceConfig, c.Quota, &errorString)
 
 	c.updateUsers(spaceConfig, &errorString)
 	c.sshConfig(spaceConfig, &errorString)
@@ -143,6 +136,9 @@ func (c *SpaceConfigurationCommand) Execute(args []string) error {
 }
 
 func (c *SpaceConfigurationCommand) sshConfig(spaceConfig *config.SpaceConfig, errorString *string) {
+	if strings.EqualFold(c.AllowSSH, "") {
+		return
+	}
 	if strings.EqualFold(c.AllowSSH, "true") && c.AllowSSHUntil != "" {
 		*errorString += fmt.Sprintf("\nCannot set --allow-ssh and --allow-ssh-until")
 		return

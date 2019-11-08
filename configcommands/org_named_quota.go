@@ -44,16 +44,16 @@ func (c *OrgNamedQuotaConfigurationCommand) Execute(args []string) error {
 }
 
 func updateOrgNamedQuotaConfig(namedOrgQuota *config.OrgQuota, orgQuota NamedOrgQuota, errorString *string) {
-	convertToGB("memory-limit", &namedOrgQuota.MemoryLimit, orgQuota.MemoryLimit, errorString)
-	convertToGB("instance-memory-limit", &namedOrgQuota.InstanceMemoryLimit, orgQuota.InstanceMemoryLimit, errorString)
-	convertToFormattedInt("total-routes", &namedOrgQuota.TotalRoutes, orgQuota.TotalRoutes, errorString)
-	convertToFormattedInt("total-services", &namedOrgQuota.TotalServices, orgQuota.TotalServices, errorString)
+	convertToGB("memory-limit", &namedOrgQuota.MemoryLimit, orgQuota.MemoryLimit, "10GB", errorString)
+	convertToGB("instance-memory-limit", &namedOrgQuota.InstanceMemoryLimit, orgQuota.InstanceMemoryLimit, config.UNLIMITED, errorString)
+	convertToFormattedInt("total-routes", &namedOrgQuota.TotalRoutes, orgQuota.TotalRoutes, config.UNLIMITED, errorString)
+	convertToFormattedInt("total-services", &namedOrgQuota.TotalServices, orgQuota.TotalServices, config.UNLIMITED, errorString)
 	convertToBool("paid-service-plans-allowed", &namedOrgQuota.PaidServicePlansAllowed, orgQuota.PaidServicesAllowed, errorString)
-	convertToFormattedInt("total-private-domains", &namedOrgQuota.TotalPrivateDomains, orgQuota.TotalPrivateDomains, errorString)
-	convertToFormattedInt("total-reserved-route-ports", &namedOrgQuota.TotalReservedRoutePorts, orgQuota.TotalReservedRoutePorts, errorString)
-	convertToFormattedInt("total-service-keys", &namedOrgQuota.TotalServiceKeys, orgQuota.TotalServiceKeys, errorString)
-	convertToFormattedInt("app-instance-limit", &namedOrgQuota.AppInstanceLimit, orgQuota.AppInstanceLimit, errorString)
-	convertToFormattedInt("app-task-limit", &namedOrgQuota.AppTaskLimit, orgQuota.AppTaskLimit, errorString)
+	convertToFormattedInt("total-private-domains", &namedOrgQuota.TotalPrivateDomains, orgQuota.TotalPrivateDomains, config.UNLIMITED, errorString)
+	convertToFormattedInt("total-reserved-route-ports", &namedOrgQuota.TotalReservedRoutePorts, orgQuota.TotalReservedRoutePorts, config.UNLIMITED, errorString)
+	convertToFormattedInt("total-service-keys", &namedOrgQuota.TotalServiceKeys, orgQuota.TotalServiceKeys, config.UNLIMITED, errorString)
+	convertToFormattedInt("app-instance-limit", &namedOrgQuota.AppInstanceLimit, orgQuota.AppInstanceLimit, config.UNLIMITED, errorString)
+	convertToFormattedInt("app-task-limit", &namedOrgQuota.AppTaskLimit, orgQuota.AppTaskLimit, config.UNLIMITED, errorString)
 }
 
 func (c *OrgNamedQuotaConfigurationCommand) initConfig() {

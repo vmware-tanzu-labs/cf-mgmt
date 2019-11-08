@@ -392,6 +392,9 @@ origin: <needs to match origin configured for elastic runtime>
 insecure_skip_verify: false
 # optional added in 1.0.11+ if ldap server is signed by non-public CA provide ca pem here
 ca_cert: |
+
+# optional added in 1.0.37 - true/false.  If true it will use userid from ldap group lookup vs email address for userid
+useIDForSAMLUser: false
 ```
 
 ### SAML Configuration

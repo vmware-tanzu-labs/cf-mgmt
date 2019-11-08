@@ -63,14 +63,7 @@ func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 
 	spaceConfig.ASGs = removeFromSlice(addToSlice(spaceConfig.ASGs, c.ASGs, &errorString), c.ASGsToRemove)
 	validateASGsExist(asgConfigs, spaceConfig.ASGs, &errorString)
-	updateSpaceQuotaConfig(spaceConfig, c.Quota, &errorString)
-
-	if c.NamedQuota != "" {
-		spaceConfig.NamedQuota = c.NamedQuota
-	}
-	if c.ClearNamedQuota {
-		spaceConfig.NamedQuota = ""
-	}
+	updateSpaceQuotaConfig(c.NamedQuota, c.ClearNamedQuota, spaceConfig, c.Quota, &errorString)
 
 	c.updateUsers(spaceConfig, &errorString)
 	c.sshConfig(spaceConfig, &errorString)

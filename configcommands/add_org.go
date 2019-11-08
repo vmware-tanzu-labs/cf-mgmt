@@ -3,6 +3,7 @@ package configcommands
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/xchapter7x/lo"
@@ -50,7 +51,7 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 	orgConfig.RemoveSharedPrivateDomains = true
 	orgConfig.SharedPrivateDomains = addToSlice(orgConfig.SharedPrivateDomains, c.SharedPrivateDomains, &errorString)
 
-	updateOrgQuotaConfig(orgConfig, c.Quota, &errorString)
+	updateOrgQuotaConfig(c.NamedQuota, strings.EqualFold(c.NamedQuota, ""), orgConfig, c.Quota, &errorString)
 	orgConfig.NamedQuota = c.NamedQuota
 
 	c.updateUsers(orgConfig, &errorString)

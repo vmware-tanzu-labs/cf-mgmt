@@ -84,7 +84,7 @@ func (c *OrgConfigurationCommand) Execute(args []string) error {
 	orgConfig.SharedPrivateDomains = removeFromSlice(addToSlice(orgConfig.SharedPrivateDomains, c.SharedPrivateDomains, &errorString), c.SharedPrivateDomainsToRemove)
 	convertToBool("enable-remove-shared-private-domains", &orgConfig.RemoveSharedPrivateDomains, c.EnableRemoveSharedPrivateDomains, &errorString)
 
-	updateOrgQuotaConfig(orgConfig, c.Quota, &errorString)
+	updateOrgQuotaConfig(c.NamedQuota, c.ClearNamedQuota, orgConfig, c.Quota, &errorString)
 	if c.NamedQuota != "" {
 		orgConfig.NamedQuota = c.NamedQuota
 	}

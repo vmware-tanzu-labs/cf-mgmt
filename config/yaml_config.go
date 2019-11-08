@@ -12,7 +12,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-const unlimited = "unlimited"
+const UNLIMITED = "unlimited"
 
 // yamlManager is the default implementation of Manager.
 // It is backed by a directory of YAML files.
@@ -102,12 +102,12 @@ func (m *yamlManager) GetOrgConfigs() ([]OrgConfig, error) {
 	}
 	result := make([]OrgConfig, len(files))
 	for i, f := range files {
-		result[i].AppTaskLimit = unlimited
-		result[i].AppInstanceLimit = unlimited
-		result[i].TotalReservedRoutePorts = "0"
-		result[i].TotalPrivateDomains = unlimited
-		result[i].TotalServiceKeys = unlimited
-		result[i].InstanceMemoryLimit = unlimited
+		result[i].AppTaskLimit = UNLIMITED
+		result[i].AppInstanceLimit = UNLIMITED
+		result[i].TotalReservedRoutePorts = UNLIMITED
+		result[i].TotalPrivateDomains = UNLIMITED
+		result[i].TotalServiceKeys = UNLIMITED
+		result[i].InstanceMemoryLimit = UNLIMITED
 
 		if err = LoadFile(f, &result[i]); err != nil {
 			lo.G.Error(err)
@@ -162,11 +162,14 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 	}
 	result := make([]SpaceConfig, len(files))
 	for i, f := range files {
-		result[i].AppInstanceLimit = unlimited
-		result[i].AppTaskLimit = unlimited
-		result[i].TotalReservedRoutePorts = "0"
-		result[i].TotalServiceKeys = unlimited
-		result[i].InstanceMemoryLimit = unlimited
+		result[i].AppInstanceLimit = UNLIMITED
+		result[i].AppTaskLimit = UNLIMITED
+		result[i].TotalReservedRoutePorts = UNLIMITED
+		result[i].TotalServiceKeys = UNLIMITED
+		result[i].InstanceMemoryLimit = UNLIMITED
+		result[i].TotalRoutes = UNLIMITED
+		result[i].TotalServices = UNLIMITED
+		result[i].PaidServicePlansAllowed = false
 
 		if err = LoadFile(f, &result[i]); err != nil {
 			return nil, err

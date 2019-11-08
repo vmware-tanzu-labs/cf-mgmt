@@ -37,7 +37,7 @@ type SpaceConfig struct {
 	InstanceMemoryLimit         string    `yaml:"instance-memory-limit,omitempty"`
 	TotalRoutes                 string    `yaml:"total-routes,omitempty"`
 	TotalServices               string    `yaml:"total-services,omitempty"`
-	PaidServicePlansAllowed     bool      `yaml:"paid-service-plans-allowed,omitempty"`
+	PaidServicePlansAllowed     bool      `yaml:"paid-service-plans-allowed"`
 	TotalReservedRoutePorts     string    `yaml:"total_reserved_route_ports,omitempty"`
 	TotalServiceKeys            string    `yaml:"total_service_keys,omitempty"`
 	AppInstanceLimit            string    `yaml:"app_instance_limit,omitempty"`

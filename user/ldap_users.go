@@ -136,8 +136,13 @@ func (m *DefaultManager) UpdateUserInfo(user ldap.User) ldap.User {
 	externalID := user.UserDN
 	email := user.Email
 	if m.LdapConfig.Origin != "ldap" {
-		userID = strings.ToLower(user.Email)
-		externalID = user.Email
+		if m.LdapConfig.UseIDForSAMLUser {
+			userID = strings.ToLower(user.UserID)
+			externalID = user.UserID
+		} else {
+			userID = strings.ToLower(user.Email)
+			externalID = user.Email
+		}
 	} else {
 		if email == "" {
 			email = fmt.Sprintf("%s@user.from.ldap.cf", userID)
