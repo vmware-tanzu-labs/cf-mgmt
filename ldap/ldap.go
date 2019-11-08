@@ -1,7 +1,6 @@
 package ldap
 
 import (
-	"encoding/hex"
 	"fmt"
 	"regexp"
 	"strings"
@@ -16,8 +15,6 @@ var (
 )
 
 var (
-	userRegexp          = regexp.MustCompile(",[A-Z]+=")
-	escapeFilterRegex   = regexp.MustCompile(`([\\\(\)\*\0-\37\177-\377])`)
 	unescapeFilterRegex = regexp.MustCompile(`\\([\da-fA-F]{2}|[()\\*])`) // only match \[)*\] or \xx x=a-fA-F
 )
 
@@ -103,12 +100,11 @@ func (m *Manager) GetUserDNs(groupName string) ([]string, error) {
 }
 
 func (m *Manager) GroupFilter(userDN string) (string, error) {
-	indexes := userRegexp.FindStringIndex(strings.ToUpper(userDN))
-	if len(indexes) == 0 {
-		return "", fmt.Errorf("cannot find CN for DN: %s", userDN)
+	cn, err := ParseUserCN(userDN)
+	if err != nil {
+		return "", err
 	}
-
-	cnTemp := UnescapeFilterValue(userDN[:indexes[0]])
+	cnTemp := UnescapeFilterValue(cn)
 	lo.G.Debug("CN unescaped:", cnTemp)
 
 	escapedCN := l.EscapeFilter(strings.Replace(cnTemp, "\\", "", -1))
@@ -146,30 +142,29 @@ func (m *Manager) IsGroup(DN string) (bool, string, error) {
 }
 
 func (m *Manager) GetUserByDN(userDN string) (*User, error) {
-	lo.G.Debug("User DN:", userDN)
-	indexes := userRegexp.FindStringIndex(strings.ToUpper(userDN))
-	if len(indexes) == 0 {
-		return nil, fmt.Errorf("cannot find CN for user DN: %s", userDN)
+	cn, err := ParseUserCN(userDN)
+	if err != nil {
+		return nil, err
 	}
-	index := indexes[0]
-	userCNTemp := UnescapeFilterValue(userDN[:index])
+	userCNTemp := UnescapeFilterValue(cn)
 	lo.G.Debug("CN unescaped:", userCNTemp)
 
 	userCN := EscapeFilterValue(userCNTemp)
 	lo.G.Debug("CN escaped:", userCN)
+
 	filter := m.getUserFilterWithCN(userCN)
-	return m.searchUser(filter, userDN[index+1:], "")
+	searchBase := m.Config.UserSearchBase
+	return m.searchUser(filter, searchBase, "")
 }
 
 func (m *Manager) GetUserByID(userID string) (*User, error) {
 	filter := m.getUserFilter(userID)
-	lo.G.Debug("Searching for user:", filter)
-	lo.G.Debug("Using user search base:", m.Config.UserSearchBase)
 	return m.searchUser(filter, m.Config.UserSearchBase, userID)
 }
 
 func (m *Manager) searchUser(filter, searchBase, userID string) (*User, error) {
-	lo.G.Debugf("Searching with filter %s", filter)
+	lo.G.Debugf("Searching with filter [%s]", filter)
+	lo.G.Debugf("Using user search base: [%s]", m.Config.UserSearchBase)
 	search := l.NewSearchRequest(
 		searchBase,
 		l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,
@@ -201,24 +196,8 @@ func (m *Manager) searchUser(filter, searchBase, userID string) (*User, error) {
 	return nil, nil
 }
 
-func UnescapeFilterValue(filter string) string {
-	repl := unescapeFilterRegex.ReplaceAllFunc(
-		[]byte(filter),
-		func(match []byte) []byte {
-			// \( \) \\ \*
-			if len(match) == 2 {
-				return []byte{match[1]}
-			}
-			// had issues with Decode, TODO fix to use Decode?.
-			res, _ := hex.DecodeString(string(match[1:]))
-			return res
-		},
-	)
-	return string(repl)
-}
-
-func EscapeFilterValue(filter string) string {
-	return l.EscapeFilter(strings.Replace(filter, "\\", "", -1))
+func mustEscape(c byte) bool {
+	return c > 0x7f || c == '(' || c == ')' || c == '\\' || c == '*' || c == 0
 }
 
 func (m *Manager) getUserFilter(userID string) string {

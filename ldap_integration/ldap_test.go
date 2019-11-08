@@ -46,7 +46,12 @@ var _ = Describe("Ldap", func() {
 		})
 		Context("when cn with special characters", func() {
 			It("then it should return 1 Entry", func() {
-				entry, err := ldapManager.GetUserByDN("cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
+				entry, err := ldapManager.GetUserByDN(`cn=Washburn\2c Caleb,ou=users,dc=pivotal,dc=org`)
+				Expect(err).Should(BeNil())
+				Expect(entry).ShouldNot(BeNil())
+			})
+			It("then it should return 1 Entry", func() {
+				entry, err := ldapManager.GetUserByDN("cn=Ekın Toğulmoç 88588,ou=users,dc=pivotal,dc=org")
 				Expect(err).Should(BeNil())
 				Expect(entry).ShouldNot(BeNil())
 			})
@@ -123,7 +128,7 @@ var _ = Describe("Ldap", func() {
 			})
 			Context("when cn with special characters", func() {
 				It("then it should return 1 Entry", func() {
-					entry, err := ldapManager.GetUserByDN("cn=Washburn, Caleb,ou=users,dc=pivotal,dc=org")
+					entry, err := ldapManager.GetUserByDN(`cn=Washburn\2c Caleb,ou=users,dc=pivotal,dc=org`)
 					Expect(err).Should(BeNil())
 					Expect(entry).ShouldNot(BeNil())
 				})

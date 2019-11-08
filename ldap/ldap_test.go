@@ -174,7 +174,7 @@ var _ = Describe("Ldap", func() {
 			It("should return error when invalid cn", func() {
 				_, err := ldapManager.GetUserByDN("cwashburn")
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).Should(BeEquivalentTo("cannot find CN for user DN: cwashburn"))
+				Expect(err.Error()).Should(BeEquivalentTo("Unable to parse userDN cwashburn: DN ended with incomplete type, value pair"))
 				Expect(connection.SearchCallCount()).Should(Equal(0))
 			})
 		})
@@ -251,7 +251,7 @@ var _ = Describe("Ldap", func() {
 
 			It("Should error", func() {
 				_, err := ldapManager.GroupFilter("foo")
-				Expect(err).Should(MatchError("cannot find CN for DN: foo"))
+				Expect(err).Should(MatchError("Unable to parse userDN foo: DN ended with incomplete type, value pair"))
 			})
 		})
 
@@ -280,12 +280,6 @@ var _ = Describe("Ldap", func() {
 				Expect(isGroup).Should(BeTrue())
 				Expect(groupName).Should(Equal("nested_group"))
 			})
-		})
-	})
-	Context("Escaping user DN", func() {
-		It("Should provide escape special characters", func() {
-			escaped := ldap.EscapeFilterValue("CN=Caleb\\, Washburn\\, cwashburn")
-			Expect(escaped).Should(Equal("CN=Caleb, Washburn, cwashburn"))
 		})
 	})
 })
