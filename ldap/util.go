@@ -7,21 +7,32 @@ import (
 	"strings"
 
 	l "github.com/go-ldap/ldap"
-	"github.com/pkg/errors"
+	"github.com/xchapter7x/lo"
 )
 
 var (
+	userRegexp          = regexp.MustCompile(",[A-Z]+=")
 	unescapeFilterRegex = regexp.MustCompile(`\\([\da-fA-F]{2}|[()\\*])`) // only match \[)*\] or \xx x=a-fA-F
 )
 
 func ParseUserCN(userDN string) (string, error) {
 	dn, err := l.ParseDN(userDN)
 	if err != nil {
-		return "", errors.Wrapf(err, "Unable to parse userDN %s", userDN)
+		indexes := userRegexp.FindStringIndex(strings.ToUpper(userDN))
+		if len(indexes) == 0 {
+			return "", fmt.Errorf("cannot find CN for DN: %s", userDN)
+		}
+		cnTemp := UnescapeFilterValue(userDN[:indexes[0]])
+		lo.G.Debug("CN unescaped:", cnTemp)
+
+		escapedCN := EscapeFilterValue(cnTemp)
+		lo.G.Debug("CN escaped:", escapedCN)
+		return escapedCN, nil
+	} else {
+		attributeName := dn.RDNs[0].Attributes[0].Type
+		cn := dn.RDNs[0].Attributes[0].Value
+		return fmt.Sprintf("%s=%s", attributeName, cn), nil
 	}
-	attributeName := dn.RDNs[0].Attributes[0].Type
-	cn := dn.RDNs[0].Attributes[0].Value
-	return fmt.Sprintf("%s=%s", attributeName, cn), nil
 }
 
 func EscapeFilterValue(filter string) string {

@@ -174,7 +174,7 @@ var _ = Describe("Ldap", func() {
 			It("should return error when invalid cn", func() {
 				_, err := ldapManager.GetUserByDN("cwashburn")
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).Should(BeEquivalentTo("Unable to parse userDN cwashburn: DN ended with incomplete type, value pair"))
+				Expect(err.Error()).Should(BeEquivalentTo("cannot find CN for DN: cwashburn"))
 				Expect(connection.SearchCallCount()).Should(Equal(0))
 			})
 		})
@@ -251,7 +251,7 @@ var _ = Describe("Ldap", func() {
 
 			It("Should error", func() {
 				_, err := ldapManager.GroupFilter("foo")
-				Expect(err).Should(MatchError("Unable to parse userDN foo: DN ended with incomplete type, value pair"))
+				Expect(err).Should(MatchError("cannot find CN for DN: foo"))
 			})
 		})
 

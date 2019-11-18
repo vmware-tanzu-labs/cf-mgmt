@@ -14,6 +14,11 @@ var _ = Describe("Util", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(cn).Should(BeEquivalentTo("cn=Caleb, Washburn"))
 		})
+		It("Should return valid cn when cn has comma included", func() {
+			cn, err := ParseUserCN(`cn=Caleb, Washburn,ou=users,dc=pivotal,dc=org`)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(cn).Should(BeEquivalentTo("cn=Caleb, Washburn"))
+		})
 		It("Should return valid cn when cn has multi-byte character", func() {
 			cn, err := ParseUserCN("cn=Ekın,ou=users,dc=pivotal,dc=org")
 			Expect(err).ShouldNot(HaveOccurred())
