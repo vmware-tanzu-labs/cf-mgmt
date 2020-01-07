@@ -30,10 +30,51 @@ func NewManager(ldapConfig *config.LdapConfig) (*Manager, error) {
 	return &Manager{
 		Config:     ldapConfig,
 		Connection: conn,
+		userMap:    make(map[string]*User),
+		groupMap:   make(map[string][]string),
 	}, nil
 }
 
+func (m *Manager) groupInCache(groupName string) bool {
+	if m.groupMap == nil {
+		return false
+	}
+	if _, ok := m.groupMap[groupName]; ok {
+		return true
+	}
+
+	return false
+}
+
+func (m *Manager) addGroupToCache(groupName string, result []string) {
+	if m.groupMap == nil {
+		m.groupMap = make(map[string][]string)
+	}
+	m.groupMap[groupName] = result
+}
+
+func (m *Manager) userInCache(userFilter string) bool {
+	if m.userMap == nil {
+		return false
+	}
+	if _, ok := m.userMap[userFilter]; ok {
+		return true
+	}
+	return false
+}
+
+func (m *Manager) addUserToCache(userFilter string, result *User) {
+	if m.userMap == nil {
+		m.userMap = make(map[string]*User)
+	}
+	m.userMap[userFilter] = result
+}
+
 func (m *Manager) GetUserDNs(groupName string) ([]string, error) {
+	if m.groupInCache(groupName) {
+		lo.G.Debugf("Group %s found in cache", groupName)
+		return m.groupMap[groupName], nil
+	}
 	filter := fmt.Sprintf(groupFilter, l.EscapeFilter(groupName))
 	var groupEntry *l.Entry
 	lo.G.Debug("Searching for group:", filter)
@@ -91,6 +132,7 @@ func (m *Manager) GetUserDNs(groupName string) ([]string, error) {
 	for _, userDN := range userMap {
 		userList = append(userList, userDN)
 	}
+	m.addGroupToCache(groupName, userList)
 	return userList, nil
 }
 
@@ -158,6 +200,10 @@ func (m *Manager) GetUserByID(userID string) (*User, error) {
 }
 
 func (m *Manager) searchUser(filter, searchBase, userID string) (*User, error) {
+	if m.userInCache(filter) {
+		lo.G.Debugf("User with filter %s found in cache", filter)
+		return m.userMap[filter], nil
+	}
 	lo.G.Debugf("Searching with filter [%s]", filter)
 	lo.G.Debugf("Using user search base: [%s]", m.Config.UserSearchBase)
 	search := l.NewSearchRequest(
@@ -185,6 +231,7 @@ func (m *Manager) searchUser(filter, searchBase, userID string) (*User, error) {
 			user.UserID = entry.GetAttributeValue(m.Config.UserNameAttribute)
 		}
 		lo.G.Debugf("Search filter %s returned userDN [%s], email [%s], userID [%s]", filter, user.UserDN, user.Email, user.UserID)
+		m.addUserToCache(filter, user)
 		return user, nil
 	}
 	lo.G.Errorf("Found %d number of entries for filter %s", len(sr.Entries), filter)
@@ -212,5 +259,7 @@ func (m *Manager) getUserFilterWithCN(cn string) string {
 func (m *Manager) Close() {
 	if m.Connection != nil {
 		m.Connection.Close()
+		m.userMap = nil
+		m.groupMap = nil
 	}
 }

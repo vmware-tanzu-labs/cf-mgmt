@@ -8,6 +8,8 @@ import (
 type Manager struct {
 	Config     *config.LdapConfig
 	Connection Connection
+	groupMap   map[string][]string
+	userMap    map[string]*User
 }
 
 //User -
