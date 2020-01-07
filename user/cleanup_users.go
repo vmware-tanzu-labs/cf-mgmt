@@ -35,8 +35,12 @@ func (m *DefaultManager) CleanupOrgUsers() error {
 	}
 
 	for _, input := range orgConfigs {
-		if err := m.cleanupOrgUsers(uaaUsers, &input); err != nil {
-			return err
+		if input.RemoveUsers {
+			if err := m.cleanupOrgUsers(uaaUsers, &input); err != nil {
+				return err
+			}
+		} else {
+			lo.G.Infof("Not Removing Users from org %s", input.Org)
 		}
 	}
 	return nil
