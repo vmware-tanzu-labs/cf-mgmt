@@ -116,14 +116,14 @@ var _ = Describe("given QuotaManager", func() {
 			}, nil)
 			fakeClient.ListOrgQuotasReturns([]cfclient.OrgQuota{
 				cfclient.OrgQuota{
-					Guid: "org1-quota-guid",
+					Guid:        "org1-quota-guid",
 					MemoryLimit: 1000,
 				},
 				cfclient.OrgQuota{
-					Guid: "org2-quota-guid",
+					Guid:        "org2-quota-guid",
 					MemoryLimit: 100,
 				},
-				}, nil)
+			}, nil)
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).Should(BeNil())
 			Expect(fakeClient.CreateSpaceQuotaCallCount()).Should(Equal(1))
@@ -488,7 +488,7 @@ var _ = Describe("given QuotaManager", func() {
 		})
 	})
 
-	Context("CreateNamedSpaceQuotas()", func() {
+	Context("CreateSpaceQuotas()", func() {
 		It("Should create a named quota and assign it to space", func() {
 			fakeReader.GetSpaceQuotasReturns([]config.SpaceQuota{
 				config.SpaceQuota{
@@ -510,6 +510,51 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.CreateSpaceQuotaCallCount()).Should(Equal(1))
 			Expect(fakeClient.AssignSpaceQuotaCallCount()).Should(Equal(1))
+		})
+
+		It("Should create a space specfic quota", func() {
+			fakeReader.GetSpaceQuotasReturns(nil, nil)
+			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+				config.SpaceConfig{
+					Org:              "test",
+					Space:            "test-space",
+					NamedQuota:       "",
+					EnableSpaceQuota: true,
+				},
+			}, nil)
+			fakeClient.CreateSpaceQuotaReturns(&cfclient.SpaceQuota{Guid: "test-space-quota-guid", Name: "test-space"}, nil)
+			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name: "test-space"}, nil)
+
+			err := quotaMgr.CreateSpaceQuotas()
+			Expect(err).ShouldNot(HaveOccurred())
+			createQuotaRequest := fakeClient.CreateSpaceQuotaArgsForCall(0)
+			Expect(createQuotaRequest.Name).Should(Equal("test-space"))
+			Expect(fakeClient.CreateSpaceQuotaCallCount()).Should(Equal(1))
+			Expect(fakeClient.AssignSpaceQuotaCallCount()).Should(Equal(1))
+		})
+
+		It("should optimize calls if named quota is empty and enable space quotas if false", func() {
+			fakeReader.GetSpaceQuotasReturns([]config.SpaceQuota{
+				config.SpaceQuota{
+					Name: "my-named-quota",
+				},
+			}, nil)
+			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+				config.SpaceConfig{
+					Org:              "test",
+					Space:            "test-space",
+					NamedQuota:       "",
+					EnableSpaceQuota: false,
+				},
+			}, nil)
+			fakeClient.CreateSpaceQuotaReturns(&cfclient.SpaceQuota{Guid: "my-named-quota-guid", Name: "my-named-quota"}, nil)
+			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name: "test-space"}, nil)
+
+			err := quotaMgr.CreateSpaceQuotas()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeReader.GetSpaceQuotasCallCount()).Should(Equal(0))
+			Expect(fakeClient.CreateSpaceQuotaCallCount()).Should(Equal(0))
+			Expect(fakeClient.AssignSpaceQuotaCallCount()).Should(Equal(0))
 		})
 	})
 

@@ -43,42 +43,44 @@ func (m *Manager) CreateSpaceQuotas() error {
 	}
 
 	for _, input := range spaceConfigs {
-		spaceQuotas, err := m.Cfg.GetSpaceQuotas(input.Org)
-		if err != nil {
-			return err
-		}
-		space, err := m.SpaceMgr.FindSpace(input.Org, input.Space)
-		if err != nil {
-			return errors.Wrap(err, "Finding spaces")
-		}
-
-		quotas, err := m.ListAllSpaceQuotasForOrg(space.OrganizationGuid)
-		if err != nil {
-			return errors.Wrap(err, "ListAllSpaceQuotasForOrg")
-		}
-
-		orgQuotas, err := m.Client.ListOrgQuotas()
-		if err != nil {
-			return err
-		}
-		for _, spaceQuotaConfig := range spaceQuotas {
-			err = m.createSpaceQuota(spaceQuotaConfig, space, quotas, orgQuotas)
-			if err != nil {
-				return err
-			}
-		}
-
 		if input.NamedQuota != "" && input.EnableSpaceQuota {
 			return fmt.Errorf("Cannot have named quota %s and enable-space-quota for org/space %s/%s", input.NamedQuota, input.Org, input.Space)
 		}
-		if input.EnableSpaceQuota || input.NamedQuota != "" {
-			if input.EnableSpaceQuota {
-				quotaDef := input.GetQuota()
-				err = m.createSpaceQuota(quotaDef, space, quotas, orgQuotas)
+		if input.NamedQuota != "" || input.EnableSpaceQuota {
+			space, err := m.SpaceMgr.FindSpace(input.Org, input.Space)
+			if err != nil {
+				return errors.Wrap(err, "Finding spaces")
+			}
+			quotas, err := m.ListAllSpaceQuotasForOrg(space.OrganizationGuid)
+			if err != nil {
+				return errors.Wrap(err, "ListAllSpaceQuotasForOrg")
+			}
+
+			orgQuotas, err := m.Client.ListOrgQuotas()
+			if err != nil {
+				return err
+			}
+			if input.NamedQuota != "" {
+				spaceQuotas, err := m.Cfg.GetSpaceQuotas(input.Org)
 				if err != nil {
 					return err
 				}
-				input.NamedQuota = input.Space
+
+				for _, spaceQuotaConfig := range spaceQuotas {
+					err = m.createSpaceQuota(spaceQuotaConfig, space, quotas, orgQuotas)
+					if err != nil {
+						return err
+					}
+				}
+			} else {
+				if input.EnableSpaceQuota {
+					quotaDef := input.GetQuota()
+					err = m.createSpaceQuota(quotaDef, space, quotas, orgQuotas)
+					if err != nil {
+						return err
+					}
+					input.NamedQuota = input.Space
+				}
 			}
 			spaceQuota := quotas[input.NamedQuota]
 			if space.QuotaDefinitionGuid != spaceQuota.Guid {
