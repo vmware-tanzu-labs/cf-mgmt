@@ -137,7 +137,7 @@ func (m *Manager) GetUserDNs(groupName string) ([]string, error) {
 }
 
 func (m *Manager) GroupFilter(userDN string) (string, error) {
-	cn, err := ParseUserCN(userDN)
+	cn, _, err := ParseUserCN(userDN)
 	if err != nil {
 		return "", err
 	}
@@ -179,7 +179,7 @@ func (m *Manager) IsGroup(DN string) (bool, string, error) {
 }
 
 func (m *Manager) GetUserByDN(userDN string) (*User, error) {
-	cn, err := ParseUserCN(userDN)
+	cn, searchBase, err := ParseUserCN(userDN)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,6 @@ func (m *Manager) GetUserByDN(userDN string) (*User, error) {
 	lo.G.Debug("CN escaped:", userCN)
 
 	filter := m.getUserFilterWithCN(userCN)
-	searchBase := m.Config.UserSearchBase
 	return m.searchUser(filter, searchBase, "")
 }
 
@@ -205,7 +204,7 @@ func (m *Manager) searchUser(filter, searchBase, userID string) (*User, error) {
 		return m.userMap[filter], nil
 	}
 	lo.G.Debugf("Searching with filter [%s]", filter)
-	lo.G.Debugf("Using user search base: [%s]", m.Config.UserSearchBase)
+	lo.G.Debugf("Using user search base: [%s]", searchBase)
 	search := l.NewSearchRequest(
 		searchBase,
 		l.ScopeWholeSubtree, l.NeverDerefAliases, 0, 0, false,

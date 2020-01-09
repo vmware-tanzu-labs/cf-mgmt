@@ -15,23 +15,34 @@ var (
 	unescapeFilterRegex = regexp.MustCompile(`\\([\da-fA-F]{2}|[()\\*])`) // only match \[)*\] or \xx x=a-fA-F
 )
 
-func ParseUserCN(userDN string) (string, error) {
+func ParseUserCN(userDN string) (string, string, error) {
 	dn, err := l.ParseDN(userDN)
 	if err != nil {
 		indexes := userRegexp.FindStringIndex(strings.ToUpper(userDN))
 		if len(indexes) == 0 {
-			return "", fmt.Errorf("cannot find CN for DN: %s", userDN)
+			return "", "", fmt.Errorf("cannot find CN for DN: %s", userDN)
 		}
-		cnTemp := UnescapeFilterValue(userDN[:indexes[0]])
+		index := indexes[0]
+		cnTemp := UnescapeFilterValue(userDN[:index])
 		lo.G.Debug("CN unescaped:", cnTemp)
 
 		escapedCN := EscapeFilterValue(cnTemp)
 		lo.G.Debug("CN escaped:", escapedCN)
-		return escapedCN, nil
+		return escapedCN, userDN[index+1:], nil
 	} else {
+		searchBase := ""
 		attributeName := dn.RDNs[0].Attributes[0].Type
 		cn := dn.RDNs[0].Attributes[0].Value
-		return fmt.Sprintf("%s=%s", attributeName, cn), nil
+		for _, rdn := range dn.RDNs {
+			attrType := rdn.Attributes[0].Type
+			if strings.EqualFold("ou", attrType) || strings.EqualFold("dc", attrType) {
+				if len(searchBase) > 0 {
+					searchBase = searchBase + ","
+				}
+				searchBase = searchBase + fmt.Sprintf("%s=%s", attrType, rdn.Attributes[0].Value)
+			}
+		}
+		return fmt.Sprintf("%s=%s", attributeName, cn), searchBase, nil
 	}
 }
 
