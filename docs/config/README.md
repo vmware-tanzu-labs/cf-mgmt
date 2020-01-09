@@ -75,7 +75,7 @@ service-access:
     all_access_plans:
     - standard
 
-# added in 1.0.37+ adds ability to have a list of user(s) or patterns to exclude from removal
+# added in 1.0.38+ adds ability to have a list of user(s) or patterns to exclude from removal
 protected-users:
 - ci_cd_user
 - abcd_123_*
