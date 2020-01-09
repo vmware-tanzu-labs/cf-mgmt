@@ -1,13 +1,13 @@
-package organization_test
+package util_test
 
 import (
-	. "github.com/pivotalservices/cf-mgmt/organization"
+	. "github.com/pivotalservices/cf-mgmt/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("OrgMatcher", func() {
+var _ = Describe("Matcher", func() {
 	Context("Matches", func() {
 		It("Is false", func() {
 			Expect(Matches("foo", []string{})).To(BeFalse())

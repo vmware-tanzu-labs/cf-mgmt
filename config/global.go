@@ -14,6 +14,7 @@ type GlobalConfig struct {
 	EnableServiceAccess           bool                    `yaml:"enable-service-access"`
 	IgnoreLegacyServiceAccess     bool                    `yaml:"ignore-legacy-service-access"`
 	ServiceAccess                 []*Broker               `yaml:"service-access"`
+	ProtectedUsers                []string                `yaml:"protected-users"`
 }
 
 type PlanInfo struct {

@@ -6,6 +6,7 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
@@ -113,7 +114,7 @@ func (m *DefaultManager) DeleteOrgs() error {
 	orgsToDelete := make([]cfclient.Org, 0)
 	for _, org := range orgs {
 		if _, exists := configuredOrgs[org.Name]; !exists {
-			if !Matches(org.Name, orgsConfig.ProtectedOrgList()) {
+			if !util.Matches(org.Name, orgsConfig.ProtectedOrgList()) {
 				if _, renamed := renamedOrgs[org.Name]; !renamed {
 					orgsToDelete = append(orgsToDelete, org)
 				}

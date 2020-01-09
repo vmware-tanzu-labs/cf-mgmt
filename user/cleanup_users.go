@@ -7,6 +7,7 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/uaa"
+	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
@@ -63,6 +64,10 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 
 	lo.G.Debugf("Users In Roles %+v", usersInRoles)
 
+	cfg, err := m.Cfg.GetGlobalConfig()
+	if err != nil {
+		return err
+	}
 	for _, orgUser := range orgUsers {
 		uaaUser := uaaUsers.GetByID(orgUser.Guid)
 		var guid string
@@ -72,15 +77,17 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 		} else {
 			guid = uaaUser.GUID
 		}
-		if !usersInRoles.HasUser(orgUser.Username) {
-			if m.Peek {
-				lo.G.Infof("[dry-run]: Removing User %s from org %s", orgUser.Username, input.Org)
-				continue
-			}
-			lo.G.Infof("Removing User %s from org %s", orgUser.Username, input.Org)
-			err := m.Client.RemoveOrgUser(org.Guid, guid)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
+		if !util.Matches(orgUser.Username, cfg.ProtectedUsers) {
+			if !usersInRoles.HasUser(orgUser.Username) {
+				if m.Peek {
+					lo.G.Infof("[dry-run]: Removing User %s from org %s", orgUser.Username, input.Org)
+					continue
+				}
+				lo.G.Infof("Removing User %s from org %s", orgUser.Username, input.Org)
+				err := m.Client.RemoveOrgUser(org.Guid, guid)
+				if err != nil {
+					return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
+				}
 			}
 		}
 	}

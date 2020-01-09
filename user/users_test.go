@@ -45,6 +45,8 @@ var _ = Describe("given UserSpaces", func() {
 				OrgMgr:     orgFake,
 				Peek:       false,
 				LdapConfig: &config.LdapConfig{Origin: "ldap"}}
+
+			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{}, nil)
 		})
 
 		Context("Success", func() {
@@ -227,6 +229,28 @@ var _ = Describe("given UserSpaces", func() {
 					OrgGUID:     "org_guid",
 					RemoveUser:  userManager.RemoveSpaceAuditor,
 				}
+
+				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(client.RemoveSpaceAuditorCallCount()).Should(Equal(0))
+			})
+
+			It("Should skip users that match protected user pattern", func() {
+				uaaUsers := &uaa.Users{}
+				uaaUsers.Add(uaa.User{Username: "abcd_123_0919191", Origin: "uaa", GUID: "test-id"})
+				roleUsers, _ = NewRoleUsers([]cfclient.User{
+					cfclient.User{Username: "abcd_123_0919191", Guid: "test-id"},
+				}, uaaUsers)
+				updateUsersInput := UsersInput{
+					RemoveUsers: true,
+					SpaceGUID:   "space_guid",
+					OrgGUID:     "org_guid",
+					RemoveUser:  userManager.RemoveSpaceAuditor,
+				}
+
+				fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
+					ProtectedUsers: []string{"abcd_123_*"},
+				}, nil)
 
 				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())

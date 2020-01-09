@@ -5,6 +5,7 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/privatedomain"
@@ -456,7 +457,7 @@ func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs [
 						return err
 					}
 
-					if !organization.Matches(orgName, config.DefaultProtectedOrgs) {
+					if !util.Matches(orgName, config.DefaultProtectedOrgs) {
 						privatePlan.Orgs = append(privatePlan.Orgs, orgName)
 					}
 				}

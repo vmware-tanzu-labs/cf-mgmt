@@ -5,6 +5,7 @@ import (
 
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pivotalservices/cf-mgmt/serviceaccess/legacy"
 	"github.com/xchapter7x/lo"
 )
@@ -163,7 +164,7 @@ func (m *Manager) ProtectedOrgList() ([]string, error) {
 	}
 	orgList := []string{}
 	for _, org := range orgs {
-		if organization.Matches(org.Name, orgConfig.ProtectedOrgList()) {
+		if util.Matches(org.Name, orgConfig.ProtectedOrgList()) {
 			orgList = append(orgList, org.Name)
 		}
 	}

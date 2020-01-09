@@ -9,6 +9,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
+	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
@@ -422,12 +423,20 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers *uaa.U
 
 func (m *DefaultManager) RemoveUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
 	if usersInput.RemoveUsers {
+		cfg, err := m.Cfg.GetGlobalConfig()
+		if err != nil {
+			return err
+		}
+		protectedUsers := cfg.ProtectedUsers
+
 		if len(roleUsers.Users()) > 0 {
 			lo.G.Debugf("The following users are being removed %+v", roleUsers.Users())
 		}
 		for _, roleUser := range roleUsers.Users() {
-			if err := usersInput.RemoveUser(usersInput, roleUser.UserName, roleUser.GUID); err != nil {
-				return errors.Wrap(err, fmt.Sprintf("error removing user %s", roleUser.UserName))
+			if !util.Matches(roleUser.UserName, protectedUsers) {
+				if err := usersInput.RemoveUser(usersInput, roleUser.UserName, roleUser.GUID); err != nil {
+					return errors.Wrap(err, fmt.Sprintf("error removing user %s", roleUser.UserName))
+				}
 			}
 		}
 	} else {

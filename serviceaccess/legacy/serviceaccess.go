@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/xchapter7x/lo"
 )
@@ -143,7 +144,7 @@ func (m *Manager) EnableProtectedOrgServiceAccess(serviceInfo *ServiceInfo, prot
 		return err
 	}
 	for _, org := range orgs {
-		if organization.Matches(org.Name, protectedOrgs) {
+		if util.Matches(org.Name, protectedOrgs) {
 			for serviceName, plans := range serviceInfo.AllPlans() {
 				for _, servicePlan := range plans {
 					if !servicePlan.OrgHasAccess(org.Guid) {

@@ -74,6 +74,12 @@ service-access:
   - service: p-rabbitmq
     all_access_plans:
     - standard
+
+# added in 1.0.37+ adds ability to have a list of user(s) or patterns to exclude from removal
+protected-users:
+- ci_cd_user
+- abcd_123_*
+
 ```
 
 ### Org Configuration
@@ -90,7 +96,6 @@ enable-delete-orgs: true
 protected_orgs:
 - system
 - p-spring-cloud-services
-
 ```
 
 This will contain a orgConfig.yml and folder for each space.  Each orgConfig.yml consists of the following.
