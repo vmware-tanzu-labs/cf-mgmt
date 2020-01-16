@@ -216,10 +216,24 @@ var _ = Describe("given Security Group Manager", func() {
 				cfclient.SecGroup{
 					Name: "dns",
 					Guid: "dns-guid",
+					SpacesData: []cfclient.SpaceResource{
+						cfclient.SpaceResource{
+							Entity: cfclient.Space{
+								Guid: "space1-guid",
+							},
+						},
+					},
 				},
 				cfclient.SecGroup{
 					Name: "ntp",
 					Guid: "ntp-guid",
+					SpacesData: []cfclient.SpaceResource{
+						cfclient.SpaceResource{
+							Entity: cfclient.Space{
+								Guid: "space1-guid",
+							},
+						},
+					},
 				},
 			}, nil)
 			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
@@ -297,11 +311,25 @@ var _ = Describe("given Security Group Manager", func() {
 				cfclient.SecGroup{
 					Name: "dns",
 					Guid: "dns-guid",
+					SpacesData: []cfclient.SpaceResource{
+						cfclient.SpaceResource{
+							Entity: cfclient.Space{
+								Guid: "space1-guid",
+							},
+						},
+					},
 				},
 				cfclient.SecGroup{
 					Name:  "org1-space1",
 					Guid:  "org1-space1-guid",
 					Rules: []cfclient.SecGroupRule{},
+					SpacesData: []cfclient.SpaceResource{
+						cfclient.SpaceResource{
+							Entity: cfclient.Space{
+								Guid: "space1-guid",
+							},
+						},
+					},
 				},
 			}, nil)
 			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{

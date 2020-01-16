@@ -277,11 +277,18 @@ func (m *DefaultManager) hasSecurityGroupChanged(sgInfo cfclient.SecGroup, rules
 	return !match, nil
 }
 
-func (m *DefaultManager) AssignSecurityGroupToSpace(space cfclient.Space, secGroup cfclient.SecGroup) error {
+func (m *DefaultManager) isSecurityGroupAssignedToSpace(space cfclient.Space, secGroup cfclient.SecGroup) bool {
 	for _, configuredSpace := range secGroup.SpacesData {
 		if configuredSpace.Entity.Guid == space.Guid {
-			return nil
+			return true
 		}
+	}
+	return false
+}
+func (m *DefaultManager) AssignSecurityGroupToSpace(space cfclient.Space, secGroup cfclient.SecGroup) error {
+	if m.isSecurityGroupAssignedToSpace(space, secGroup) {
+		lo.G.Debugf("Security group %s is already assigned to space %s, skipping", secGroup.Name, space.Name)
+		return nil
 	}
 	if m.Peek {
 		lo.G.Infof("[dry-run]: assigning security group %s to space %s", secGroup.Name, space.Name)
@@ -292,10 +299,9 @@ func (m *DefaultManager) AssignSecurityGroupToSpace(space cfclient.Space, secGro
 }
 
 func (m *DefaultManager) UnassignSecurityGroupToSpace(space cfclient.Space, secGroup cfclient.SecGroup) error {
-	for _, configuredSpace := range secGroup.SpacesData {
-		if configuredSpace.Entity.Guid == space.Guid {
-			return nil
-		}
+	if !m.isSecurityGroupAssignedToSpace(space, secGroup) {
+		lo.G.Debugf("Security group %s isn't assigned to space %s, skipping", secGroup.Name, space.Name)
+		return nil
 	}
 	if m.Peek {
 		lo.G.Infof("[dry-run]: unassigning security group %s to space %s", secGroup.Name, space.Name)
