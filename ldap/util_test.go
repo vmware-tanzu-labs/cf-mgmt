@@ -33,5 +33,13 @@ var _ = Describe("Util", func() {
 			Expect(cn).Should(BeEquivalentTo("cn=Caleb Washubrn"))
 			Expect(searchBase).Should(BeEquivalentTo("ou=users,dc=pivotal,dc=org"))
 		})
+
+		It("Should search base when other attribute types are found", func() {
+			cn, searchBase, err := ParseUserCN("uid=AAAAAA,ou=BBBBBB,ou=CCCCCC,o=DDDDD,c=EEEEEE")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(cn).Should(BeEquivalentTo("uid=AAAAAA"))
+			Expect(searchBase).Should(BeEquivalentTo("ou=BBBBBB,ou=CCCCCC,o=DDDDD,c=EEEEEE"))
+		})
+
 	})
 })

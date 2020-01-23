@@ -15,6 +15,11 @@ var (
 	unescapeFilterRegex = regexp.MustCompile(`\\([\da-fA-F]{2}|[()\\*])`) // only match \[)*\] or \xx x=a-fA-F
 )
 
+func getUserAttributeName(userDN string) string {
+	parts := strings.Split(userDN, "=")
+	return parts[0]
+}
+
 func ParseUserCN(userDN string) (string, string, error) {
 	dn, err := l.ParseDN(userDN)
 	if err != nil {
@@ -30,12 +35,13 @@ func ParseUserCN(userDN string) (string, string, error) {
 		lo.G.Debug("CN escaped:", escapedCN)
 		return escapedCN, userDN[index+1:], nil
 	} else {
+		userAttributeName := getUserAttributeName(userDN)
 		searchBase := ""
 		attributeName := dn.RDNs[0].Attributes[0].Type
 		cn := dn.RDNs[0].Attributes[0].Value
 		for _, rdn := range dn.RDNs {
 			attrType := rdn.Attributes[0].Type
-			if strings.EqualFold("ou", attrType) || strings.EqualFold("dc", attrType) {
+			if !strings.EqualFold(userAttributeName, attrType) {
 				if len(searchBase) > 0 {
 					searchBase = searchBase + ","
 				}
