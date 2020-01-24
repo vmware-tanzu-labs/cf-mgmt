@@ -193,7 +193,7 @@ private-domains: ["test.com", "test2.com"]
 enable-remove-private-domains: true/false
 
 # added in 1.0.12+ allows specifying a named quota, cannot be used with enable-org-quota
-named-quota:
+named_quota:
 
 # added in 1.0.26+ allows adding metadata to orgs and spaces (requires cf v3 3.66.0 or greater)
 metadata:
@@ -318,7 +318,7 @@ enable-remove-users: true/false
 named-security-groups: []
 
 # added in 1.0.12+ allows specifying a named quota, cannot be used with enable-space-quota
-named-quota:
+named_quota:
 
 # added in 1.0.26+ allows unassigning named security groups that are not in configuration
 enable-unassign-security-group: true/false
