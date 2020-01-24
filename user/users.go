@@ -409,7 +409,7 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers *uaa.U
 			lo.G.Debugf("Role Users %+v", roleUsers.users)
 			user := uaaUsers.GetByNameAndOrigin(lowerUserID, origin)
 			if user == nil {
-				return fmt.Errorf("Unabled to find user %s for origin %s", lowerUserID, origin)
+				return fmt.Errorf("Unable to find user %s for origin %s", lowerUserID, origin)
 			}
 			if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
 				return errors.Wrap(err, fmt.Sprintf("adding user %s for origin %s", user.Username, origin))

@@ -30,7 +30,7 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 		}
 		user := uaaUsers.GetByNameAndOrigin(userEmail, origin)
 		if user == nil {
-			return fmt.Errorf("Unabled to find user %s for origin %s", userEmail, origin)
+			return fmt.Errorf("Unable to find user %s for origin %s", userEmail, origin)
 		}
 		if !roleUsers.HasUserForOrigin(userEmail, user.Origin) {
 			if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {

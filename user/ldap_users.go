@@ -40,7 +40,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 			if !roleUsers.HasUserForOrigin(userID, origin) {
 				user := uaaUsers.GetByNameAndOrigin(userID, origin)
 				if user == nil {
-					return fmt.Errorf("Unabled to find user %s for origin %s", userID, origin)
+					return fmt.Errorf("Unable to find user %s for origin %s", userID, origin)
 				}
 				if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
 					return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", user.Username, user.Origin))
