@@ -1,5 +1,5 @@
 hash: 9f431f9c422f0b515d061fc882b6bf109986a4582ee0a862e61bbd99e9891629
-updated: 2019-04-30T15:32:37.075672-07:00
+updated: 2020-01-29T15:53:20.503-07:00
 imports:
 - name: code.cloudfoundry.org/cfhttp
   version: 1f526aa7822e788b7e8b9dd097b0cf8c5b2fdb71
@@ -10,7 +10,7 @@ imports:
   subpackages:
   - fileutils
 - name: code.cloudfoundry.org/routing-api
-  version: 905afb1c1b18d8fa810e0038b2023ac1b3842056
+  version: f6cbb5b92d122334ec00ffc08c37f880cf56f8fb
   subpackages:
   - models
 - name: code.cloudfoundry.org/trace-logger
@@ -18,14 +18,12 @@ imports:
 - name: github.com/bmizerany/pat
   version: 6226ea591a40176dd3ff9cd8eff81ed6ca721a00
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: c32c2009d2e1cc9cb1024fb76641e2629be19118
+  version: 161a211c4903484706d816adaa367a7c9fcf9e3e
   repo: https://github.com/calebwashburn/go-cfclient
 - name: github.com/cloudfoundry-community/go-uaa
   version: 10d9dedd9e3453da8bd404d938f4e1f52f12d589
   subpackages:
   - passwordcredentials
-- name: github.com/fatih/color
-  version: 3f9d52f7176a6927daacff70a3e8d1dc2025c53e
 - name: github.com/go-ldap/ldap
   version: bb7a9ca6e4fbc2129e3db588a34bc970ffe811a9
 - name: github.com/golang/protobuf
@@ -36,10 +34,6 @@ imports:
   version: 96dc06278ce32a0e9d957d590bb987c81ee66407
 - name: github.com/Masterminds/semver
   version: 3c560837130448941620d7694991d3ec440aefc0
-- name: github.com/mattn/go-colorable
-  version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
-- name: github.com/mattn/go-isatty
-  version: 3fb116b820352b7f0c281308a4d6250c22d94e27
 - name: github.com/nu7hatch/gouuid
   version: 179d4d0c4d8d407a32af483c2354df1d2c91e6c3
 - name: github.com/op/go-logging
@@ -67,10 +61,6 @@ imports:
   subpackages:
   - clientcredentials
   - internal
-- name: golang.org/x/sys
-  version: 1b2967e3c290b7c545b3db0deeda16e9be4f98a2
-  subpackages:
-  - unix
 - name: google.golang.org/appengine
   version: b1f26356af11148e710935ed1ac8a7f5702c7612
   subpackages:
@@ -98,7 +88,7 @@ testImports:
 - name: github.com/moul/http2curl
   version: 9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d
 - name: github.com/onsi/ginkgo
-  version: eea6ad008b96acdaa524f5b409513bf062b500ad
+  version: 388ac7e50a3abf0798010091d5094171f4aefc0b
   subpackages:
   - config
   - internal/codelocation
@@ -118,7 +108,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 90e289841c1ed79b7a598a7cd9959750cb5e89e2
+  version: 22a9feb22fe99439870ed2e013401725a9d495df
   subpackages:
   - format
   - gbytes
@@ -133,6 +123,10 @@ testImports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: golang.org/x/sys
+  version: 1b2967e3c290b7c545b3db0deeda16e9be4f98a2
+  subpackages:
+  - unix
 - name: golang.org/x/text
   version: 0605a8320aceb4207a5fb3521281e17ec2075476
   subpackages:
@@ -153,6 +147,10 @@ testImports:
   - language
   - runes
   - transform
+- name: golang.org/x/xerrors
+  version: 9bdfabe68543c54f90421aeb9a60ef8061b5b544
+  subpackages:
+  - internal
 - name: gopkg.in/fsnotify/fsnotify.v1
   version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 - name: gopkg.in/tomb.v1

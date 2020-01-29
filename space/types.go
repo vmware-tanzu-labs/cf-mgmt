@@ -22,4 +22,6 @@ type CFClient interface {
 	ListSpaces() ([]cfclient.Space, error)
 	SupportsMetadataAPI() (bool, error)
 	UpdateSpaceMetadata(spaceGUID string, metadata cfclient.Metadata) error
+	SpaceMetadata(spaceGUID string) (*cfclient.Metadata, error)
+	RemoveSpaceMetadata(spaceGUID string) error
 }

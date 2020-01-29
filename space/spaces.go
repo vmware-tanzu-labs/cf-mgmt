@@ -300,6 +300,9 @@ func (m *DefaultManager) DeleteSpaces() error {
 		}
 
 		for _, space := range spacesToDelete {
+			if err := m.ClearMetadata(space, input.Org); err != nil {
+				return err
+			}
 			if err := m.DeleteSpace(space, input.Org); err != nil {
 				return err
 			}
@@ -307,6 +310,22 @@ func (m *DefaultManager) DeleteSpaces() error {
 	}
 	m.spaces = nil
 	return nil
+}
+
+func (m *DefaultManager) ClearMetadata(space cfclient.Space, orgName string) error {
+	supports, err := m.Client.SupportsMetadataAPI()
+	if err != nil {
+		return err
+	}
+	if !supports {
+		return nil
+	}
+	if m.Peek {
+		lo.G.Infof("[dry-run]: removing space metadata from space %s in org %s", space.Name, orgName)
+		return nil
+	}
+	lo.G.Infof("removing space metadata from space %s in org %s", space.Name, orgName)
+	return m.Client.RemoveSpaceMetadata(space.Guid)
 }
 
 //DeleteSpace - deletes a space based on GUID
@@ -345,7 +364,7 @@ func (m *DefaultManager) UpdateSpacesMetadata() error {
 			if err != nil {
 				continue
 			}
-			metadata := cfclient.Metadata{}
+			metadata := &cfclient.Metadata{}
 			if spaceConfig.Metadata.Labels != nil {
 				for key, value := range spaceConfig.Metadata.Labels {
 					if len(value) > 0 {
@@ -364,7 +383,7 @@ func (m *DefaultManager) UpdateSpacesMetadata() error {
 					}
 				}
 			}
-			err = m.UpdateSpaceMetadata(spaceConfig.Org, space, metadata)
+			err = m.UpdateSpaceMetadata(spaceConfig.Org, space, *metadata)
 			if err != nil {
 				return err
 			}
