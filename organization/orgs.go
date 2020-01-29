@@ -334,3 +334,19 @@ func (m *DefaultManager) UpdateOrgMetadata(org cfclient.Org, metadata cfclient.M
 	lo.G.Infof("update org [%s] metadata", org.Name)
 	return m.Client.UpdateOrgMetadata(org.Guid, metadata)
 }
+
+func (m *DefaultManager) ClearMetadata(org cfclient.Org) error {
+	supports, err := m.Client.SupportsMetadataAPI()
+	if err != nil {
+		return err
+	}
+	if !supports {
+		return nil
+	}
+	if m.Peek {
+		lo.G.Infof("[dry-run]: removing org metadata from org %s in org %s", org.Name)
+		return nil
+	}
+	lo.G.Infof("removing org metadata from org %s in org %s", org.Name)
+	return m.Client.RemoveOrgMetadata(org.Guid)
+}

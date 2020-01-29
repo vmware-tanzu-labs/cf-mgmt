@@ -32,4 +32,6 @@ type CFClient interface {
 	UnshareOrgPrivateDomain(orgGUID, privateDomainGUID string) error
 	SupportsMetadataAPI() (bool, error)
 	UpdateOrgMetadata(orgGUID string, metadata cfclient.Metadata) error
+	OrgMetadata(orgGUID string) (*cfclient.Metadata, error)
+	RemoveOrgMetadata(orgGUID string) error
 }

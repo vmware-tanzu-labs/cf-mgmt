@@ -245,4 +245,17 @@ var _ = Describe("given OrgManager", func() {
 			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(0))
 		})
 	})
+
+	Context("ClearMetadata()", func() {
+		It("should remove metadata from given org", func() {
+			fakeClient.SupportsMetadataAPIReturns(true, nil)
+			org := cfclient.Org{
+				Guid: "org-guid",
+			}
+			err := orgManager.ClearMetadata(org)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.RemoveOrgMetadataCallCount()).Should(Equal(1))
+			Expect(fakeClient.RemoveOrgMetadataArgsForCall(0)).Should(Equal("org-guid"))
+		})
+	})
 })

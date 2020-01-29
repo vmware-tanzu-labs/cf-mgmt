@@ -110,6 +110,30 @@ type FakeCFClient struct {
 		result1 []cfclient.Org
 		result2 error
 	}
+	OrgMetadataStub        func(string) (*cfclient.Metadata, error)
+	orgMetadataMutex       sync.RWMutex
+	orgMetadataArgsForCall []struct {
+		arg1 string
+	}
+	orgMetadataReturns struct {
+		result1 *cfclient.Metadata
+		result2 error
+	}
+	orgMetadataReturnsOnCall map[int]struct {
+		result1 *cfclient.Metadata
+		result2 error
+	}
+	RemoveOrgMetadataStub        func(string) error
+	removeOrgMetadataMutex       sync.RWMutex
+	removeOrgMetadataArgsForCall []struct {
+		arg1 string
+	}
+	removeOrgMetadataReturns struct {
+		result1 error
+	}
+	removeOrgMetadataReturnsOnCall map[int]struct {
+		result1 error
+	}
 	ShareOrgPrivateDomainStub        func(string, string) (*cfclient.Domain, error)
 	shareOrgPrivateDomainMutex       sync.RWMutex
 	shareOrgPrivateDomainArgsForCall []struct {
@@ -663,6 +687,129 @@ func (fake *FakeCFClient) ListOrgsReturnsOnCall(i int, result1 []cfclient.Org, r
 	}{result1, result2}
 }
 
+func (fake *FakeCFClient) OrgMetadata(arg1 string) (*cfclient.Metadata, error) {
+	fake.orgMetadataMutex.Lock()
+	ret, specificReturn := fake.orgMetadataReturnsOnCall[len(fake.orgMetadataArgsForCall)]
+	fake.orgMetadataArgsForCall = append(fake.orgMetadataArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("OrgMetadata", []interface{}{arg1})
+	fake.orgMetadataMutex.Unlock()
+	if fake.OrgMetadataStub != nil {
+		return fake.OrgMetadataStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.orgMetadataReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCFClient) OrgMetadataCallCount() int {
+	fake.orgMetadataMutex.RLock()
+	defer fake.orgMetadataMutex.RUnlock()
+	return len(fake.orgMetadataArgsForCall)
+}
+
+func (fake *FakeCFClient) OrgMetadataCalls(stub func(string) (*cfclient.Metadata, error)) {
+	fake.orgMetadataMutex.Lock()
+	defer fake.orgMetadataMutex.Unlock()
+	fake.OrgMetadataStub = stub
+}
+
+func (fake *FakeCFClient) OrgMetadataArgsForCall(i int) string {
+	fake.orgMetadataMutex.RLock()
+	defer fake.orgMetadataMutex.RUnlock()
+	argsForCall := fake.orgMetadataArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeCFClient) OrgMetadataReturns(result1 *cfclient.Metadata, result2 error) {
+	fake.orgMetadataMutex.Lock()
+	defer fake.orgMetadataMutex.Unlock()
+	fake.OrgMetadataStub = nil
+	fake.orgMetadataReturns = struct {
+		result1 *cfclient.Metadata
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFClient) OrgMetadataReturnsOnCall(i int, result1 *cfclient.Metadata, result2 error) {
+	fake.orgMetadataMutex.Lock()
+	defer fake.orgMetadataMutex.Unlock()
+	fake.OrgMetadataStub = nil
+	if fake.orgMetadataReturnsOnCall == nil {
+		fake.orgMetadataReturnsOnCall = make(map[int]struct {
+			result1 *cfclient.Metadata
+			result2 error
+		})
+	}
+	fake.orgMetadataReturnsOnCall[i] = struct {
+		result1 *cfclient.Metadata
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFClient) RemoveOrgMetadata(arg1 string) error {
+	fake.removeOrgMetadataMutex.Lock()
+	ret, specificReturn := fake.removeOrgMetadataReturnsOnCall[len(fake.removeOrgMetadataArgsForCall)]
+	fake.removeOrgMetadataArgsForCall = append(fake.removeOrgMetadataArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("RemoveOrgMetadata", []interface{}{arg1})
+	fake.removeOrgMetadataMutex.Unlock()
+	if fake.RemoveOrgMetadataStub != nil {
+		return fake.RemoveOrgMetadataStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.removeOrgMetadataReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeCFClient) RemoveOrgMetadataCallCount() int {
+	fake.removeOrgMetadataMutex.RLock()
+	defer fake.removeOrgMetadataMutex.RUnlock()
+	return len(fake.removeOrgMetadataArgsForCall)
+}
+
+func (fake *FakeCFClient) RemoveOrgMetadataCalls(stub func(string) error) {
+	fake.removeOrgMetadataMutex.Lock()
+	defer fake.removeOrgMetadataMutex.Unlock()
+	fake.RemoveOrgMetadataStub = stub
+}
+
+func (fake *FakeCFClient) RemoveOrgMetadataArgsForCall(i int) string {
+	fake.removeOrgMetadataMutex.RLock()
+	defer fake.removeOrgMetadataMutex.RUnlock()
+	argsForCall := fake.removeOrgMetadataArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeCFClient) RemoveOrgMetadataReturns(result1 error) {
+	fake.removeOrgMetadataMutex.Lock()
+	defer fake.removeOrgMetadataMutex.Unlock()
+	fake.RemoveOrgMetadataStub = nil
+	fake.removeOrgMetadataReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeCFClient) RemoveOrgMetadataReturnsOnCall(i int, result1 error) {
+	fake.removeOrgMetadataMutex.Lock()
+	defer fake.removeOrgMetadataMutex.Unlock()
+	fake.RemoveOrgMetadataStub = nil
+	if fake.removeOrgMetadataReturnsOnCall == nil {
+		fake.removeOrgMetadataReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.removeOrgMetadataReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeCFClient) ShareOrgPrivateDomain(arg1 string, arg2 string) (*cfclient.Domain, error) {
 	fake.shareOrgPrivateDomainMutex.Lock()
 	ret, specificReturn := fake.shareOrgPrivateDomainReturnsOnCall[len(fake.shareOrgPrivateDomainArgsForCall)]
@@ -987,6 +1134,10 @@ func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	defer fake.listOrgPrivateDomainsMutex.RUnlock()
 	fake.listOrgsMutex.RLock()
 	defer fake.listOrgsMutex.RUnlock()
+	fake.orgMetadataMutex.RLock()
+	defer fake.orgMetadataMutex.RUnlock()
+	fake.removeOrgMetadataMutex.RLock()
+	defer fake.removeOrgMetadataMutex.RUnlock()
 	fake.shareOrgPrivateDomainMutex.RLock()
 	defer fake.shareOrgPrivateDomainMutex.RUnlock()
 	fake.supportsMetadataAPIMutex.RLock()
