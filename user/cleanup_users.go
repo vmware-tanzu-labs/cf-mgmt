@@ -48,7 +48,7 @@ func (m *DefaultManager) CleanupOrgUsers() error {
 }
 
 func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgConfig) error {
-	org, err := m.OrgMgr.FindOrg(input.Org)
+	org, err := m.OrgReader.FindOrg(input.Org)
 	if err != nil {
 		return err
 	}

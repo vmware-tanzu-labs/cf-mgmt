@@ -19,16 +19,16 @@ func NewManager(
 	client CFClient,
 	cfg config.Reader,
 	spaceMgr space.Manager,
-	orgMgr organization.Manager,
+	orgReader organization.Reader,
 	uaaMgr uaa.Manager,
 	peek bool) Manager {
 	return &DefaultManager{
-		Client:   client,
-		Peek:     peek,
-		SpaceMgr: spaceMgr,
-		OrgMgr:   orgMgr,
-		UAAMgr:   uaaMgr,
-		Cfg:      cfg,
+		Client:    client,
+		Peek:      peek,
+		SpaceMgr:  spaceMgr,
+		OrgReader: orgReader,
+		UAAMgr:    uaaMgr,
+		Cfg:       cfg,
 	}
 }
 
@@ -36,7 +36,7 @@ type DefaultManager struct {
 	Client     CFClient
 	Cfg        config.Reader
 	SpaceMgr   space.Manager
-	OrgMgr     organization.Manager
+	OrgReader  organization.Reader
 	UAAMgr     uaa.Manager
 	Peek       bool
 	LdapMgr    LdapManager
@@ -302,7 +302,7 @@ func (m *DefaultManager) UpdateOrgUsers() error {
 }
 
 func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.Users) error {
-	org, err := m.OrgMgr.FindOrg(input.Org)
+	org, err := m.OrgReader.FindOrg(input.Org)
 	if err != nil {
 		return err
 	}

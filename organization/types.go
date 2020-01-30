@@ -6,16 +6,22 @@ import (
 
 //Manager -
 type Manager interface {
+	CreateOrgs() error
+	DeleteOrgs() error
+	UpdateOrg(orgGUID string, orgRequest cfclient.OrgRequest) (cfclient.Org, error)
+	RenameOrg(originalOrgName, newOrgName string) error
+	UpdateOrgsMetadata() error
+}
+
+//Manager -
+type Reader interface {
 	ListOrgs() ([]cfclient.Org, error)
 	FindOrg(orgName string) (cfclient.Org, error)
 	FindOrgByGUID(orgGUID string) (cfclient.Org, error)
-	CreateOrgs() error
-	DeleteOrgs() error
 	GetOrgGUID(orgName string) (string, error)
-	UpdateOrg(orgGUID string, orgRequest cfclient.OrgRequest) (cfclient.Org, error)
 	GetOrgByGUID(orgGUID string) (cfclient.Org, error)
-	RenameOrg(originalOrgName, newOrgName string) error
-	UpdateOrgsMetadata() error
+	ClearOrgList()
+	AddOrgToList(org cfclient.Org)
 }
 
 type CFClient interface {

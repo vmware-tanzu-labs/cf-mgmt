@@ -24,4 +24,5 @@ type CFClient interface {
 	UpdateSpaceMetadata(spaceGUID string, metadata cfclient.Metadata) error
 	SpaceMetadata(spaceGUID string) (*cfclient.Metadata, error)
 	RemoveSpaceMetadata(spaceGUID string) error
+	ListOrgs() ([]cfclient.Org, error)
 }

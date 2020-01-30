@@ -16,25 +16,25 @@ import (
 
 //NewManager -
 func NewManager(client CFClient, uaaMgr uaa.Manager,
-	orgMgr organization.Manager,
+	orgReader organization.Reader,
 	cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
-		Cfg:    cfg,
-		UAAMgr: uaaMgr,
-		Client: client,
-		OrgMgr: orgMgr,
-		Peek:   peek,
+		Cfg:       cfg,
+		UAAMgr:    uaaMgr,
+		Client:    client,
+		OrgReader: orgReader,
+		Peek:      peek,
 	}
 }
 
 //DefaultManager -
 type DefaultManager struct {
-	Cfg    config.Reader
-	Client CFClient
-	UAAMgr uaa.Manager
-	OrgMgr organization.Manager
-	Peek   bool
-	spaces []cfclient.Space
+	Cfg       config.Reader
+	Client    CFClient
+	UAAMgr    uaa.Manager
+	OrgReader organization.Reader
+	Peek      bool
+	spaces    []cfclient.Space
 }
 
 func (m *DefaultManager) UpdateSpaceSSH(sshAllowed bool, space cfclient.Space, orgName string) error {
@@ -135,7 +135,7 @@ func (m *DefaultManager) ListSpaces(orgGUID string) ([]cfclient.Space, error) {
 
 //FindSpace -
 func (m *DefaultManager) FindSpace(orgName, spaceName string) (cfclient.Space, error) {
-	orgGUID, err := m.OrgMgr.GetOrgGUID(orgName)
+	orgGUID, err := m.OrgReader.GetOrgGUID(orgName)
 	if err != nil {
 		return cfclient.Space{}, err
 	}
@@ -203,7 +203,7 @@ func (m *DefaultManager) CreateSpaces() error {
 		return err
 	}
 	for _, space := range configSpaceList {
-		orgGUID, err := m.OrgMgr.GetOrgGUID(space.Org)
+		orgGUID, err := m.OrgReader.GetOrgGUID(space.Org)
 		if err != nil {
 			return err
 		}
@@ -281,7 +281,7 @@ func (m *DefaultManager) DeleteSpaces() error {
 			configuredSpaces[spaceName] = true
 		}
 
-		org, err := m.OrgMgr.FindOrg(input.Org)
+		org, err := m.OrgReader.FindOrg(input.Org)
 		if err != nil {
 			return err
 		}

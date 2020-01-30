@@ -15,24 +15,27 @@ import (
 //NewManager -
 func NewManager(client CFClient,
 	spaceMgr space.Manager,
+	orgReader organization.Reader,
 	orgMgr organization.Manager,
 	cfg config.Reader, peek bool) *Manager {
 	return &Manager{
-		Cfg:      cfg,
-		Client:   client,
-		SpaceMgr: spaceMgr,
-		OrgMgr:   orgMgr,
-		Peek:     peek,
+		Cfg:       cfg,
+		Client:    client,
+		SpaceMgr:  spaceMgr,
+		OrgReader: orgReader,
+		OrgMgr:    orgMgr,
+		Peek:      peek,
 	}
 }
 
 //Manager -
 type Manager struct {
-	Cfg      config.Reader
-	Client   CFClient
-	SpaceMgr space.Manager
-	OrgMgr   organization.Manager
-	Peek     bool
+	Cfg       config.Reader
+	Client    CFClient
+	SpaceMgr  space.Manager
+	OrgReader organization.Reader
+	OrgMgr    organization.Manager
+	Peek      bool
 }
 
 //CreateSpaceQuotas -
@@ -136,7 +139,7 @@ func (m *Manager) createSpaceQuota(input config.SpaceQuota, space cfclient.Space
 	}
 
 	if input.IsUnlimitedMemory() {
-		org, err := m.OrgMgr.FindOrg(input.Org)
+		org, err := m.OrgReader.FindOrg(input.Org)
 		if err != nil {
 			return err
 		}
@@ -276,7 +279,7 @@ func (m *Manager) CreateOrgQuotas() error {
 			return fmt.Errorf("Cannot have named quota %s and enable-org-quota for org %s", input.NamedQuota, input.Org)
 		}
 		if input.EnableOrgQuota || input.NamedQuota != "" {
-			org, err := m.OrgMgr.FindOrg(input.Org)
+			org, err := m.OrgReader.FindOrg(input.Org)
 			if err != nil {
 				return err
 			}

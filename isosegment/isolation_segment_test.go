@@ -17,16 +17,16 @@ var _ = Describe("Isolation Segments", func() {
 	var (
 		u            *isosegment.Updater
 		client       *fakes.FakeCFClient
-		orgManager   *orgfakes.FakeManager
+		orgReader    *orgfakes.FakeReader
 		spaceManager *spacefakes.FakeManager
 	)
 	BeforeEach(func() {
 		client = new(fakes.FakeCFClient)
-		orgManager = new(orgfakes.FakeManager)
+		orgReader = new(orgfakes.FakeReader)
 		spaceManager = new(spacefakes.FakeManager)
 		u = &isosegment.Updater{
 			Cfg:          config.NewManager("./fixtures/0001"),
-			OrgManager:   orgManager,
+			OrgReader:    orgReader,
 			SpaceManager: spaceManager,
 			Peek:         false,
 			CleanUp:      true,
@@ -152,7 +152,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
-				orgManager.FindOrgReturns(cfclient.Org{Guid: "orgGUID"}, nil)
+				orgReader.FindOrgReturns(cfclient.Org{Guid: "orgGUID"}, nil)
 			})
 
 			It("makes no changes", func() {
@@ -171,7 +171,7 @@ var _ = Describe("Isolation Segments", func() {
 
 			It("entitles both orgs to their isolation segments", func() {
 				By("entitling org1 to iso00 (used by one of its spaces)")
-				orgManager.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
+				orgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
 				Ω(u.Entitle()).Should(Succeed())
 				Expect(client.AddIsolationSegmentToOrgCallCount()).Should(Equal(2))
 				var isoSegmentGUIDs []string
@@ -202,7 +202,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 					{Name: "extra", GUID: "extra_guid"}}, nil)
-				orgManager.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
+				orgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
 			})
 
 			It("revokes org2's access to the extra isolation segment when CleanUp is enabled", func() {
@@ -230,7 +230,7 @@ var _ = Describe("Isolation Segments", func() {
 	Describe("UpdateOrgs() default isolation segment", func() {
 		Context("when org1 is configured to use iso00 by default", func() {
 			It("sets isolation segments correctly", func() {
-				orgManager.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
+				orgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
 				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
@@ -248,7 +248,7 @@ var _ = Describe("Isolation Segments", func() {
 				u.Cfg = config.NewManager("./fixtures/0003")
 			})
 			It("sets isolation segments correctly", func() {
-				orgManager.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid", DefaultIsolationSegmentGuid: "foo"}, nil)
+				orgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid", DefaultIsolationSegmentGuid: "foo"}, nil)
 				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
@@ -287,7 +287,7 @@ var _ = Describe("Isolation Segments", func() {
 		Context("when there is an error setting the default isolation segment", func() {
 			It("fails", func() {
 
-				orgManager.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
+				orgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
 				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},

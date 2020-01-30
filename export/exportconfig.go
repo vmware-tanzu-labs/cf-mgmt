@@ -5,7 +5,6 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
 	"github.com/pivotalservices/cf-mgmt/privatedomain"
@@ -16,6 +15,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/pivotalservices/cf-mgmt/user"
+	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
@@ -26,7 +26,7 @@ func NewExportManager(
 	uaaMgr uaa.Manager,
 	spaceManager space.Manager,
 	userManager user.Manager,
-	orgManager organization.Manager,
+	orgReader organization.Reader,
 	securityGroupManager securitygroup.Manager,
 	isoSegmentMgr isosegment.Manager,
 	privateDomainMgr privatedomain.Manager,
@@ -38,7 +38,7 @@ func NewExportManager(
 		UAAMgr:               uaaMgr,
 		SpaceManager:         spaceManager,
 		UserManager:          userManager,
-		OrgManager:           orgManager,
+		OrgReader:            orgReader,
 		SecurityGroupManager: securityGroupManager,
 		IsoSegmentManager:    isoSegmentMgr,
 		PrivateDomainManager: privateDomainMgr,
@@ -53,7 +53,7 @@ type Manager struct {
 	UAAMgr               uaa.Manager
 	SpaceManager         space.Manager
 	UserManager          user.Manager
-	OrgManager           organization.Manager
+	OrgReader            organization.Reader
 	SecurityGroupManager securitygroup.Manager
 	IsoSegmentManager    isosegment.Manager
 	PrivateDomainManager privatedomain.Manager
@@ -84,7 +84,7 @@ func (im *Manager) ExportServiceAccess() error {
 	if err != nil {
 		return err
 	}
-	orgs, err := im.OrgManager.ListOrgs()
+	orgs, err := im.OrgReader.ListOrgs()
 	if err != nil {
 		lo.G.Errorf("Unable to retrieve orgs. Error : %s", err)
 		return err
@@ -113,7 +113,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 	}
 	lo.G.Debugf("uaa user id map %v", uaaUsers)
 	//Get all the orgs
-	orgs, err := im.OrgManager.ListOrgs()
+	orgs, err := im.OrgReader.ListOrgs()
 	if err != nil {
 		lo.G.Errorf("Unable to retrieve orgs. Error : %s", err)
 		return err

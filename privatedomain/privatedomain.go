@@ -13,21 +13,21 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(client CFClient, orgMgr organization.Manager, cfg config.Reader, peek bool) Manager {
+func NewManager(client CFClient, orgReader organization.Reader, cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
-		Cfg:    cfg,
-		OrgMgr: orgMgr,
-		Client: client,
-		Peek:   peek,
+		Cfg:       cfg,
+		OrgReader: orgReader,
+		Client:    client,
+		Peek:      peek,
 	}
 }
 
 //DefaultManager -
 type DefaultManager struct {
-	Cfg    config.Reader
-	OrgMgr organization.Manager
-	Client CFClient
-	Peek   bool
+	Cfg       config.Reader
+	OrgReader organization.Reader
+	Client    CFClient
+	Peek      bool
 }
 
 func (m *DefaultManager) CreatePrivateDomains() error {
@@ -41,7 +41,7 @@ func (m *DefaultManager) CreatePrivateDomains() error {
 		return err
 	}
 	for _, orgConfig := range orgConfigs {
-		org, err := m.OrgMgr.FindOrg(orgConfig.Org)
+		org, err := m.OrgReader.FindOrg(orgConfig.Org)
 		if err != nil {
 			return err
 		}
@@ -49,7 +49,7 @@ func (m *DefaultManager) CreatePrivateDomains() error {
 		for _, privateDomain := range orgConfig.PrivateDomains {
 			if existingPrivateDomain, ok := allPrivateDomains[privateDomain]; ok {
 				if org.Guid != existingPrivateDomain.OwningOrganizationGuid {
-					existingOrg, err := m.OrgMgr.FindOrgByGUID(existingPrivateDomain.OwningOrganizationGuid)
+					existingOrg, err := m.OrgReader.FindOrgByGUID(existingPrivateDomain.OwningOrganizationGuid)
 					if err != nil {
 						return err
 					}
@@ -97,7 +97,7 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		return err
 	}
 	for _, orgConfig := range orgConfigs {
-		org, err := m.OrgMgr.FindOrg(orgConfig.Org)
+		org, err := m.OrgReader.FindOrg(orgConfig.Org)
 		if err != nil {
 			return err
 		}

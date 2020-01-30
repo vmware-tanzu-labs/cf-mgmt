@@ -23,7 +23,7 @@ func (c *ExportConfigurationCommand) Execute([]string) error {
 			cfMgmt.UAAManager,
 			cfMgmt.SpaceManager,
 			cfMgmt.UserManager,
-			cfMgmt.OrgManager,
+			cfMgmt.OrgReader,
 			cfMgmt.SecurityGroupManager,
 			cfMgmt.IsolationSegmentManager,
 			cfMgmt.PrivateDomainManager,

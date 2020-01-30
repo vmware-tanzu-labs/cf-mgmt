@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"code.cloudfoundry.org/routing-api"
+	routing_api "code.cloudfoundry.org/routing-api"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/configcommands"
@@ -23,6 +23,7 @@ import (
 
 type CFMgmt struct {
 	UAAManager              uaa.Manager
+	OrgReader               organization.Reader
 	OrgManager              organization.Manager
 	SpaceManager            space.Manager
 	UserManager             user.Manager
@@ -94,18 +95,19 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	if err != nil {
 		return nil, err
 	}
-	cfMgmt.OrgManager = organization.NewManager(client, cfg, peek)
-	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgManager, cfg, peek)
-	cfMgmt.UserManager = user.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.OrgManager, cfMgmt.UAAManager, peek)
+	cfMgmt.OrgReader = organization.NewReader(client, cfg, peek)
+	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.OrgReader, cfg, peek)
+	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgReader, cfg, peek)
+	cfMgmt.UserManager = user.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.UAAManager, peek)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
-	cfMgmt.QuotaManager = quota.NewManager(client, cfMgmt.SpaceManager, cfMgmt.OrgManager, cfg, peek)
-	cfMgmt.PrivateDomainManager = privatedomain.NewManager(client, cfMgmt.OrgManager, cfg, peek)
-	if isoSegmentManager, err := isosegment.NewManager(client, cfg, cfMgmt.OrgManager, cfMgmt.SpaceManager, peek); err == nil {
+	cfMgmt.QuotaManager = quota.NewManager(client, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.OrgManager, cfg, peek)
+	cfMgmt.PrivateDomainManager = privatedomain.NewManager(client, cfMgmt.OrgReader, cfg, peek)
+	if isoSegmentManager, err := isosegment.NewManager(client, cfg, cfMgmt.OrgReader, cfMgmt.SpaceManager, peek); err == nil {
 		cfMgmt.IsolationSegmentManager = isoSegmentManager
 	} else {
 		return nil, err
 	}
-	cfMgmt.ServiceAccessManager = serviceaccess.NewManager(client, cfMgmt.OrgManager, cfg, peek)
+	cfMgmt.ServiceAccessManager = serviceaccess.NewManager(client, cfMgmt.OrgReader, cfg, peek)
 	token, err := client.GetToken()
 	if err != nil {
 		return nil, err

@@ -48,6 +48,18 @@ type FakeCFClient struct {
 		result1 cfclient.Space
 		result2 error
 	}
+	ListOrgsStub        func() ([]cfclient.Org, error)
+	listOrgsMutex       sync.RWMutex
+	listOrgsArgsForCall []struct {
+	}
+	listOrgsReturns struct {
+		result1 []cfclient.Org
+		result2 error
+	}
+	listOrgsReturnsOnCall map[int]struct {
+		result1 []cfclient.Org
+		result2 error
+	}
 	ListSpacesStub        func() ([]cfclient.Space, error)
 	listSpacesMutex       sync.RWMutex
 	listSpacesArgsForCall []struct {
@@ -310,6 +322,61 @@ func (fake *FakeCFClient) GetSpaceByGuidReturnsOnCall(i int, result1 cfclient.Sp
 	}
 	fake.getSpaceByGuidReturnsOnCall[i] = struct {
 		result1 cfclient.Space
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFClient) ListOrgs() ([]cfclient.Org, error) {
+	fake.listOrgsMutex.Lock()
+	ret, specificReturn := fake.listOrgsReturnsOnCall[len(fake.listOrgsArgsForCall)]
+	fake.listOrgsArgsForCall = append(fake.listOrgsArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListOrgs", []interface{}{})
+	fake.listOrgsMutex.Unlock()
+	if fake.ListOrgsStub != nil {
+		return fake.ListOrgsStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listOrgsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCFClient) ListOrgsCallCount() int {
+	fake.listOrgsMutex.RLock()
+	defer fake.listOrgsMutex.RUnlock()
+	return len(fake.listOrgsArgsForCall)
+}
+
+func (fake *FakeCFClient) ListOrgsCalls(stub func() ([]cfclient.Org, error)) {
+	fake.listOrgsMutex.Lock()
+	defer fake.listOrgsMutex.Unlock()
+	fake.ListOrgsStub = stub
+}
+
+func (fake *FakeCFClient) ListOrgsReturns(result1 []cfclient.Org, result2 error) {
+	fake.listOrgsMutex.Lock()
+	defer fake.listOrgsMutex.Unlock()
+	fake.ListOrgsStub = nil
+	fake.listOrgsReturns = struct {
+		result1 []cfclient.Org
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFClient) ListOrgsReturnsOnCall(i int, result1 []cfclient.Org, result2 error) {
+	fake.listOrgsMutex.Lock()
+	defer fake.listOrgsMutex.Unlock()
+	fake.ListOrgsStub = nil
+	if fake.listOrgsReturnsOnCall == nil {
+		fake.listOrgsReturnsOnCall = make(map[int]struct {
+			result1 []cfclient.Org
+			result2 error
+		})
+	}
+	fake.listOrgsReturnsOnCall[i] = struct {
+		result1 []cfclient.Org
 		result2 error
 	}{result1, result2}
 }
@@ -681,6 +748,8 @@ func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	defer fake.deleteSpaceMutex.RUnlock()
 	fake.getSpaceByGuidMutex.RLock()
 	defer fake.getSpaceByGuidMutex.RUnlock()
+	fake.listOrgsMutex.RLock()
+	defer fake.listOrgsMutex.RUnlock()
 	fake.listSpacesMutex.RLock()
 	defer fake.listSpacesMutex.RUnlock()
 	fake.removeSpaceMetadataMutex.RLock()

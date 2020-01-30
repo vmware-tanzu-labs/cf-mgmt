@@ -5,27 +5,27 @@ import (
 
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organization"
-	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pivotalservices/cf-mgmt/serviceaccess/legacy"
+	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
 )
 
 func NewManager(client CFClient,
-	orgMgr organization.Manager,
+	orgReader organization.Reader,
 	cfg config.Reader, peek bool) *Manager {
 	return &Manager{
 		Client:    client,
-		OrgMgr:    orgMgr,
+		OrgReader: orgReader,
 		Cfg:       cfg,
 		Peek:      peek,
-		LegacyMgr: legacy.NewManager(client, orgMgr, cfg, peek),
+		LegacyMgr: legacy.NewManager(client, orgReader, cfg, peek),
 	}
 }
 
 type Manager struct {
 	Client    CFClient
 	Cfg       config.Reader
-	OrgMgr    organization.Manager
+	OrgReader organization.Reader
 	Peek      bool
 	LegacyMgr *legacy.Manager
 }
@@ -158,7 +158,7 @@ func (m *Manager) ProtectedOrgList() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	orgs, err := m.OrgMgr.ListOrgs()
+	orgs, err := m.OrgReader.ListOrgs()
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func (m *Manager) ProtectedOrgList() ([]string, error) {
 }
 
 func (m *Manager) CreatePlanVisibility(servicePlan *ServicePlanInfo, orgName string) error {
-	org, err := m.OrgMgr.FindOrg(orgName)
+	org, err := m.OrgReader.FindOrg(orgName)
 	if err != nil {
 		return err
 	}
@@ -225,7 +225,7 @@ func (m *Manager) MakePrivate(servicePlan *ServicePlanInfo) error {
 
 func (m *Manager) RemoveVisibilities(servicePlan *ServicePlanInfo) error {
 	for _, visibility := range servicePlan.ListVisibilities() {
-		org, err := m.OrgMgr.GetOrgByGUID(visibility.OrgGUID)
+		org, err := m.OrgReader.GetOrgByGUID(visibility.OrgGUID)
 		if err != nil {
 			return err
 		}

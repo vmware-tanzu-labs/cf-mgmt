@@ -17,14 +17,14 @@ import (
 
 var _ = Describe("Serviceaccess", func() {
 	var fakeCFClient *fakes.FakeCFClient
-	var fakeOrgMgr *orgfakes.FakeManager
+	var fakeOrgReader *orgfakes.FakeReader
 	var fakeReader *configfakes.FakeReader
 	var manager *Manager
 	BeforeEach(func() {
 		fakeCFClient = &fakes.FakeCFClient{}
-		fakeOrgMgr = &orgfakes.FakeManager{}
+		fakeOrgReader = &orgfakes.FakeReader{}
 		fakeReader = &configfakes.FakeReader{}
-		manager = NewManager(fakeCFClient, fakeOrgMgr, fakeReader, false)
+		manager = NewManager(fakeCFClient, fakeOrgReader, fakeReader, false)
 	})
 
 	Context("UpdateServiceAccess", func() {
@@ -137,7 +137,7 @@ var _ = Describe("Serviceaccess", func() {
 			service.AddPlan(servicePlan)
 			protectedOrgs := []string{"system"}
 
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
 			err := manager.UpdateServiceAccess(globalCfg, serviceInfo, protectedOrgs)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
@@ -248,7 +248,7 @@ var _ = Describe("Serviceaccess", func() {
 				Public:      true,
 				ServiceName: "a-service",
 			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
 			err := manager.EnsureLimitedAccess(plan, []string{"test-org"}, []string{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
@@ -271,7 +271,7 @@ var _ = Describe("Serviceaccess", func() {
 				OrgGUID:         "test-org-guid",
 				ServicePlanGUID: "a-plan-guid",
 			})
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
 			err := manager.EnsureLimitedAccess(plan, []string{"test-org"}, []string{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
@@ -285,7 +285,7 @@ var _ = Describe("Serviceaccess", func() {
 				Public:      true,
 				ServiceName: "a-service",
 			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
 			err := manager.EnsureLimitedAccess(plan, []string{}, []string{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
@@ -303,7 +303,7 @@ var _ = Describe("Serviceaccess", func() {
 				ServiceName: "a-service",
 			}
 			manager.Peek = true
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
 			err := manager.EnsureLimitedAccess(plan, []string{"test-org"}, []string{})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(0))
@@ -331,7 +331,7 @@ var _ = Describe("Serviceaccess", func() {
 				Public:      true,
 				ServiceName: "a-service",
 			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{}, errors.New("error getting org"))
+			fakeOrgReader.FindOrgReturns(cfclient.Org{}, errors.New("error getting org"))
 			err := manager.EnsureLimitedAccess(plan, []string{"test-org"}, []string{})
 			Expect(err).Should(MatchError("error getting org"))
 			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).Should(Equal(1))
@@ -341,7 +341,7 @@ var _ = Describe("Serviceaccess", func() {
 	})
 	Context("ProtectedOrgList", func() {
 		It("Should return a list", func() {
-			fakeOrgMgr.ListOrgsReturns([]cfclient.Org{
+			fakeOrgReader.ListOrgsReturns([]cfclient.Org{
 				cfclient.Org{Name: "foo"},
 				cfclient.Org{Name: "system"},
 				cfclient.Org{Name: "bar"},
@@ -352,7 +352,7 @@ var _ = Describe("Serviceaccess", func() {
 			Expect(len(protectedOrgsList)).Should(BeEquivalentTo(1))
 		})
 		It("Should error getting org config", func() {
-			fakeOrgMgr.ListOrgsReturns([]cfclient.Org{
+			fakeOrgReader.ListOrgsReturns([]cfclient.Org{
 				cfclient.Org{Name: "foo"},
 				cfclient.Org{Name: "system"},
 				cfclient.Org{Name: "bar"},
@@ -363,7 +363,7 @@ var _ = Describe("Serviceaccess", func() {
 			Expect(len(protectedOrgsList)).Should(BeEquivalentTo(0))
 		})
 		It("Should error getting orgs", func() {
-			fakeOrgMgr.ListOrgsReturns([]cfclient.Org{
+			fakeOrgReader.ListOrgsReturns([]cfclient.Org{
 				cfclient.Org{Name: "foo"},
 				cfclient.Org{Name: "system"},
 				cfclient.Org{Name: "bar"},
@@ -376,7 +376,7 @@ var _ = Describe("Serviceaccess", func() {
 	})
 	Context("CreateServiceVisibility", func() {
 		It("Creates visibility from org that doesn't have access", func() {
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
 			servicePlan := &ServicePlanInfo{
 				GUID: "a-plan-guid",
 			}
@@ -389,7 +389,7 @@ var _ = Describe("Serviceaccess", func() {
 		})
 
 		It("Skips creating visibility from org that already has access", func() {
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
 			servicePlan := &ServicePlanInfo{
 				GUID: "a-plan-guid",
 			}
@@ -401,7 +401,7 @@ var _ = Describe("Serviceaccess", func() {
 		})
 
 		It("errors creating visibility from org that doesn't have access", func() {
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid"}, nil)
 			servicePlan := &ServicePlanInfo{
 				GUID: "a-plan-guid",
 			}
@@ -417,7 +417,7 @@ var _ = Describe("Serviceaccess", func() {
 
 	Context("RemoveServiceVisibility", func() {
 		It("Removes visibility from org that shouldn't have access", func() {
-			fakeOrgMgr.GetOrgByGUIDReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
+			fakeOrgReader.GetOrgByGUIDReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
 			servicePlan := &ServicePlanInfo{
 				GUID: "a-plan-guid",
 			}
@@ -432,7 +432,7 @@ var _ = Describe("Serviceaccess", func() {
 		})
 
 		It("Peeks Removes visibility from org that shouldn't have access", func() {
-			fakeOrgMgr.GetOrgByGUIDReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
+			fakeOrgReader.GetOrgByGUIDReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
 			servicePlan := &ServicePlanInfo{
 				GUID: "a-plan-guid",
 			}
@@ -444,7 +444,7 @@ var _ = Describe("Serviceaccess", func() {
 		})
 
 		It("Errors getting org", func() {
-			fakeOrgMgr.GetOrgByGUIDReturns(cfclient.Org{}, errors.New("getting org by guid"))
+			fakeOrgReader.GetOrgByGUIDReturns(cfclient.Org{}, errors.New("getting org by guid"))
 			servicePlan := &ServicePlanInfo{
 				GUID: "a-plan-guid",
 			}
@@ -455,7 +455,7 @@ var _ = Describe("Serviceaccess", func() {
 		})
 
 		It("errors removing visibility from org that shouldn't have access", func() {
-			fakeOrgMgr.GetOrgByGUIDReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
+			fakeOrgReader.GetOrgByGUIDReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
 			servicePlan := &ServicePlanInfo{
 				GUID: "a-plan-guid",
 			}

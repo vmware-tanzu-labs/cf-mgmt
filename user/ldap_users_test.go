@@ -25,7 +25,7 @@ var _ = Describe("given UserSpaces", func() {
 		uaaFake     *uaafakes.FakeManager
 		fakeReader  *configfakes.FakeReader
 		spaceFake   *spacefakes.FakeManager
-		orgFake     *orgfakes.FakeManager
+		orgFake     *orgfakes.FakeReader
 	)
 	BeforeEach(func() {
 		client = new(fakes.FakeCFClient)
@@ -33,7 +33,7 @@ var _ = Describe("given UserSpaces", func() {
 		uaaFake = new(uaafakes.FakeManager)
 		fakeReader = new(configfakes.FakeReader)
 		spaceFake = new(spacefakes.FakeManager)
-		orgFake = new(orgfakes.FakeManager)
+		orgFake = new(orgfakes.FakeReader)
 	})
 	Context("User Manager()", func() {
 		BeforeEach(func() {
@@ -43,7 +43,7 @@ var _ = Describe("given UserSpaces", func() {
 				UAAMgr:     uaaFake,
 				LdapMgr:    ldapFake,
 				SpaceMgr:   spaceFake,
-				OrgMgr:     orgFake,
+				OrgReader:  orgFake,
 				Peek:       false,
 				LdapConfig: &config.LdapConfig{Origin: "ldap"}}
 		})

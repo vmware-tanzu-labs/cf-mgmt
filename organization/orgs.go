@@ -11,50 +11,32 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(client CFClient, cfg config.Reader, peek bool) Manager {
+func NewManager(client CFClient, orgReader Reader, cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
-		Cfg:    cfg,
-		Client: client,
-		Peek:   peek,
+		Cfg:       cfg,
+		Client:    client,
+		OrgReader: orgReader,
+		Peek:      peek,
 	}
 }
 
 //DefaultManager -
 type DefaultManager struct {
-	Cfg    config.Reader
-	Client CFClient
-	Peek   bool
-	orgs   []cfclient.Org
-}
-
-func (m *DefaultManager) init() error {
-	if m.orgs == nil {
-		orgs, err := m.Client.ListOrgs()
-		if err != nil {
-			return err
-		}
-		m.orgs = orgs
-	}
-	return nil
-}
-
-func (m *DefaultManager) GetOrgGUID(orgName string) (string, error) {
-	org, err := m.FindOrg(orgName)
-	if err != nil {
-		return "", err
-	}
-	return org.Guid, nil
+	Cfg       config.Reader
+	OrgReader Reader
+	Client    CFClient
+	Peek      bool
 }
 
 //CreateOrgs -
 func (m *DefaultManager) CreateOrgs() error {
-	m.orgs = nil
+	m.OrgReader.ClearOrgList()
 	desiredOrgs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return err
 	}
 
-	currentOrgs, err := m.ListOrgs()
+	currentOrgs, err := m.OrgReader.ListOrgs()
 	if err != nil {
 		return err
 	}
@@ -76,13 +58,13 @@ func (m *DefaultManager) CreateOrgs() error {
 			return err
 		}
 	}
-	m.orgs = nil
+	m.OrgReader.ClearOrgList()
 	return nil
 }
 
 //DeleteOrgs -
 func (m *DefaultManager) DeleteOrgs() error {
-	m.orgs = nil
+	m.OrgReader.ClearOrgList()
 	orgsConfig, err := m.Cfg.Orgs()
 	if err != nil {
 		return err
@@ -106,7 +88,7 @@ func (m *DefaultManager) DeleteOrgs() error {
 		configuredOrgs[orgName] = true
 	}
 
-	orgs, err := m.ListOrgs()
+	orgs, err := m.OrgReader.ListOrgs()
 	if err != nil {
 		return err
 	}
@@ -129,7 +111,7 @@ func (m *DefaultManager) DeleteOrgs() error {
 			return err
 		}
 	}
-	m.orgs = nil
+	m.OrgReader.ClearOrgList()
 	return nil
 }
 
@@ -150,56 +132,6 @@ func doesOrgExistFromRename(orgName string, orgs []cfclient.Org) bool {
 	return false
 }
 
-//FindOrg -
-func (m *DefaultManager) FindOrg(orgName string) (cfclient.Org, error) {
-	orgs, err := m.ListOrgs()
-	if err != nil {
-		return cfclient.Org{}, err
-	}
-	for _, theOrg := range orgs {
-		if strings.EqualFold(theOrg.Name, orgName) {
-			return theOrg, nil
-		}
-	}
-	if m.Peek {
-		return cfclient.Org{
-			Name: orgName,
-			Guid: fmt.Sprintf("%s-dry-run-org-guid", orgName),
-		}, nil
-	}
-	return cfclient.Org{}, fmt.Errorf("org %q not found", orgName)
-}
-
-//FindOrgByGUID -
-func (m *DefaultManager) FindOrgByGUID(orgGUID string) (cfclient.Org, error) {
-	orgs, err := m.ListOrgs()
-	if err != nil {
-		return cfclient.Org{}, err
-	}
-	for _, theOrg := range orgs {
-		if theOrg.Guid == orgGUID {
-			return theOrg, nil
-		}
-	}
-	if m.Peek {
-		return cfclient.Org{
-			Guid: orgGUID,
-			Name: fmt.Sprintf("%s-dry-run-org-name", orgGUID),
-		}, nil
-	}
-	return cfclient.Org{}, fmt.Errorf("org %q not found", orgGUID)
-}
-
-//ListOrgs : Returns all orgs in the given foundation
-func (m *DefaultManager) ListOrgs() ([]cfclient.Org, error) {
-	err := m.init()
-	if err != nil {
-		return nil, err
-	}
-	lo.G.Debug("Total orgs returned :", len(m.orgs))
-	return m.orgs, nil
-}
-
 func (m *DefaultManager) orgNames(orgs []cfclient.Org) []string {
 	var orgNames []string
 	for _, org := range orgs {
@@ -218,11 +150,11 @@ func (m *DefaultManager) CreateOrg(orgName string, currentOrgs []string) error {
 	org, err := m.Client.CreateOrg(cfclient.OrgRequest{
 		Name: orgName,
 	})
-	if m.orgs == nil {
-		m.orgs = []cfclient.Org{}
+	if err != nil {
+		return err
 	}
-	m.orgs = append(m.orgs, org)
-	return err
+	m.OrgReader.AddOrgToList(org)
+	return nil
 }
 
 func (m *DefaultManager) RenameOrg(originalOrgName, newOrgName string) error {
@@ -231,7 +163,7 @@ func (m *DefaultManager) RenameOrg(originalOrgName, newOrgName string) error {
 		return nil
 	}
 	lo.G.Infof("renaming org %s to %s", originalOrgName, newOrgName)
-	org, err := m.FindOrg(originalOrgName)
+	org, err := m.OrgReader.FindOrg(originalOrgName)
 	if err != nil {
 		return err
 	}
@@ -252,7 +184,7 @@ func (m *DefaultManager) DeleteOrg(org cfclient.Org) error {
 }
 
 func (m *DefaultManager) DeleteOrgByName(orgName string) error {
-	orgs, err := m.ListOrgs()
+	orgs, err := m.OrgReader.ListOrgs()
 	if err != nil {
 		return err
 	}
@@ -266,10 +198,6 @@ func (m *DefaultManager) DeleteOrgByName(orgName string) error {
 
 func (m *DefaultManager) UpdateOrg(orgGUID string, orgRequest cfclient.OrgRequest) (cfclient.Org, error) {
 	return m.Client.UpdateOrg(orgGUID, orgRequest)
-}
-
-func (m *DefaultManager) GetOrgByGUID(orgGUID string) (cfclient.Org, error) {
-	return m.Client.GetOrgByGuid(orgGUID)
 }
 
 func (m *DefaultManager) UpdateOrgsMetadata() error {
@@ -294,7 +222,7 @@ func (m *DefaultManager) UpdateOrgsMetadata() error {
 
 	for _, orgConfig := range orgConfigList {
 		if orgConfig.Metadata != nil {
-			org, err := m.FindOrg(orgConfig.Org)
+			org, err := m.OrgReader.FindOrg(orgConfig.Org)
 			if err != nil {
 				return err
 			}

@@ -14,7 +14,7 @@ import (
 )
 
 //NewManager -
-func NewManager(client CFClient, cfg config.Reader, orgManager organization.Manager, spaceManager space.Manager, peek bool) (Manager, error) {
+func NewManager(client CFClient, cfg config.Reader, orgReader organization.Reader, spaceManager space.Manager, peek bool) (Manager, error) {
 	globalCfg, err := cfg.GetGlobalConfig()
 	if err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func NewManager(client CFClient, cfg config.Reader, orgManager organization.Mana
 	return &Updater{
 		Cfg:          cfg,
 		Client:       client,
-		OrgManager:   orgManager,
+		OrgReader:    orgReader,
 		SpaceManager: spaceManager,
 		Peek:         peek,
 		CleanUp:      globalCfg.EnableDeleteIsolationSegments,
@@ -36,7 +36,7 @@ func NewManager(client CFClient, cfg config.Reader, orgManager organization.Mana
 type Updater struct {
 	Cfg          config.Reader
 	Client       CFClient
-	OrgManager   organization.Manager
+	OrgReader    organization.Reader
 	SpaceManager space.Manager
 	Peek         bool
 	CleanUp      bool
@@ -133,7 +133,7 @@ func (u *Updater) Unentitle() error {
 	// org's default segment
 	sm := make(map[string][]*cfclient.IsolationSegment)
 	for _, space := range spaces {
-		org, err := u.OrgManager.FindOrg(space.Org)
+		org, err := u.OrgReader.FindOrg(space.Org)
 		if err != nil {
 			return errors.Wrap(err, "finding org for space configs")
 		}
@@ -150,7 +150,7 @@ func (u *Updater) Unentitle() error {
 		}
 	}
 	for _, orgConfig := range orgs {
-		org, err := u.OrgManager.FindOrg(orgConfig.Org)
+		org, err := u.OrgReader.FindOrg(orgConfig.Org)
 		if err != nil {
 			return errors.Wrap(err, "finding org for org configs")
 		}
@@ -215,7 +215,7 @@ func (u *Updater) Entitle() error {
 	for _, space := range spaces {
 		if s := space.IsoSegment; s != "" {
 			if isosegment, ok := isolationSegmentsMap[s]; ok {
-				org, err := u.OrgManager.FindOrg(space.Org)
+				org, err := u.OrgReader.FindOrg(space.Org)
 				if err != nil {
 					return errors.Wrap(err, "finding org for space configs in entitle")
 				}
@@ -229,7 +229,7 @@ func (u *Updater) Entitle() error {
 	}
 	for _, orgConfig := range orgs {
 		if s := orgConfig.DefaultIsoSegment; s != "" {
-			org, err := u.OrgManager.FindOrg(orgConfig.Org)
+			org, err := u.OrgReader.FindOrg(orgConfig.Org)
 			if err != nil {
 				return errors.Wrap(err, "finding org for org configs in entitle")
 			}
@@ -270,7 +270,7 @@ func (u *Updater) UpdateOrgs() error {
 		return err
 	}
 	for _, oc := range ocs {
-		org, err := u.OrgManager.FindOrg(oc.Org)
+		org, err := u.OrgReader.FindOrg(oc.Org)
 		if err != nil {
 			return errors.Wrap(err, "finding org for org configs in update orgs")
 		}

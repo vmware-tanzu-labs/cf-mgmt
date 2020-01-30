@@ -28,7 +28,7 @@ var _ = Describe("RoleUsers", func() {
 		userList    []cfclient.User
 		uaaUsers    *uaa.Users
 		spaceFake   *spacefakes.FakeManager
-		orgFake     *orgfakes.FakeManager
+		orgFake     *orgfakes.FakeReader
 	)
 	BeforeEach(func() {
 		client = new(fakes.FakeCFClient)
@@ -36,14 +36,14 @@ var _ = Describe("RoleUsers", func() {
 		uaaFake = new(uaafakes.FakeManager)
 		fakeReader = new(configfakes.FakeReader)
 		spaceFake = new(spacefakes.FakeManager)
-		orgFake = new(orgfakes.FakeManager)
+		orgFake = new(orgfakes.FakeReader)
 		userManager = &DefaultManager{
 			Client:     client,
 			Cfg:        fakeReader,
 			UAAMgr:     uaaFake,
 			LdapMgr:    ldapFake,
 			SpaceMgr:   spaceFake,
-			OrgMgr:     orgFake,
+			OrgReader:  orgFake,
 			Peek:       false,
 			LdapConfig: &config.LdapConfig{Origin: "ldap"},
 		}

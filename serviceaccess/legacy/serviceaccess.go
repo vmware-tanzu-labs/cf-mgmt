@@ -5,27 +5,27 @@ import (
 	"net/url"
 
 	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
 )
 
 func NewManager(client CFClient,
-	orgMgr organization.Manager,
+	orgReader organization.Reader,
 	cfg config.Reader, peek bool) *Manager {
 	return &Manager{
-		Client: client,
-		OrgMgr: orgMgr,
-		Cfg:    cfg,
-		Peek:   peek,
+		Client:    client,
+		OrgReader: orgReader,
+		Cfg:       cfg,
+		Peek:      peek,
 	}
 }
 
 type Manager struct {
-	Client CFClient
-	Cfg    config.Reader
-	OrgMgr organization.Manager
-	Peek   bool
+	Client    CFClient
+	Cfg       config.Reader
+	OrgReader organization.Reader
+	Peek      bool
 }
 
 func (m *Manager) Apply() error {
@@ -139,7 +139,7 @@ func (m *Manager) ListServiceInfo() (*ServiceInfo, error) {
 }
 
 func (m *Manager) EnableProtectedOrgServiceAccess(serviceInfo *ServiceInfo, protectedOrgs []string) error {
-	orgs, err := m.OrgMgr.ListOrgs()
+	orgs, err := m.OrgReader.ListOrgs()
 	if err != nil {
 		return err
 	}
@@ -170,7 +170,7 @@ func (m *Manager) EnableProtectedOrgServiceAccess(serviceInfo *ServiceInfo, prot
 func (m *Manager) EnableOrgServiceAccess(serviceInfo *ServiceInfo, orgConfigs []config.OrgConfig) error {
 	for _, orgConfig := range orgConfigs {
 		if orgConfig.ServiceAccess != nil {
-			org, err := m.OrgMgr.FindOrg(orgConfig.Org)
+			org, err := m.OrgReader.FindOrg(orgConfig.Org)
 			if err != nil {
 				return err
 			}

@@ -18,20 +18,20 @@ var _ = Describe("given UserSpaces", func() {
 		manager    *DefaultManager
 		client     *fakes.FakeCFClient
 		fakeReader *configfakes.FakeReader
-		orgFake    *orgfakes.FakeManager
+		orgFake    *orgfakes.FakeReader
 	)
 	BeforeEach(func() {
 		client = new(fakes.FakeCFClient)
 		fakeReader = new(configfakes.FakeReader)
-		orgFake = new(orgfakes.FakeManager)
+		orgFake = new(orgfakes.FakeReader)
 	})
 	Context("Manager()", func() {
 		BeforeEach(func() {
 			manager = &DefaultManager{
-				Client: client,
-				Cfg:    fakeReader,
-				OrgMgr: orgFake,
-				Peek:   false}
+				Client:    client,
+				Cfg:       fakeReader,
+				OrgReader: orgFake,
+				Peek:      false}
 		})
 
 		Context("CreatePrivateDomains", func() {

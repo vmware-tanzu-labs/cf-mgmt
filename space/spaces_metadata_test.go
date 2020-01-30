@@ -16,7 +16,7 @@ import (
 var _ = Describe("given SpaceManager", func() {
 	var (
 		fakeUaa      *uaafakes.FakeManager
-		fakeOrgMgr   *orgfakes.FakeManager
+		fakeOrgMgr   *orgfakes.FakeReader
 		fakeClient   *spacefakes.FakeCFClient
 		spaceManager space.DefaultManager
 		fakeReader   *configfakes.FakeReader
@@ -24,15 +24,15 @@ var _ = Describe("given SpaceManager", func() {
 
 	BeforeEach(func() {
 		fakeUaa = new(uaafakes.FakeManager)
-		fakeOrgMgr = new(orgfakes.FakeManager)
+		fakeOrgMgr = new(orgfakes.FakeReader)
 		fakeClient = new(spacefakes.FakeCFClient)
 		fakeReader = new(configfakes.FakeReader)
 		spaceManager = space.DefaultManager{
-			Cfg:    fakeReader,
-			Client: fakeClient,
-			UAAMgr: fakeUaa,
-			OrgMgr: fakeOrgMgr,
-			Peek:   false,
+			Cfg:       fakeReader,
+			Client:    fakeClient,
+			UAAMgr:    fakeUaa,
+			OrgReader: fakeOrgMgr,
+			Peek:      false,
 		}
 	})
 

@@ -14,71 +14,22 @@ import (
 
 var _ = Describe("given OrgManager", func() {
 	var (
-		fakeClient *orgfakes.FakeCFClient
-		orgManager DefaultManager
-		fakeReader *configfakes.FakeReader
+		fakeClient    *orgfakes.FakeCFClient
+		orgManager    DefaultManager
+		fakeReader    *configfakes.FakeReader
+		fakeOrgReader *orgfakes.FakeReader
 	)
 
 	BeforeEach(func() {
 		fakeClient = new(orgfakes.FakeCFClient)
 		fakeReader = new(configfakes.FakeReader)
+		fakeOrgReader = new(orgfakes.FakeReader)
 		orgManager = DefaultManager{
-			Cfg:    fakeReader,
-			Client: fakeClient,
-			Peek:   false,
+			Cfg:       fakeReader,
+			Client:    fakeClient,
+			Peek:      false,
+			OrgReader: fakeOrgReader,
 		}
-	})
-
-	Context("FindOrg()", func() {
-		It("should return an org", func() {
-			orgs := []cfclient.Org{
-				{
-					Name: "test",
-				},
-				{
-					Name: "test2",
-				},
-			}
-			fakeClient.ListOrgsReturns(orgs, nil)
-			org, err := orgManager.FindOrg("test")
-			Ω(err).Should(BeNil())
-			Ω(org).ShouldNot(BeNil())
-			Ω(org.Name).Should(Equal("test"))
-		})
-	})
-	It("should return an error for unfound org", func() {
-		orgs := []cfclient.Org{}
-		fakeClient.ListOrgsReturns(orgs, nil)
-		_, err := orgManager.FindOrg("test")
-		Ω(err).ShouldNot(BeNil())
-	})
-	It("should return an error", func() {
-		fakeClient.ListOrgsReturns(nil, fmt.Errorf("test"))
-		_, err := orgManager.FindOrg("test")
-		Ω(err).ShouldNot(BeNil())
-	})
-
-	Context("GetOrgGUID()", func() {
-		It("should return an GUID", func() {
-			orgs := []cfclient.Org{
-				{
-					Name: "test",
-					Guid: "theGUID",
-				},
-			}
-			fakeClient.ListOrgsReturns(orgs, nil)
-			guid, err := orgManager.GetOrgGUID("test")
-			Ω(err).Should(BeNil())
-			Ω(guid).ShouldNot(BeNil())
-			Ω(guid).Should(Equal("theGUID"))
-		})
-	})
-
-	It("should return an error", func() {
-		fakeClient.ListOrgsReturns(nil, fmt.Errorf("test"))
-		guid, err := orgManager.GetOrgGUID("test")
-		Ω(err).ShouldNot(BeNil())
-		Ω(guid).Should(Equal(""))
 	})
 
 	Context("CreateOrgs()", func() {
@@ -90,19 +41,19 @@ var _ = Describe("given OrgManager", func() {
 		})
 		It("should create 2", func() {
 			orgs := []cfclient.Org{}
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeOrgReader.ListOrgsReturns(orgs, nil)
 			err := orgManager.CreateOrgs()
 			Ω(err).Should(BeNil())
 			Expect(fakeClient.CreateOrgCallCount()).Should(Equal(2))
 		})
 		It("should error on list orgs", func() {
-			fakeClient.ListOrgsReturns(nil, fmt.Errorf("test"))
+			fakeOrgReader.ListOrgsReturns(nil, fmt.Errorf("test"))
 			err := orgManager.CreateOrgs()
 			Ω(err).Should(HaveOccurred())
 		})
 		It("should error on create org", func() {
 			orgs := []cfclient.Org{}
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeOrgReader.ListOrgsReturns(orgs, nil)
 			fakeClient.CreateOrgReturns(cfclient.Org{}, fmt.Errorf("test"))
 			err := orgManager.CreateOrgs()
 			Ω(err).Should(HaveOccurred())
@@ -116,7 +67,7 @@ var _ = Describe("given OrgManager", func() {
 					Name: "test2",
 				},
 			}
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeOrgReader.ListOrgsReturns(orgs, nil)
 			err := orgManager.CreateOrgs()
 			Ω(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.CreateOrgCallCount()).Should(Equal(0))
@@ -127,7 +78,7 @@ var _ = Describe("given OrgManager", func() {
 					Name: "test",
 				},
 			}
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeOrgReader.ListOrgsReturns(orgs, nil)
 			err := orgManager.CreateOrgs()
 			Ω(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.CreateOrgCallCount()).Should(Equal(1))
@@ -149,7 +100,11 @@ var _ = Describe("given OrgManager", func() {
 					Guid: "test2-guid",
 				},
 			}
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeOrgReader.ListOrgsReturns(orgs, nil)
+			fakeOrgReader.FindOrgReturns(cfclient.Org{
+				Name: "test2",
+				Guid: "test2-guid",
+			}, nil)
 			err := orgManager.CreateOrgs()
 			Ω(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.CreateOrgCallCount()).Should(Equal(0))
@@ -186,7 +141,7 @@ var _ = Describe("given OrgManager", func() {
 					Guid: "redis-guid",
 				},
 			}
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeOrgReader.ListOrgsReturns(orgs, nil)
 			err := orgManager.DeleteOrgs()
 			Ω(err).Should(BeNil())
 			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(1))
@@ -222,7 +177,7 @@ var _ = Describe("given OrgManager", func() {
 		})
 
 		It("should delete 1", func() {
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeOrgReader.ListOrgsReturns(orgs, nil)
 			err := orgManager.DeleteOrgByName("test2")
 			Ω(err).Should(BeNil())
 			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(1))
@@ -231,7 +186,7 @@ var _ = Describe("given OrgManager", func() {
 		})
 
 		It("should error deleting org that doesn't exist", func() {
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeOrgReader.ListOrgsReturns(orgs, nil)
 			err := orgManager.DeleteOrgByName("foo")
 			Ω(err).Should(HaveOccurred())
 			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(0))
@@ -239,7 +194,7 @@ var _ = Describe("given OrgManager", func() {
 
 		It("should not delete any org", func() {
 			orgManager.Peek = true
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeOrgReader.ListOrgsReturns(orgs, nil)
 			err := orgManager.DeleteOrgByName("test2")
 			Ω(err).Should(BeNil())
 			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(0))
