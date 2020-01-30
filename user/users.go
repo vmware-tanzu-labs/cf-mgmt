@@ -6,7 +6,7 @@ import (
 
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/ldap"
-	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/organizationreader"
 	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/pivotalservices/cf-mgmt/util"
@@ -19,7 +19,7 @@ func NewManager(
 	client CFClient,
 	cfg config.Reader,
 	spaceMgr space.Manager,
-	orgReader organization.Reader,
+	orgReader organizationreader.Reader,
 	uaaMgr uaa.Manager,
 	peek bool) Manager {
 	return &DefaultManager{
@@ -36,7 +36,7 @@ type DefaultManager struct {
 	Client     CFClient
 	Cfg        config.Reader
 	SpaceMgr   space.Manager
-	OrgReader  organization.Reader
+	OrgReader  organizationreader.Reader
 	UAAMgr     uaa.Manager
 	Peek       bool
 	LdapMgr    LdapManager

@@ -10,7 +10,7 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
+	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
 	"github.com/pivotalservices/cf-mgmt/serviceaccess/legacy/fakes"
 
 	. "github.com/onsi/ginkgo"

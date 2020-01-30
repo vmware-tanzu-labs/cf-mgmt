@@ -6,7 +6,7 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
-	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/organizationreader"
 	"github.com/pivotalservices/cf-mgmt/privatedomain"
 	"github.com/pivotalservices/cf-mgmt/quota"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
@@ -26,7 +26,7 @@ func NewExportManager(
 	uaaMgr uaa.Manager,
 	spaceManager space.Manager,
 	userManager user.Manager,
-	orgReader organization.Reader,
+	orgReader organizationreader.Reader,
 	securityGroupManager securitygroup.Manager,
 	isoSegmentMgr isosegment.Manager,
 	privateDomainMgr privatedomain.Manager,
@@ -53,7 +53,7 @@ type Manager struct {
 	UAAMgr               uaa.Manager
 	SpaceManager         space.Manager
 	UserManager          user.Manager
-	OrgReader            organization.Reader
+	OrgReader            organizationreader.Reader
 	SecurityGroupManager securitygroup.Manager
 	IsoSegmentManager    isosegment.Manager
 	PrivateDomainManager privatedomain.Manager

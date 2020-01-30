@@ -9,7 +9,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/isosegment/fakes"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
+	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
 )
 

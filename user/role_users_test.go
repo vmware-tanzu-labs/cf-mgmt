@@ -13,7 +13,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
+	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
 	uaafakes "github.com/pivotalservices/cf-mgmt/uaa/fakes"
 )

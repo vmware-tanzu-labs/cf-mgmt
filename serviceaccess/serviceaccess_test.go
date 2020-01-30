@@ -8,7 +8,7 @@ import (
 	. "github.com/pivotalservices/cf-mgmt/serviceaccess"
 
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
+	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
 	"github.com/pivotalservices/cf-mgmt/serviceaccess/fakes"
 
 	. "github.com/onsi/ginkgo"

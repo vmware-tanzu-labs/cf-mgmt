@@ -9,7 +9,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
 	ldap "github.com/pivotalservices/cf-mgmt/ldap"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
+	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	uaafakes "github.com/pivotalservices/cf-mgmt/uaa/fakes"

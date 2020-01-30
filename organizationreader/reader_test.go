@@ -1,4 +1,4 @@
-package organization_test
+package organizationreader_test
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	. "github.com/pivotalservices/cf-mgmt/organization"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
+	. "github.com/pivotalservices/cf-mgmt/organizationreader"
+	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
 )
 
 var _ = Describe("given OrgManager", func() {

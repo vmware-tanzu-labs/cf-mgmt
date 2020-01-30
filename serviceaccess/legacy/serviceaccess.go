@@ -5,13 +5,13 @@ import (
 	"net/url"
 
 	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/organizationreader"
 	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
 )
 
 func NewManager(client CFClient,
-	orgReader organization.Reader,
+	orgReader organizationreader.Reader,
 	cfg config.Reader, peek bool) *Manager {
 	return &Manager{
 		Client:    client,
@@ -24,7 +24,7 @@ func NewManager(client CFClient,
 type Manager struct {
 	Client    CFClient
 	Cfg       config.Reader
-	OrgReader organization.Reader
+	OrgReader organizationreader.Reader
 	Peek      bool
 }
 

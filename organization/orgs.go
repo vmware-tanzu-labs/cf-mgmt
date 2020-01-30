@@ -6,12 +6,13 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/pivotalservices/cf-mgmt/organizationreader"
 	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(client CFClient, orgReader Reader, cfg config.Reader, peek bool) Manager {
+func NewManager(client CFClient, orgReader organizationreader.Reader, cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
 		Cfg:       cfg,
 		Client:    client,
@@ -23,7 +24,7 @@ func NewManager(client CFClient, orgReader Reader, cfg config.Reader, peek bool)
 //DefaultManager -
 type DefaultManager struct {
 	Cfg       config.Reader
-	OrgReader Reader
+	OrgReader organizationreader.Reader
 	Client    CFClient
 	Peek      bool
 }

@@ -9,14 +9,14 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/organizationreader"
 	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
 //NewManager -
 func NewManager(client CFClient, uaaMgr uaa.Manager,
-	orgReader organization.Reader,
+	orgReader organizationreader.Reader,
 	cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
 		Cfg:       cfg,
@@ -32,7 +32,7 @@ type DefaultManager struct {
 	Cfg       config.Reader
 	Client    CFClient
 	UAAMgr    uaa.Manager
-	OrgReader organization.Reader
+	OrgReader organizationreader.Reader
 	Peek      bool
 	spaces    []cfclient.Space
 }

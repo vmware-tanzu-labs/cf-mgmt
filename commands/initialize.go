@@ -10,6 +10,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/configcommands"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
 	"github.com/pivotalservices/cf-mgmt/organization"
+	"github.com/pivotalservices/cf-mgmt/organizationreader"
 	"github.com/pivotalservices/cf-mgmt/privatedomain"
 	"github.com/pivotalservices/cf-mgmt/quota"
 	"github.com/pivotalservices/cf-mgmt/securitygroup"
@@ -23,7 +24,7 @@ import (
 
 type CFMgmt struct {
 	UAAManager              uaa.Manager
-	OrgReader               organization.Reader
+	OrgReader               organizationreader.Reader
 	OrgManager              organization.Manager
 	SpaceManager            space.Manager
 	UserManager             user.Manager
@@ -95,9 +96,10 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	if err != nil {
 		return nil, err
 	}
-	cfMgmt.OrgReader = organization.NewReader(client, cfg, peek)
-	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.OrgReader, cfg, peek)
+	cfMgmt.OrgReader = organizationreader.NewReader(client, cfg, peek)
 	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgReader, cfg, peek)
+	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.OrgReader, cfg, peek)
+
 	cfMgmt.UserManager = user.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.UAAManager, peek)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
 	cfMgmt.QuotaManager = quota.NewManager(client, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.OrgManager, cfg, peek)

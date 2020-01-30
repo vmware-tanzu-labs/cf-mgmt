@@ -12,7 +12,7 @@ import (
 
 	"time"
 
-	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
+	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
 	"github.com/pivotalservices/cf-mgmt/space"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
 	uaafakes "github.com/pivotalservices/cf-mgmt/uaa/fakes"

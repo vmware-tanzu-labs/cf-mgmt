@@ -9,20 +9,6 @@ import (
 )
 
 type FakeCFClient struct {
-	CreateDomainStub        func(string, string) (*cfclient.Domain, error)
-	createDomainMutex       sync.RWMutex
-	createDomainArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	createDomainReturns struct {
-		result1 *cfclient.Domain
-		result2 error
-	}
-	createDomainReturnsOnCall map[int]struct {
-		result1 *cfclient.Domain
-		result2 error
-	}
 	CreateOrgStub        func(cfclient.OrgRequest) (cfclient.Org, error)
 	createOrgMutex       sync.RWMutex
 	createOrgArgsForCall []struct {
@@ -36,17 +22,6 @@ type FakeCFClient struct {
 		result1 cfclient.Org
 		result2 error
 	}
-	DeleteDomainStub        func(string) error
-	deleteDomainMutex       sync.RWMutex
-	deleteDomainArgsForCall []struct {
-		arg1 string
-	}
-	deleteDomainReturns struct {
-		result1 error
-	}
-	deleteDomainReturnsOnCall map[int]struct {
-		result1 error
-	}
 	DeleteOrgStub        func(string, bool, bool) error
 	deleteOrgMutex       sync.RWMutex
 	deleteOrgArgsForCall []struct {
@@ -59,56 +34,6 @@ type FakeCFClient struct {
 	}
 	deleteOrgReturnsOnCall map[int]struct {
 		result1 error
-	}
-	GetOrgByGuidStub        func(string) (cfclient.Org, error)
-	getOrgByGuidMutex       sync.RWMutex
-	getOrgByGuidArgsForCall []struct {
-		arg1 string
-	}
-	getOrgByGuidReturns struct {
-		result1 cfclient.Org
-		result2 error
-	}
-	getOrgByGuidReturnsOnCall map[int]struct {
-		result1 cfclient.Org
-		result2 error
-	}
-	ListDomainsStub        func() ([]cfclient.Domain, error)
-	listDomainsMutex       sync.RWMutex
-	listDomainsArgsForCall []struct {
-	}
-	listDomainsReturns struct {
-		result1 []cfclient.Domain
-		result2 error
-	}
-	listDomainsReturnsOnCall map[int]struct {
-		result1 []cfclient.Domain
-		result2 error
-	}
-	ListOrgPrivateDomainsStub        func(string) ([]cfclient.Domain, error)
-	listOrgPrivateDomainsMutex       sync.RWMutex
-	listOrgPrivateDomainsArgsForCall []struct {
-		arg1 string
-	}
-	listOrgPrivateDomainsReturns struct {
-		result1 []cfclient.Domain
-		result2 error
-	}
-	listOrgPrivateDomainsReturnsOnCall map[int]struct {
-		result1 []cfclient.Domain
-		result2 error
-	}
-	ListOrgsStub        func() ([]cfclient.Org, error)
-	listOrgsMutex       sync.RWMutex
-	listOrgsArgsForCall []struct {
-	}
-	listOrgsReturns struct {
-		result1 []cfclient.Org
-		result2 error
-	}
-	listOrgsReturnsOnCall map[int]struct {
-		result1 []cfclient.Org
-		result2 error
 	}
 	OrgMetadataStub        func(string) (*cfclient.Metadata, error)
 	orgMetadataMutex       sync.RWMutex
@@ -133,20 +58,6 @@ type FakeCFClient struct {
 	}
 	removeOrgMetadataReturnsOnCall map[int]struct {
 		result1 error
-	}
-	ShareOrgPrivateDomainStub        func(string, string) (*cfclient.Domain, error)
-	shareOrgPrivateDomainMutex       sync.RWMutex
-	shareOrgPrivateDomainArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	shareOrgPrivateDomainReturns struct {
-		result1 *cfclient.Domain
-		result2 error
-	}
-	shareOrgPrivateDomainReturnsOnCall map[int]struct {
-		result1 *cfclient.Domain
-		result2 error
 	}
 	SupportsMetadataAPIStub        func() (bool, error)
 	supportsMetadataAPIMutex       sync.RWMutex
@@ -200,70 +111,6 @@ type FakeCFClient struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *FakeCFClient) CreateDomain(arg1 string, arg2 string) (*cfclient.Domain, error) {
-	fake.createDomainMutex.Lock()
-	ret, specificReturn := fake.createDomainReturnsOnCall[len(fake.createDomainArgsForCall)]
-	fake.createDomainArgsForCall = append(fake.createDomainArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("CreateDomain", []interface{}{arg1, arg2})
-	fake.createDomainMutex.Unlock()
-	if fake.CreateDomainStub != nil {
-		return fake.CreateDomainStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.createDomainReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) CreateDomainCallCount() int {
-	fake.createDomainMutex.RLock()
-	defer fake.createDomainMutex.RUnlock()
-	return len(fake.createDomainArgsForCall)
-}
-
-func (fake *FakeCFClient) CreateDomainCalls(stub func(string, string) (*cfclient.Domain, error)) {
-	fake.createDomainMutex.Lock()
-	defer fake.createDomainMutex.Unlock()
-	fake.CreateDomainStub = stub
-}
-
-func (fake *FakeCFClient) CreateDomainArgsForCall(i int) (string, string) {
-	fake.createDomainMutex.RLock()
-	defer fake.createDomainMutex.RUnlock()
-	argsForCall := fake.createDomainArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) CreateDomainReturns(result1 *cfclient.Domain, result2 error) {
-	fake.createDomainMutex.Lock()
-	defer fake.createDomainMutex.Unlock()
-	fake.CreateDomainStub = nil
-	fake.createDomainReturns = struct {
-		result1 *cfclient.Domain
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) CreateDomainReturnsOnCall(i int, result1 *cfclient.Domain, result2 error) {
-	fake.createDomainMutex.Lock()
-	defer fake.createDomainMutex.Unlock()
-	fake.CreateDomainStub = nil
-	if fake.createDomainReturnsOnCall == nil {
-		fake.createDomainReturnsOnCall = make(map[int]struct {
-			result1 *cfclient.Domain
-			result2 error
-		})
-	}
-	fake.createDomainReturnsOnCall[i] = struct {
-		result1 *cfclient.Domain
-		result2 error
-	}{result1, result2}
 }
 
 func (fake *FakeCFClient) CreateOrg(arg1 cfclient.OrgRequest) (cfclient.Org, error) {
@@ -329,66 +176,6 @@ func (fake *FakeCFClient) CreateOrgReturnsOnCall(i int, result1 cfclient.Org, re
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) DeleteDomain(arg1 string) error {
-	fake.deleteDomainMutex.Lock()
-	ret, specificReturn := fake.deleteDomainReturnsOnCall[len(fake.deleteDomainArgsForCall)]
-	fake.deleteDomainArgsForCall = append(fake.deleteDomainArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("DeleteDomain", []interface{}{arg1})
-	fake.deleteDomainMutex.Unlock()
-	if fake.DeleteDomainStub != nil {
-		return fake.DeleteDomainStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.deleteDomainReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeCFClient) DeleteDomainCallCount() int {
-	fake.deleteDomainMutex.RLock()
-	defer fake.deleteDomainMutex.RUnlock()
-	return len(fake.deleteDomainArgsForCall)
-}
-
-func (fake *FakeCFClient) DeleteDomainCalls(stub func(string) error) {
-	fake.deleteDomainMutex.Lock()
-	defer fake.deleteDomainMutex.Unlock()
-	fake.DeleteDomainStub = stub
-}
-
-func (fake *FakeCFClient) DeleteDomainArgsForCall(i int) string {
-	fake.deleteDomainMutex.RLock()
-	defer fake.deleteDomainMutex.RUnlock()
-	argsForCall := fake.deleteDomainArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) DeleteDomainReturns(result1 error) {
-	fake.deleteDomainMutex.Lock()
-	defer fake.deleteDomainMutex.Unlock()
-	fake.DeleteDomainStub = nil
-	fake.deleteDomainReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) DeleteDomainReturnsOnCall(i int, result1 error) {
-	fake.deleteDomainMutex.Lock()
-	defer fake.deleteDomainMutex.Unlock()
-	fake.DeleteDomainStub = nil
-	if fake.deleteDomainReturnsOnCall == nil {
-		fake.deleteDomainReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.deleteDomainReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeCFClient) DeleteOrg(arg1 string, arg2 bool, arg3 bool) error {
 	fake.deleteOrgMutex.Lock()
 	ret, specificReturn := fake.deleteOrgReturnsOnCall[len(fake.deleteOrgArgsForCall)]
@@ -449,242 +236,6 @@ func (fake *FakeCFClient) DeleteOrgReturnsOnCall(i int, result1 error) {
 	fake.deleteOrgReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
-}
-
-func (fake *FakeCFClient) GetOrgByGuid(arg1 string) (cfclient.Org, error) {
-	fake.getOrgByGuidMutex.Lock()
-	ret, specificReturn := fake.getOrgByGuidReturnsOnCall[len(fake.getOrgByGuidArgsForCall)]
-	fake.getOrgByGuidArgsForCall = append(fake.getOrgByGuidArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("GetOrgByGuid", []interface{}{arg1})
-	fake.getOrgByGuidMutex.Unlock()
-	if fake.GetOrgByGuidStub != nil {
-		return fake.GetOrgByGuidStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.getOrgByGuidReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) GetOrgByGuidCallCount() int {
-	fake.getOrgByGuidMutex.RLock()
-	defer fake.getOrgByGuidMutex.RUnlock()
-	return len(fake.getOrgByGuidArgsForCall)
-}
-
-func (fake *FakeCFClient) GetOrgByGuidCalls(stub func(string) (cfclient.Org, error)) {
-	fake.getOrgByGuidMutex.Lock()
-	defer fake.getOrgByGuidMutex.Unlock()
-	fake.GetOrgByGuidStub = stub
-}
-
-func (fake *FakeCFClient) GetOrgByGuidArgsForCall(i int) string {
-	fake.getOrgByGuidMutex.RLock()
-	defer fake.getOrgByGuidMutex.RUnlock()
-	argsForCall := fake.getOrgByGuidArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) GetOrgByGuidReturns(result1 cfclient.Org, result2 error) {
-	fake.getOrgByGuidMutex.Lock()
-	defer fake.getOrgByGuidMutex.Unlock()
-	fake.GetOrgByGuidStub = nil
-	fake.getOrgByGuidReturns = struct {
-		result1 cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) GetOrgByGuidReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
-	fake.getOrgByGuidMutex.Lock()
-	defer fake.getOrgByGuidMutex.Unlock()
-	fake.GetOrgByGuidStub = nil
-	if fake.getOrgByGuidReturnsOnCall == nil {
-		fake.getOrgByGuidReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Org
-			result2 error
-		})
-	}
-	fake.getOrgByGuidReturnsOnCall[i] = struct {
-		result1 cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListDomains() ([]cfclient.Domain, error) {
-	fake.listDomainsMutex.Lock()
-	ret, specificReturn := fake.listDomainsReturnsOnCall[len(fake.listDomainsArgsForCall)]
-	fake.listDomainsArgsForCall = append(fake.listDomainsArgsForCall, struct {
-	}{})
-	fake.recordInvocation("ListDomains", []interface{}{})
-	fake.listDomainsMutex.Unlock()
-	if fake.ListDomainsStub != nil {
-		return fake.ListDomainsStub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listDomainsReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListDomainsCallCount() int {
-	fake.listDomainsMutex.RLock()
-	defer fake.listDomainsMutex.RUnlock()
-	return len(fake.listDomainsArgsForCall)
-}
-
-func (fake *FakeCFClient) ListDomainsCalls(stub func() ([]cfclient.Domain, error)) {
-	fake.listDomainsMutex.Lock()
-	defer fake.listDomainsMutex.Unlock()
-	fake.ListDomainsStub = stub
-}
-
-func (fake *FakeCFClient) ListDomainsReturns(result1 []cfclient.Domain, result2 error) {
-	fake.listDomainsMutex.Lock()
-	defer fake.listDomainsMutex.Unlock()
-	fake.ListDomainsStub = nil
-	fake.listDomainsReturns = struct {
-		result1 []cfclient.Domain
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListDomainsReturnsOnCall(i int, result1 []cfclient.Domain, result2 error) {
-	fake.listDomainsMutex.Lock()
-	defer fake.listDomainsMutex.Unlock()
-	fake.ListDomainsStub = nil
-	if fake.listDomainsReturnsOnCall == nil {
-		fake.listDomainsReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.Domain
-			result2 error
-		})
-	}
-	fake.listDomainsReturnsOnCall[i] = struct {
-		result1 []cfclient.Domain
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListOrgPrivateDomains(arg1 string) ([]cfclient.Domain, error) {
-	fake.listOrgPrivateDomainsMutex.Lock()
-	ret, specificReturn := fake.listOrgPrivateDomainsReturnsOnCall[len(fake.listOrgPrivateDomainsArgsForCall)]
-	fake.listOrgPrivateDomainsArgsForCall = append(fake.listOrgPrivateDomainsArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("ListOrgPrivateDomains", []interface{}{arg1})
-	fake.listOrgPrivateDomainsMutex.Unlock()
-	if fake.ListOrgPrivateDomainsStub != nil {
-		return fake.ListOrgPrivateDomainsStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listOrgPrivateDomainsReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListOrgPrivateDomainsCallCount() int {
-	fake.listOrgPrivateDomainsMutex.RLock()
-	defer fake.listOrgPrivateDomainsMutex.RUnlock()
-	return len(fake.listOrgPrivateDomainsArgsForCall)
-}
-
-func (fake *FakeCFClient) ListOrgPrivateDomainsCalls(stub func(string) ([]cfclient.Domain, error)) {
-	fake.listOrgPrivateDomainsMutex.Lock()
-	defer fake.listOrgPrivateDomainsMutex.Unlock()
-	fake.ListOrgPrivateDomainsStub = stub
-}
-
-func (fake *FakeCFClient) ListOrgPrivateDomainsArgsForCall(i int) string {
-	fake.listOrgPrivateDomainsMutex.RLock()
-	defer fake.listOrgPrivateDomainsMutex.RUnlock()
-	argsForCall := fake.listOrgPrivateDomainsArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) ListOrgPrivateDomainsReturns(result1 []cfclient.Domain, result2 error) {
-	fake.listOrgPrivateDomainsMutex.Lock()
-	defer fake.listOrgPrivateDomainsMutex.Unlock()
-	fake.ListOrgPrivateDomainsStub = nil
-	fake.listOrgPrivateDomainsReturns = struct {
-		result1 []cfclient.Domain
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListOrgPrivateDomainsReturnsOnCall(i int, result1 []cfclient.Domain, result2 error) {
-	fake.listOrgPrivateDomainsMutex.Lock()
-	defer fake.listOrgPrivateDomainsMutex.Unlock()
-	fake.ListOrgPrivateDomainsStub = nil
-	if fake.listOrgPrivateDomainsReturnsOnCall == nil {
-		fake.listOrgPrivateDomainsReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.Domain
-			result2 error
-		})
-	}
-	fake.listOrgPrivateDomainsReturnsOnCall[i] = struct {
-		result1 []cfclient.Domain
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListOrgs() ([]cfclient.Org, error) {
-	fake.listOrgsMutex.Lock()
-	ret, specificReturn := fake.listOrgsReturnsOnCall[len(fake.listOrgsArgsForCall)]
-	fake.listOrgsArgsForCall = append(fake.listOrgsArgsForCall, struct {
-	}{})
-	fake.recordInvocation("ListOrgs", []interface{}{})
-	fake.listOrgsMutex.Unlock()
-	if fake.ListOrgsStub != nil {
-		return fake.ListOrgsStub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listOrgsReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListOrgsCallCount() int {
-	fake.listOrgsMutex.RLock()
-	defer fake.listOrgsMutex.RUnlock()
-	return len(fake.listOrgsArgsForCall)
-}
-
-func (fake *FakeCFClient) ListOrgsCalls(stub func() ([]cfclient.Org, error)) {
-	fake.listOrgsMutex.Lock()
-	defer fake.listOrgsMutex.Unlock()
-	fake.ListOrgsStub = stub
-}
-
-func (fake *FakeCFClient) ListOrgsReturns(result1 []cfclient.Org, result2 error) {
-	fake.listOrgsMutex.Lock()
-	defer fake.listOrgsMutex.Unlock()
-	fake.ListOrgsStub = nil
-	fake.listOrgsReturns = struct {
-		result1 []cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListOrgsReturnsOnCall(i int, result1 []cfclient.Org, result2 error) {
-	fake.listOrgsMutex.Lock()
-	defer fake.listOrgsMutex.Unlock()
-	fake.ListOrgsStub = nil
-	if fake.listOrgsReturnsOnCall == nil {
-		fake.listOrgsReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.Org
-			result2 error
-		})
-	}
-	fake.listOrgsReturnsOnCall[i] = struct {
-		result1 []cfclient.Org
-		result2 error
-	}{result1, result2}
 }
 
 func (fake *FakeCFClient) OrgMetadata(arg1 string) (*cfclient.Metadata, error) {
@@ -808,70 +359,6 @@ func (fake *FakeCFClient) RemoveOrgMetadataReturnsOnCall(i int, result1 error) {
 	fake.removeOrgMetadataReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
-}
-
-func (fake *FakeCFClient) ShareOrgPrivateDomain(arg1 string, arg2 string) (*cfclient.Domain, error) {
-	fake.shareOrgPrivateDomainMutex.Lock()
-	ret, specificReturn := fake.shareOrgPrivateDomainReturnsOnCall[len(fake.shareOrgPrivateDomainArgsForCall)]
-	fake.shareOrgPrivateDomainArgsForCall = append(fake.shareOrgPrivateDomainArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("ShareOrgPrivateDomain", []interface{}{arg1, arg2})
-	fake.shareOrgPrivateDomainMutex.Unlock()
-	if fake.ShareOrgPrivateDomainStub != nil {
-		return fake.ShareOrgPrivateDomainStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.shareOrgPrivateDomainReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ShareOrgPrivateDomainCallCount() int {
-	fake.shareOrgPrivateDomainMutex.RLock()
-	defer fake.shareOrgPrivateDomainMutex.RUnlock()
-	return len(fake.shareOrgPrivateDomainArgsForCall)
-}
-
-func (fake *FakeCFClient) ShareOrgPrivateDomainCalls(stub func(string, string) (*cfclient.Domain, error)) {
-	fake.shareOrgPrivateDomainMutex.Lock()
-	defer fake.shareOrgPrivateDomainMutex.Unlock()
-	fake.ShareOrgPrivateDomainStub = stub
-}
-
-func (fake *FakeCFClient) ShareOrgPrivateDomainArgsForCall(i int) (string, string) {
-	fake.shareOrgPrivateDomainMutex.RLock()
-	defer fake.shareOrgPrivateDomainMutex.RUnlock()
-	argsForCall := fake.shareOrgPrivateDomainArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) ShareOrgPrivateDomainReturns(result1 *cfclient.Domain, result2 error) {
-	fake.shareOrgPrivateDomainMutex.Lock()
-	defer fake.shareOrgPrivateDomainMutex.Unlock()
-	fake.ShareOrgPrivateDomainStub = nil
-	fake.shareOrgPrivateDomainReturns = struct {
-		result1 *cfclient.Domain
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ShareOrgPrivateDomainReturnsOnCall(i int, result1 *cfclient.Domain, result2 error) {
-	fake.shareOrgPrivateDomainMutex.Lock()
-	defer fake.shareOrgPrivateDomainMutex.Unlock()
-	fake.ShareOrgPrivateDomainStub = nil
-	if fake.shareOrgPrivateDomainReturnsOnCall == nil {
-		fake.shareOrgPrivateDomainReturnsOnCall = make(map[int]struct {
-			result1 *cfclient.Domain
-			result2 error
-		})
-	}
-	fake.shareOrgPrivateDomainReturnsOnCall[i] = struct {
-		result1 *cfclient.Domain
-		result2 error
-	}{result1, result2}
 }
 
 func (fake *FakeCFClient) SupportsMetadataAPI() (bool, error) {
@@ -1118,28 +605,14 @@ func (fake *FakeCFClient) UpdateOrgMetadataReturnsOnCall(i int, result1 error) {
 func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createDomainMutex.RLock()
-	defer fake.createDomainMutex.RUnlock()
 	fake.createOrgMutex.RLock()
 	defer fake.createOrgMutex.RUnlock()
-	fake.deleteDomainMutex.RLock()
-	defer fake.deleteDomainMutex.RUnlock()
 	fake.deleteOrgMutex.RLock()
 	defer fake.deleteOrgMutex.RUnlock()
-	fake.getOrgByGuidMutex.RLock()
-	defer fake.getOrgByGuidMutex.RUnlock()
-	fake.listDomainsMutex.RLock()
-	defer fake.listDomainsMutex.RUnlock()
-	fake.listOrgPrivateDomainsMutex.RLock()
-	defer fake.listOrgPrivateDomainsMutex.RUnlock()
-	fake.listOrgsMutex.RLock()
-	defer fake.listOrgsMutex.RUnlock()
 	fake.orgMetadataMutex.RLock()
 	defer fake.orgMetadataMutex.RUnlock()
 	fake.removeOrgMetadataMutex.RLock()
 	defer fake.removeOrgMetadataMutex.RUnlock()
-	fake.shareOrgPrivateDomainMutex.RLock()
-	defer fake.shareOrgPrivateDomainMutex.RUnlock()
 	fake.supportsMetadataAPIMutex.RLock()
 	defer fake.supportsMetadataAPIMutex.RUnlock()
 	fake.unshareOrgPrivateDomainMutex.RLock()

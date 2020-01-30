@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/cf-mgmt/config"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
+	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
 	. "github.com/pivotalservices/cf-mgmt/privatedomain"
 	"github.com/pivotalservices/cf-mgmt/privatedomain/fakes"
 )

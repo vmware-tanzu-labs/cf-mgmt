@@ -9,6 +9,7 @@ import (
 	"github.com/pivotalservices/cf-mgmt/config"
 	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
+	orgreaderfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
 	"github.com/pivotalservices/cf-mgmt/quota"
 	quotafakes "github.com/pivotalservices/cf-mgmt/quota/fakes"
 	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
@@ -18,7 +19,7 @@ var _ = Describe("given QuotaManager", func() {
 	var (
 		fakeReader    *configfakes.FakeReader
 		fakeOrgMgr    *orgfakes.FakeManager
-		fakeOrgReader *orgfakes.FakeReader
+		fakeOrgReader *orgreaderfakes.FakeReader
 		fakeClient    *quotafakes.FakeCFClient
 		fakeSpaceMgr  *spacefakes.FakeManager
 		quotaMgr      *quota.Manager
@@ -27,7 +28,7 @@ var _ = Describe("given QuotaManager", func() {
 	BeforeEach(func() {
 		fakeReader = new(configfakes.FakeReader)
 		fakeOrgMgr = new(orgfakes.FakeManager)
-		fakeOrgReader = new(orgfakes.FakeReader)
+		fakeOrgReader = new(orgreaderfakes.FakeReader)
 		fakeSpaceMgr = new(spacefakes.FakeManager)
 		fakeClient = new(quotafakes.FakeCFClient)
 		quotaMgr = &quota.Manager{

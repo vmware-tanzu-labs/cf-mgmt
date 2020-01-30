@@ -5,7 +5,7 @@ import (
 	sync "sync"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	organization "github.com/pivotalservices/cf-mgmt/organization"
+	organizationreader "github.com/pivotalservices/cf-mgmt/organizationreader"
 )
 
 type FakeReader struct {
@@ -483,4 +483,4 @@ func (fake *FakeReader) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ organization.Reader = new(FakeReader)
+var _ organizationreader.Reader = new(FakeReader)
