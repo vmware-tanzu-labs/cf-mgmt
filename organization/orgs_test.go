@@ -11,6 +11,7 @@ import (
 	. "github.com/pivotalservices/cf-mgmt/organization"
 	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
 	orgreaderfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
+	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
 )
 
 var _ = Describe("given OrgManager", func() {
@@ -19,16 +20,19 @@ var _ = Describe("given OrgManager", func() {
 		orgManager    DefaultManager
 		fakeReader    *configfakes.FakeReader
 		fakeOrgReader *orgreaderfakes.FakeReader
+		fakeSpaceMgr  *spacefakes.FakeManager
 	)
 
 	BeforeEach(func() {
 		fakeClient = new(orgfakes.FakeCFClient)
 		fakeReader = new(configfakes.FakeReader)
 		fakeOrgReader = new(orgreaderfakes.FakeReader)
+		fakeSpaceMgr = new(spacefakes.FakeManager)
 		orgManager = DefaultManager{
 			Cfg:       fakeReader,
 			Client:    fakeClient,
 			Peek:      false,
+			SpaceMgr:  fakeSpaceMgr,
 			OrgReader: fakeOrgReader,
 		}
 	})

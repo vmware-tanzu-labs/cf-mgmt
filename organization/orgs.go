@@ -7,16 +7,18 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/organizationreader"
+	"github.com/pivotalservices/cf-mgmt/space"
 	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pkg/errors"
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(client CFClient, orgReader organizationreader.Reader, cfg config.Reader, peek bool) Manager {
+func NewManager(client CFClient, orgReader organizationreader.Reader, spaceMgr space.Manager, cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
 		Cfg:       cfg,
 		Client:    client,
 		OrgReader: orgReader,
+		SpaceMgr:  spaceMgr,
 		Peek:      peek,
 	}
 }
@@ -25,6 +27,7 @@ func NewManager(client CFClient, orgReader organizationreader.Reader, cfg config
 type DefaultManager struct {
 	Cfg       config.Reader
 	OrgReader organizationreader.Reader
+	SpaceMgr  space.Manager
 	Client    CFClient
 	Peek      bool
 }
@@ -108,6 +111,12 @@ func (m *DefaultManager) DeleteOrgs() error {
 	}
 
 	for _, org := range orgsToDelete {
+		if err := m.ClearMetadata(org); err != nil {
+			return err
+		}
+		if err := m.SpaceMgr.DeleteSpacesForOrg(org.Guid, org.Name); err != nil {
+			return err
+		}
 		if err := m.DeleteOrg(org); err != nil {
 			return err
 		}
@@ -273,9 +282,9 @@ func (m *DefaultManager) ClearMetadata(org cfclient.Org) error {
 		return nil
 	}
 	if m.Peek {
-		lo.G.Infof("[dry-run]: removing org metadata from org %s in org %s", org.Name)
+		lo.G.Infof("[dry-run]: removing org metadata from org %s", org.Name)
 		return nil
 	}
-	lo.G.Infof("removing org metadata from org %s in org %s", org.Name)
+	lo.G.Infof("removing org metadata from org %s", org.Name)
 	return m.Client.RemoveOrgMetadata(org.Guid)
 }

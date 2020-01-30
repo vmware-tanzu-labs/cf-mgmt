@@ -98,7 +98,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	}
 	cfMgmt.OrgReader = organizationreader.NewReader(client, cfg, peek)
 	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgReader, cfg, peek)
-	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.OrgReader, cfg, peek)
+	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.OrgReader, cfMgmt.SpaceManager, cfg, peek)
 
 	cfMgmt.UserManager = user.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.UAAManager, peek)
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)

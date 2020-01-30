@@ -10,6 +10,7 @@ type Manager interface {
 	CreateSpaces() error
 	UpdateSpaces() (err error)
 	DeleteSpaces() (err error)
+	DeleteSpacesForOrg(orgGUID, orgName string) (err error)
 	ListSpaces(orgGUID string) ([]cfclient.Space, error)
 	UpdateSpacesMetadata() error
 }

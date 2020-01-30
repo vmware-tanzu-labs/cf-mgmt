@@ -29,6 +29,18 @@ type FakeManager struct {
 	deleteSpacesReturnsOnCall map[int]struct {
 		result1 error
 	}
+	DeleteSpacesForOrgStub        func(string, string) error
+	deleteSpacesForOrgMutex       sync.RWMutex
+	deleteSpacesForOrgArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	deleteSpacesForOrgReturns struct {
+		result1 error
+	}
+	deleteSpacesForOrgReturnsOnCall map[int]struct {
+		result1 error
+	}
 	FindSpaceStub        func(string, string) (cfclient.Space, error)
 	findSpaceMutex       sync.RWMutex
 	findSpaceArgsForCall []struct {
@@ -180,6 +192,67 @@ func (fake *FakeManager) DeleteSpacesReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.deleteSpacesReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) DeleteSpacesForOrg(arg1 string, arg2 string) error {
+	fake.deleteSpacesForOrgMutex.Lock()
+	ret, specificReturn := fake.deleteSpacesForOrgReturnsOnCall[len(fake.deleteSpacesForOrgArgsForCall)]
+	fake.deleteSpacesForOrgArgsForCall = append(fake.deleteSpacesForOrgArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("DeleteSpacesForOrg", []interface{}{arg1, arg2})
+	fake.deleteSpacesForOrgMutex.Unlock()
+	if fake.DeleteSpacesForOrgStub != nil {
+		return fake.DeleteSpacesForOrgStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.deleteSpacesForOrgReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeManager) DeleteSpacesForOrgCallCount() int {
+	fake.deleteSpacesForOrgMutex.RLock()
+	defer fake.deleteSpacesForOrgMutex.RUnlock()
+	return len(fake.deleteSpacesForOrgArgsForCall)
+}
+
+func (fake *FakeManager) DeleteSpacesForOrgCalls(stub func(string, string) error) {
+	fake.deleteSpacesForOrgMutex.Lock()
+	defer fake.deleteSpacesForOrgMutex.Unlock()
+	fake.DeleteSpacesForOrgStub = stub
+}
+
+func (fake *FakeManager) DeleteSpacesForOrgArgsForCall(i int) (string, string) {
+	fake.deleteSpacesForOrgMutex.RLock()
+	defer fake.deleteSpacesForOrgMutex.RUnlock()
+	argsForCall := fake.deleteSpacesForOrgArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeManager) DeleteSpacesForOrgReturns(result1 error) {
+	fake.deleteSpacesForOrgMutex.Lock()
+	defer fake.deleteSpacesForOrgMutex.Unlock()
+	fake.DeleteSpacesForOrgStub = nil
+	fake.deleteSpacesForOrgReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) DeleteSpacesForOrgReturnsOnCall(i int, result1 error) {
+	fake.deleteSpacesForOrgMutex.Lock()
+	defer fake.deleteSpacesForOrgMutex.Unlock()
+	fake.DeleteSpacesForOrgStub = nil
+	if fake.deleteSpacesForOrgReturnsOnCall == nil {
+		fake.deleteSpacesForOrgReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteSpacesForOrgReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -422,6 +495,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.createSpacesMutex.RUnlock()
 	fake.deleteSpacesMutex.RLock()
 	defer fake.deleteSpacesMutex.RUnlock()
+	fake.deleteSpacesForOrgMutex.RLock()
+	defer fake.deleteSpacesForOrgMutex.RUnlock()
 	fake.findSpaceMutex.RLock()
 	defer fake.findSpaceMutex.RUnlock()
 	fake.listSpacesMutex.RLock()
