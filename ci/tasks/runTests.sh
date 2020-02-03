@@ -6,7 +6,10 @@ ssh-keyscan github.com >>~/.ssh/known_hosts
 export GOPATH=$PWD/go
 export PATH=$GOPATH/bin:$PATH
 
-go get github.com/Masterminds/glide
+#go get github.com/Masterminds/glide
+sudo add-apt-repository ppa:masterminds/glide && sudo apt-get update -y
+sudo apt-get install glide -y
+
 WORKING_DIR=$GOPATH/src/github.com/pivotalservices/cf-mgmt
 mkdir -p ${WORKING_DIR}
 cp -R source/* ${WORKING_DIR}/.

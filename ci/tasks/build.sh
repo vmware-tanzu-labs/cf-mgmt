@@ -10,7 +10,9 @@ SOURCE_DIR=$PWD/source
 
 cp source/Dockerfile ${OUTPUT_DIR}/.
 
-go get github.com/Masterminds/glide
+#go get github.com/Masterminds/glide
+sudo add-apt-repository ppa:masterminds/glide && sudo apt-get update -y
+sudo apt-get install glide -y
 go get github.com/xchapter7x/versioning
 
 cd ${SOURCE_DIR}
