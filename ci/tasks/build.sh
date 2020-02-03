@@ -11,6 +11,7 @@ SOURCE_DIR=$PWD/source
 cp source/Dockerfile ${OUTPUT_DIR}/.
 
 #go get github.com/Masterminds/glide
+mkdir -p $GOPATH/bin
 curl https://glide.sh/get | sh
 go get github.com/xchapter7x/versioning
 

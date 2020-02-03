@@ -7,6 +7,7 @@ export GOPATH=$PWD/go
 export PATH=$GOPATH/bin:$PATH
 
 #go get github.com/Masterminds/glide
+mkdir -p $GOPATH/bin
 curl https://glide.sh/get | sh
 
 WORKING_DIR=$GOPATH/src/github.com/pivotalservices/cf-mgmt
