@@ -7,8 +7,7 @@ export GOPATH=$PWD/go
 export PATH=$GOPATH/bin:$PATH
 
 #go get github.com/Masterminds/glide
-sudo add-apt-repository ppa:masterminds/glide && sudo apt-get update -y
-sudo apt-get install glide -y
+curl https://glide.sh/get | sh
 
 WORKING_DIR=$GOPATH/src/github.com/pivotalservices/cf-mgmt
 mkdir -p ${WORKING_DIR}
