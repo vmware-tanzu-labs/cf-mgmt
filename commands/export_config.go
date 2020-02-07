@@ -8,9 +8,10 @@ import (
 
 type ExportConfigurationCommand struct {
 	BaseCFConfigCommand
-	ExcludedOrgs   []string `long:"excluded-org" description:"Org to be excluded from export. Repeat the flag to specify multiple orgs"`
-	ExcludedSpaces []string `long:"excluded-space" description:"Space to be excluded from export. Repeat the flag to specify multiple spaces"`
-	SkipSpaces     bool     `long:"skip-spaces" description:"Will not export space configurations"`
+	ExcludedOrgs      []string `long:"excluded-org" description:"Org to be excluded from export. Repeat the flag to specify multiple orgs"`
+	ExcludedSpaces    []string `long:"excluded-space" description:"Space to be excluded from export. Repeat the flag to specify multiple spaces"`
+	SkipSpaces        bool     `long:"skip-spaces" description:"Will not export space configurations"`
+	SkipRoutingGroups bool     `long:"skip-routing-groups" description:"Set to true if tcp routing is not configured"`
 }
 
 //Execute - initializes cf-mgmt configuration
@@ -29,7 +30,9 @@ func (c *ExportConfigurationCommand) Execute([]string) error {
 			cfMgmt.PrivateDomainManager,
 			cfMgmt.SharedDomainManager,
 			cfMgmt.ServiceAccessManager,
-			cfMgmt.QuotaManager)
+			cfMgmt.QuotaManager,
+		)
+		exportManager.SkipRoutingGroups = c.SkipRoutingGroups
 		excludedOrgs := make(map[string]string)
 		for _, org := range config.DefaultProtectedOrgs {
 			excludedOrgs[org] = org

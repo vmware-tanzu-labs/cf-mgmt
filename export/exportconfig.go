@@ -3,6 +3,7 @@ package export
 import (
 	"fmt"
 
+	"code.cloudfoundry.org/routing-api/models"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pivotalservices/cf-mgmt/config"
 	"github.com/pivotalservices/cf-mgmt/isosegment"
@@ -61,6 +62,7 @@ type Manager struct {
 	ServiceAccessManager *serviceaccess.Manager
 	QuotaManager         *quota.Manager
 	SkipSpaces           bool
+	SkipRoutingGroups    bool
 }
 
 func (im *Manager) ExportServiceAccess() error {
@@ -292,10 +294,13 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		return errors.Wrapf(err, "Getting shared domains")
 	}
 
-	lo.G.Infof("Listing Router Groups")
-	routerGroups, err := im.SharedDomainManager.RoutingClient.RouterGroups()
-	if err != nil {
-		return errors.Wrapf(err, "Getting routing groups")
+	var routerGroups []models.RouterGroup
+	if !im.SkipRoutingGroups {
+		lo.G.Infof("Listing Router Groups")
+		routerGroups, err = im.SharedDomainManager.RoutingClient.RouterGroups()
+		if err != nil {
+			return errors.Wrapf(err, "Getting routing groups")
+		}
 	}
 	globalConfig.EnableDeleteSharedDomains = true
 	globalConfig.SharedDomains = make(map[string]config.SharedDomain)
