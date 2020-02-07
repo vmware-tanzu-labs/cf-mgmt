@@ -19,6 +19,6 @@ func (c *DeleteSpaceConfigurationCommand) Execute([]string) error {
 		return err
 	}
 
-	fmt.Printf("The org/space %s/%s was successfully deleted", c.OrgName, c.SpaceName)
+	fmt.Println(fmt.Sprintf("The org/space %s/%s was successfully deleted", c.OrgName, c.SpaceName))
 	return nil
 }

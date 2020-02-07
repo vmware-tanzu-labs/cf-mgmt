@@ -18,6 +18,6 @@ func (c *DeleteOrgConfigurationCommand) Execute([]string) error {
 		return err
 	}
 
-	fmt.Printf("The org %s was successfully deleted", c.OrgName)
+	fmt.Println(fmt.Sprintf("The org %s was successfully deleted", c.OrgName))
 	return nil
 }
