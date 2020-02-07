@@ -286,14 +286,16 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		}
 	}
 
+	lo.G.Infof("Listing Shared Domains")
 	sharedDomains, err := im.SharedDomainManager.CFClient.ListSharedDomains()
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Getting shared domains")
 	}
 
+	lo.G.Infof("Listing Router Groups")
 	routerGroups, err := im.SharedDomainManager.RoutingClient.RouterGroups()
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Getting routing groups")
 	}
 	globalConfig.EnableDeleteSharedDomains = true
 	globalConfig.SharedDomains = make(map[string]config.SharedDomain)
