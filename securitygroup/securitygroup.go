@@ -427,12 +427,15 @@ func (m *DefaultManager) GetSecurityGroupRules(sgGUID string) ([]byte, error) {
 }
 
 func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) (map[string]string, error) {
+	names := make(map[string]string)
+	if strings.Contains(spaceGUID, "dry-run-space-guid") {
+		return names, nil
+	}
 	secGroups, err := m.Client.ListSpaceSecGroups(spaceGUID)
 	if err != nil {
 		return nil, err
 	}
 	lo.G.Debug("Total security groups returned :", len(secGroups))
-	names := make(map[string]string)
 	for _, sg := range secGroups {
 		if sg.Running == false && sg.Staging == false {
 			names[sg.Name] = sg.Guid
