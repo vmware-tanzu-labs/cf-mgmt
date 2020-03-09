@@ -41,7 +41,7 @@ resources:
 jobs:
 - name: test-and-build
   plan:
-    - aggregate:
+    - in_parallel:
       - get: source
         trigger: true
     - task: test
@@ -61,7 +61,7 @@ jobs:
         - compiled-output/cf-mgmt-config.exe
 - name: deploy
   plan:
-    - aggregate:
+    - in_parallel:
       - get: source
       - get: releases
         trigger: true

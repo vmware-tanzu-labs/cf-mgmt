@@ -17,7 +17,7 @@ resources:
 jobs:
 - name: test-and-build
   plan:
-    - aggregate:
+    - in_parallel:
       - get: source
         trigger: true
     - task: test
