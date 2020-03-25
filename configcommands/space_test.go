@@ -4,8 +4,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/pivotalservices/cf-mgmt/config"
-	. "github.com/pivotalservices/cf-mgmt/configcommands"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	. "github.com/vmwarepivotallabs/cf-mgmt/configcommands"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

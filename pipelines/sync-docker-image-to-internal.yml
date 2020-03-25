@@ -3,7 +3,7 @@ resources:
 - name: docker-hub
   type: docker-image
   source:
-    repository: pivotalservices/cf-mgmt
+    repository: vmwarepivotallabs/cf-mgmt
     tag: latest
 - name: docker-registry
   type: docker-image

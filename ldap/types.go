@@ -1,7 +1,7 @@
 package ldap
 
 import (
-	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
 )
 
 //Manager -

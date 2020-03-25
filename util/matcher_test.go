@@ -1,7 +1,7 @@
 package util_test
 
 import (
-	. "github.com/pivotalservices/cf-mgmt/util"
+	. "github.com/vmwarepivotallabs/cf-mgmt/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

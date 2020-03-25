@@ -3,7 +3,7 @@ package configcommands
 import (
 	"errors"
 
-	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
 )
 
 type SpaceNamedQuotaConfigurationCommand struct {

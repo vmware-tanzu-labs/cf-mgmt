@@ -3,10 +3,10 @@ package serviceaccess
 import (
 	"strings"
 
-	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/organizationreader"
-	"github.com/pivotalservices/cf-mgmt/serviceaccess/legacy"
-	"github.com/pivotalservices/cf-mgmt/util"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
+	"github.com/vmwarepivotallabs/cf-mgmt/serviceaccess/legacy"
+	"github.com/vmwarepivotallabs/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
 )
 

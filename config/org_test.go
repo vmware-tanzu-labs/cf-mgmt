@@ -1,7 +1,7 @@
 package config_test
 
 import (
-	. "github.com/pivotalservices/cf-mgmt/config"
+	. "github.com/vmwarepivotallabs/cf-mgmt/config"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

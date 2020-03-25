@@ -7,9 +7,9 @@ import (
 	"github.com/pkg/errors"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/organizationreader"
-	"github.com/pivotalservices/cf-mgmt/space"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
+	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/xchapter7x/lo"
 )
 

@@ -1,4 +1,4 @@
-package: github.com/pivotalservices/cf-mgmt
+package: github.com/vmwarepivotallabs/cf-mgmt
 import:
 - package: gopkg.in/yaml.v2
 - package: github.com/xchapter7x/lo

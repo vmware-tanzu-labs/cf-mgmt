@@ -1,7 +1,7 @@
 package serviceaccess_test
 
 import (
-	. "github.com/pivotalservices/cf-mgmt/serviceaccess"
+	. "github.com/vmwarepivotallabs/cf-mgmt/serviceaccess"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

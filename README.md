@@ -14,7 +14,7 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: {repository: pivotalservices/cf-mgmt, tag: "0.0.91"}
+  source: {repository: vmwarepivotallabs/cf-mgmt, tag: "0.0.91"}
 
 inputs:
   - name: config-repo
@@ -43,7 +43,7 @@ If there's already a configured foundation that you want to start using cf-mgmt 
 
 ### Install
 
-Compiled [releases](https://github.com/pivotalservices/cf-mgmt/releases) are available on Github.
+Compiled [releases](https://github.com/vmwarepivotallabs/cf-mgmt/releases) are available on Github.
 Download the binary for your platform and place it somewhere on your path.
 Don't forget to `chmod +x` the file on Linux and macOS.
 
@@ -167,7 +167,7 @@ To build the binary yourself, follow these steps:
 - Clone the repo:
   - `mkdir -p $(go env GOPATH)/src/github.com/pivotalservices`
   - `cd $(go env GOPATH)/src/github.com/pivotalservices`
-  - `git clone git@github.com:pivotalservices/cf-mgmt.git`
+  - `git clone git@github.com:vmwarepivotallabs/cf-mgmt.git`
 - Install dependencies:
   - `cd cf-mgmt`
   - `glide install`

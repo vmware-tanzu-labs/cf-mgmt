@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/pivotalservices/cf-mgmt/config"
-	. "github.com/pivotalservices/cf-mgmt/ldap"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	. "github.com/vmwarepivotallabs/cf-mgmt/ldap"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

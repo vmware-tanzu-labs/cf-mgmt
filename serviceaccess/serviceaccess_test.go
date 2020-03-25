@@ -4,12 +4,12 @@ import (
 	"errors"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	"github.com/pivotalservices/cf-mgmt/config"
-	. "github.com/pivotalservices/cf-mgmt/serviceaccess"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	. "github.com/vmwarepivotallabs/cf-mgmt/serviceaccess"
 
-	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
-	"github.com/pivotalservices/cf-mgmt/serviceaccess/fakes"
+	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
+	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
+	"github.com/vmwarepivotallabs/cf-mgmt/serviceaccess/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

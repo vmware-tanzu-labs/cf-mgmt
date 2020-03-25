@@ -1,6 +1,6 @@
 package commands
 
-import "github.com/pivotalservices/cf-mgmt/configcommands"
+import "github.com/vmwarepivotallabs/cf-mgmt/configcommands"
 
 //BaseCFConfigCommand - base command that has details to connect to cloud foundry instance
 type BaseCFConfigCommand struct {

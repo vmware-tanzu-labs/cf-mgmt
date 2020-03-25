@@ -3,7 +3,7 @@ package config_test
 import (
 	"time"
 
-	. "github.com/pivotalservices/cf-mgmt/config"
+	. "github.com/vmwarepivotallabs/cf-mgmt/config"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

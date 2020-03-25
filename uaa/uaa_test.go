@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/pivotalservices/cf-mgmt/uaa"
+	. "github.com/vmwarepivotallabs/cf-mgmt/uaa"
 
-	"github.com/pivotalservices/cf-mgmt/uaa/fakes"
+	"github.com/vmwarepivotallabs/cf-mgmt/uaa/fakes"
 )
 
 var _ = Describe("given uaa manager", func() {

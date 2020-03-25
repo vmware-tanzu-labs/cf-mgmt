@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/pivotalservices/cf-mgmt/uaa"
+	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 )
 
 //UsersInput

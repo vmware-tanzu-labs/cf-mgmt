@@ -1,7 +1,7 @@
 package user_test
 
 import (
-	. "github.com/pivotalservices/cf-mgmt/user"
+	. "github.com/vmwarepivotallabs/cf-mgmt/user"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

@@ -5,7 +5,7 @@ import (
 	sync "sync"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	organization "github.com/pivotalservices/cf-mgmt/organization"
+	organization "github.com/vmwarepivotallabs/cf-mgmt/organization"
 )
 
 type FakeManager struct {

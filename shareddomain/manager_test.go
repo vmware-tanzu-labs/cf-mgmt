@@ -5,13 +5,13 @@ import (
 
 	"code.cloudfoundry.org/routing-api/models"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	. "github.com/pivotalservices/cf-mgmt/shareddomain"
+	. "github.com/vmwarepivotallabs/cf-mgmt/shareddomain"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotalservices/cf-mgmt/config"
-	fakeconfig "github.com/pivotalservices/cf-mgmt/config/fakes"
-	"github.com/pivotalservices/cf-mgmt/shareddomain/fakes"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	fakeconfig "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
+	"github.com/vmwarepivotallabs/cf-mgmt/shareddomain/fakes"
 )
 
 var _ = Describe("Manager", func() {

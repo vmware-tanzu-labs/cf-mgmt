@@ -6,13 +6,13 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotalservices/cf-mgmt/config"
-	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organization/fakes"
-	orgreaderfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
-	"github.com/pivotalservices/cf-mgmt/quota"
-	quotafakes "github.com/pivotalservices/cf-mgmt/quota/fakes"
-	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
+	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organization/fakes"
+	orgreaderfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
+	"github.com/vmwarepivotallabs/cf-mgmt/quota"
+	quotafakes "github.com/vmwarepivotallabs/cf-mgmt/quota/fakes"
+	spacefakes "github.com/vmwarepivotallabs/cf-mgmt/space/fakes"
 )
 
 var _ = Describe("given QuotaManager", func() {

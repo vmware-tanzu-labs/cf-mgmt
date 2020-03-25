@@ -4,8 +4,8 @@ package fakes
 import (
 	sync "sync"
 
-	ldap "github.com/pivotalservices/cf-mgmt/ldap"
-	user "github.com/pivotalservices/cf-mgmt/user"
+	ldap "github.com/vmwarepivotallabs/cf-mgmt/ldap"
+	user "github.com/vmwarepivotallabs/cf-mgmt/user"
 )
 
 type FakeLdapManager struct {

@@ -10,7 +10,7 @@ export PATH=$GOPATH/bin:$PATH
 mkdir -p $GOPATH/bin
 curl https://glide.sh/get | sh
 
-WORKING_DIR=$GOPATH/src/github.com/pivotalservices/cf-mgmt
+WORKING_DIR=$GOPATH/src/github.com/vmwarepivotallabs/cf-mgmt
 mkdir -p ${WORKING_DIR}
 cp -R source/* ${WORKING_DIR}/.
 cd ${WORKING_DIR}

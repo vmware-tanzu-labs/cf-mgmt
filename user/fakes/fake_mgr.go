@@ -4,8 +4,8 @@ package fakes
 import (
 	sync "sync"
 
-	uaa "github.com/pivotalservices/cf-mgmt/uaa"
-	user "github.com/pivotalservices/cf-mgmt/user"
+	uaa "github.com/vmwarepivotallabs/cf-mgmt/uaa"
+	user "github.com/vmwarepivotallabs/cf-mgmt/user"
 )
 
 type FakeManager struct {

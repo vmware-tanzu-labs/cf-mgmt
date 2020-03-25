@@ -36,7 +36,7 @@ var _ = BeforeSuite(func() {
 	_, err := cf("login", "--skip-ssl-validation", "-a", "https://api."+systemDomain, "-u", userId, "-p", password)
 	Expect(err).ShouldNot(HaveOccurred())
 
-	outPath, err = Build("github.com/pivotalservices/cf-mgmt/cmd/cf-mgmt")
+	outPath, err = Build("github.com/vmwarepivotallabs/cf-mgmt/cmd/cf-mgmt")
 	Expect(err).ShouldNot(HaveOccurred())
 })
 

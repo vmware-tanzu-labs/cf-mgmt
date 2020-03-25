@@ -5,7 +5,7 @@ import (
 	sync "sync"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	organizationreader "github.com/pivotalservices/cf-mgmt/organizationreader"
+	organizationreader "github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 )
 
 type FakeReader struct {

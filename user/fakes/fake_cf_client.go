@@ -6,7 +6,7 @@ import (
 	sync "sync"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	user "github.com/pivotalservices/cf-mgmt/user"
+	user "github.com/vmwarepivotallabs/cf-mgmt/user"
 )
 
 type FakeCFClient struct {

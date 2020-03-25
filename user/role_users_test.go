@@ -4,18 +4,18 @@ import (
 	"errors"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/uaa"
-	. "github.com/pivotalservices/cf-mgmt/user"
-	"github.com/pivotalservices/cf-mgmt/user/fakes"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
+	. "github.com/vmwarepivotallabs/cf-mgmt/user"
+	"github.com/vmwarepivotallabs/cf-mgmt/user/fakes"
 
 	. "github.com/onsi/ginkgo"
 
 	. "github.com/onsi/gomega"
-	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
-	spacefakes "github.com/pivotalservices/cf-mgmt/space/fakes"
-	uaafakes "github.com/pivotalservices/cf-mgmt/uaa/fakes"
+	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
+	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
+	spacefakes "github.com/vmwarepivotallabs/cf-mgmt/space/fakes"
+	uaafakes "github.com/vmwarepivotallabs/cf-mgmt/uaa/fakes"
 )
 
 var _ = Describe("RoleUsers", func() {

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	l "github.com/go-ldap/ldap"
-	"github.com/pivotalservices/cf-mgmt/config"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/xchapter7x/lo"
 )
 

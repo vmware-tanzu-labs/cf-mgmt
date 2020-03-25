@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/ldap"
-	"github.com/pivotalservices/cf-mgmt/organizationreader"
-	"github.com/pivotalservices/cf-mgmt/space"
-	"github.com/pivotalservices/cf-mgmt/uaa"
-	"github.com/pivotalservices/cf-mgmt/util"
 	"github.com/pkg/errors"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	"github.com/vmwarepivotallabs/cf-mgmt/ldap"
+	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
+	"github.com/vmwarepivotallabs/cf-mgmt/space"
+	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
+	"github.com/vmwarepivotallabs/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
 )
 

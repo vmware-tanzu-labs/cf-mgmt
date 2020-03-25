@@ -6,9 +6,9 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	configfakes "github.com/pivotalservices/cf-mgmt/config/fakes"
-	. "github.com/pivotalservices/cf-mgmt/organizationreader"
-	orgfakes "github.com/pivotalservices/cf-mgmt/organizationreader/fakes"
+	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
+	. "github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
+	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
 )
 
 var _ = Describe("given OrgManager", func() {

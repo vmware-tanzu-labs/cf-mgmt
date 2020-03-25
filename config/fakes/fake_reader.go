@@ -4,7 +4,7 @@ package fakes
 import (
 	sync "sync"
 
-	config "github.com/pivotalservices/cf-mgmt/config"
+	config "github.com/vmwarepivotallabs/cf-mgmt/config"
 )
 
 type FakeReader struct {

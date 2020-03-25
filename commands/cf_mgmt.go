@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/pivotalservices/cf-mgmt/configcommands"
+	"github.com/vmwarepivotallabs/cf-mgmt/configcommands"
 )
 
 type CfMgmtCommand struct {

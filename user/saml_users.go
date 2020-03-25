@@ -3,8 +3,8 @@ package user
 import (
 	"fmt"
 
-	"github.com/pivotalservices/cf-mgmt/uaa"
 	"github.com/pkg/errors"
+	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 

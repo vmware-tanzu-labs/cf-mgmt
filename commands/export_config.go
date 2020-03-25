@@ -1,8 +1,8 @@
 package commands
 
 import (
-	"github.com/pivotalservices/cf-mgmt/config"
-	"github.com/pivotalservices/cf-mgmt/export"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	"github.com/vmwarepivotallabs/cf-mgmt/export"
 	"github.com/xchapter7x/lo"
 )
 

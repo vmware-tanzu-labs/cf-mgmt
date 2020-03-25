@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pivotalservices/cf-mgmt/generated"
 	"github.com/pkg/errors"
+	"github.com/vmwarepivotallabs/cf-mgmt/generated"
 	"github.com/xchapter7x/lo"
 )
 
