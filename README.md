@@ -14,7 +14,7 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: {repository: vmwarepivotallabs/cf-mgmt, tag: "0.0.91"}
+  source: {repository: pivotalservices/cf-mgmt, tag: "0.0.91"}
 
 inputs:
   - name: config-repo

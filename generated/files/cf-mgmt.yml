@@ -3,7 +3,7 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: {repository: vmwarepivotallabs/cf-mgmt, tag: "~VERSION~"}
+  source: {repository: pivotalservices/cf-mgmt, tag: "~VERSION~"}
 
 inputs:
   - name: config-repo
