@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	config "github.com/vmwarepivotallabs/cf-mgmt/config"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
 )
 
 type FakeManager struct {
@@ -87,6 +87,47 @@ type FakeManager struct {
 		result1 error
 	}
 	addSpaceToConfigReturnsOnCall map[int]struct {
+		result1 error
+	}
+	AssociateOrgAuditorStub        func(config.UserOrigin, string, string) error
+	associateOrgAuditorMutex       sync.RWMutex
+	associateOrgAuditorArgsForCall []struct {
+		arg1 config.UserOrigin
+		arg2 string
+		arg3 string
+	}
+	associateOrgAuditorReturns struct {
+		result1 error
+	}
+	associateOrgAuditorReturnsOnCall map[int]struct {
+		result1 error
+	}
+	AssociateSpaceAuditorStub        func(config.UserOrigin, string, string, string) error
+	associateSpaceAuditorMutex       sync.RWMutex
+	associateSpaceAuditorArgsForCall []struct {
+		arg1 config.UserOrigin
+		arg2 string
+		arg3 string
+		arg4 string
+	}
+	associateSpaceAuditorReturns struct {
+		result1 error
+	}
+	associateSpaceAuditorReturnsOnCall map[int]struct {
+		result1 error
+	}
+	AssociateSpaceDeveloperStub        func(config.UserOrigin, string, string, string) error
+	associateSpaceDeveloperMutex       sync.RWMutex
+	associateSpaceDeveloperArgsForCall []struct {
+		arg1 config.UserOrigin
+		arg2 string
+		arg3 string
+		arg4 string
+	}
+	associateSpaceDeveloperReturns struct {
+		result1 error
+	}
+	associateSpaceDeveloperReturnsOnCall map[int]struct {
 		result1 error
 	}
 	CreateConfigIfNotExistsStub        func(string) error
@@ -874,6 +915,194 @@ func (fake *FakeManager) AddSpaceToConfigReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.addSpaceToConfigReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) AssociateOrgAuditor(arg1 config.UserOrigin, arg2 string, arg3 string) error {
+	fake.associateOrgAuditorMutex.Lock()
+	ret, specificReturn := fake.associateOrgAuditorReturnsOnCall[len(fake.associateOrgAuditorArgsForCall)]
+	fake.associateOrgAuditorArgsForCall = append(fake.associateOrgAuditorArgsForCall, struct {
+		arg1 config.UserOrigin
+		arg2 string
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("AssociateOrgAuditor", []interface{}{arg1, arg2, arg3})
+	fake.associateOrgAuditorMutex.Unlock()
+	if fake.AssociateOrgAuditorStub != nil {
+		return fake.AssociateOrgAuditorStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.associateOrgAuditorReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeManager) AssociateOrgAuditorCallCount() int {
+	fake.associateOrgAuditorMutex.RLock()
+	defer fake.associateOrgAuditorMutex.RUnlock()
+	return len(fake.associateOrgAuditorArgsForCall)
+}
+
+func (fake *FakeManager) AssociateOrgAuditorCalls(stub func(config.UserOrigin, string, string) error) {
+	fake.associateOrgAuditorMutex.Lock()
+	defer fake.associateOrgAuditorMutex.Unlock()
+	fake.AssociateOrgAuditorStub = stub
+}
+
+func (fake *FakeManager) AssociateOrgAuditorArgsForCall(i int) (config.UserOrigin, string, string) {
+	fake.associateOrgAuditorMutex.RLock()
+	defer fake.associateOrgAuditorMutex.RUnlock()
+	argsForCall := fake.associateOrgAuditorArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeManager) AssociateOrgAuditorReturns(result1 error) {
+	fake.associateOrgAuditorMutex.Lock()
+	defer fake.associateOrgAuditorMutex.Unlock()
+	fake.AssociateOrgAuditorStub = nil
+	fake.associateOrgAuditorReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) AssociateOrgAuditorReturnsOnCall(i int, result1 error) {
+	fake.associateOrgAuditorMutex.Lock()
+	defer fake.associateOrgAuditorMutex.Unlock()
+	fake.AssociateOrgAuditorStub = nil
+	if fake.associateOrgAuditorReturnsOnCall == nil {
+		fake.associateOrgAuditorReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.associateOrgAuditorReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) AssociateSpaceAuditor(arg1 config.UserOrigin, arg2 string, arg3 string, arg4 string) error {
+	fake.associateSpaceAuditorMutex.Lock()
+	ret, specificReturn := fake.associateSpaceAuditorReturnsOnCall[len(fake.associateSpaceAuditorArgsForCall)]
+	fake.associateSpaceAuditorArgsForCall = append(fake.associateSpaceAuditorArgsForCall, struct {
+		arg1 config.UserOrigin
+		arg2 string
+		arg3 string
+		arg4 string
+	}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("AssociateSpaceAuditor", []interface{}{arg1, arg2, arg3, arg4})
+	fake.associateSpaceAuditorMutex.Unlock()
+	if fake.AssociateSpaceAuditorStub != nil {
+		return fake.AssociateSpaceAuditorStub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.associateSpaceAuditorReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeManager) AssociateSpaceAuditorCallCount() int {
+	fake.associateSpaceAuditorMutex.RLock()
+	defer fake.associateSpaceAuditorMutex.RUnlock()
+	return len(fake.associateSpaceAuditorArgsForCall)
+}
+
+func (fake *FakeManager) AssociateSpaceAuditorCalls(stub func(config.UserOrigin, string, string, string) error) {
+	fake.associateSpaceAuditorMutex.Lock()
+	defer fake.associateSpaceAuditorMutex.Unlock()
+	fake.AssociateSpaceAuditorStub = stub
+}
+
+func (fake *FakeManager) AssociateSpaceAuditorArgsForCall(i int) (config.UserOrigin, string, string, string) {
+	fake.associateSpaceAuditorMutex.RLock()
+	defer fake.associateSpaceAuditorMutex.RUnlock()
+	argsForCall := fake.associateSpaceAuditorArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeManager) AssociateSpaceAuditorReturns(result1 error) {
+	fake.associateSpaceAuditorMutex.Lock()
+	defer fake.associateSpaceAuditorMutex.Unlock()
+	fake.AssociateSpaceAuditorStub = nil
+	fake.associateSpaceAuditorReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) AssociateSpaceAuditorReturnsOnCall(i int, result1 error) {
+	fake.associateSpaceAuditorMutex.Lock()
+	defer fake.associateSpaceAuditorMutex.Unlock()
+	fake.AssociateSpaceAuditorStub = nil
+	if fake.associateSpaceAuditorReturnsOnCall == nil {
+		fake.associateSpaceAuditorReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.associateSpaceAuditorReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) AssociateSpaceDeveloper(arg1 config.UserOrigin, arg2 string, arg3 string, arg4 string) error {
+	fake.associateSpaceDeveloperMutex.Lock()
+	ret, specificReturn := fake.associateSpaceDeveloperReturnsOnCall[len(fake.associateSpaceDeveloperArgsForCall)]
+	fake.associateSpaceDeveloperArgsForCall = append(fake.associateSpaceDeveloperArgsForCall, struct {
+		arg1 config.UserOrigin
+		arg2 string
+		arg3 string
+		arg4 string
+	}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("AssociateSpaceDeveloper", []interface{}{arg1, arg2, arg3, arg4})
+	fake.associateSpaceDeveloperMutex.Unlock()
+	if fake.AssociateSpaceDeveloperStub != nil {
+		return fake.AssociateSpaceDeveloperStub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.associateSpaceDeveloperReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeManager) AssociateSpaceDeveloperCallCount() int {
+	fake.associateSpaceDeveloperMutex.RLock()
+	defer fake.associateSpaceDeveloperMutex.RUnlock()
+	return len(fake.associateSpaceDeveloperArgsForCall)
+}
+
+func (fake *FakeManager) AssociateSpaceDeveloperCalls(stub func(config.UserOrigin, string, string, string) error) {
+	fake.associateSpaceDeveloperMutex.Lock()
+	defer fake.associateSpaceDeveloperMutex.Unlock()
+	fake.AssociateSpaceDeveloperStub = stub
+}
+
+func (fake *FakeManager) AssociateSpaceDeveloperArgsForCall(i int) (config.UserOrigin, string, string, string) {
+	fake.associateSpaceDeveloperMutex.RLock()
+	defer fake.associateSpaceDeveloperMutex.RUnlock()
+	argsForCall := fake.associateSpaceDeveloperArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeManager) AssociateSpaceDeveloperReturns(result1 error) {
+	fake.associateSpaceDeveloperMutex.Lock()
+	defer fake.associateSpaceDeveloperMutex.Unlock()
+	fake.AssociateSpaceDeveloperStub = nil
+	fake.associateSpaceDeveloperReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) AssociateSpaceDeveloperReturnsOnCall(i int, result1 error) {
+	fake.associateSpaceDeveloperMutex.Lock()
+	defer fake.associateSpaceDeveloperMutex.Unlock()
+	fake.AssociateSpaceDeveloperStub = nil
+	if fake.associateSpaceDeveloperReturnsOnCall == nil {
+		fake.associateSpaceDeveloperReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.associateSpaceDeveloperReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -2608,6 +2837,12 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.addSpaceQuotaMutex.RUnlock()
 	fake.addSpaceToConfigMutex.RLock()
 	defer fake.addSpaceToConfigMutex.RUnlock()
+	fake.associateOrgAuditorMutex.RLock()
+	defer fake.associateOrgAuditorMutex.RUnlock()
+	fake.associateSpaceAuditorMutex.RLock()
+	defer fake.associateSpaceAuditorMutex.RUnlock()
+	fake.associateSpaceDeveloperMutex.RLock()
+	defer fake.associateSpaceDeveloperMutex.RUnlock()
 	fake.createConfigIfNotExistsMutex.RLock()
 	defer fake.createConfigIfNotExistsMutex.RUnlock()
 	fake.deleteConfigIfExistsMutex.RLock()

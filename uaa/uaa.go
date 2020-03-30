@@ -38,12 +38,16 @@ type User struct {
 //NewDefaultUAAManager -
 func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, peek bool) (Manager, error) {
 	target := fmt.Sprintf("https://uaa.%s", sysDomain)
-	client, err := uaaclient.NewWithClientCredentials(target, "", clientID, clientSecret, uaaclient.OpaqueToken, true)
+	client, err := uaaclient.New(
+		target,
+		uaaclient.WithClientCredentials(clientID, clientSecret, uaaclient.OpaqueToken),
+		uaaclient.WithUserAgent(userAgent),
+		uaaclient.WithSkipSSLValidation(true),
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	client.UserAgent = userAgent
 	return &DefaultUAAManager{
 		Client: client,
 		Peek:   peek,

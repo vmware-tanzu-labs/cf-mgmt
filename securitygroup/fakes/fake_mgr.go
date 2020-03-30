@@ -2,10 +2,10 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	securitygroup "github.com/vmwarepivotallabs/cf-mgmt/securitygroup"
+	"github.com/vmwarepivotallabs/cf-mgmt/securitygroup"
 )
 
 type FakeManager struct {
