@@ -9,6 +9,7 @@ import:
   version: metadata-support
   repo: https://github.com/calebwashburn/go-cfclient
 - package: golang.org/x/oauth2
+  version: master
 - package: github.com/pkg/errors
   version: ~0.8.0
 - package: github.com/cloudfoundry-community/go-uaa

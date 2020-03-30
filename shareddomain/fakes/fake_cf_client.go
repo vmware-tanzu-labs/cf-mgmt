@@ -2,10 +2,10 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	shareddomain "github.com/pivotalservices/cf-mgmt/shareddomain"
+	"github.com/pivotalservices/cf-mgmt/shareddomain"
 )
 
 type FakeCFClient struct {

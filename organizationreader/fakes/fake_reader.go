@@ -2,10 +2,10 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	organizationreader "github.com/pivotalservices/cf-mgmt/organizationreader"
+	"github.com/pivotalservices/cf-mgmt/organizationreader"
 )
 
 type FakeReader struct {

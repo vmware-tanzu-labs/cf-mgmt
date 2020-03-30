@@ -647,3 +647,58 @@ func (m *yamlManager) SaveSpaceQuota(spaceQuota *SpaceQuota) error {
 	fmt.Println(fmt.Sprintf("Saving Named Space Quote %s for org %s", spaceQuota.Name, spaceQuota.Org))
 	return WriteFile(targetFile, spaceQuota)
 }
+
+type userRole int
+
+const (
+	auditorRole userRole = iota
+	developerRole
+)
+
+func (m *yamlManager) AssociateOrgAuditor(origin UserOrigin, orgName, user string) error {
+	orgConfig, err := m.GetOrgConfig(orgName)
+	if err != nil {
+		return err
+	}
+
+	orgConfig.Auditor.addUser(origin, user)
+	if err = m.SaveOrgConfig(orgConfig); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *yamlManager) AssociateSpaceAuditor(origin UserOrigin, orgName, spaceName, user string) error {
+	return m.associateSpaceRole(auditorRole, origin, orgName, spaceName, user)
+}
+
+func (m *yamlManager) AssociateSpaceDeveloper(origin UserOrigin, orgName, spaceName, user string) error {
+	return m.associateSpaceRole(developerRole, origin, orgName, spaceName, user)
+}
+
+func (m *yamlManager) associateSpaceRole(role userRole, origin UserOrigin, orgName, spaceName, user string) error {
+	spaceConfig, err := m.GetSpaceConfig(orgName, spaceName)
+	if err != nil {
+		return err
+	}
+
+	var userManager *UserMgmt
+	switch role {
+	case auditorRole:
+		userManager = &spaceConfig.Auditor
+	case developerRole:
+		userManager = &spaceConfig.Developer
+
+	// this cannot be tested as we cannot call unexported methods from the test package
+	default:
+		return errors.New("an invalid space role was provided")
+	}
+
+	userManager.addUser(origin, user)
+	if err = m.SaveSpaceConfig(spaceConfig); err != nil {
+		return err
+	}
+
+	return nil
+}
