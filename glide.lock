@@ -18,7 +18,7 @@ imports:
 - name: github.com/bmizerany/pat
   version: 6226ea591a40176dd3ff9cd8eff81ed6ca721a00
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: 161a211c4903484706d816adaa367a7c9fcf9e3e
+  version: 3c43ef9aebb6d79f57ce24c5c0f087cadc558aa1
   repo: https://github.com/calebwashburn/go-cfclient
 - name: github.com/cloudfoundry-community/go-uaa
   version: 10d9dedd9e3453da8bd404d938f4e1f52f12d589 

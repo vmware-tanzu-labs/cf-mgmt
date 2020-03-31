@@ -252,6 +252,8 @@ func (m *DefaultManager) UpdateOrgsMetadata() error {
 						metadata.AddAnnotation(fmt.Sprintf("%s/%s", globalCfg.MetadataPrefix, key), value)
 					} else {
 						metadata.RemoveAnnotation(fmt.Sprintf("%s/%s", globalCfg.MetadataPrefix, key))
+						// For bug in capi that removal doesn't include prefix
+						metadata.RemoveAnnotation(key)
 					}
 				}
 			}
