@@ -528,7 +528,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 							It("adds the user to the org", func() {
 								o, err := configManager.GetOrgConfig(orgName)
 								Expect(err).ShouldNot(HaveOccurred())
-								Expect(o.Auditor.Users).Should(HaveLen(0))
+								Expect(o.Auditor.SamlUsers).Should(HaveLen(0))
 
 								err = configManager.AssociateOrgAuditor(config.SAMLOrigin, orgName, userName)
 								Expect(err).ShouldNot(HaveOccurred())
@@ -618,7 +618,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 						It("creates the user with an auditor role", func() {
 							s, err := configManager.GetSpaceConfig(orgName, spaceName)
 							Expect(err).ShouldNot(HaveOccurred())
-							Expect(s.Developer.Users).Should(HaveLen(0))
+							Expect(s.Auditor.Users).Should(HaveLen(0))
 
 							err = configManager.AssociateSpaceAuditor(config.InternalOrigin, orgName, spaceName, userName)
 							Expect(err).ShouldNot(HaveOccurred())
@@ -631,7 +631,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 						It("creates the user in the correct origin", func() {
 							s, err := configManager.GetSpaceConfig(orgName, spaceName)
 							Expect(err).ShouldNot(HaveOccurred())
-							Expect(s.Developer.Users).Should(HaveLen(0))
+							Expect(s.Auditor.SamlUsers).Should(HaveLen(0))
 
 							err = configManager.AssociateSpaceAuditor(config.SAMLOrigin, orgName, spaceName, userName)
 							Expect(err).ShouldNot(HaveOccurred())
