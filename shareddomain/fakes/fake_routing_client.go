@@ -2,10 +2,10 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	models "code.cloudfoundry.org/routing-api/models"
-	shareddomain "github.com/vmwarepivotallabs/cf-mgmt/shareddomain"
+	"code.cloudfoundry.org/routing-api/models"
+	"github.com/vmwarepivotallabs/cf-mgmt/shareddomain"
 )
 
 type FakeRoutingClient struct {

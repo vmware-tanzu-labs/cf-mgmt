@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	config "github.com/vmwarepivotallabs/cf-mgmt/config"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
 )
 
 type FakeReader struct {
