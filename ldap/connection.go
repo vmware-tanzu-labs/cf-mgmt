@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	l "github.com/go-ldap/ldap"
@@ -52,6 +53,9 @@ func CreateConnection(config *config.LdapConfig) (Connection, error) {
 		return nil, err
 	}
 	if connection != nil {
+		if strings.EqualFold(os.Getenv("LOG_LEVEL"), "debug") {
+			connection.Debug = true
+		}
 		if err = connection.Bind(config.BindDN, config.BindPassword); err != nil {
 			connection.Close()
 			return nil, fmt.Errorf("cannot bind with %s: %v", config.BindDN, err)
