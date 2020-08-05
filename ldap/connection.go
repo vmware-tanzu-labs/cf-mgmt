@@ -16,6 +16,7 @@ import (
 type Connection interface {
 	Close()
 	Search(*l.SearchRequest) (*l.SearchResult, error)
+	IsClosing() bool
 }
 
 func CreateConnection(config *config.LdapConfig) (Connection, error) {
