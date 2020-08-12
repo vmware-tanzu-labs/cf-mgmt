@@ -11,7 +11,7 @@ type ExportConfigurationCommand struct {
 	ExcludedOrgs      []string `long:"excluded-org" description:"Org to be excluded from export. Repeat the flag to specify multiple orgs"`
 	ExcludedSpaces    []string `long:"excluded-space" description:"Space to be excluded from export. Repeat the flag to specify multiple spaces"`
 	SkipSpaces        bool     `long:"skip-spaces" description:"Will not export space configurations"`
-	SkipRoutingGroups bool     `long:"skip-routing-groups" description:"Set to true if tcp routing is not configured"`
+	SkipRoutingGroups bool     `long:"skip-routing-groups" description:"Will not export routing groups. Set to true if tcp routing is not configured"`
 }
 
 //Execute - initializes cf-mgmt configuration

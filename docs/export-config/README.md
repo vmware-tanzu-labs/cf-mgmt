@@ -21,17 +21,17 @@ Usage:
   cf-mgmt [OPTIONS] export-config [export-config-OPTIONS]
 
 Help Options:
-  -h, --help                Show this help message
+  -h, --help                     Show this help message
 
 [export-config command options]
-  --config-dir=     Name of the config directory (default: config) [$CONFIG_DIR]
-  --system-domain=  system domain [$SYSTEM_DOMAIN]
-  --user-id=        user id that has privileges to create/update/delete users, orgs and spaces [$USER_ID]
-  --password=       password for user account [optional if client secret is provided] [$PASSWORD]
-  --client-secret=  secret for user account that has sufficient privileges to create/update/delete users,
-                    orgs and spaces] [$CLIENT_SECRET]
-  --excluded-org=   Org to be excluded from export. Repeat the flag to specify multiple orgs
-  --excluded-space= Space to be excluded from export. Repeat the flag to specify multiple spaces
-  --skip-spaces=    Will not export space configurations
-  --skip-routing-groups=    Will not export routing groups if tcp routing is not configured
+          --config-dir=          Name of the config directory (default: config) [$CONFIG_DIR]
+          --system-domain=       system domain [$SYSTEM_DOMAIN]
+          --user-id=             user id that has privileges to create/update/delete users, orgs and spaces [$USER_ID]
+          --password=            password for user account [optional if client secret is provided] [$PASSWORD]
+          --client-secret=       secret for user account that has sufficient privileges to create/update/delete users, orgs and spaces]
+                                 [$CLIENT_SECRET]
+          --excluded-org=        Org to be excluded from export. Repeat the flag to specify multiple orgs
+          --excluded-space=      Space to be excluded from export. Repeat the flag to specify multiple spaces
+          --skip-spaces          Will not export space configurations
+          --skip-routing-groups  Will not export routing groups. Set to true if tcp routing is not configured
 ```
