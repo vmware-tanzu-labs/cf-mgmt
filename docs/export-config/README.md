@@ -33,4 +33,5 @@ Help Options:
   --excluded-org=   Org to be excluded from export. Repeat the flag to specify multiple orgs
   --excluded-space= Space to be excluded from export. Repeat the flag to specify multiple spaces
   --skip-spaces=    Will not export space configurations
+  --skip-routing-groups=    Will not export routing groups if tcp routing is not configured
 ```
