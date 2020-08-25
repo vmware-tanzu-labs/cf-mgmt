@@ -147,6 +147,32 @@ var _ = Describe("Serviceaccess", func() {
 			Expect(planGUID).Should(Equal("small-guid"))
 			Expect(orgGUID).Should(Equal("test-org-guid"))
 		})
+
+		When("The broker is space-scoped", func() {
+			It("does not attempt to make the broker's plans public", func() {
+				globalCfg := &config.GlobalConfig{
+					EnableServiceAccess: true,
+				}
+
+				spaceScopedBroker := &ServiceBroker{
+					Name:      "space-scoped-broker",
+					SpaceGUID: "9f815177-3eee-4d9c-a1d0-42db4f4b49a5",
+				}
+				service := &Service{
+					Name: "some-service",
+				}
+				service.AddPlan(&ServicePlanInfo{})
+				spaceScopedBroker.AddService(service)
+
+				serviceInfo := &ServiceInfo{}
+				serviceInfo.AddBroker(spaceScopedBroker)
+				protectedOrgs := []string{}
+
+				err := manager.UpdateServiceAccess(globalCfg, serviceInfo, protectedOrgs)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(fakeCFClient.MakeServicePlanPublicCallCount()).Should(Equal(0))
+			})
+		})
 	})
 
 	Context("EnsurePublicAccess", func() {

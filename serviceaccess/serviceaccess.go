@@ -65,12 +65,12 @@ func (m *Manager) Apply() error {
 }
 
 func (m *Manager) UpdateServiceAccess(globalCfg *config.GlobalConfig, serviceInfo *ServiceInfo, protectedOrgs []string) error {
-
 	if !globalCfg.EnableServiceAccess {
 		lo.G.Info("Service Access is not enabled.  Set enable-service-access: true in cf-mgmt.yml")
 		return nil
 	}
-	for _, broker := range serviceInfo.Brokers() {
+
+	for _, broker := range serviceInfo.StandardBrokers() {
 		for _, service := range broker.Services() {
 			for _, plan := range service.Plans() {
 				planInfo := globalCfg.GetPlanInfo(broker.Name, service.Name, plan.Name)
