@@ -14,7 +14,8 @@ func GetServiceInfo(client CFClient) (*ServiceInfo, error) {
 	}
 	for _, broker := range brokers {
 		serviceBroker := &ServiceBroker{
-			Name: broker.Name,
+			Name:      broker.Name,
+			SpaceGUID: broker.SpaceGUID,
 		}
 		services, err := client.ListServicesByQuery(url.Values{
 			"q": []string{fmt.Sprintf("%s:%s", "service_broker_guid", broker.Guid)},
@@ -69,12 +70,18 @@ type ServiceInfo struct {
 	brokers map[string]*ServiceBroker
 }
 
-func (s *ServiceInfo) Brokers() []*ServiceBroker {
+func (s *ServiceInfo) StandardBrokers() []*ServiceBroker {
 	brokerList := []*ServiceBroker{}
 	for _, broker := range s.brokers {
-		brokerList = append(brokerList, broker)
+		if !isSpaceScopedServiceBroker(broker) {
+			brokerList = append(brokerList, broker)
+		}
 	}
 	return brokerList
+}
+
+func isSpaceScopedServiceBroker(broker *ServiceBroker) bool {
+	return broker.SpaceGUID != ""
 }
 
 func (s *ServiceInfo) GetBroker(brokerName string) (*ServiceBroker, error) {

@@ -3,8 +3,9 @@ package serviceaccess
 import "fmt"
 
 type ServiceBroker struct {
-	Name     string
-	services map[string]*Service
+	Name      string
+	SpaceGUID string
+	services  map[string]*Service
 }
 
 func (s *ServiceBroker) Services() []*Service {

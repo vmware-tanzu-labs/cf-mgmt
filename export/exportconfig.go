@@ -437,7 +437,7 @@ func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs [
 	if err != nil {
 		return err
 	}
-	for _, broker := range serviceInfo.Brokers() {
+	for _, broker := range serviceInfo.StandardBrokers() {
 		brokerConfig := &config.Broker{
 			Name: broker.Name,
 		}
