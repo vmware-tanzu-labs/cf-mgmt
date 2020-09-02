@@ -23,7 +23,7 @@ const (
 )
 
 func NewManager(ldapConfig *config.LdapConfig) (*Manager, error) {
-	conn, err := CreateConnection(ldapConfig)
+	conn, err := NewConnectionAdapter(ldapConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (m *Manager) GetUserDNs(groupName string) ([]string, error) {
 		filter,
 		attributes,
 		nil)
-	sr, err := m.doSearch(search)
+	sr, err := m.Connection.Search(search)
 	if err != nil {
 		lo.G.Error(err)
 		return nil, err
@@ -136,21 +136,6 @@ func (m *Manager) GetUserDNs(groupName string) ([]string, error) {
 	return userList, nil
 }
 
-func (m *Manager) doSearch(search *l.SearchRequest) (*l.SearchResult, error) {
-	if m.Connection.IsClosing() {
-		conn, err := CreateConnection(m.Config)
-		if err != nil {
-			return nil, err
-		}
-		m.Connection = conn
-	}
-	sr, err := m.Connection.Search(search)
-	if err != nil {
-		return nil, err
-	}
-	return sr, nil
-}
-
 func (m *Manager) GroupFilter(userDN string) (string, error) {
 	cn, _, err := ParseUserCN(userDN)
 	if err != nil {
@@ -179,7 +164,7 @@ func (m *Manager) IsGroup(DN string) (bool, string, error) {
 			filter,
 			attributes,
 			nil)
-		sr, err := m.doSearch(search)
+		sr, err := m.Connection.Search(search)
 		if err != nil {
 			return false, "", err
 		}
@@ -227,7 +212,7 @@ func (m *Manager) searchUser(filter, searchBase, userID string) (*User, error) {
 		attributes,
 		nil)
 
-	sr, err := m.doSearch(search)
+	sr, err := m.Connection.Search(search)
 	if err != nil {
 		lo.G.Error(err)
 		return nil, err
