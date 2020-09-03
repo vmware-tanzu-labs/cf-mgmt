@@ -43,7 +43,7 @@ func (c ConnectionAdapter) IsClosing() bool {
 }
 
 func (c ConnectionAdapter) RefreshConnection() error {
-	connection, err := CreateConnection(c.Config)
+	connection, err := createConnection(c.Config)
 	if err != nil {
 		lo.G.Error("Could not re-establish LDAP connection")
 	} else {
@@ -53,7 +53,7 @@ func (c ConnectionAdapter) RefreshConnection() error {
 }
 
 func NewConnectionAdapter(config *config.LdapConfig) (Connection, error) {
-	connection, err := CreateConnection(config)
+	connection, err := createConnection(config)
 
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func NewConnectionAdapter(config *config.LdapConfig) (Connection, error) {
 	}, nil
 }
 
-func CreateConnection(config *config.LdapConfig) (Connection, error) {
+func createConnection(config *config.LdapConfig) (Connection, error) {
 	ldapURL := fmt.Sprintf("%s:%d", config.LdapHost, config.LdapPort)
 	lo.G.Debug("Connecting to", ldapURL)
 	var connection *l.Conn
