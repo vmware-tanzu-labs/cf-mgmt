@@ -30,18 +30,26 @@ func (c ConnectionAdapter) Close() {
 
 func (c ConnectionAdapter) Search(searchRequest *l.SearchRequest) (*l.SearchResult, error) {
 	if c.Connection.IsClosing() {
-		connection, err := CreateConnection(c.Config)
+		err := c.RefreshConnection()
 		if err != nil {
-			lo.G.Error("Could not re-establish LDAP connection")
 			return nil, err
 		}
-		c.Connection = connection
 	}
 	return c.Connection.Search(searchRequest)
 }
 
 func (c ConnectionAdapter) IsClosing() bool {
 	return c.Connection.IsClosing()
+}
+
+func (c ConnectionAdapter) RefreshConnection() error {
+	connection, err := CreateConnection(c.Config)
+	if err != nil {
+		lo.G.Error("Could not re-establish LDAP connection")
+	} else {
+		c.Connection = connection
+	}
+	return err
 }
 
 func NewConnectionAdapter(config *config.LdapConfig) (Connection, error) {
