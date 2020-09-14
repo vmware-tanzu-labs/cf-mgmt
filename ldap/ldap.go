@@ -23,10 +23,11 @@ const (
 )
 
 func NewManager(ldapConfig *config.LdapConfig) (*Manager, error) {
-	conn, err := CreateConnection(ldapConfig)
+	conn, err := NewRefreshableConnection(func() (Connection, error) { return createConnection(ldapConfig) })
 	if err != nil {
 		return nil, err
 	}
+
 	return &Manager{
 		Config:     ldapConfig,
 		Connection: conn,
