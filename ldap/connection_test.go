@@ -104,7 +104,63 @@ var _ = Describe("RefreshableConnection_Search", func() {
 	})
 })
 
-var _ = Describe("RefreshableConnection_RefreshConnection", func() {})
+var _ = Describe("RefreshableConnection_RefreshConnection", func() {
+	var (
+		rc                          *ldap.RefreshableConnection
+		err                         error
+		createConnectionCallCounter = new(int)
+	)
+
+	BeforeEach(func() {
+		*createConnectionCallCounter = 0
+	})
+
+	newRC := func() (*ldap.RefreshableConnection, error) {
+		return ldap.NewRefreshableConnection(
+			withCallCounter(createConnectionCallCounter, func() (ldap.Connection, error) {
+				fakeConn := &fakes.FakeConnection{}
+				return fakeConn, nil
+			}),
+		)
+	}
+
+	When("refreshConnection does not return an error", func() {
+		It("creates a new connection", func() {
+			Expect(*createConnectionCallCounter).Should(Equal(0))
+
+			rc, err = newRC()
+			connBeforeRefreshConnection := rc.Connection
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(*createConnectionCallCounter).Should(Equal(1))
+
+			err = rc.RefreshConnection()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(*createConnectionCallCounter).Should(Equal(2))
+			Expect(rc.Connection).ShouldNot(BeIdenticalTo(connBeforeRefreshConnection))
+		})
+	})
+
+	When("refreshConnection returns an error", func() {
+		It("passes the error through", func() {
+			const errorMsg = "error refreshing"
+
+			throwError := false
+			rc, err = ldap.NewRefreshableConnection(func() (ldap.Connection, error) {
+				if throwError {
+					return nil, errors.New(errorMsg)
+				}
+
+				fakeConn := &fakes.FakeConnection{}
+				return fakeConn, nil
+			})
+
+			throwError = true
+			err = rc.RefreshConnection()
+			Expect(err).Should(HaveOccurred())
+			Expect(err).Should(MatchError(errorMsg))
+		})
+	})
+})
 
 func withCallCounter(callCounter *int, createConnection func() (ldap.Connection, error)) func() (ldap.Connection, error) {
 	return func() (ldap.Connection, error) {
