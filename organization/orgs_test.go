@@ -145,6 +145,10 @@ var _ = Describe("given OrgManager", func() {
 					Name: "redis-test-ORG-1-2017_10_04-20h06m33.481s",
 					Guid: "redis-guid",
 				},
+				cfclient.Org{
+					Name: "p-some-tile",
+					Guid: "p-tile-guid",
+				},
 			}
 			fakeOrgReader.ListOrgsReturns(orgs, nil)
 			err := orgManager.DeleteOrgs()
