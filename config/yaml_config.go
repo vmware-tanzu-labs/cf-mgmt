@@ -495,7 +495,7 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	}
 
 	if err := WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &Orgs{
-		EnableDeleteOrgs: true,
+		EnableDeleteOrgs: false,
 		ProtectedOrgs:    DefaultProtectedOrgs,
 	}); err != nil {
 		return err

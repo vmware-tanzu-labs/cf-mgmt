@@ -5,12 +5,11 @@ package config
 // and should never be deleted by cf-mgmt.
 var DefaultProtectedOrgs = []string{
 	"system",
-	"p-spring-cloud-services",
 	"splunk-nozzle-org",
 	"redis-test-ORG*",
 	"appdynamics-org",
 	"credhub-service-broker-org",
-	"p-dataflow",
+	"^p-*",
 }
 
 // Manager can read and write the cf-mgmt configuration.
