@@ -121,7 +121,7 @@ var _ = Describe("given OrgManager", func() {
 	})
 
 	Context("DeleteOrgs()", func() {
-		It("should delete 1", func() {
+		It("should delete 2", func() {
 			fakeReader.OrgsReturns(&config.Orgs{
 				EnableDeleteOrgs: true,
 				Orgs:             []string{"test"},
@@ -146,6 +146,10 @@ var _ = Describe("given OrgManager", func() {
 					Guid: "redis-guid",
 				},
 				cfclient.Org{
+					Name: "mop-bucket",
+					Guid: "some-org-that-matches-p-",
+				},
+				cfclient.Org{
 					Name: "p-some-tile",
 					Guid: "p-tile-guid",
 				},
@@ -153,9 +157,11 @@ var _ = Describe("given OrgManager", func() {
 			fakeOrgReader.ListOrgsReturns(orgs, nil)
 			err := orgManager.DeleteOrgs()
 			Ω(err).Should(BeNil())
-			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(1))
+			Expect(fakeClient.DeleteOrgCallCount()).Should(Equal(2))
 			orgGUID, _, _ := fakeClient.DeleteOrgArgsForCall(0)
 			Expect(orgGUID).Should(Equal("test2-guid"))
+			orgGUID, _, _ = fakeClient.DeleteOrgArgsForCall(1)
+			Expect(orgGUID).Should(Equal("some-org-that-matches-p-"))
 		})
 	})
 

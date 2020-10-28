@@ -31,7 +31,7 @@ var _ = Describe("Org", func() {
 			Expect(protectedOrgList).Should(ContainElement("redis-test-ORG*"))
 			Expect(protectedOrgList).Should(ContainElement("appdynamics-org"))
 			Expect(protectedOrgList).Should(ContainElement("credhub-service-broker-org"))
-			Expect(protectedOrgList).Should(ContainElement("p-*"))
+			Expect(protectedOrgList).Should(ContainElement("^p-*"))
 			Expect(protectedOrgList).Should(ContainElement("protect-me"))
 		})
 	})

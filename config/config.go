@@ -9,7 +9,7 @@ var DefaultProtectedOrgs = []string{
 	"redis-test-ORG*",
 	"appdynamics-org",
 	"credhub-service-broker-org",
-	"p-*",
+	"^p-*",
 }
 
 // Manager can read and write the cf-mgmt configuration.

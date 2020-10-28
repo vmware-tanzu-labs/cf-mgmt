@@ -92,6 +92,9 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
    - [init](docs/config/init/README.md) command from `cf-mgmt-config` if you are wanting to start with a blank configuration and add the config using `cf-mgmt-config` operations
    - [export-config](docs/export-config/README.md) command from `cf-mgmt` if you have an existing foundation you can use this to reverse engineer your configuration.
 
+> By default, `cf-mgmt` has the `enable-delete-orgs` option set to `false` to avoid unintentional deletions. If you'd like to have `cf-mgmt` handle deletion of orgs as well, please double check the list of `protected-orgs` and update the `enable-delete-orgs` flag to true in the `orgs.yml` of your config repository.
+> You can also modify these settings using the [`cf-mgmt-config update-orgs` command](docs/config/update-orgs/README.md).
+
 > Check the [config docs](docs/config/README.md#global-config) to understand the configuration files structure
 
 3. *(optional)* Configure LDAP/SAML Options. If your foundation uses LDAP and/or SAML, you will need to configure ldap.yml with the correct values.
