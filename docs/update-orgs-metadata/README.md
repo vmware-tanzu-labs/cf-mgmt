@@ -2,7 +2,7 @@
 
 # `cf-mgmt update-orgs-metadata`
 
-`update-org-metadata` command will:
+`update-orgs-metadata` command will:
 
 - add metadata label for given org
 - add metadata annotation for given org
