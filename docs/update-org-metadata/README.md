@@ -1,6 +1,6 @@
 &larr; [back to Commands](../README.md)
 
-# `cf-mgmt update-org-metadata`
+# `cf-mgmt update-orgs-metadata`
 
 `update-org-metadata` command will:
 
@@ -14,12 +14,12 @@
 
 ```
 Usage:
-  cf-mgmt [OPTIONS] update-org-metadata [update-org-metadata-OPTIONS]
+  cf-mgmt [OPTIONS] update-orgs-metadata [update-orgs-metadata-OPTIONS]
 
 Help Options:
   -h, --help               Show this help message
 
-[update-org-metadata command options]
+[update-orgs-metadata command options]
   --config-dir=    Name of the config directory (default: config) [$CONFIG_DIR]
   --system-domain= system domain [$SYSTEM_DOMAIN]
   --user-id=       user id that has privileges to create/update/delete users, orgs and spaces [$USER_ID]
