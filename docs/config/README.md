@@ -57,7 +57,7 @@ service-access:
   services:
   - service: p.mysql
     all_access_plans: # db-small plan is available to all orgs
-    - db-small  
+    - db-small
     limited_access_plans:# db-medium is only available to cfdev-org as well as any org that is in `protected` orgs list
     - plan: db-medium
       orgs:
@@ -75,7 +75,7 @@ service-access:
     all_access_plans:
     - standard
 
-# added in 1.0.38+ adds ability to have a list of user(s) or patterns to exclude from removal
+# added in 1.0.38+ adds ability to have a list of user(s) or patterns to exclude from removal. Uses re2 syntax: https://github.com/google/re2/wiki/Syntax
 protected-users:
 - ci_cd_user
 - abcd_123_*
@@ -92,10 +92,11 @@ orgs:
 - bar-org
 # added in 0.0.63+ which will remove orgs not configured in cf-mgmt
 enable-delete-orgs: true
-# added in 0.0.63+ which allows configuration of orgs to 'ignore'
+# added in 0.0.63+ which allows configuration of orgs to 'ignore'. Uses re2 syntax: https://github.com/google/re2/wiki/Syntax
 protected_orgs:
-- system
-- p-spring-cloud-services
+- ^system$ # will match only system
+- system   # will match system at any place within the org name. For example: my-system-org will be protected.
+- ^p-      # matches any org beginning with "p-" and any characters following
 ```
 
 This will contain a orgConfig.yml and folder for each space.  Each orgConfig.yml consists of the following.
@@ -205,7 +206,7 @@ metadata:
 
 ### Space Configuration
 
-There will be a spaces.yml that will list all the spaces for each org.  There will also be a folder for each space with the same name.  Each folder will contain a spaceConfig.yml and security-group.json file with an empty json file.  
+There will be a spaces.yml that will list all the spaces for each org.  There will also be a folder for each space with the same name.  Each folder will contain a spaceConfig.yml and security-group.json file with an empty json file.
 
 Each spaceConfig.yml will have the following configuration options:
 
@@ -297,7 +298,7 @@ space-developer:
   saml_users:
     - cwashburn@testdomain.com
     - cwashburn2@testdomain.com
-# to enable custom quota at space level  
+# to enable custom quota at space level
 enable-space-quota: true
 # 10 GB limit
 memory-limit: 10240
@@ -333,9 +334,9 @@ metadata:
 
 #### Space Default Configuration
 
-The file spaceDefaults.yml can be used to specify a default set of roles for user and groups to be applied to all spaces.  
-This will be merged with the space-specific roles.  
-Note that this is actually processed at runtime, not when spaces are added to the config.  
+The file spaceDefaults.yml can be used to specify a default set of roles for user and groups to be applied to all spaces.
+This will be merged with the space-specific roles.
+Note that this is actually processed at runtime, not when spaces are added to the config.
 
 ### LDAP Configuration
 
@@ -373,7 +374,7 @@ ca_cert: |
 
 ### SAML Configuration with ldap group lookups
 
-LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users.  In orgConfig.yml and spaceConfig.yml leverage either/or `ldap_users` or `ldap_group(s)`  
+LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users.  In orgConfig.yml and spaceConfig.yml leverage either/or `ldap_users` or `ldap_group(s)`
 
 ```yml
 enabled: true
@@ -426,7 +427,7 @@ With 1.0.13+ there is ability to grant applicaiton ssh access for a specific dur
 The following will enable for 2 days:
 
 ```sh
-cf-mgmt-config update-space --config-dir <your directory> --org <org> --space <space> --allow-ssh false --allow-ssh-until 2D  
+cf-mgmt-config update-space --config-dir <your directory> --org <org> --space <space> --allow-ssh false --allow-ssh-until 2D
 ```
 
 The following will enable for 5 hours:

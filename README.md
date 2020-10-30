@@ -168,8 +168,8 @@ To build the binary yourself, follow these steps:
 - Install `Go`.
 - Install [Glide](https://github.com/Masterminds/glide), a dependency management tool for Go.
 - Clone the repo:
-  - `mkdir -p $(go env GOPATH)/src/github.com/pivotalservices`
-  - `cd $(go env GOPATH)/src/github.com/pivotalservices`
+  - `mkdir -p $(go env GOPATH)/src/github.com/vmwarepivotallabs`
+  - `cd $(go env GOPATH)/src/github.com/vmwarepivotallabs`
   - `git clone git@github.com:vmwarepivotallabs/cf-mgmt.git`
 - Install dependencies:
   - `cd cf-mgmt`
