@@ -19,7 +19,7 @@ var _ = Describe("Matcher", func() {
 			Expect(Matches("sandbox-org", []string{"org-*"})).To(BeTrue())
 		})
 		It("Is True", func() {
-			Expect(Matches("redis-test-ORG1233", []string{"redis-test-ORG*"})).To(BeTrue())
+			Expect(Matches("redis-test-ORG1233", []string{"redis-test-ORG"})).To(BeTrue())
 		})
 	})
 })

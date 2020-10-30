@@ -2,7 +2,9 @@ orgs:
 - test
 enable-delete-orgs: true
 protected_orgs:
-- system
-- p-spring-cloud-services
+- ^system$
 - splunk-nozzle-org
-- redis-test-ORG*
+- redis-test-ORG
+- ^p-
+- appdynamics-org
+- credhub-service-broker-org
