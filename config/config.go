@@ -2,14 +2,14 @@
 package config
 
 // DefaultProtectedOrgs lists the organizations that are considered protected
-// and should never be deleted by cf-mgmt.
+// and should never be deleted by cf-mgmt. Note that these are regexes.
 var DefaultProtectedOrgs = []string{
-	"system",
+	"^system$",
 	"splunk-nozzle-org",
-	"redis-test-ORG*",
+	"redis-test-ORG",
 	"appdynamics-org",
 	"credhub-service-broker-org",
-	"^p-*",
+	"^p-",
 }
 
 // Manager can read and write the cf-mgmt configuration.

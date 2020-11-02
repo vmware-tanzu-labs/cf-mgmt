@@ -11,7 +11,7 @@ type UpdateOrgsConfigurationCommand struct {
 	ConfigManager config.Manager
 	BaseConfigCommand
 	EnableDeleteOrgs      string   `long:"enable-delete-orgs" description:"Enable delete orgs option" choice:"true" choice:"false"`
-	ProtectedOrgsToAdd    []string `long:"protected-org" description:"Add org(s) to protected org list, specify multiple times"`
+	ProtectedOrgsToAdd    []string `long:"protected-org" description:"Add org(s) to protected org list, specify multiple times. Uses re2 syntax: https://github.com/google/re2/wiki/Syntax"`
 	ProtectedOrgsToRemove []string `long:"protected-org-to-remove" description:"Remove org(s) from protected org list, specify multiple times"`
 }
 

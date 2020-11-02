@@ -17,6 +17,7 @@ Help Options:
 [update-orgs command options]
   --config-dir=                     Name of the config directory (default: config) [$CONFIG_DIR]
   --enable-delete-orgs=[true|false] Enable delete orgs option
-  --protected-org=                  Add org(s) to protected org list, specify multiple times
+  --protected-org=                  Add org(s) to protected org list, specify multiple times. Uses re2 syntax:
+                                    https://github.com/google/re2/wiki/Syntax
   --protected-org-to-remove=        Remove org(s) from protected org list, specify multiple times
 ```
