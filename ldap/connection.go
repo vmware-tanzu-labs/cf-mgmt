@@ -8,8 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golangci/golangci-lint/pkg/config"
-
 	l "github.com/go-ldap/ldap"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/xchapter7x/lo"
@@ -62,8 +60,8 @@ func NewRefreshableConnection(createConnection func() (Connection, error)) (*Ref
 	}, nil
 }
 
-func setMaxTLSVersion(tlsConfig *tls.Config) {
-	switch config.TLSMaxVersion {
+func setMaxTLSVersion(tlsMaxVersion int, tlsConfig *tls.Config) {
+	switch tlsMaxVersion {
 	case 1:
 		tlsConfig.MaxVersion = tls.VersionTLS11
 	case 2:
@@ -81,7 +79,7 @@ func createConnection(config *config.LdapConfig) (Connection, error) {
 	if config.TLS {
 		if config.MaxVersion != 0 {
 			tlsConfig := &tls.Config{}
-			setMaxTLSVersion(tlsConfig)
+			setMaxTLSVersion(config.TLSMaxVersion, tlsConfig)
 		}
 		if config.InsecureSkipVerify == "" || strings.EqualFold(config.InsecureSkipVerify, "true") {
 			tlsConfig.InsecureSkipVerify = true
