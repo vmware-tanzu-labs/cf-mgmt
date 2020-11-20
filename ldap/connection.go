@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/golangci/golangci-lint/pkg/config"
+
 	l "github.com/go-ldap/ldap"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/xchapter7x/lo"
@@ -60,6 +62,15 @@ func NewRefreshableConnection(createConnection func() (Connection, error)) (*Ref
 	}, nil
 }
 
+func setMaxTLSVersion(tlsConfig *tls.Config) {
+	switch config.TLSMaxVersion {
+	case 1:
+		tlsConfig.MaxVersion = tls.VersionTLS11
+	case 2:
+		tlsConfig.MaxVersion = tls.VersionTLS12
+	}
+}
+
 func createConnection(config *config.LdapConfig) (Connection, error) {
 	var connection *l.Conn
 	var err error
@@ -68,8 +79,13 @@ func createConnection(config *config.LdapConfig) (Connection, error) {
 	lo.G.Debug("Connecting to", ldapURL)
 
 	if config.TLS {
+		if config.MaxVersion != 0 {
+			tlsConfig := &tls.Config{}
+			setMaxTLSVersion(tlsConfig)
+		}
 		if config.InsecureSkipVerify == "" || strings.EqualFold(config.InsecureSkipVerify, "true") {
-			connection, err = l.DialTLS("tcp", ldapURL, &tls.Config{InsecureSkipVerify: true})
+			tlsConfig.InsecureSkipVerify = true
+			connection, err = l.DialTLS("tcp", ldapURL, tlsConfig)
 		} else {
 			// Get the SystemCertPool, continue with an empty pool on error
 			rootCAs, _ := x509.SystemCertPool()
@@ -83,10 +99,8 @@ func createConnection(config *config.LdapConfig) (Connection, error) {
 			}
 
 			// Trust the augmented cert pool in our client
-			tlsConfig := &tls.Config{
-				RootCAs:    rootCAs,
-				ServerName: config.LdapHost,
-			}
+			tlsConfig.RootCAs = rootCAs
+			tlsConfig.ServerName = config.LdapHost
 
 			connection, err = l.DialTLS("tcp", ldapURL, tlsConfig)
 		}
