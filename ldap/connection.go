@@ -60,6 +60,21 @@ func NewRefreshableConnection(createConnection func() (Connection, error)) (*Ref
 	}, nil
 }
 
+func MapTLSVersion(version string) (uint16, error) {
+	switch version {
+	case "1.0":
+		return tls.VersionTLS10, nil
+	case "1.1":
+		return tls.VersionTLS11, nil
+	case "1.2":
+		return tls.VersionTLS12, nil
+	case "1.3":
+		return tls.VersionTLS13, nil
+	default:
+		return 0, fmt.Errorf("MinTLSVersion set to unsupported value: %s, valid values are 1.0, 1.1, 1.2, 1.3", version)
+	}
+}
+
 func createConnection(config *config.LdapConfig) (Connection, error) {
 	var connection *l.Conn
 	var err error
@@ -68,8 +83,23 @@ func createConnection(config *config.LdapConfig) (Connection, error) {
 	lo.G.Debug("Connecting to", ldapURL)
 
 	if config.TLS {
+		tlsConfig := &tls.Config{}
+		if config.MinTLSVersion != "" {
+			minTLS, err := MapTLSVersion(config.MinTLSVersion)
+			if err != nil {
+				return nil, err
+			}
+			tlsConfig.MinVersion = minTLS
+		}
+		if config.MaxTLSVersion != "" {
+			maxTLS, err := MapTLSVersion(config.MaxTLSVersion)
+			if err != nil {
+				return nil, err
+			}
+			tlsConfig.MaxVersion = maxTLS
+		}
 		if config.InsecureSkipVerify == "" || strings.EqualFold(config.InsecureSkipVerify, "true") {
-			connection, err = l.DialTLS("tcp", ldapURL, &tls.Config{InsecureSkipVerify: true})
+			tlsConfig.InsecureSkipVerify = true
 		} else {
 			// Get the SystemCertPool, continue with an empty pool on error
 			rootCAs, _ := x509.SystemCertPool()
@@ -83,13 +113,10 @@ func createConnection(config *config.LdapConfig) (Connection, error) {
 			}
 
 			// Trust the augmented cert pool in our client
-			tlsConfig := &tls.Config{
-				RootCAs:    rootCAs,
-				ServerName: config.LdapHost,
-			}
-
-			connection, err = l.DialTLS("tcp", ldapURL, tlsConfig)
+			tlsConfig.RootCAs = rootCAs
+			tlsConfig.ServerName = config.LdapHost
 		}
+		connection, err = l.DialTLS("tcp", ldapURL, tlsConfig)
 	} else {
 		connection, err = l.Dial("tcp", ldapURL)
 	}

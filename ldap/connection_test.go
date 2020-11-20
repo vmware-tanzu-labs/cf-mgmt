@@ -1,6 +1,7 @@
 package ldap_test
 
 import (
+	"crypto/tls"
 	"errors"
 
 	l "github.com/go-ldap/ldap"
@@ -168,3 +169,41 @@ func withCallCounter(callCounter *int, createConnection func() (ldap.Connection,
 		return createConnection()
 	}
 }
+
+var _ = Describe("MapTLSVersion", func() {
+	When("when 1.0", func() {
+		It("returns VersionTLS10", func() {
+			val, err := ldap.MapTLSVersion("1.0")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(val).Should(Equal(uint16(tls.VersionTLS10)))
+		})
+	})
+	When("when 1.1", func() {
+		It("returns VersionTLS11", func() {
+			val, err := ldap.MapTLSVersion("1.1")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(val).Should(Equal(uint16(tls.VersionTLS11)))
+		})
+	})
+	When("when 1.2", func() {
+		It("returns VersionTLS12", func() {
+			val, err := ldap.MapTLSVersion("1.2")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(val).Should(Equal(uint16(tls.VersionTLS12)))
+		})
+	})
+	When("when 1.3", func() {
+		It("returns VersionTLS13", func() {
+			val, err := ldap.MapTLSVersion("1.3")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(val).Should(Equal(uint16(tls.VersionTLS13)))
+		})
+	})
+
+	When("when unknown value", func() {
+		It("returns error", func() {
+			_, err := ldap.MapTLSVersion("1.3.1")
+			Expect(err).Should(HaveOccurred())
+		})
+	})
+})
