@@ -77,7 +77,7 @@ func createConnection(config *config.LdapConfig) (Connection, error) {
 	lo.G.Debug("Connecting to", ldapURL)
 
 	if config.TLS {
-		if config.MaxVersion != 0 {
+		if config.TLSMaxVersion != 0 {
 			tlsConfig := &tls.Config{}
 			setMaxTLSVersion(config.TLSMaxVersion, tlsConfig)
 		}
