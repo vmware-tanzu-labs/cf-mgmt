@@ -368,6 +368,10 @@ origin: ldap
 insecure_skip_verify: false
 # optional added in 1.0.11+ if ldap server is signed by non-public CA provide ca pem here
 ca_cert: |
+
+# optional added in 1.0.47+ if omitted 1.0 is min, 1.3 is max.  Valid values 1.0, 1.1, 1.2, 1.3 or blank
+minTLSVersion: 1.0
+maxTLSVersion: 1.3
 ```
 
 >When using LDAP with Active Directory, the `uid` for `userNameAttribute` should be a `sAMAccountName`
@@ -401,6 +405,10 @@ ca_cert: |
 
 # optional added in 1.0.37 - true/false.  If true it will use userid from ldap group lookup vs email address for userid
 useIDForSAMLUser: false
+
+# optional added in 1.0.47+ if omitted 1.0 is min, 1.3 is max.  Valid values 1.0, 1.1, 1.2, 1.3 or blank
+minTLSVersion: 1.0
+maxTLSVersion: 1.3
 ```
 
 ### SAML Configuration
