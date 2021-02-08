@@ -1,6 +1,6 @@
 FROM alpine/git
 
-MAINTAINER Caleb Washburn "cwashburn@pivotal.io"
+LABEL maintainer="Caleb Washburn cwashburn@pivotal.io"
 
 COPY cf-mgmt-linux /usr/bin/cf-mgmt
 COPY cf-mgmt-config-linux /usr/bin/cf-mgmt-config
