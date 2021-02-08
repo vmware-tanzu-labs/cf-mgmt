@@ -1,4 +1,4 @@
-FROM concourse/buildroot:git
+FROM alpine/git
 
 MAINTAINER Caleb Washburn "cwashburn@pivotal.io"
 
