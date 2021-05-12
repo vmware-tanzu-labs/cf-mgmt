@@ -12,6 +12,7 @@ type Manager interface {
 	DeleteSpaces() (err error)
 	DeleteSpacesForOrg(orgGUID, orgName string) (err error)
 	ListSpaces(orgGUID string) ([]cfclient.Space, error)
+	GetSpaceMetadata(spaceGUID string) (*cfclient.Metadata, error)
 	UpdateSpacesMetadata() error
 }
 
