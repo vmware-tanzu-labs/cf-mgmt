@@ -1,5 +1,5 @@
-hash: fe68d7656a934f97e00eccd10c107c80276d82e1e30bb4d1719766a104d559a7
-updated: 2020-03-25T14:28:35.12063923-04:00
+hash: 4cb8fb89a954450bda2da179ce981a3d979e6417c3e591b6d25760f868c488d2
+updated: 2021-05-12T11:01:22.025991-07:00
 imports:
 - name: code.cloudfoundry.org/cfhttp
   version: fec6281a6f14dd04834fc71023411d4a5319bc12
@@ -18,14 +18,13 @@ imports:
 - name: github.com/bmizerany/pat
   version: 6226ea591a40176dd3ff9cd8eff81ed6ca721a00
 - name: github.com/cloudfoundry-community/go-cfclient
-  version: 3c43ef9aebb6d79f57ce24c5c0f087cadc558aa1
-  repo: https://github.com/calebwashburn/go-cfclient
+  version: 346e7b24e1309b2decfb347863aec7fb3b77319b
 - name: github.com/cloudfoundry-community/go-uaa
-  version: 673d775e96b5d67f107a28c169384df45dd9d0ac
+  version: 7af3c2d91d5edb96720cc0532cd9e0c805ee8cea
   subpackages:
   - passwordcredentials
 - name: github.com/fatih/color
-  version: daf2830f2741ebb735b21709a520c5f37d642d85
+  version: bc2269661d49c6c9d0e514eef49710556883f3fa
 - name: github.com/go-asn1-ber/asn1-ber
   version: effdc98edfb5dde0d9fd8dfba266f6483e6ce9f0
 - name: github.com/go-ldap/ldap
@@ -61,7 +60,7 @@ imports:
   - html/atom
   - html/charset
 - name: golang.org/x/oauth2
-  version: bf48bf16ab8d622ce64ec6ce98d2c98f916b6303
+  version: 81ed05c6b58c5509b83ac75450e38d97242e7168
   subpackages:
   - clientcredentials
   - internal
@@ -78,24 +77,28 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53403b58ad1b561927d19068c655246f2db79d48
 testImports:
-- name: github.com/hpcloud/tail
-  version: a1dbeea552b7c8df4b542c66073e393de198a800
+- name: github.com/fsnotify/fsnotify
+  version: 7f4cf4dd2b522a984eaca51d1ccee54101d3414a
+- name: github.com/maxbrunsfeld/counterfeiter
+  version: a447b6683e1c8c0cf34464d3024d39dcaa1237b7
+- name: github.com/moul/http2curl
+  version: 9280a7ca1854f93dfee71d5e7d448627123efaf5
+- name: github.com/nxadm/tail
+  version: 92547340f0cc8aa12fbbb6dc2ec776190b0923ca
   subpackages:
   - ratelimiter
   - util
   - watch
   - winfile
-- name: github.com/maxbrunsfeld/counterfeiter
-  version: a447b6683e1c8c0cf34464d3024d39dcaa1237b7
-- name: github.com/moul/http2curl
-  version: 9280a7ca1854f93dfee71d5e7d448627123efaf5
 - name: github.com/onsi/ginkgo
-  version: 40598150331533e3cd497f21dcce387dae84b561
+  version: 084bfa8b8d831128c05e1640aed57b017c7a26a7
   subpackages:
   - config
+  - formatter
   - internal/codelocation
   - internal/containernode
   - internal/failer
+  - internal/global
   - internal/leafnodes
   - internal/remote
   - internal/spec
@@ -110,7 +113,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 6be6c439588487cd908a3a700795660c2a16dfec
+  version: b001323982e2f4cdf9d868ee8d91160027c35f47
   subpackages:
   - format
   - gbytes
@@ -149,11 +152,5 @@ testImports:
   - language
   - runes
   - transform
-- name: golang.org/x/xerrors
-  version: 9bdfabe68543c54f90421aeb9a60ef8061b5b544
-  subpackages:
-  - internal
-- name: gopkg.in/fsnotify/fsnotify.v1
-  version: 45d7d09e39ef4ac08d493309fa031790c15bfe8a
 - name: gopkg.in/tomb.v1
   version: c131134a1947e9afd9cecfe11f4c6dff0732ae58
