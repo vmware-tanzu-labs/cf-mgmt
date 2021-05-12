@@ -110,7 +110,7 @@ var _ = Describe("Global", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				globalConfig, err := configManager.GetGlobalConfig()
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(globalConfig.MetadataPrefix).To(Equal("cf-mgmt.pivotal.io"))
+				Expect(globalConfig.MetadataPrefix).To(Equal(""))
 			})
 			It("Should be changed", func() {
 				command.MetadataPrefix = "foo.bar"
