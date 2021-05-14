@@ -119,15 +119,16 @@ func (fake *FakeCFClient) CreateOrg(arg1 cfclient.OrgRequest) (cfclient.Org, err
 	fake.createOrgArgsForCall = append(fake.createOrgArgsForCall, struct {
 		arg1 cfclient.OrgRequest
 	}{arg1})
+	stub := fake.CreateOrgStub
+	fakeReturns := fake.createOrgReturns
 	fake.recordInvocation("CreateOrg", []interface{}{arg1})
 	fake.createOrgMutex.Unlock()
-	if fake.CreateOrgStub != nil {
-		return fake.CreateOrgStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createOrgReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -184,15 +185,16 @@ func (fake *FakeCFClient) DeleteOrg(arg1 string, arg2 bool, arg3 bool) error {
 		arg2 bool
 		arg3 bool
 	}{arg1, arg2, arg3})
+	stub := fake.DeleteOrgStub
+	fakeReturns := fake.deleteOrgReturns
 	fake.recordInvocation("DeleteOrg", []interface{}{arg1, arg2, arg3})
 	fake.deleteOrgMutex.Unlock()
-	if fake.DeleteOrgStub != nil {
-		return fake.DeleteOrgStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteOrgReturns
 	return fakeReturns.result1
 }
 
@@ -244,15 +246,16 @@ func (fake *FakeCFClient) OrgMetadata(arg1 string) (*cfclient.Metadata, error) {
 	fake.orgMetadataArgsForCall = append(fake.orgMetadataArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.OrgMetadataStub
+	fakeReturns := fake.orgMetadataReturns
 	fake.recordInvocation("OrgMetadata", []interface{}{arg1})
 	fake.orgMetadataMutex.Unlock()
-	if fake.OrgMetadataStub != nil {
-		return fake.OrgMetadataStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.orgMetadataReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -307,15 +310,16 @@ func (fake *FakeCFClient) RemoveOrgMetadata(arg1 string) error {
 	fake.removeOrgMetadataArgsForCall = append(fake.removeOrgMetadataArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.RemoveOrgMetadataStub
+	fakeReturns := fake.removeOrgMetadataReturns
 	fake.recordInvocation("RemoveOrgMetadata", []interface{}{arg1})
 	fake.removeOrgMetadataMutex.Unlock()
-	if fake.RemoveOrgMetadataStub != nil {
-		return fake.RemoveOrgMetadataStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeOrgMetadataReturns
 	return fakeReturns.result1
 }
 
@@ -366,15 +370,16 @@ func (fake *FakeCFClient) SupportsMetadataAPI() (bool, error) {
 	ret, specificReturn := fake.supportsMetadataAPIReturnsOnCall[len(fake.supportsMetadataAPIArgsForCall)]
 	fake.supportsMetadataAPIArgsForCall = append(fake.supportsMetadataAPIArgsForCall, struct {
 	}{})
+	stub := fake.SupportsMetadataAPIStub
+	fakeReturns := fake.supportsMetadataAPIReturns
 	fake.recordInvocation("SupportsMetadataAPI", []interface{}{})
 	fake.supportsMetadataAPIMutex.Unlock()
-	if fake.SupportsMetadataAPIStub != nil {
-		return fake.SupportsMetadataAPIStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.supportsMetadataAPIReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -423,15 +428,16 @@ func (fake *FakeCFClient) UnshareOrgPrivateDomain(arg1 string, arg2 string) erro
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.UnshareOrgPrivateDomainStub
+	fakeReturns := fake.unshareOrgPrivateDomainReturns
 	fake.recordInvocation("UnshareOrgPrivateDomain", []interface{}{arg1, arg2})
 	fake.unshareOrgPrivateDomainMutex.Unlock()
-	if fake.UnshareOrgPrivateDomainStub != nil {
-		return fake.UnshareOrgPrivateDomainStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.unshareOrgPrivateDomainReturns
 	return fakeReturns.result1
 }
 
@@ -484,15 +490,16 @@ func (fake *FakeCFClient) UpdateOrg(arg1 string, arg2 cfclient.OrgRequest) (cfcl
 		arg1 string
 		arg2 cfclient.OrgRequest
 	}{arg1, arg2})
+	stub := fake.UpdateOrgStub
+	fakeReturns := fake.updateOrgReturns
 	fake.recordInvocation("UpdateOrg", []interface{}{arg1, arg2})
 	fake.updateOrgMutex.Unlock()
-	if fake.UpdateOrgStub != nil {
-		return fake.UpdateOrgStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.updateOrgReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -548,15 +555,16 @@ func (fake *FakeCFClient) UpdateOrgMetadata(arg1 string, arg2 cfclient.Metadata)
 		arg1 string
 		arg2 cfclient.Metadata
 	}{arg1, arg2})
+	stub := fake.UpdateOrgMetadataStub
+	fakeReturns := fake.updateOrgMetadataReturns
 	fake.recordInvocation("UpdateOrgMetadata", []interface{}{arg1, arg2})
 	fake.updateOrgMetadataMutex.Unlock()
-	if fake.UpdateOrgMetadataStub != nil {
-		return fake.UpdateOrgMetadataStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateOrgMetadataReturns
 	return fakeReturns.result1
 }
 

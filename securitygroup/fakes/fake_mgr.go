@@ -98,15 +98,16 @@ func (fake *FakeManager) AssignDefaultSecurityGroups() error {
 	ret, specificReturn := fake.assignDefaultSecurityGroupsReturnsOnCall[len(fake.assignDefaultSecurityGroupsArgsForCall)]
 	fake.assignDefaultSecurityGroupsArgsForCall = append(fake.assignDefaultSecurityGroupsArgsForCall, struct {
 	}{})
+	stub := fake.AssignDefaultSecurityGroupsStub
+	fakeReturns := fake.assignDefaultSecurityGroupsReturns
 	fake.recordInvocation("AssignDefaultSecurityGroups", []interface{}{})
 	fake.assignDefaultSecurityGroupsMutex.Unlock()
-	if fake.AssignDefaultSecurityGroupsStub != nil {
-		return fake.AssignDefaultSecurityGroupsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.assignDefaultSecurityGroupsReturns
 	return fakeReturns.result1
 }
 
@@ -150,15 +151,16 @@ func (fake *FakeManager) CreateApplicationSecurityGroups() error {
 	ret, specificReturn := fake.createApplicationSecurityGroupsReturnsOnCall[len(fake.createApplicationSecurityGroupsArgsForCall)]
 	fake.createApplicationSecurityGroupsArgsForCall = append(fake.createApplicationSecurityGroupsArgsForCall, struct {
 	}{})
+	stub := fake.CreateApplicationSecurityGroupsStub
+	fakeReturns := fake.createApplicationSecurityGroupsReturns
 	fake.recordInvocation("CreateApplicationSecurityGroups", []interface{}{})
 	fake.createApplicationSecurityGroupsMutex.Unlock()
-	if fake.CreateApplicationSecurityGroupsStub != nil {
-		return fake.CreateApplicationSecurityGroupsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.createApplicationSecurityGroupsReturns
 	return fakeReturns.result1
 }
 
@@ -202,15 +204,16 @@ func (fake *FakeManager) CreateGlobalSecurityGroups() error {
 	ret, specificReturn := fake.createGlobalSecurityGroupsReturnsOnCall[len(fake.createGlobalSecurityGroupsArgsForCall)]
 	fake.createGlobalSecurityGroupsArgsForCall = append(fake.createGlobalSecurityGroupsArgsForCall, struct {
 	}{})
+	stub := fake.CreateGlobalSecurityGroupsStub
+	fakeReturns := fake.createGlobalSecurityGroupsReturns
 	fake.recordInvocation("CreateGlobalSecurityGroups", []interface{}{})
 	fake.createGlobalSecurityGroupsMutex.Unlock()
-	if fake.CreateGlobalSecurityGroupsStub != nil {
-		return fake.CreateGlobalSecurityGroupsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.createGlobalSecurityGroupsReturns
 	return fakeReturns.result1
 }
 
@@ -255,15 +258,16 @@ func (fake *FakeManager) GetSecurityGroupRules(arg1 string) ([]byte, error) {
 	fake.getSecurityGroupRulesArgsForCall = append(fake.getSecurityGroupRulesArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetSecurityGroupRulesStub
+	fakeReturns := fake.getSecurityGroupRulesReturns
 	fake.recordInvocation("GetSecurityGroupRules", []interface{}{arg1})
 	fake.getSecurityGroupRulesMutex.Unlock()
-	if fake.GetSecurityGroupRulesStub != nil {
-		return fake.GetSecurityGroupRulesStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getSecurityGroupRulesReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -317,15 +321,16 @@ func (fake *FakeManager) ListDefaultSecurityGroups() (map[string]cfclient.SecGro
 	ret, specificReturn := fake.listDefaultSecurityGroupsReturnsOnCall[len(fake.listDefaultSecurityGroupsArgsForCall)]
 	fake.listDefaultSecurityGroupsArgsForCall = append(fake.listDefaultSecurityGroupsArgsForCall, struct {
 	}{})
+	stub := fake.ListDefaultSecurityGroupsStub
+	fakeReturns := fake.listDefaultSecurityGroupsReturns
 	fake.recordInvocation("ListDefaultSecurityGroups", []interface{}{})
 	fake.listDefaultSecurityGroupsMutex.Unlock()
-	if fake.ListDefaultSecurityGroupsStub != nil {
-		return fake.ListDefaultSecurityGroupsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listDefaultSecurityGroupsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -372,15 +377,16 @@ func (fake *FakeManager) ListNonDefaultSecurityGroups() (map[string]cfclient.Sec
 	ret, specificReturn := fake.listNonDefaultSecurityGroupsReturnsOnCall[len(fake.listNonDefaultSecurityGroupsArgsForCall)]
 	fake.listNonDefaultSecurityGroupsArgsForCall = append(fake.listNonDefaultSecurityGroupsArgsForCall, struct {
 	}{})
+	stub := fake.ListNonDefaultSecurityGroupsStub
+	fakeReturns := fake.listNonDefaultSecurityGroupsReturns
 	fake.recordInvocation("ListNonDefaultSecurityGroups", []interface{}{})
 	fake.listNonDefaultSecurityGroupsMutex.Unlock()
-	if fake.ListNonDefaultSecurityGroupsStub != nil {
-		return fake.ListNonDefaultSecurityGroupsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listNonDefaultSecurityGroupsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -428,15 +434,16 @@ func (fake *FakeManager) ListSpaceSecurityGroups(arg1 string) (map[string]string
 	fake.listSpaceSecurityGroupsArgsForCall = append(fake.listSpaceSecurityGroupsArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListSpaceSecurityGroupsStub
+	fakeReturns := fake.listSpaceSecurityGroupsReturns
 	fake.recordInvocation("ListSpaceSecurityGroups", []interface{}{arg1})
 	fake.listSpaceSecurityGroupsMutex.Unlock()
-	if fake.ListSpaceSecurityGroupsStub != nil {
-		return fake.ListSpaceSecurityGroupsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpaceSecurityGroupsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

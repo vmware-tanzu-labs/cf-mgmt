@@ -409,6 +409,18 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 			spaceConfig.AllowSSH = true
 		}
 
+		spaceMetadata, err := im.SpaceManager.GetSpaceMetadata(orgSpace.Guid)
+		if err != nil {
+			return err
+		}
+		if spaceMetadata != nil {
+			spaceConfig.Metadata = &config.Metadata{}
+			spaceConfig.Metadata.Labels = make(map[string]string)
+			for k, v := range spaceMetadata.Labels {
+				spaceConfig.Metadata.Labels[k] = v.(string)
+			}
+		}
+
 		spaceSGName := fmt.Sprintf("%s-%s", orgConfig.Org, spaceName)
 		if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.Guid); err == nil {
 			for securityGroupName, _ := range spaceSGNames {

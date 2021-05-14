@@ -97,15 +97,16 @@ func (fake *FakeCFClient) CreateServicePlanVisibility(arg1 string, arg2 string) 
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.CreateServicePlanVisibilityStub
+	fakeReturns := fake.createServicePlanVisibilityReturns
 	fake.recordInvocation("CreateServicePlanVisibility", []interface{}{arg1, arg2})
 	fake.createServicePlanVisibilityMutex.Unlock()
-	if fake.CreateServicePlanVisibilityStub != nil {
-		return fake.CreateServicePlanVisibilityStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createServicePlanVisibilityReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -162,15 +163,16 @@ func (fake *FakeCFClient) DeleteServicePlanVisibilityByPlanAndOrg(arg1 string, a
 		arg2 string
 		arg3 bool
 	}{arg1, arg2, arg3})
+	stub := fake.DeleteServicePlanVisibilityByPlanAndOrgStub
+	fakeReturns := fake.deleteServicePlanVisibilityByPlanAndOrgReturns
 	fake.recordInvocation("DeleteServicePlanVisibilityByPlanAndOrg", []interface{}{arg1, arg2, arg3})
 	fake.deleteServicePlanVisibilityByPlanAndOrgMutex.Unlock()
-	if fake.DeleteServicePlanVisibilityByPlanAndOrgStub != nil {
-		return fake.DeleteServicePlanVisibilityByPlanAndOrgStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteServicePlanVisibilityByPlanAndOrgReturns
 	return fakeReturns.result1
 }
 
@@ -222,15 +224,16 @@ func (fake *FakeCFClient) ListServicePlanVisibilitiesByQuery(arg1 url.Values) ([
 	fake.listServicePlanVisibilitiesByQueryArgsForCall = append(fake.listServicePlanVisibilitiesByQueryArgsForCall, struct {
 		arg1 url.Values
 	}{arg1})
+	stub := fake.ListServicePlanVisibilitiesByQueryStub
+	fakeReturns := fake.listServicePlanVisibilitiesByQueryReturns
 	fake.recordInvocation("ListServicePlanVisibilitiesByQuery", []interface{}{arg1})
 	fake.listServicePlanVisibilitiesByQueryMutex.Unlock()
-	if fake.ListServicePlanVisibilitiesByQueryStub != nil {
-		return fake.ListServicePlanVisibilitiesByQueryStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listServicePlanVisibilitiesByQueryReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -285,15 +288,16 @@ func (fake *FakeCFClient) ListServicePlansByQuery(arg1 url.Values) ([]cfclient.S
 	fake.listServicePlansByQueryArgsForCall = append(fake.listServicePlansByQueryArgsForCall, struct {
 		arg1 url.Values
 	}{arg1})
+	stub := fake.ListServicePlansByQueryStub
+	fakeReturns := fake.listServicePlansByQueryReturns
 	fake.recordInvocation("ListServicePlansByQuery", []interface{}{arg1})
 	fake.listServicePlansByQueryMutex.Unlock()
-	if fake.ListServicePlansByQueryStub != nil {
-		return fake.ListServicePlansByQueryStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listServicePlansByQueryReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -347,15 +351,16 @@ func (fake *FakeCFClient) ListServices() ([]cfclient.Service, error) {
 	ret, specificReturn := fake.listServicesReturnsOnCall[len(fake.listServicesArgsForCall)]
 	fake.listServicesArgsForCall = append(fake.listServicesArgsForCall, struct {
 	}{})
+	stub := fake.ListServicesStub
+	fakeReturns := fake.listServicesReturns
 	fake.recordInvocation("ListServices", []interface{}{})
 	fake.listServicesMutex.Unlock()
-	if fake.ListServicesStub != nil {
-		return fake.ListServicesStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listServicesReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -403,15 +408,16 @@ func (fake *FakeCFClient) MakeServicePlanPrivate(arg1 string) error {
 	fake.makeServicePlanPrivateArgsForCall = append(fake.makeServicePlanPrivateArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.MakeServicePlanPrivateStub
+	fakeReturns := fake.makeServicePlanPrivateReturns
 	fake.recordInvocation("MakeServicePlanPrivate", []interface{}{arg1})
 	fake.makeServicePlanPrivateMutex.Unlock()
-	if fake.MakeServicePlanPrivateStub != nil {
-		return fake.MakeServicePlanPrivateStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.makeServicePlanPrivateReturns
 	return fakeReturns.result1
 }
 

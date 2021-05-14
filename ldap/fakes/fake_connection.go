@@ -44,9 +44,10 @@ func (fake *FakeConnection) Close() {
 	fake.closeMutex.Lock()
 	fake.closeArgsForCall = append(fake.closeArgsForCall, struct {
 	}{})
+	stub := fake.CloseStub
 	fake.recordInvocation("Close", []interface{}{})
 	fake.closeMutex.Unlock()
-	if fake.CloseStub != nil {
+	if stub != nil {
 		fake.CloseStub()
 	}
 }
@@ -68,15 +69,16 @@ func (fake *FakeConnection) IsClosing() bool {
 	ret, specificReturn := fake.isClosingReturnsOnCall[len(fake.isClosingArgsForCall)]
 	fake.isClosingArgsForCall = append(fake.isClosingArgsForCall, struct {
 	}{})
+	stub := fake.IsClosingStub
+	fakeReturns := fake.isClosingReturns
 	fake.recordInvocation("IsClosing", []interface{}{})
 	fake.isClosingMutex.Unlock()
-	if fake.IsClosingStub != nil {
-		return fake.IsClosingStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.isClosingReturns
 	return fakeReturns.result1
 }
 
@@ -121,15 +123,16 @@ func (fake *FakeConnection) Search(arg1 *ldapa.SearchRequest) (*ldapa.SearchResu
 	fake.searchArgsForCall = append(fake.searchArgsForCall, struct {
 		arg1 *ldapa.SearchRequest
 	}{arg1})
+	stub := fake.SearchStub
+	fakeReturns := fake.searchReturns
 	fake.recordInvocation("Search", []interface{}{arg1})
 	fake.searchMutex.Unlock()
-	if fake.SearchStub != nil {
-		return fake.SearchStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.searchReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

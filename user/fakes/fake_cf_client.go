@@ -318,15 +318,16 @@ func (fake *FakeCFClient) AssociateOrgAuditor(arg1 string, arg2 string) (cfclien
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.AssociateOrgAuditorStub
+	fakeReturns := fake.associateOrgAuditorReturns
 	fake.recordInvocation("AssociateOrgAuditor", []interface{}{arg1, arg2})
 	fake.associateOrgAuditorMutex.Unlock()
-	if fake.AssociateOrgAuditorStub != nil {
-		return fake.AssociateOrgAuditorStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.associateOrgAuditorReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -382,15 +383,16 @@ func (fake *FakeCFClient) AssociateOrgBillingManager(arg1 string, arg2 string) (
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.AssociateOrgBillingManagerStub
+	fakeReturns := fake.associateOrgBillingManagerReturns
 	fake.recordInvocation("AssociateOrgBillingManager", []interface{}{arg1, arg2})
 	fake.associateOrgBillingManagerMutex.Unlock()
-	if fake.AssociateOrgBillingManagerStub != nil {
-		return fake.AssociateOrgBillingManagerStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.associateOrgBillingManagerReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -446,15 +448,16 @@ func (fake *FakeCFClient) AssociateOrgManager(arg1 string, arg2 string) (cfclien
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.AssociateOrgManagerStub
+	fakeReturns := fake.associateOrgManagerReturns
 	fake.recordInvocation("AssociateOrgManager", []interface{}{arg1, arg2})
 	fake.associateOrgManagerMutex.Unlock()
-	if fake.AssociateOrgManagerStub != nil {
-		return fake.AssociateOrgManagerStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.associateOrgManagerReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -510,15 +513,16 @@ func (fake *FakeCFClient) AssociateOrgUser(arg1 string, arg2 string) (cfclient.O
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.AssociateOrgUserStub
+	fakeReturns := fake.associateOrgUserReturns
 	fake.recordInvocation("AssociateOrgUser", []interface{}{arg1, arg2})
 	fake.associateOrgUserMutex.Unlock()
-	if fake.AssociateOrgUserStub != nil {
-		return fake.AssociateOrgUserStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.associateOrgUserReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -574,15 +578,16 @@ func (fake *FakeCFClient) AssociateSpaceAuditor(arg1 string, arg2 string) (cfcli
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.AssociateSpaceAuditorStub
+	fakeReturns := fake.associateSpaceAuditorReturns
 	fake.recordInvocation("AssociateSpaceAuditor", []interface{}{arg1, arg2})
 	fake.associateSpaceAuditorMutex.Unlock()
-	if fake.AssociateSpaceAuditorStub != nil {
-		return fake.AssociateSpaceAuditorStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.associateSpaceAuditorReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -638,15 +643,16 @@ func (fake *FakeCFClient) AssociateSpaceDeveloper(arg1 string, arg2 string) (cfc
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.AssociateSpaceDeveloperStub
+	fakeReturns := fake.associateSpaceDeveloperReturns
 	fake.recordInvocation("AssociateSpaceDeveloper", []interface{}{arg1, arg2})
 	fake.associateSpaceDeveloperMutex.Unlock()
-	if fake.AssociateSpaceDeveloperStub != nil {
-		return fake.AssociateSpaceDeveloperStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.associateSpaceDeveloperReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -702,15 +708,16 @@ func (fake *FakeCFClient) AssociateSpaceManager(arg1 string, arg2 string) (cfcli
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.AssociateSpaceManagerStub
+	fakeReturns := fake.associateSpaceManagerReturns
 	fake.recordInvocation("AssociateSpaceManager", []interface{}{arg1, arg2})
 	fake.associateSpaceManagerMutex.Unlock()
-	if fake.AssociateSpaceManagerStub != nil {
-		return fake.AssociateSpaceManagerStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.associateSpaceManagerReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -765,15 +772,16 @@ func (fake *FakeCFClient) DeleteUser(arg1 string) error {
 	fake.deleteUserArgsForCall = append(fake.deleteUserArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.DeleteUserStub
+	fakeReturns := fake.deleteUserReturns
 	fake.recordInvocation("DeleteUser", []interface{}{arg1})
 	fake.deleteUserMutex.Unlock()
-	if fake.DeleteUserStub != nil {
-		return fake.DeleteUserStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteUserReturns
 	return fakeReturns.result1
 }
 
@@ -825,15 +833,16 @@ func (fake *FakeCFClient) ListOrgAuditors(arg1 string) ([]cfclient.User, error) 
 	fake.listOrgAuditorsArgsForCall = append(fake.listOrgAuditorsArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListOrgAuditorsStub
+	fakeReturns := fake.listOrgAuditorsReturns
 	fake.recordInvocation("ListOrgAuditors", []interface{}{arg1})
 	fake.listOrgAuditorsMutex.Unlock()
-	if fake.ListOrgAuditorsStub != nil {
-		return fake.ListOrgAuditorsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgAuditorsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -888,15 +897,16 @@ func (fake *FakeCFClient) ListOrgBillingManagers(arg1 string) ([]cfclient.User, 
 	fake.listOrgBillingManagersArgsForCall = append(fake.listOrgBillingManagersArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListOrgBillingManagersStub
+	fakeReturns := fake.listOrgBillingManagersReturns
 	fake.recordInvocation("ListOrgBillingManagers", []interface{}{arg1})
 	fake.listOrgBillingManagersMutex.Unlock()
-	if fake.ListOrgBillingManagersStub != nil {
-		return fake.ListOrgBillingManagersStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgBillingManagersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -951,15 +961,16 @@ func (fake *FakeCFClient) ListOrgManagers(arg1 string) ([]cfclient.User, error) 
 	fake.listOrgManagersArgsForCall = append(fake.listOrgManagersArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListOrgManagersStub
+	fakeReturns := fake.listOrgManagersReturns
 	fake.recordInvocation("ListOrgManagers", []interface{}{arg1})
 	fake.listOrgManagersMutex.Unlock()
-	if fake.ListOrgManagersStub != nil {
-		return fake.ListOrgManagersStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgManagersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -1014,15 +1025,16 @@ func (fake *FakeCFClient) ListOrgUsers(arg1 string) ([]cfclient.User, error) {
 	fake.listOrgUsersArgsForCall = append(fake.listOrgUsersArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListOrgUsersStub
+	fakeReturns := fake.listOrgUsersReturns
 	fake.recordInvocation("ListOrgUsers", []interface{}{arg1})
 	fake.listOrgUsersMutex.Unlock()
-	if fake.ListOrgUsersStub != nil {
-		return fake.ListOrgUsersStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgUsersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -1077,15 +1089,16 @@ func (fake *FakeCFClient) ListSpaceAuditors(arg1 string) ([]cfclient.User, error
 	fake.listSpaceAuditorsArgsForCall = append(fake.listSpaceAuditorsArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListSpaceAuditorsStub
+	fakeReturns := fake.listSpaceAuditorsReturns
 	fake.recordInvocation("ListSpaceAuditors", []interface{}{arg1})
 	fake.listSpaceAuditorsMutex.Unlock()
-	if fake.ListSpaceAuditorsStub != nil {
-		return fake.ListSpaceAuditorsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpaceAuditorsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -1140,15 +1153,16 @@ func (fake *FakeCFClient) ListSpaceDevelopers(arg1 string) ([]cfclient.User, err
 	fake.listSpaceDevelopersArgsForCall = append(fake.listSpaceDevelopersArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListSpaceDevelopersStub
+	fakeReturns := fake.listSpaceDevelopersReturns
 	fake.recordInvocation("ListSpaceDevelopers", []interface{}{arg1})
 	fake.listSpaceDevelopersMutex.Unlock()
-	if fake.ListSpaceDevelopersStub != nil {
-		return fake.ListSpaceDevelopersStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpaceDevelopersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -1203,15 +1217,16 @@ func (fake *FakeCFClient) ListSpaceManagers(arg1 string) ([]cfclient.User, error
 	fake.listSpaceManagersArgsForCall = append(fake.listSpaceManagersArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListSpaceManagersStub
+	fakeReturns := fake.listSpaceManagersReturns
 	fake.recordInvocation("ListSpaceManagers", []interface{}{arg1})
 	fake.listSpaceManagersMutex.Unlock()
-	if fake.ListSpaceManagersStub != nil {
-		return fake.ListSpaceManagersStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpaceManagersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -1266,15 +1281,16 @@ func (fake *FakeCFClient) ListSpacesByQuery(arg1 url.Values) ([]cfclient.Space, 
 	fake.listSpacesByQueryArgsForCall = append(fake.listSpacesByQueryArgsForCall, struct {
 		arg1 url.Values
 	}{arg1})
+	stub := fake.ListSpacesByQueryStub
+	fakeReturns := fake.listSpacesByQueryReturns
 	fake.recordInvocation("ListSpacesByQuery", []interface{}{arg1})
 	fake.listSpacesByQueryMutex.Unlock()
-	if fake.ListSpacesByQueryStub != nil {
-		return fake.ListSpacesByQueryStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpacesByQueryReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -1330,15 +1346,16 @@ func (fake *FakeCFClient) RemoveOrgAuditor(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RemoveOrgAuditorStub
+	fakeReturns := fake.removeOrgAuditorReturns
 	fake.recordInvocation("RemoveOrgAuditor", []interface{}{arg1, arg2})
 	fake.removeOrgAuditorMutex.Unlock()
-	if fake.RemoveOrgAuditorStub != nil {
-		return fake.RemoveOrgAuditorStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeOrgAuditorReturns
 	return fakeReturns.result1
 }
 
@@ -1391,15 +1408,16 @@ func (fake *FakeCFClient) RemoveOrgBillingManager(arg1 string, arg2 string) erro
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RemoveOrgBillingManagerStub
+	fakeReturns := fake.removeOrgBillingManagerReturns
 	fake.recordInvocation("RemoveOrgBillingManager", []interface{}{arg1, arg2})
 	fake.removeOrgBillingManagerMutex.Unlock()
-	if fake.RemoveOrgBillingManagerStub != nil {
-		return fake.RemoveOrgBillingManagerStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeOrgBillingManagerReturns
 	return fakeReturns.result1
 }
 
@@ -1452,15 +1470,16 @@ func (fake *FakeCFClient) RemoveOrgManager(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RemoveOrgManagerStub
+	fakeReturns := fake.removeOrgManagerReturns
 	fake.recordInvocation("RemoveOrgManager", []interface{}{arg1, arg2})
 	fake.removeOrgManagerMutex.Unlock()
-	if fake.RemoveOrgManagerStub != nil {
-		return fake.RemoveOrgManagerStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeOrgManagerReturns
 	return fakeReturns.result1
 }
 
@@ -1513,15 +1532,16 @@ func (fake *FakeCFClient) RemoveOrgUser(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RemoveOrgUserStub
+	fakeReturns := fake.removeOrgUserReturns
 	fake.recordInvocation("RemoveOrgUser", []interface{}{arg1, arg2})
 	fake.removeOrgUserMutex.Unlock()
-	if fake.RemoveOrgUserStub != nil {
-		return fake.RemoveOrgUserStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeOrgUserReturns
 	return fakeReturns.result1
 }
 
@@ -1574,15 +1594,16 @@ func (fake *FakeCFClient) RemoveSpaceAuditor(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RemoveSpaceAuditorStub
+	fakeReturns := fake.removeSpaceAuditorReturns
 	fake.recordInvocation("RemoveSpaceAuditor", []interface{}{arg1, arg2})
 	fake.removeSpaceAuditorMutex.Unlock()
-	if fake.RemoveSpaceAuditorStub != nil {
-		return fake.RemoveSpaceAuditorStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeSpaceAuditorReturns
 	return fakeReturns.result1
 }
 
@@ -1635,15 +1656,16 @@ func (fake *FakeCFClient) RemoveSpaceDeveloper(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RemoveSpaceDeveloperStub
+	fakeReturns := fake.removeSpaceDeveloperReturns
 	fake.recordInvocation("RemoveSpaceDeveloper", []interface{}{arg1, arg2})
 	fake.removeSpaceDeveloperMutex.Unlock()
-	if fake.RemoveSpaceDeveloperStub != nil {
-		return fake.RemoveSpaceDeveloperStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeSpaceDeveloperReturns
 	return fakeReturns.result1
 }
 
@@ -1696,15 +1718,16 @@ func (fake *FakeCFClient) RemoveSpaceManager(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RemoveSpaceManagerStub
+	fakeReturns := fake.removeSpaceManagerReturns
 	fake.recordInvocation("RemoveSpaceManager", []interface{}{arg1, arg2})
 	fake.removeSpaceManagerMutex.Unlock()
-	if fake.RemoveSpaceManagerStub != nil {
-		return fake.RemoveSpaceManagerStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeSpaceManagerReturns
 	return fakeReturns.result1
 }
 

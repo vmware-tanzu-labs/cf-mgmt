@@ -60,15 +60,16 @@ func (fake *FakeCFClient) CreateSharedDomain(arg1 string, arg2 bool, arg3 string
 		arg2 bool
 		arg3 string
 	}{arg1, arg2, arg3})
+	stub := fake.CreateSharedDomainStub
+	fakeReturns := fake.createSharedDomainReturns
 	fake.recordInvocation("CreateSharedDomain", []interface{}{arg1, arg2, arg3})
 	fake.createSharedDomainMutex.Unlock()
-	if fake.CreateSharedDomainStub != nil {
-		return fake.CreateSharedDomainStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createSharedDomainReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -124,15 +125,16 @@ func (fake *FakeCFClient) DeleteSharedDomain(arg1 string, arg2 bool) error {
 		arg1 string
 		arg2 bool
 	}{arg1, arg2})
+	stub := fake.DeleteSharedDomainStub
+	fakeReturns := fake.deleteSharedDomainReturns
 	fake.recordInvocation("DeleteSharedDomain", []interface{}{arg1, arg2})
 	fake.deleteSharedDomainMutex.Unlock()
-	if fake.DeleteSharedDomainStub != nil {
-		return fake.DeleteSharedDomainStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteSharedDomainReturns
 	return fakeReturns.result1
 }
 
@@ -183,15 +185,16 @@ func (fake *FakeCFClient) ListSharedDomains() ([]cfclient.SharedDomain, error) {
 	ret, specificReturn := fake.listSharedDomainsReturnsOnCall[len(fake.listSharedDomainsArgsForCall)]
 	fake.listSharedDomainsArgsForCall = append(fake.listSharedDomainsArgsForCall, struct {
 	}{})
+	stub := fake.ListSharedDomainsStub
+	fakeReturns := fake.listSharedDomainsReturns
 	fake.recordInvocation("ListSharedDomains", []interface{}{})
 	fake.listSharedDomainsMutex.Unlock()
-	if fake.ListSharedDomainsStub != nil {
-		return fake.ListSharedDomainsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSharedDomainsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

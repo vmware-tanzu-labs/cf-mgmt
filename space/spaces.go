@@ -338,6 +338,10 @@ func (m *DefaultManager) DeleteSpace(space cfclient.Space, orgName string) error
 	return m.Client.DeleteSpace(space.Guid, true, false)
 }
 
+func (m *DefaultManager) GetSpaceMetadata(spaceGUID string) (*cfclient.Metadata, error) {
+	return m.Client.SpaceMetadata(spaceGUID)
+}
+
 func (m *DefaultManager) UpdateSpacesMetadata() error {
 	supports, err := m.Client.SupportsMetadataAPI()
 	if err != nil {

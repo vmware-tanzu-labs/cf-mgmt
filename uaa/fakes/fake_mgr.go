@@ -49,15 +49,16 @@ func (fake *FakeManager) CreateExternalUser(arg1 string, arg2 string, arg3 strin
 		arg3 string
 		arg4 string
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.CreateExternalUserStub
+	fakeReturns := fake.createExternalUserReturns
 	fake.recordInvocation("CreateExternalUser", []interface{}{arg1, arg2, arg3, arg4})
 	fake.createExternalUserMutex.Unlock()
-	if fake.CreateExternalUserStub != nil {
-		return fake.CreateExternalUserStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createExternalUserReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -111,15 +112,16 @@ func (fake *FakeManager) ListUsers() (*uaa.Users, error) {
 	ret, specificReturn := fake.listUsersReturnsOnCall[len(fake.listUsersArgsForCall)]
 	fake.listUsersArgsForCall = append(fake.listUsersArgsForCall, struct {
 	}{})
+	stub := fake.ListUsersStub
+	fakeReturns := fake.listUsersReturns
 	fake.recordInvocation("ListUsers", []interface{}{})
 	fake.listUsersMutex.Unlock()
-	if fake.ListUsersStub != nil {
-		return fake.ListUsersStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listUsersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

@@ -177,15 +177,16 @@ func (fake *FakeCFClient) AddIsolationSegmentToOrg(arg1 string, arg2 string) err
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.AddIsolationSegmentToOrgStub
+	fakeReturns := fake.addIsolationSegmentToOrgReturns
 	fake.recordInvocation("AddIsolationSegmentToOrg", []interface{}{arg1, arg2})
 	fake.addIsolationSegmentToOrgMutex.Unlock()
-	if fake.AddIsolationSegmentToOrgStub != nil {
-		return fake.AddIsolationSegmentToOrgStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addIsolationSegmentToOrgReturns
 	return fakeReturns.result1
 }
 
@@ -238,15 +239,16 @@ func (fake *FakeCFClient) AddIsolationSegmentToSpace(arg1 string, arg2 string) e
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.AddIsolationSegmentToSpaceStub
+	fakeReturns := fake.addIsolationSegmentToSpaceReturns
 	fake.recordInvocation("AddIsolationSegmentToSpace", []interface{}{arg1, arg2})
 	fake.addIsolationSegmentToSpaceMutex.Unlock()
-	if fake.AddIsolationSegmentToSpaceStub != nil {
-		return fake.AddIsolationSegmentToSpaceStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addIsolationSegmentToSpaceReturns
 	return fakeReturns.result1
 }
 
@@ -298,15 +300,16 @@ func (fake *FakeCFClient) CreateIsolationSegment(arg1 string) (*cfclient.Isolati
 	fake.createIsolationSegmentArgsForCall = append(fake.createIsolationSegmentArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.CreateIsolationSegmentStub
+	fakeReturns := fake.createIsolationSegmentReturns
 	fake.recordInvocation("CreateIsolationSegment", []interface{}{arg1})
 	fake.createIsolationSegmentMutex.Unlock()
-	if fake.CreateIsolationSegmentStub != nil {
-		return fake.CreateIsolationSegmentStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createIsolationSegmentReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -362,15 +365,16 @@ func (fake *FakeCFClient) DefaultIsolationSegmentForOrg(arg1 string, arg2 string
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.DefaultIsolationSegmentForOrgStub
+	fakeReturns := fake.defaultIsolationSegmentForOrgReturns
 	fake.recordInvocation("DefaultIsolationSegmentForOrg", []interface{}{arg1, arg2})
 	fake.defaultIsolationSegmentForOrgMutex.Unlock()
-	if fake.DefaultIsolationSegmentForOrgStub != nil {
-		return fake.DefaultIsolationSegmentForOrgStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.defaultIsolationSegmentForOrgReturns
 	return fakeReturns.result1
 }
 
@@ -422,15 +426,16 @@ func (fake *FakeCFClient) DeleteIsolationSegmentByGUID(arg1 string) error {
 	fake.deleteIsolationSegmentByGUIDArgsForCall = append(fake.deleteIsolationSegmentByGUIDArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.DeleteIsolationSegmentByGUIDStub
+	fakeReturns := fake.deleteIsolationSegmentByGUIDReturns
 	fake.recordInvocation("DeleteIsolationSegmentByGUID", []interface{}{arg1})
 	fake.deleteIsolationSegmentByGUIDMutex.Unlock()
-	if fake.DeleteIsolationSegmentByGUIDStub != nil {
-		return fake.DeleteIsolationSegmentByGUIDStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteIsolationSegmentByGUIDReturns
 	return fakeReturns.result1
 }
 
@@ -482,15 +487,16 @@ func (fake *FakeCFClient) GetIsolationSegmentByGUID(arg1 string) (*cfclient.Isol
 	fake.getIsolationSegmentByGUIDArgsForCall = append(fake.getIsolationSegmentByGUIDArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetIsolationSegmentByGUIDStub
+	fakeReturns := fake.getIsolationSegmentByGUIDReturns
 	fake.recordInvocation("GetIsolationSegmentByGUID", []interface{}{arg1})
 	fake.getIsolationSegmentByGUIDMutex.Unlock()
-	if fake.GetIsolationSegmentByGUIDStub != nil {
-		return fake.GetIsolationSegmentByGUIDStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getIsolationSegmentByGUIDReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -546,15 +552,16 @@ func (fake *FakeCFClient) IsolationSegmentForSpace(arg1 string, arg2 string) err
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.IsolationSegmentForSpaceStub
+	fakeReturns := fake.isolationSegmentForSpaceReturns
 	fake.recordInvocation("IsolationSegmentForSpace", []interface{}{arg1, arg2})
 	fake.isolationSegmentForSpaceMutex.Unlock()
-	if fake.IsolationSegmentForSpaceStub != nil {
-		return fake.IsolationSegmentForSpaceStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.isolationSegmentForSpaceReturns
 	return fakeReturns.result1
 }
 
@@ -605,15 +612,16 @@ func (fake *FakeCFClient) ListIsolationSegments() ([]cfclient.IsolationSegment, 
 	ret, specificReturn := fake.listIsolationSegmentsReturnsOnCall[len(fake.listIsolationSegmentsArgsForCall)]
 	fake.listIsolationSegmentsArgsForCall = append(fake.listIsolationSegmentsArgsForCall, struct {
 	}{})
+	stub := fake.ListIsolationSegmentsStub
+	fakeReturns := fake.listIsolationSegmentsReturns
 	fake.recordInvocation("ListIsolationSegments", []interface{}{})
 	fake.listIsolationSegmentsMutex.Unlock()
-	if fake.ListIsolationSegmentsStub != nil {
-		return fake.ListIsolationSegmentsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listIsolationSegmentsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -661,15 +669,16 @@ func (fake *FakeCFClient) ListIsolationSegmentsByQuery(arg1 url.Values) ([]cfcli
 	fake.listIsolationSegmentsByQueryArgsForCall = append(fake.listIsolationSegmentsByQueryArgsForCall, struct {
 		arg1 url.Values
 	}{arg1})
+	stub := fake.ListIsolationSegmentsByQueryStub
+	fakeReturns := fake.listIsolationSegmentsByQueryReturns
 	fake.recordInvocation("ListIsolationSegmentsByQuery", []interface{}{arg1})
 	fake.listIsolationSegmentsByQueryMutex.Unlock()
-	if fake.ListIsolationSegmentsByQueryStub != nil {
-		return fake.ListIsolationSegmentsByQueryStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listIsolationSegmentsByQueryReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -725,15 +734,16 @@ func (fake *FakeCFClient) RemoveIsolationSegmentFromOrg(arg1 string, arg2 string
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RemoveIsolationSegmentFromOrgStub
+	fakeReturns := fake.removeIsolationSegmentFromOrgReturns
 	fake.recordInvocation("RemoveIsolationSegmentFromOrg", []interface{}{arg1, arg2})
 	fake.removeIsolationSegmentFromOrgMutex.Unlock()
-	if fake.RemoveIsolationSegmentFromOrgStub != nil {
-		return fake.RemoveIsolationSegmentFromOrgStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeIsolationSegmentFromOrgReturns
 	return fakeReturns.result1
 }
 
@@ -786,15 +796,16 @@ func (fake *FakeCFClient) RemoveIsolationSegmentFromSpace(arg1 string, arg2 stri
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RemoveIsolationSegmentFromSpaceStub
+	fakeReturns := fake.removeIsolationSegmentFromSpaceReturns
 	fake.recordInvocation("RemoveIsolationSegmentFromSpace", []interface{}{arg1, arg2})
 	fake.removeIsolationSegmentFromSpaceMutex.Unlock()
-	if fake.RemoveIsolationSegmentFromSpaceStub != nil {
-		return fake.RemoveIsolationSegmentFromSpaceStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeIsolationSegmentFromSpaceReturns
 	return fakeReturns.result1
 }
 
@@ -846,15 +857,16 @@ func (fake *FakeCFClient) ResetDefaultIsolationSegmentForOrg(arg1 string) error 
 	fake.resetDefaultIsolationSegmentForOrgArgsForCall = append(fake.resetDefaultIsolationSegmentForOrgArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ResetDefaultIsolationSegmentForOrgStub
+	fakeReturns := fake.resetDefaultIsolationSegmentForOrgReturns
 	fake.recordInvocation("ResetDefaultIsolationSegmentForOrg", []interface{}{arg1})
 	fake.resetDefaultIsolationSegmentForOrgMutex.Unlock()
-	if fake.ResetDefaultIsolationSegmentForOrgStub != nil {
-		return fake.ResetDefaultIsolationSegmentForOrgStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.resetDefaultIsolationSegmentForOrgReturns
 	return fakeReturns.result1
 }
 
@@ -906,15 +918,16 @@ func (fake *FakeCFClient) ResetIsolationSegmentForSpace(arg1 string) error {
 	fake.resetIsolationSegmentForSpaceArgsForCall = append(fake.resetIsolationSegmentForSpaceArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ResetIsolationSegmentForSpaceStub
+	fakeReturns := fake.resetIsolationSegmentForSpaceReturns
 	fake.recordInvocation("ResetIsolationSegmentForSpace", []interface{}{arg1})
 	fake.resetIsolationSegmentForSpaceMutex.Unlock()
-	if fake.ResetIsolationSegmentForSpaceStub != nil {
-		return fake.ResetIsolationSegmentForSpaceStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.resetIsolationSegmentForSpaceReturns
 	return fakeReturns.result1
 }
 

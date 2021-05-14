@@ -155,15 +155,16 @@ func (fake *FakeManager) CleanupOrgUsers() error {
 	ret, specificReturn := fake.cleanupOrgUsersReturnsOnCall[len(fake.cleanupOrgUsersArgsForCall)]
 	fake.cleanupOrgUsersArgsForCall = append(fake.cleanupOrgUsersArgsForCall, struct {
 	}{})
+	stub := fake.CleanupOrgUsersStub
+	fakeReturns := fake.cleanupOrgUsersReturns
 	fake.recordInvocation("CleanupOrgUsers", []interface{}{})
 	fake.cleanupOrgUsersMutex.Unlock()
-	if fake.CleanupOrgUsersStub != nil {
-		return fake.CleanupOrgUsersStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.cleanupOrgUsersReturns
 	return fakeReturns.result1
 }
 
@@ -207,15 +208,16 @@ func (fake *FakeManager) DeinitializeLdap() error {
 	ret, specificReturn := fake.deinitializeLdapReturnsOnCall[len(fake.deinitializeLdapArgsForCall)]
 	fake.deinitializeLdapArgsForCall = append(fake.deinitializeLdapArgsForCall, struct {
 	}{})
+	stub := fake.DeinitializeLdapStub
+	fakeReturns := fake.deinitializeLdapReturns
 	fake.recordInvocation("DeinitializeLdap", []interface{}{})
 	fake.deinitializeLdapMutex.Unlock()
-	if fake.DeinitializeLdapStub != nil {
-		return fake.DeinitializeLdapStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deinitializeLdapReturns
 	return fakeReturns.result1
 }
 
@@ -262,15 +264,16 @@ func (fake *FakeManager) InitializeLdap(arg1 string, arg2 string, arg3 string) e
 		arg2 string
 		arg3 string
 	}{arg1, arg2, arg3})
+	stub := fake.InitializeLdapStub
+	fakeReturns := fake.initializeLdapReturns
 	fake.recordInvocation("InitializeLdap", []interface{}{arg1, arg2, arg3})
 	fake.initializeLdapMutex.Unlock()
-	if fake.InitializeLdapStub != nil {
-		return fake.InitializeLdapStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.initializeLdapReturns
 	return fakeReturns.result1
 }
 
@@ -323,15 +326,16 @@ func (fake *FakeManager) ListOrgAuditors(arg1 string, arg2 *uaa.Users) (*user.Ro
 		arg1 string
 		arg2 *uaa.Users
 	}{arg1, arg2})
+	stub := fake.ListOrgAuditorsStub
+	fakeReturns := fake.listOrgAuditorsReturns
 	fake.recordInvocation("ListOrgAuditors", []interface{}{arg1, arg2})
 	fake.listOrgAuditorsMutex.Unlock()
-	if fake.ListOrgAuditorsStub != nil {
-		return fake.ListOrgAuditorsStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgAuditorsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -387,15 +391,16 @@ func (fake *FakeManager) ListOrgBillingManagers(arg1 string, arg2 *uaa.Users) (*
 		arg1 string
 		arg2 *uaa.Users
 	}{arg1, arg2})
+	stub := fake.ListOrgBillingManagersStub
+	fakeReturns := fake.listOrgBillingManagersReturns
 	fake.recordInvocation("ListOrgBillingManagers", []interface{}{arg1, arg2})
 	fake.listOrgBillingManagersMutex.Unlock()
-	if fake.ListOrgBillingManagersStub != nil {
-		return fake.ListOrgBillingManagersStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgBillingManagersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -451,15 +456,16 @@ func (fake *FakeManager) ListOrgManagers(arg1 string, arg2 *uaa.Users) (*user.Ro
 		arg1 string
 		arg2 *uaa.Users
 	}{arg1, arg2})
+	stub := fake.ListOrgManagersStub
+	fakeReturns := fake.listOrgManagersReturns
 	fake.recordInvocation("ListOrgManagers", []interface{}{arg1, arg2})
 	fake.listOrgManagersMutex.Unlock()
-	if fake.ListOrgManagersStub != nil {
-		return fake.ListOrgManagersStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgManagersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -515,15 +521,16 @@ func (fake *FakeManager) ListSpaceAuditors(arg1 string, arg2 *uaa.Users) (*user.
 		arg1 string
 		arg2 *uaa.Users
 	}{arg1, arg2})
+	stub := fake.ListSpaceAuditorsStub
+	fakeReturns := fake.listSpaceAuditorsReturns
 	fake.recordInvocation("ListSpaceAuditors", []interface{}{arg1, arg2})
 	fake.listSpaceAuditorsMutex.Unlock()
-	if fake.ListSpaceAuditorsStub != nil {
-		return fake.ListSpaceAuditorsStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpaceAuditorsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -579,15 +586,16 @@ func (fake *FakeManager) ListSpaceDevelopers(arg1 string, arg2 *uaa.Users) (*use
 		arg1 string
 		arg2 *uaa.Users
 	}{arg1, arg2})
+	stub := fake.ListSpaceDevelopersStub
+	fakeReturns := fake.listSpaceDevelopersReturns
 	fake.recordInvocation("ListSpaceDevelopers", []interface{}{arg1, arg2})
 	fake.listSpaceDevelopersMutex.Unlock()
-	if fake.ListSpaceDevelopersStub != nil {
-		return fake.ListSpaceDevelopersStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpaceDevelopersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -643,15 +651,16 @@ func (fake *FakeManager) ListSpaceManagers(arg1 string, arg2 *uaa.Users) (*user.
 		arg1 string
 		arg2 *uaa.Users
 	}{arg1, arg2})
+	stub := fake.ListSpaceManagersStub
+	fakeReturns := fake.listSpaceManagersReturns
 	fake.recordInvocation("ListSpaceManagers", []interface{}{arg1, arg2})
 	fake.listSpaceManagersMutex.Unlock()
-	if fake.ListSpaceManagersStub != nil {
-		return fake.ListSpaceManagersStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpaceManagersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -705,15 +714,16 @@ func (fake *FakeManager) UpdateOrgUsers() error {
 	ret, specificReturn := fake.updateOrgUsersReturnsOnCall[len(fake.updateOrgUsersArgsForCall)]
 	fake.updateOrgUsersArgsForCall = append(fake.updateOrgUsersArgsForCall, struct {
 	}{})
+	stub := fake.UpdateOrgUsersStub
+	fakeReturns := fake.updateOrgUsersReturns
 	fake.recordInvocation("UpdateOrgUsers", []interface{}{})
 	fake.updateOrgUsersMutex.Unlock()
-	if fake.UpdateOrgUsersStub != nil {
-		return fake.UpdateOrgUsersStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateOrgUsersReturns
 	return fakeReturns.result1
 }
 
@@ -757,15 +767,16 @@ func (fake *FakeManager) UpdateSpaceUsers() error {
 	ret, specificReturn := fake.updateSpaceUsersReturnsOnCall[len(fake.updateSpaceUsersArgsForCall)]
 	fake.updateSpaceUsersArgsForCall = append(fake.updateSpaceUsersArgsForCall, struct {
 	}{})
+	stub := fake.UpdateSpaceUsersStub
+	fakeReturns := fake.updateSpaceUsersReturns
 	fake.recordInvocation("UpdateSpaceUsers", []interface{}{})
 	fake.updateSpaceUsersMutex.Unlock()
-	if fake.UpdateSpaceUsersStub != nil {
-		return fake.UpdateSpaceUsersStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateSpaceUsersReturns
 	return fakeReturns.result1
 }
 
