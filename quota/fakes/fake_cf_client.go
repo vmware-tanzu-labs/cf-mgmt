@@ -137,15 +137,16 @@ func (fake *FakeCFClient) AssignSpaceQuota(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.AssignSpaceQuotaStub
+	fakeReturns := fake.assignSpaceQuotaReturns
 	fake.recordInvocation("AssignSpaceQuota", []interface{}{arg1, arg2})
 	fake.assignSpaceQuotaMutex.Unlock()
-	if fake.AssignSpaceQuotaStub != nil {
-		return fake.AssignSpaceQuotaStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.assignSpaceQuotaReturns
 	return fakeReturns.result1
 }
 
@@ -197,15 +198,16 @@ func (fake *FakeCFClient) CreateOrgQuota(arg1 cfclient.OrgQuotaRequest) (*cfclie
 	fake.createOrgQuotaArgsForCall = append(fake.createOrgQuotaArgsForCall, struct {
 		arg1 cfclient.OrgQuotaRequest
 	}{arg1})
+	stub := fake.CreateOrgQuotaStub
+	fakeReturns := fake.createOrgQuotaReturns
 	fake.recordInvocation("CreateOrgQuota", []interface{}{arg1})
 	fake.createOrgQuotaMutex.Unlock()
-	if fake.CreateOrgQuotaStub != nil {
-		return fake.CreateOrgQuotaStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createOrgQuotaReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -260,15 +262,16 @@ func (fake *FakeCFClient) CreateSpaceQuota(arg1 cfclient.SpaceQuotaRequest) (*cf
 	fake.createSpaceQuotaArgsForCall = append(fake.createSpaceQuotaArgsForCall, struct {
 		arg1 cfclient.SpaceQuotaRequest
 	}{arg1})
+	stub := fake.CreateSpaceQuotaStub
+	fakeReturns := fake.createSpaceQuotaReturns
 	fake.recordInvocation("CreateSpaceQuota", []interface{}{arg1})
 	fake.createSpaceQuotaMutex.Unlock()
-	if fake.CreateSpaceQuotaStub != nil {
-		return fake.CreateSpaceQuotaStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createSpaceQuotaReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -323,15 +326,16 @@ func (fake *FakeCFClient) GetOrgQuotaByName(arg1 string) (cfclient.OrgQuota, err
 	fake.getOrgQuotaByNameArgsForCall = append(fake.getOrgQuotaByNameArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetOrgQuotaByNameStub
+	fakeReturns := fake.getOrgQuotaByNameReturns
 	fake.recordInvocation("GetOrgQuotaByName", []interface{}{arg1})
 	fake.getOrgQuotaByNameMutex.Unlock()
-	if fake.GetOrgQuotaByNameStub != nil {
-		return fake.GetOrgQuotaByNameStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getOrgQuotaByNameReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -386,15 +390,16 @@ func (fake *FakeCFClient) GetSpaceQuotaByName(arg1 string) (cfclient.SpaceQuota,
 	fake.getSpaceQuotaByNameArgsForCall = append(fake.getSpaceQuotaByNameArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetSpaceQuotaByNameStub
+	fakeReturns := fake.getSpaceQuotaByNameReturns
 	fake.recordInvocation("GetSpaceQuotaByName", []interface{}{arg1})
 	fake.getSpaceQuotaByNameMutex.Unlock()
-	if fake.GetSpaceQuotaByNameStub != nil {
-		return fake.GetSpaceQuotaByNameStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getSpaceQuotaByNameReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -448,15 +453,16 @@ func (fake *FakeCFClient) ListOrgQuotas() ([]cfclient.OrgQuota, error) {
 	ret, specificReturn := fake.listOrgQuotasReturnsOnCall[len(fake.listOrgQuotasArgsForCall)]
 	fake.listOrgQuotasArgsForCall = append(fake.listOrgQuotasArgsForCall, struct {
 	}{})
+	stub := fake.ListOrgQuotasStub
+	fakeReturns := fake.listOrgQuotasReturns
 	fake.recordInvocation("ListOrgQuotas", []interface{}{})
 	fake.listOrgQuotasMutex.Unlock()
-	if fake.ListOrgQuotasStub != nil {
-		return fake.ListOrgQuotasStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgQuotasReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -504,15 +510,16 @@ func (fake *FakeCFClient) ListOrgSpaceQuotas(arg1 string) ([]cfclient.SpaceQuota
 	fake.listOrgSpaceQuotasArgsForCall = append(fake.listOrgSpaceQuotasArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListOrgSpaceQuotasStub
+	fakeReturns := fake.listOrgSpaceQuotasReturns
 	fake.recordInvocation("ListOrgSpaceQuotas", []interface{}{arg1})
 	fake.listOrgSpaceQuotasMutex.Unlock()
-	if fake.ListOrgSpaceQuotasStub != nil {
-		return fake.ListOrgSpaceQuotasStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgSpaceQuotasReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -568,15 +575,16 @@ func (fake *FakeCFClient) UpdateOrgQuota(arg1 string, arg2 cfclient.OrgQuotaRequ
 		arg1 string
 		arg2 cfclient.OrgQuotaRequest
 	}{arg1, arg2})
+	stub := fake.UpdateOrgQuotaStub
+	fakeReturns := fake.updateOrgQuotaReturns
 	fake.recordInvocation("UpdateOrgQuota", []interface{}{arg1, arg2})
 	fake.updateOrgQuotaMutex.Unlock()
-	if fake.UpdateOrgQuotaStub != nil {
-		return fake.UpdateOrgQuotaStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.updateOrgQuotaReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -632,15 +640,16 @@ func (fake *FakeCFClient) UpdateSpaceQuota(arg1 string, arg2 cfclient.SpaceQuota
 		arg1 string
 		arg2 cfclient.SpaceQuotaRequest
 	}{arg1, arg2})
+	stub := fake.UpdateSpaceQuotaStub
+	fakeReturns := fake.updateSpaceQuotaReturns
 	fake.recordInvocation("UpdateSpaceQuota", []interface{}{arg1, arg2})
 	fake.updateSpaceQuotaMutex.Unlock()
-	if fake.UpdateSpaceQuotaStub != nil {
-		return fake.UpdateSpaceQuotaStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.updateSpaceQuotaReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
