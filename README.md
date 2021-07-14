@@ -184,6 +184,10 @@ For example: `GOOS=linux GOARCH=amd64 go build`.
 
 To run the unit tests, use `go test $(glide nv)`.
 
+### SSH configuration
+In order to use the key `allow-ssh-until` in your space config, you must set
+your `allow-ssh` to false. `cf-mgmt` treats a null value differently than false.
+
 #### Integration tests
 
 There are integration tests that require some additional configuration.
