@@ -45,7 +45,19 @@ func (m *DefaultManager) CreateOrgs() error {
 		return err
 	}
 
+	orgsYamlList, err := m.Cfg.Orgs()
+	if err != nil {
+		return err
+	}
+	orgsSet := map[string]struct{}{}
+	for _, org := range orgsYamlList.Orgs {
+		orgsSet[org] = struct{}{}
+	}
+
 	for _, org := range desiredOrgs {
+		if _, ok := orgsSet[org.Org]; !ok {
+			return fmt.Errorf("[%s] found in an orgConfig but not in orgs.yml", org.Org)
+		}
 		if doesOrgExist(org.Org, currentOrgs) {
 			lo.G.Debugf("[%s] org already exists", org.Org)
 			continue

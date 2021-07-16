@@ -39,6 +39,9 @@ var _ = Describe("given OrgManager", func() {
 
 	Context("CreateOrgs()", func() {
 		BeforeEach(func() {
+			fakeReader.OrgsReturns(&config.Orgs{
+				Orgs: []string{"test", "test2"},
+			}, nil)
 			fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
 				config.OrgConfig{Org: "test"},
 				config.OrgConfig{Org: "test2"},
@@ -91,6 +94,9 @@ var _ = Describe("given OrgManager", func() {
 			Expect(orgRequest.Name).Should(Equal("test2"))
 		})
 		It("should not create org if renamed from an org that exists", func() {
+			fakeReader.OrgsReturns(&config.Orgs{
+				Orgs: []string{"test", "new-org"},
+			}, nil)
 			fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
 				config.OrgConfig{Org: "test"},
 				config.OrgConfig{Org: "new-org", OriginalOrg: "test2"},
@@ -117,6 +123,54 @@ var _ = Describe("given OrgManager", func() {
 			orgGUID, orgRequest := fakeClient.UpdateOrgArgsForCall(0)
 			Expect(orgGUID).To(Equal("test2-guid"))
 			Expect(orgRequest.Name).To(Equal("new-org"))
+		})
+
+		When("the orgs.yml orgs list cannot be fetched", func() {
+			It("errors", func() {
+				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{}, nil)
+				fakeOrgReader.ListOrgsReturns([]cfclient.Org{}, nil)
+				fakeReader.OrgsReturns(nil, fmt.Errorf("some error"))
+				err := orgManager.CreateOrgs()
+				Expect(err).Should(HaveOccurred())
+			})
+		})
+
+		When("an org exists in an orgConfig, but not in orgs.yml", func() {
+			It("errors", func() {
+				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
+					{Org: "in-org-list"},
+					{Org: "not-in-org-list"},
+				}, nil)
+				fakeReader.OrgsReturns(&config.Orgs{
+					Orgs: []string{"in-org-list"},
+				}, nil)
+				fakeOrgReader.ListOrgsReturns([]cfclient.Org{
+					{Name: "in-org-list"},
+				}, nil)
+
+				err := orgManager.CreateOrgs()
+				Expect(err).Should(HaveOccurred())
+				Expect(err).Should(MatchError("[not-in-org-list] found in an orgConfig but not in orgs.yml"))
+			})
+		})
+
+		When("an org has been renamed in an orgConfig, but not in orgs.yml", func() {
+			It("errors", func() {
+				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
+					{Org: "in-org-list"},
+					{Org: "not-in-org-list", OriginalOrg: "was-in-org-list"},
+				}, nil)
+				fakeReader.OrgsReturns(&config.Orgs{
+					Orgs: []string{"in-org-list", "was-in-org-list"},
+				}, nil)
+				fakeOrgReader.ListOrgsReturns([]cfclient.Org{
+					{Name: "in-org-list"},
+				}, nil)
+
+				err := orgManager.CreateOrgs()
+				Expect(err).Should(HaveOccurred())
+				Expect(err).Should(MatchError("[not-in-org-list] found in an orgConfig but not in orgs.yml"))
+			})
 		})
 	})
 
