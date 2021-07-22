@@ -2,6 +2,9 @@
 
 # `cf-mgmt update-orgs-metadata`
 
+Note: if no `metadata-prefix` is provided in `cf-mgmt.yml` this command will
+default to using `cf-mgmt.pivotal.io` as the prefix.
+
 `update-org-metadata` command will:
 
 - add metadata label for given org
