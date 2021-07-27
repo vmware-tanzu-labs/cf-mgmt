@@ -1,20 +1,12 @@
-#!/bin/bash -e
+#!/bin/bash
 
-mkdir ~/.ssh/ && touch ~/.ssh/known_hosts
-ssh-keyscan github.com >>~/.ssh/known_hosts
+set -eu -o pipefail
 
-export GOPATH=$PWD/go
-export PATH=$GOPATH/bin:$PATH
+pushd "source" > /dev/null
+  go version
 
-#go get github.com/Masterminds/glide
-mkdir -p $GOPATH/bin
-curl https://glide.sh/get | sh
-
-WORKING_DIR=$GOPATH/src/github.com/vmwarepivotallabs/cf-mgmt
-mkdir -p ${WORKING_DIR}
-cp -R source/* ${WORKING_DIR}/.
-cd ${WORKING_DIR}
-go version
-glide -v
-glide install
-go test $(glide nv) -v
+  echo "Running go vet"
+  go vet ./...
+  echo "Running go test"
+  go test ./...
+popd
