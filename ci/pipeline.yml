@@ -18,7 +18,7 @@ resources:
 - name: draft-cfmgmt-resource
   type: github-release
   source:
-    owner: pivotalservices
+    owner: vmware-tanzu-labs
     repository: cf-mgmt
     access_token: {{github-token}}
     drafts: true
@@ -26,7 +26,7 @@ resources:
 - name: releases
   type: github-release
   source:
-    owner: pivotalservices
+    owner: vmware-tanzu-labs
     repository: cf-mgmt
     access_token: {{github-token}}
 
