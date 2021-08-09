@@ -11,7 +11,7 @@ resources:
   type: git
   source:
     uri: git@github.com:vmwarepivotallabs/cf-mgmt.git
-    branch: master
+    branch: main
     private_key: {{git-ssh-key}}
     ignore_paths: ["README.md","docs/*"]
 
