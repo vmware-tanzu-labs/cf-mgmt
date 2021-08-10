@@ -67,6 +67,7 @@ func (c *Client) ListDomainsByQuery(query url.Values) ([]Domain, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "Error requesting domains")
 		}
+		defer resp.Body.Close()
 		resBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error reading domains request")
@@ -105,6 +106,7 @@ func (c *Client) ListSharedDomainsByQuery(query url.Values) ([]SharedDomain, err
 		if err != nil {
 			return nil, errors.Wrap(err, "Error requesting shared domains")
 		}
+		defer resp.Body.Close()
 		resBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error reading shared domains request")
@@ -161,6 +163,7 @@ func (c *Client) CreateSharedDomain(name string, internal bool, router_group_gui
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return nil, errors.Wrapf(err, "Error creating shared domain %s, response code: %d", name, resp.StatusCode)
 	}
@@ -236,6 +239,7 @@ func (c *Client) DeleteDomain(guid string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error deleting domain %s, response code: %d", guid, resp.StatusCode)
 	}
@@ -276,8 +280,8 @@ func (c *Client) getDomainsResponse(requestUrl string) (DomainsResponse, error) 
 	if err != nil {
 		return DomainsResponse{}, errors.Wrap(err, "Error requesting domains")
 	}
-	resBody, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
+	resBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return DomainsResponse{}, errors.Wrap(err, "Error reading domains request")
 	}

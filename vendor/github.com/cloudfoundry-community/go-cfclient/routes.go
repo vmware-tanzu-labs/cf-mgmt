@@ -69,6 +69,7 @@ func (c *Client) BindRoute(routeGUID, appGUID string) error {
 	if err != nil {
 		return errors.Wrapf(err, "Error binding route %s to app %s", routeGUID, appGUID)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("Error binding route %s to app %s, response code: %d", routeGUID, appGUID, resp.StatusCode)
 	}
@@ -192,6 +193,7 @@ func (c *Client) DeleteRoute(guid string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error deleting route %s, response code: %d", guid, resp.StatusCode)
 	}

@@ -14,10 +14,11 @@ type TcpRouteMapping struct {
 }
 
 type TcpMappingEntity struct {
-	RouterGroupGuid  string `gorm:"not null; unique_index:idx_tcp_route" json:"router_group_guid"`
-	HostPort         uint16 `gorm:"not null; unique_index:idx_tcp_route; type:int" json:"backend_port"`
-	HostIP           string `gorm:"not null; unique_index:idx_tcp_route" json:"backend_ip"`
-	ExternalPort     uint16 `gorm:"not null; unique_index:idx_tcp_route; type: int" json:"port"`
+	RouterGroupGuid  string  `gorm:"not null; unique_index:idx_tcp_route" json:"router_group_guid"`
+	HostPort         uint16  `gorm:"not null; unique_index:idx_tcp_route; type:int" json:"backend_port"`
+	HostIP           string  `gorm:"not null; unique_index:idx_tcp_route" json:"backend_ip"`
+	SniHostname      *string `gorm:"default:null; unique_index:idx_tcp_route" json:"backend_sni_hostname,omitempty"`
+	ExternalPort     uint16  `gorm:"not null; unique_index:idx_tcp_route; type: int" json:"port"`
 	ModificationTag  `json:"modification_tag"`
 	TTL              *int   `json:"ttl,omitempty"`
 	IsolationSegment string `json:"isolation_segment"`
@@ -42,9 +43,14 @@ func NewTcpRouteMappingWithModel(tcpMapping TcpRouteMapping) (TcpRouteMapping, e
 }
 
 func NewTcpRouteMapping(routerGroupGuid string, externalPort uint16, hostIP string, hostPort uint16, ttl int) TcpRouteMapping {
+	return NewSniTcpRouteMapping(routerGroupGuid, externalPort, nil, hostIP, hostPort, ttl)
+}
+
+func NewSniTcpRouteMapping(routerGroupGuid string, externalPort uint16, sniHostname *string, hostIP string, hostPort uint16, ttl int) TcpRouteMapping {
 	mapping := TcpMappingEntity{
 		RouterGroupGuid: routerGroupGuid,
 		ExternalPort:    externalPort,
+		SniHostname:     sniHostname,
 		HostPort:        hostPort,
 		HostIP:          hostIP,
 		TTL:             &ttl,
@@ -62,7 +68,19 @@ func NewTcpRouteMappingWithModificationTag(
 	ttl int,
 	modTag ModificationTag,
 ) TcpRouteMapping {
-	mapping := NewTcpRouteMapping(routerGroupGuid, externalPort, hostIP, hostPort, ttl)
+	return NewSniTcpRouteMappingWithModificationTag(routerGroupGuid, externalPort, nil, hostIP, hostPort, ttl, modTag)
+}
+
+func NewSniTcpRouteMappingWithModificationTag(
+	routerGroupGuid string,
+	externalPort uint16,
+	sniHostname *string,
+	hostIP string,
+	hostPort uint16,
+	ttl int,
+	modTag ModificationTag,
+) TcpRouteMapping {
+	mapping := NewSniTcpRouteMapping(routerGroupGuid, externalPort, sniHostname, hostIP, hostPort, ttl)
 	mapping.ModificationTag = modTag
 
 	return mapping
@@ -77,7 +95,9 @@ func (m TcpRouteMapping) Matches(other TcpRouteMapping) bool {
 		m.ExternalPort == other.ExternalPort &&
 		m.HostIP == other.HostIP &&
 		m.HostPort == other.HostPort &&
-		*m.TTL == *other.TTL
+		*m.TTL == *other.TTL &&
+		((m.SniHostname == other.SniHostname) ||
+			m.SniHostname != nil && *m.SniHostname == *other.SniHostname)
 }
 
 func (t *TcpRouteMapping) SetDefaults(maxTTL int) {

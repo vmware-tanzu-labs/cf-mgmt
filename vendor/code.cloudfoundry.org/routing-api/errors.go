@@ -28,4 +28,5 @@ const (
 	UnauthorizedError           Type = "UnauthorizedError"
 	TcpRouteMappingInvalidError Type = "TcpRouteMappingInvalidError"
 	DBConflictError             Type = "DBConflictError"
+	PortRangeExhaustedError     Type = "PortRangeExhaustedError"
 )

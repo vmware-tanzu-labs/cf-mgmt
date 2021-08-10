@@ -84,6 +84,7 @@ func (c *Client) UpdateOrgMetadata(orgGUID string, metadata Metadata) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return errors.Wrapf(err, "Error updating metadata for org %s, response code: %d", orgGUID, resp.StatusCode)
 	}
@@ -104,6 +105,7 @@ func (c *Client) UpdateSpaceMetadata(spaceGUID string, metadata Metadata) error 
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return errors.Wrapf(err, "Error updating metadata for space %s, response code: %d", spaceGUID, resp.StatusCode)
 	}
@@ -117,6 +119,7 @@ func (c *Client) OrgMetadata(orgGUID string) (*Metadata, error) {
 	if err != nil {
 		return &Metadata{}, errors.Wrap(err, "Error requesting space info")
 	}
+	defer resp.Body.Close()
 	return c.handleMetadataResp(resp)
 }
 
@@ -127,6 +130,7 @@ func (c *Client) SpaceMetadata(spaceGUID string) (*Metadata, error) {
 	if err != nil {
 		return &Metadata{}, errors.Wrap(err, "Error requesting space info")
 	}
+	defer resp.Body.Close()
 	return c.handleMetadataResp(resp)
 }
 

@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"sync"
 	"time"
 
@@ -34,6 +36,7 @@ type Client interface {
 	UpdateRouterGroup(models.RouterGroup) error
 	CreateRouterGroup(models.RouterGroup) error
 	DeleteRouterGroup(models.RouterGroup) error
+	ReservePort(string, string) (int, error)
 	UpsertTcpRouteMappings([]models.TcpRouteMapping) error
 	DeleteTcpRouteMappings([]models.TcpRouteMapping) error
 	TcpRouteMappings() ([]models.TcpRouteMapping, error)
@@ -123,6 +126,84 @@ func (c *client) RouterGroupWithName(name string) (models.RouterGroup, error) {
 		return models.RouterGroup{}, err
 	}
 	return routerGroups[0], err
+}
+
+func (c *client) ReservePort(groupName string, portRange string) (int, error) {
+	reservablePorts := models.ReservablePorts(portRange)
+	ranges, err := reservablePorts.Parse()
+	if err != nil {
+		return 0, err
+	}
+
+	if len(ranges) > 1 {
+		return 0, Error{ProcessRequestError, "multiple port ranges are not supported"}
+	}
+
+	if start, end := ranges[0].Endpoints(); start == end {
+		return 0, Error{ProcessRequestError, "single port is not supported"}
+	}
+
+	routerGroups, err := c.RouterGroups()
+	if err != nil {
+		return 0, err
+	}
+
+	reservablePort, err := getNextAvailablePort(routerGroups, ranges[0])
+	if err != nil {
+		return 0, err
+	}
+
+	routerGroup := models.RouterGroup{
+		Name:            groupName,
+		Type:            models.RouterGroup_TCP,
+		ReservablePorts: reservablePort,
+	}
+
+	existingRouterGroup, _ := c.RouterGroupWithName(groupName)
+
+	if (existingRouterGroup != models.RouterGroup{}) {
+		existingRouterGroup.ReservablePorts = reservablePort
+		err = c.UpdateRouterGroup(existingRouterGroup)
+
+		if err != nil {
+			return 0, err
+		}
+	} else {
+		err = c.CreateRouterGroup(routerGroup)
+
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return strconv.Atoi(string(reservablePort))
+}
+
+func getNextAvailablePort(groups models.RouterGroups, portRange models.Range) (models.ReservablePorts, error) {
+	portSet := make(map[uint64]bool)
+
+	for _, group := range groups {
+		groupPortRanges, err := group.ReservablePorts.Parse()
+		if err != nil {
+			return "", err // not tested
+		}
+
+		for _, grp := range groupPortRanges {
+			groupStart, groupEnd := grp.Endpoints()
+			for p := groupStart; p <= groupEnd; p++ {
+				portSet[p] = true
+			}
+		}
+	}
+
+	start, end := portRange.Endpoints()
+	for i := start; i <= end; i++ {
+		if _, ok := portSet[i]; !ok {
+			return models.ReservablePorts(strconv.Itoa(int(i))), nil
+		}
+	}
+
+	return "", Error{Type: PortRangeExhaustedError, Message: fmt.Sprintf("There are no free ports in range: %s", portRange)}
 }
 
 func (c *client) DeleteRoutes(routes []models.Route) error {

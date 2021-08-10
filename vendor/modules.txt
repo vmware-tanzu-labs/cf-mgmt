@@ -3,19 +3,20 @@
 code.cloudfoundry.org/cfhttp/v2
 # code.cloudfoundry.org/gofileutils v0.0.0-20170111115228-4d0c80011a0f
 code.cloudfoundry.org/gofileutils/fileutils
-# code.cloudfoundry.org/routing-api v0.0.0-20191203201735-f6cbb5b92d12
+# code.cloudfoundry.org/routing-api v0.0.0-20210519201915-b3b118a368e6
 ## explicit
 code.cloudfoundry.org/routing-api
 code.cloudfoundry.org/routing-api/models
 # code.cloudfoundry.org/trace-logger v0.0.0-20170119230301-107ef08a939d
 ## explicit
 code.cloudfoundry.org/trace-logger
-# github.com/Masterminds/semver v1.4.2
+# github.com/Masterminds/semver v1.5.0
+## explicit
 github.com/Masterminds/semver
-# github.com/bmizerany/pat v0.0.0-20170815010413-6226ea591a40
+# github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f
 ## explicit
 github.com/bmizerany/pat
-# github.com/cloudfoundry-community/go-cfclient v0.0.0-20200331184504-3c43ef9aebb6
+# github.com/cloudfoundry-community/go-cfclient v0.0.0-20210621174645-7773f7e22665
 ## explicit
 github.com/cloudfoundry-community/go-cfclient
 # github.com/cloudfoundry-community/go-uaa v0.3.2-0.20191219133444-673d775e96b5
@@ -29,9 +30,13 @@ github.com/fsnotify/fsnotify
 github.com/go-ldap/ldap
 # github.com/golang/protobuf v1.5.2
 github.com/golang/protobuf/proto
+# github.com/gopherjs/gopherjs v0.0.0-20210803090616-8f023c250c89
+## explicit
 # github.com/jessevdk/go-flags v1.5.0
 ## explicit
 github.com/jessevdk/go-flags
+# github.com/kr/pretty v0.3.0
+## explicit
 # github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 ## explicit
 github.com/nu7hatch/gouuid
@@ -79,9 +84,15 @@ github.com/onsi/gomega/types
 # github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 ## explicit
 github.com/op/go-logging
+# github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c
+## explicit
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
+# github.com/rogpeppe/go-internal v1.8.0
+## explicit
+# github.com/smartystreets/assertions v1.2.0
+## explicit
 # github.com/tedsuo/rata v1.0.1-0.20170830210128-07d200713958
 ## explicit
 github.com/tedsuo/rata
@@ -91,21 +102,24 @@ github.com/vito/go-sse/sse
 # github.com/xchapter7x/lo v0.0.0-20160804235750-e33b245fc7a8
 ## explicit
 github.com/xchapter7x/lo
-# golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
+# golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
+## explicit
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
-# golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+# golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.0.0-20210423082822-04245dca01da
+# golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e
+## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
-# golang.org/x/text v0.3.6
+# golang.org/x/text v0.3.7
+## explicit
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex
@@ -123,7 +137,7 @@ golang.org/x/text/internal/utf8internal
 golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
-# google.golang.org/appengine v1.6.6-0.20191219230319-b6ce0843b556
+# google.golang.org/appengine v1.6.7
 ## explicit
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/base
@@ -132,7 +146,8 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/protobuf v1.26.0
+# google.golang.org/protobuf v1.27.1
+## explicit
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/descfmt
@@ -163,6 +178,8 @@ google.golang.org/protobuf/types/descriptorpb
 # gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d
 ## explicit
 gopkg.in/asn1-ber.v1
+# gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+## explicit
 # gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
 gopkg.in/tomb.v1
 # gopkg.in/yaml.v2 v2.4.0
