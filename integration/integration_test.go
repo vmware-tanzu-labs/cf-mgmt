@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,27 +14,36 @@ import (
 )
 
 const (
-	systemDomain = "dev.cfdev.sh"
-	userId       = "admin"
-	password     = "admin"
-	clientSecret = "admin-client-secret"
-	configDir    = "./fixture"
+	configDir = "./fixture"
 )
 
 // cf runs the cf CLI with the specified args.
 func cf(args ...string) ([]byte, error) {
 	cmd := exec.Command("cf", args...)
+
 	out, err := cmd.Output()
 	if err != nil {
 		return out, fmt.Errorf("cf %s: %v", strings.Join(args, " "), err)
 	}
+
 	return out, nil
 }
 
-var outPath string
+var (
+	outPath      string
+	systemDomain string
+	userID       string
+	password     string
+	clientSecret string
+)
 
 var _ = BeforeSuite(func() {
-	_, err := cf("login", "--skip-ssl-validation", "-a", "https://api."+systemDomain, "-u", userId, "-p", password)
+	systemDomain = os.Getenv("SYSTEM_DOMAIN")
+	userID = "admin"
+	password = os.Getenv("CF_ADMIN_PASSWORD")
+	clientSecret = os.Getenv("ADMIN_CLIENT_SECRET")
+
+	_, err := cf("login", "--skip-ssl-validation", "-a", "https://api."+systemDomain, "-u", userID, "-p", password)
 	Expect(err).ShouldNot(HaveOccurred())
 
 	outPath, err = Build("github.com/vmwarepivotallabs/cf-mgmt/cmd/cf-mgmt")
@@ -75,7 +85,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				createOrgsCommand := exec.Command(outPath, "create-orgs",
 					"--config-dir", configDir,
 					"--system-domain", systemDomain,
-					"--user-id", userId,
+					"--user-id", userID,
 					"--password", password,
 					"--client-secret", clientSecret)
 				session, err := Start(createOrgsCommand, GinkgoWriter, GinkgoWriter)
@@ -91,7 +101,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				deleteOrgsCommand := exec.Command(outPath, "delete-orgs",
 					"--config-dir", configDir,
 					"--system-domain", systemDomain,
-					"--user-id", userId,
+					"--user-id", userID,
 					"--password", password,
 					"--client-secret", clientSecret)
 				session, err = Start(deleteOrgsCommand, GinkgoWriter, GinkgoWriter)
@@ -101,7 +111,6 @@ var _ = Describe("cf-mgmt cli", func() {
 				orgs, err = cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(orgs, []byte("system"))).Should(BeTrue())
-				Expect(bytes.Contains(orgs, []byte("cfdev-org"))).Should(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org1"))).ShouldNot(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org1"))).ShouldNot(BeTrue())
 
@@ -109,7 +118,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				createSpacesCommand := exec.Command(outPath, "create-spaces",
 					"--config-dir", configDir,
 					"--system-domain", systemDomain,
-					"--user-id", userId,
+					"--user-id", userID,
 					"--password", password,
 					"--client-secret", clientSecret)
 				session, err = Start(createSpacesCommand, GinkgoWriter, GinkgoWriter)
@@ -119,6 +128,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				_, err = cf("target", "-o", "test1")
 				Expect(err).ShouldNot(HaveOccurred())
 				spaces, err := cf("spaces")
+				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(spaces, []byte("dev"))).Should(BeTrue())
 				Expect(bytes.Contains(spaces, []byte("prod"))).Should(BeTrue())
 
@@ -132,12 +142,12 @@ var _ = Describe("cf-mgmt cli", func() {
 				updateIsoSegmentsCommand := exec.Command(outPath, "isolation-segments",
 					"--config-dir", configDir,
 					"--system-domain", systemDomain,
-					"--user-id", userId,
+					"--user-id", userID,
 					"--password", password,
 					"--client-secret", clientSecret)
 				session, err = Start(updateIsoSegmentsCommand, GinkgoWriter, GinkgoWriter)
 				Expect(err).ShouldNot(HaveOccurred())
-				Eventually(session).Should(Exit(0))
+				Eventually(session, time.Minute).Should(Exit(0))
 
 				is, err := cf("isolation-segments")
 				Expect(err).ShouldNot(HaveOccurred())
@@ -170,7 +180,7 @@ var _ = Describe("cf-mgmt cli", func() {
 					"--client-secret", "cf-mgmt-secret")
 				session, err := Start(createOrgsCommand, GinkgoWriter, GinkgoWriter)
 				Expect(err).ShouldNot(HaveOccurred())
-				Eventually(session).Should(Exit(0))
+				Eventually(session, time.Minute).Should(Exit(0))
 
 				orgs, err = cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
@@ -190,7 +200,6 @@ var _ = Describe("cf-mgmt cli", func() {
 				orgs, err = cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(orgs, []byte("system"))).Should(BeTrue())
-				Expect(bytes.Contains(orgs, []byte("cfdev-org"))).Should(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org1"))).ShouldNot(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org2"))).ShouldNot(BeTrue())
 
@@ -207,6 +216,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				_, err = cf("target", "-o", "test1")
 				Expect(err).ShouldNot(HaveOccurred())
 				spaces, err := cf("spaces")
+				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(spaces, []byte("dev"))).Should(BeTrue())
 				Expect(bytes.Contains(spaces, []byte("prod"))).Should(BeTrue())
 
@@ -224,7 +234,7 @@ var _ = Describe("cf-mgmt cli", func() {
 					"--client-secret", "cf-mgmt-secret")
 				session, err = Start(updateIsoSegmentsCommand, GinkgoWriter, GinkgoWriter)
 				Expect(err).ShouldNot(HaveOccurred())
-				Eventually(session).Should(Exit(0))
+				Eventually(session, time.Minute).Should(Exit(0))
 
 				is, err := cf("isolation-segments")
 				Expect(err).ShouldNot(HaveOccurred())
