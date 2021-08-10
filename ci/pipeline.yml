@@ -1,17 +1,24 @@
 groups:
 - name: compile
   jobs:
+  - claim-cf-deployment
   - test-and-build
 - name: deploy
   jobs:
   - deploy
+
+resource_types:
+- name: pcf-pool
+  type: docker-image
+  source:
+    repository: cftoolsmiths/toolsmiths-envs-resource
 
 resources:
 - name: source
   type: git
   source:
     uri: git@github.com:vmwarepivotallabs/cf-mgmt.git
-    branch: main
+    branch: add-integration-to-ci
     private_key: {{git-ssh-key}}
     ignore_paths: ["README.md","docs/*"]
 
@@ -38,14 +45,54 @@ resources:
     password: {{docker-registry-password}}
     tag: {{docker-tag}}
 
+- name: cf-deployment-env
+  icon: pool
+  type: pcf-pool
+  source:
+    api_token: ((toolsmiths))
+    hostname: environments.toolsmiths.cf-app.com
+    pool_name: cf-deployment
+
 jobs:
+- name: claim-cf-deployment
+  plan:
+  - get: source
+    trigger: true
+  - put: cf-deployment-env
+    params:
+      action: claim
+
 - name: test-and-build
   plan:
     - in_parallel:
       - get: source
         trigger: true
+        passed: ['claim-cf-deployment']
+      - get: cf-deployment-env
+        passed: ['claim-cf-deployment']
+        trigger: true
+        version: every
+    - load_var: pooled-env
+      file: cf-deployment-env/metadata
+      format: json
     - task: test
       file: source/ci/tasks/runTests.yml
+    - task: integration-test
+      file: source/ci/tasks/runIntegrationTests.yml
+      params:
+        CF_API_URL: ((.:pooled-env.cf.api_url))
+        SYSTEM_DOMAIN: ((.:pooled-env.name)).cf-app.com
+        JUMPBOX_PRIVATE_KEY: ((.:pooled-env.bosh.jumpbox_private_key))
+        CREDHUB_CLIENT: ((.:pooled-env.bosh.credhub_client))
+        CREDHUB_SECRET: ((.:pooled-env.bosh.credhub_secret))
+        CREDHUB_CA_CERT: ((.:pooled-env.bosh.credhub_ca_cert))
+        CREDHUB_SERVER: ((.:pooled-env.bosh.credhub_server))
+        CREDHUB_PROXY: ((.:pooled-env.bosh.bosh_all_proxy))
+        BOSH_ENVIRONMENT: ((.:pooled-env.bosh.bosh_environment))
+        BOSH_CA_CERT: ((.:pooled-env.bosh.bosh_ca_cert))
+        BOSH_ALL_PROXY: ((.:pooled-env.bosh.bosh_all_proxy))
+        BOSH_CLIENT: ((.:pooled-env.bosh.bosh_client))
+        BOSH_CLIENT_SECRET: ((.:pooled-env.bosh.bosh_client_secret))
     - task: build
       file: source/ci/tasks/build.yml
     - put: draft-cfmgmt-resource
@@ -59,6 +106,7 @@ jobs:
         - compiled-output/cf-mgmt-config-linux
         - compiled-output/cf-mgmt-config-osx
         - compiled-output/cf-mgmt-config.exe
+
 - name: deploy
   plan:
     - in_parallel:
