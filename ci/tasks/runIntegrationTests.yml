@@ -11,19 +11,7 @@ inputs:
 - name: cf-deployment-env
 
 params:
-  CF_API_URL:
   SYSTEM_DOMAIN:
-  JUMPBOX_PRIVATE_KEY:
-  CREDHUB_CLIENT:
-  CREDHUB_SECRET:
-  CREDHUB_CA_CERT:
-  CREDHUB_SERVER:
-  CREDHUB_PROXY:
-  BOSH_ENVIRONMENT:
-  BOSH_CA_CERT:
-  BOSH_ALL_PROXY:
-  BOSH_CLIENT:
-  BOSH_CLIENT_SECRET:
 
 run:
   path: source/ci/tasks/runIntegrationTests.sh
