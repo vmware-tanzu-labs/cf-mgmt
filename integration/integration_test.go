@@ -14,27 +14,36 @@ import (
 )
 
 const (
-	systemDomain = "dev.cfdev.sh"
-	userId       = "admin"
-	password     = "admin"
-	clientSecret = "admin-client-secret"
-	configDir    = "./fixture"
+	configDir = "./fixture"
 )
 
 // cf runs the cf CLI with the specified args.
 func cf(args ...string) ([]byte, error) {
 	cmd := exec.Command("cf", args...)
+
 	out, err := cmd.Output()
 	if err != nil {
 		return out, fmt.Errorf("cf %s: %v", strings.Join(args, " "), err)
 	}
+
 	return out, nil
 }
 
-var outPath string
+var (
+	outPath      string
+	systemDomain string
+	userID       string
+	password     string
+	clientSecret string
+)
 
 var _ = BeforeSuite(func() {
-	_, err := cf("login", "--skip-ssl-validation", "-a", "https://api."+systemDomain, "-u", userId, "-p", password)
+	systemDomain = os.Getenv("SYSTEM_DOMAIN")
+	userID = "admin"
+	password = os.Getenv("CF_ADMIN_PASSWORD")
+	clientSecret = os.Getenv("CF_CLIENT_SECRET")
+
+	_, err := cf("login", "--skip-ssl-validation", "-a", "https://api."+systemDomain, "-u", userID, "-p", password)
 	Expect(err).ShouldNot(HaveOccurred())
 
 	outPath, err = Build("github.com/vmwarepivotallabs/cf-mgmt/cmd/cf-mgmt")
@@ -76,7 +85,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				createOrgsCommand := exec.Command(outPath, "create-orgs",
 					"--config-dir", configDir,
 					"--system-domain", systemDomain,
-					"--user-id", userId,
+					"--user-id", userID,
 					"--password", password,
 					"--client-secret", clientSecret)
 				session, err := Start(createOrgsCommand, GinkgoWriter, GinkgoWriter)
@@ -92,7 +101,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				deleteOrgsCommand := exec.Command(outPath, "delete-orgs",
 					"--config-dir", configDir,
 					"--system-domain", systemDomain,
-					"--user-id", userId,
+					"--user-id", userID,
 					"--password", password,
 					"--client-secret", clientSecret)
 				session, err = Start(deleteOrgsCommand, GinkgoWriter, GinkgoWriter)
@@ -109,7 +118,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				createSpacesCommand := exec.Command(outPath, "create-spaces",
 					"--config-dir", configDir,
 					"--system-domain", systemDomain,
-					"--user-id", userId,
+					"--user-id", userID,
 					"--password", password,
 					"--client-secret", clientSecret)
 				session, err = Start(createSpacesCommand, GinkgoWriter, GinkgoWriter)
@@ -133,7 +142,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				updateIsoSegmentsCommand := exec.Command(outPath, "isolation-segments",
 					"--config-dir", configDir,
 					"--system-domain", systemDomain,
-					"--user-id", userId,
+					"--user-id", userID,
 					"--password", password,
 					"--client-secret", clientSecret)
 				session, err = Start(updateIsoSegmentsCommand, GinkgoWriter, GinkgoWriter)

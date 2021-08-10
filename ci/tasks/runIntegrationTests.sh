@@ -22,5 +22,8 @@ if ! uaa-cli get-client cf-mgmt; then
 fi
 
 pushd source > /dev/null
-  RUN_INTEGRATION_TESTS=true go test ./integration/... -ginkgo.progress
+  CF_ADMIN_PASSWORD=$(get_from_credhub cf_admin_password) \
+  ADMIN_CLIENT_SECRET=$(get_from_credhub uaa_admin_client_secret) \
+  RUN_INTEGRATION_TESTS=true \
+    go test ./integration/... -ginkgo.progress
 popd
