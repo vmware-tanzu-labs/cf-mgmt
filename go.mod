@@ -10,7 +10,7 @@ require (
 	github.com/cloudfoundry-community/go-cfclient v0.0.0-20200331184504-3c43ef9aebb6
 	github.com/cloudfoundry-community/go-uaa v0.3.2-0.20191219133444-673d775e96b5
 	github.com/go-ldap/ldap v3.0.3+incompatible
-	github.com/jessevdk/go-flags v1.3.0
+	github.com/jessevdk/go-flags v1.5.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.15.0
