@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	systemDomain = "sys.sunsetyellow.cf-app.com"
+	systemDomain = "dev.cfdev.sh"
 	userId       = "admin"
-	password     = "w-HMAh7gC13CMRwfI8Ok8AGVDMMPBu2X"
-	clientSecret = "D_vH6ABlXsXsC1jRyH_IA7R6-JSCMdtp"
+	password     = "admin"
+	clientSecret = "admin-client-secret"
 	configDir    = "./fixture"
 )
 
@@ -102,7 +102,6 @@ var _ = Describe("cf-mgmt cli", func() {
 				orgs, err = cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(orgs, []byte("system"))).Should(BeTrue())
-				// Expect(bytes.Contains(orgs, []byte("cfdev-org"))).Should(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org1"))).ShouldNot(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org1"))).ShouldNot(BeTrue())
 
@@ -120,6 +119,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				_, err = cf("target", "-o", "test1")
 				Expect(err).ShouldNot(HaveOccurred())
 				spaces, err := cf("spaces")
+				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(spaces, []byte("dev"))).Should(BeTrue())
 				Expect(bytes.Contains(spaces, []byte("prod"))).Should(BeTrue())
 
@@ -191,7 +191,6 @@ var _ = Describe("cf-mgmt cli", func() {
 				orgs, err = cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(orgs, []byte("system"))).Should(BeTrue())
-				// Expect(bytes.Contains(orgs, []byte("cfdev-org"))).Should(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org1"))).ShouldNot(BeTrue())
 				Expect(bytes.Contains(orgs, []byte("rogue-org2"))).ShouldNot(BeTrue())
 
@@ -208,6 +207,7 @@ var _ = Describe("cf-mgmt cli", func() {
 				_, err = cf("target", "-o", "test1")
 				Expect(err).ShouldNot(HaveOccurred())
 				spaces, err := cf("spaces")
+				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(spaces, []byte("dev"))).Should(BeTrue())
 				Expect(bytes.Contains(spaces, []byte("prod"))).Should(BeTrue())
 
@@ -223,7 +223,6 @@ var _ = Describe("cf-mgmt cli", func() {
 					"--system-domain", systemDomain,
 					"--user-id", "cf-mgmt",
 					"--client-secret", "cf-mgmt-secret")
-				fmt.Println(updateIsoSegmentsCommand)
 				session, err = Start(updateIsoSegmentsCommand, GinkgoWriter, GinkgoWriter)
 				Expect(err).ShouldNot(HaveOccurred())
 				Eventually(session, time.Minute).Should(Exit(0))
