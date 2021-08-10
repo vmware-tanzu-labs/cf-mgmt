@@ -171,7 +171,7 @@ var _ = Describe("cf-mgmt cli", func() {
 					"--client-secret", "cf-mgmt-secret")
 				session, err := Start(createOrgsCommand, GinkgoWriter, GinkgoWriter)
 				Expect(err).ShouldNot(HaveOccurred())
-				Eventually(session).Should(Exit(0))
+				Eventually(session, time.Minute).Should(Exit(0))
 
 				orgs, err = cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
