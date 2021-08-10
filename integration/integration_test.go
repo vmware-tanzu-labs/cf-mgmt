@@ -41,7 +41,7 @@ var _ = BeforeSuite(func() {
 	systemDomain = os.Getenv("SYSTEM_DOMAIN")
 	userID = "admin"
 	password = os.Getenv("CF_ADMIN_PASSWORD")
-	clientSecret = os.Getenv("CF_CLIENT_SECRET")
+	clientSecret = os.Getenv("ADMIN_CLIENT_SECRET")
 
 	_, err := cf("login", "--skip-ssl-validation", "-a", "https://api."+systemDomain, "-u", userID, "-p", password)
 	Expect(err).ShouldNot(HaveOccurred())

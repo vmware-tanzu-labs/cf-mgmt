@@ -26,4 +26,4 @@ pushd source > /dev/null
   ADMIN_CLIENT_SECRET=$(get_from_credhub uaa_admin_client_secret) \
   RUN_INTEGRATION_TESTS=true \
     go test ./integration/... -ginkgo.progress
-popd
+popd > /dev/null
