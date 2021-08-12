@@ -38,6 +38,8 @@ var (
 )
 
 var _ = BeforeSuite(func() {
+	SetDefaultEventuallyTimeout(time.Second * 30)
+
 	systemDomain = os.Getenv("SYSTEM_DOMAIN")
 	userID = "admin"
 	password = os.Getenv("CF_ADMIN_PASSWORD")
@@ -147,7 +149,7 @@ var _ = Describe("cf-mgmt cli", func() {
 					"--client-secret", clientSecret)
 				session, err = Start(updateIsoSegmentsCommand, GinkgoWriter, GinkgoWriter)
 				Expect(err).ShouldNot(HaveOccurred())
-				Eventually(session, time.Minute).Should(Exit(0))
+				Eventually(session).Should(Exit(0))
 
 				is, err := cf("isolation-segments")
 				Expect(err).ShouldNot(HaveOccurred())
@@ -180,7 +182,7 @@ var _ = Describe("cf-mgmt cli", func() {
 					"--client-secret", "cf-mgmt-secret")
 				session, err := Start(createOrgsCommand, GinkgoWriter, GinkgoWriter)
 				Expect(err).ShouldNot(HaveOccurred())
-				Eventually(session, time.Minute).Should(Exit(0))
+				Eventually(session).Should(Exit(0))
 
 				orgs, err = cf("orgs")
 				Expect(err).ShouldNot(HaveOccurred())
@@ -234,7 +236,7 @@ var _ = Describe("cf-mgmt cli", func() {
 					"--client-secret", "cf-mgmt-secret")
 				session, err = Start(updateIsoSegmentsCommand, GinkgoWriter, GinkgoWriter)
 				Expect(err).ShouldNot(HaveOccurred())
-				Eventually(session, time.Minute).Should(Exit(0))
+				Eventually(session).Should(Exit(0))
 
 				is, err := cf("isolation-segments")
 				Expect(err).ShouldNot(HaveOccurred())
