@@ -132,10 +132,6 @@ fly -t <targetname> set-pipeline -p <pipeline_name> \
 
 >You now have a Pipeline ready to apply configuration changes to your foundation. Explore the [docs](docs/config/README.md) to learn the available commands in `cf-mgmt-config`, try creating new workspace configs, then commit and push the files to you git repository. Your pipeline should kick in and apply the changes.
 
-## Maintainer
-
-- [Caleb Washburn](https://github.com/calebwashburn)
-
 ## Support
 
 cf-mgmt is a community supported cloud foundry add-on.  Opening issues for questions, feature requests and/or bugs is the best path to getting "support".  We strive to be active in keeping this tool working and meeting your needs in a timely fashion.
@@ -166,14 +162,9 @@ params:
 To build the binary yourself, follow these steps:
 
 - Install `Go`.
-- Install [Glide](https://github.com/Masterminds/glide), a dependency management tool for Go.
-- Clone the repo:
-  - `mkdir -p $(go env GOPATH)/src/github.com/vmwarepivotallabs`
-  - `cd $(go env GOPATH)/src/github.com/vmwarepivotallabs`
-  - `git clone git@github.com:vmwarepivotallabs/cf-mgmt.git`
-- Install dependencies:
+- Clone the repo
+- Build:
   - `cd cf-mgmt`
-  - `glide install`
   - `go build -o cf-mgmt cmd/cf-mgmt/main.go`
   - `go build -o cf-mgmt-config cmd/cf-mgmt-config/main.go`
 
@@ -182,7 +173,7 @@ For example: `GOOS=linux GOARCH=amd64 go build`.
 
 ### Testing
 
-To run the unit tests, use `go test $(glide nv)`.
+To run the unit tests, use `go test ./...`.
 
 ### SSH configuration
 In order to use the key `allow-ssh-until` in your space config, you must set
