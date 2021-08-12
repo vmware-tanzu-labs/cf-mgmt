@@ -19,7 +19,7 @@ resources:
   source:
     uri: git@github.com:vmwarepivotallabs/cf-mgmt.git
     branch: main
-    private_key: {{git-ssh-key}}
+    private_key: ((github.ssh_key))
     ignore_paths: ["README.md","docs/*"]
 
 - name: draft-cfmgmt-resource
@@ -27,7 +27,7 @@ resources:
   source:
     owner: vmware-tanzu-labs
     repository: cf-mgmt
-    access_token: {{github-token}}
+    access_token: ((github.token))
     drafts: true
 
 - name: releases
@@ -35,15 +35,15 @@ resources:
   source:
     owner: vmware-tanzu-labs
     repository: cf-mgmt
-    access_token: {{github-token}}
+    access_token: ((github.token))
 
 - name: docker-registry
   type: docker-image
   source:
-    repository: {{docker-repository}}
-    username: {{docker-registry-username}}
-    password: {{docker-registry-password}}
-    tag: {{docker-tag}}
+    repository: ((dockerhub.repository))
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+    tag: ((dockerhub.tag))
 
 - name: cf-deployment-env
   icon: pool
