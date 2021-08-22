@@ -709,4 +709,65 @@ var _ = Describe("CF-Mgmt Config", func() {
 			})
 		})
 	})
+
+	Context("spaceConfig uniqueness check", func() {
+		When("there are no duplicates", func() {
+			It("returns an empty slice", func() {
+				dups := config.SpaceConfigDuplicates([]config.SpaceConfig{
+					{Org: "my-org1", Space: "my-space"},
+					{Org: "my-org2", Space: "my-space"},
+					{Org: "my-org3", Space: "my-space"},
+				})
+
+				Expect(dups).Should(BeEmpty())
+			})
+		})
+
+		When("there is one duplicate", func() {
+			It("returns an empty slice", func() {
+				dups := config.SpaceConfigDuplicates([]config.SpaceConfig{
+					{Org: "my-org1", Space: "my-space"},
+					{Org: "my-org1", Space: "my-space"},
+
+					{Org: "my-org2", Space: "my-space"},
+
+					{Org: "my-org3", Space: "my-space"},
+				})
+
+				Expect(dups).Should(HaveLen(1))
+			})
+		})
+
+		When("there is an item with more than 2", func() {
+			It("returns an empty slice", func() {
+				dups := config.SpaceConfigDuplicates([]config.SpaceConfig{
+					{Org: "my-org1", Space: "my-space"},
+					{Org: "my-org1", Space: "my-space"},
+					{Org: "my-org1", Space: "my-space"},
+
+					{Org: "my-org2", Space: "my-space"},
+
+					{Org: "my-org3", Space: "my-space"},
+				})
+
+				Expect(dups).Should(HaveLen(1))
+			})
+		})
+
+		When("there is an item with more than 2", func() {
+			It("returns an empty slice", func() {
+				dups := config.SpaceConfigDuplicates([]config.SpaceConfig{
+					{Org: "my-org1", Space: "my-space"},
+					{Org: "my-org1", Space: "my-space"},
+
+					{Org: "my-org2", Space: "my-space"},
+					{Org: "my-org2", Space: "my-space"},
+
+					{Org: "my-org3", Space: "my-space"},
+				})
+
+				Expect(dups).Should(HaveLen(2))
+			})
+		})
+	})
 })

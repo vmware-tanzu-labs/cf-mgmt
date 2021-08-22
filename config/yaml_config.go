@@ -202,7 +202,34 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 			result[i].SecurityGroupContents = string(bytes)
 		}
 	}
+
+	for _, orgSpacePair := range SpaceConfigDuplicates(result) {
+		lo.G.Warningf("Found duplicate space config, org: [%s] space: [%s]", orgSpacePair[0], orgSpacePair[1])
+	}
+
 	return result, nil
+}
+
+// SpaceConfigDuplicates returns a list of org, space pairs when their
+// combination appears multiple times across space configs.
+func SpaceConfigDuplicates(spaceConfigs []SpaceConfig) (duplicates [][2]string) {
+	spaceSet := map[[2]string]int{}
+	for _, spaceConfig := range spaceConfigs {
+		query := [2]string{spaceConfig.Org, spaceConfig.Space}
+		if _, found := spaceSet[query]; !found {
+			spaceSet[query] = 0
+		}
+
+		spaceSet[query]++
+	}
+
+	for pair, instances := range spaceSet {
+		if instances > 1 {
+			duplicates = append(duplicates, pair)
+		}
+	}
+
+	return
 }
 
 func (m *yamlManager) GetOrgConfig(orgName string) (*OrgConfig, error) {
