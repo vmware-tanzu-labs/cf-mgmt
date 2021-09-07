@@ -34,7 +34,7 @@ func (m *yamlManager) Orgs() (*Orgs, error) {
 func (m *yamlManager) GetDefaultASGConfigs() ([]ASGConfig, error) {
 	filePath := path.Join(m.ConfigDir, "default_asgs")
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		lo.G.Infof("No default asgs found.  Create directory default_asgs and add asg defintion(s)")
+		lo.G.Infof("No default asgs found.  Create directory default_asgs and add asg definition(s)")
 		return nil, nil
 	}
 	files, err := FindFiles(filePath, ".json")
@@ -61,7 +61,7 @@ func (m *yamlManager) GetDefaultASGConfigs() ([]ASGConfig, error) {
 func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 	filePath := path.Join(m.ConfigDir, "asgs")
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		lo.G.Infof("No asgs found.  Create directory asgs and add asg defintion(s)")
+		lo.G.Infof("No asgs found.  Create directory asgs and add asg definition(s)")
 		return nil, nil
 	}
 	files, err := FindFiles(filePath, ".json")
@@ -559,7 +559,7 @@ func (m *yamlManager) LdapConfig(ldapBindUser, ldapBindPassword, ldapServer stri
 func (m *yamlManager) GetOrgQuotas() ([]OrgQuota, error) {
 	filePath := path.Join(m.ConfigDir, "org_quotas")
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		lo.G.Infof("No org quotas found.  Create directory org_quotas and add org quota defintion(s)")
+		lo.G.Infof("No org quotas found.  Create directory org_quotas and add org quota definition(s)")
 		return nil, nil
 	}
 	files, err := FindFiles(filePath, ".yml")
@@ -604,7 +604,7 @@ func (m *yamlManager) SaveOrgQuota(orgQuota *OrgQuota) error {
 func (m *yamlManager) GetSpaceQuotas(org string) ([]SpaceQuota, error) {
 	filePath := path.Join(m.ConfigDir, org, "space_quotas")
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		lo.G.Infof("No space quotas found. Create directory space_quotas for org %s and add space quota defintion(s)", org)
+		lo.G.Infof("No space quotas found. Create directory space_quotas for org %s and add space quota definition(s)", org)
 		return nil, nil
 	}
 	files, err := FindFiles(filePath, ".yml")
