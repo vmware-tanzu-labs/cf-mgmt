@@ -53,9 +53,19 @@ resources:
     hostname: environments.toolsmiths.cf-app.com
     pool_name: cf-deployment
 
+- name: every-day
+  type: time
+  icon: timer-outline
+  source:
+    start: 9:00 AM
+    stop: 10:00 PM
+    days: [Monday, Tuesday, Wednesday, Thursday, Friday]
+
 jobs:
 - name: claim-cf-deployment
   plan:
+  - get: every-day
+    trigger: true
   - get: source
     trigger: true
   - put: cf-deployment-env
@@ -65,6 +75,9 @@ jobs:
 - name: test-and-build
   plan:
     - in_parallel:
+      - get: every-day
+        trigger: true
+        passed: ['claim-cf-deployment']
       - get: source
         trigger: true
         passed: ['claim-cf-deployment']
