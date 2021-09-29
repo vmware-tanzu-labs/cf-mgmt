@@ -3,6 +3,7 @@ package cfclient
 import (
 	"encoding/json"
 
+	"github.com/Masterminds/semver"
 	"github.com/pkg/errors"
 )
 
@@ -64,8 +65,15 @@ func (c *Client) SupportsMetadataAPI() (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "Error unmarshalling info")
 	}
-	if v3.Links.CCV3.Meta.Version >= "3.66.0" {
+
+	minimumSupportedVersion := semver.MustParse("3.66.0")
+	actualVersion, err := semver.NewVersion(v3.Links.CCV3.Meta.Version)
+	if err != nil {
+		return false, errors.Wrap(err, "Error parsing semver")
+	}
+	if !actualVersion.LessThan(minimumSupportedVersion) {
 		return true, nil
 	}
+
 	return false, nil
 }
