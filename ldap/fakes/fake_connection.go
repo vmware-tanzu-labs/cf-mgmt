@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	ldapa "github.com/go-ldap/ldap"
+	ldapa "github.com/go-ldap/ldap/v3"
 	"github.com/vmwarepivotallabs/cf-mgmt/ldap"
 )
 
