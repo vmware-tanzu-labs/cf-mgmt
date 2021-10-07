@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	l "github.com/go-ldap/ldap"
+	l "github.com/go-ldap/ldap/v3"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/xchapter7x/lo"
 )

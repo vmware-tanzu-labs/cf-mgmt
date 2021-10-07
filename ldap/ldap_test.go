@@ -3,7 +3,7 @@ package ldap_test
 import (
 	"errors"
 
-	l "github.com/go-ldap/ldap"
+	l "github.com/go-ldap/ldap/v3"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"

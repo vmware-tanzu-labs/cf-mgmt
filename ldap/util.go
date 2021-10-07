@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	l "github.com/go-ldap/ldap"
+	l "github.com/go-ldap/ldap/v3"
 	"github.com/xchapter7x/lo"
 )
 
