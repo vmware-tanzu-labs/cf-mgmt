@@ -51,7 +51,7 @@ mv cf /usr/local/bin
 cf -v
 
 pushd source > /dev/null
-  export ADMIN_CLIENT_SECRET CF_ADMIN_PASSWORD
+  export ADMIN_CLIENT_SECRET CF_ADMIN_PASSWORD SYSTEM_DOMAIN
 
   RUN_INTEGRATION_TESTS=true \
     go test ./integration/... -ginkgo.progress
