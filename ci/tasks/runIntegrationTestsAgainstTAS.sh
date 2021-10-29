@@ -17,8 +17,8 @@ ADMIN_CLIENT_SECRET="$( \
       --credential-field password \
 )"
 
-if ! uaa-cli get-client cf-mgmt; then
-  uaa-cli create-client cf-mgmt \
+if ! uaac get-client cf-mgmt; then
+  uaac create-client cf-mgmt \
     --client_secret cf-mgmt-secret \
     --authorized_grant_types client_credentials,refresh_token \
     --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
