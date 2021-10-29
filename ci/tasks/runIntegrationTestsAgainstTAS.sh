@@ -17,12 +17,15 @@ ADMIN_CLIENT_SECRET="$( \
       --credential-field password \
 )"
 
-if ! uaac get-client cf-mgmt; then
-  uaac create-client cf-mgmt \
-    --client_secret cf-mgmt-secret \
-    --authorized_grant_types client_credentials,refresh_token \
-    --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
-fi
+uaac target "uaa.$SYSTEM_DOMAIN" --skip-ssl-validation
+uaac token client get admin -s "$ADMIN_CLIENT_SECRET"
+
+uaac client delete cf-mgmt || true
+uaac client add cf-mgmt \
+  --name cf-mgmt \
+  --secret cf-mgmt-secret \
+  --authorized_grant_types client_credentials,refresh_token \
+  --authorities cloud_controller.admin,scim.read,scim.write,routing.router_groups.read
 
 CF_ADMIN_PASSWORD="$( \
   om \
