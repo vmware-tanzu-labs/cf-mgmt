@@ -1,3 +1,10 @@
+TAS version | Compatible?
+--- | ---
+2.12 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_12/badge)
+2.11 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_11_lts2/badge)
+2.10 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_10/badge)
+2.7 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_7_lts/badge)
+
 # Cloud Foundry Management (cf-mgmt)
 
 Go automation for managing orgs, spaces, users (from ldap groups or internal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
