@@ -1,9 +1,20 @@
+---
+#! to set pipeline run: fly set-pipeline -p cf-mgmt -c <(ytt -f ci/pipeline.yml)
+
+#@ tas_versions = [
+#@   {"version": "2.12.*", "pool_without_location": "2_12"},
+#@   {"version": "2.11.*", "pool_without_location": "2_11_lts2"},
+#@   {"version": "2.10.*", "pool_without_location": "2_10"},
+#@   {"version": "2.7.*", "pool_without_location": "2_7_lts"},
+#@ ]
+
 groups:
 - name: compile
   jobs:
   - claim-cf-deployment
   - test-and-build
-  - test-against-tas-2-12
+#@ for/end v in tas_versions:
+  - #@ 'test-against-tas-' + v["pool_without_location"]
 - name: deploy
   jobs:
   - deploy
@@ -21,16 +32,26 @@ resource_types:
   type: registry-image
 
 resources:
-# This is just so that we can trigger the job everytime there's a new TAS
-# version.  It will download the tile... which is not quite nice in terms of
-# execution time and resourse consumption. Maybe there's a better way.
-- name: tas-for-vms-2-12
+#! This is just so that we can trigger the job everytime there's a new TAS
+#! version.  It will download the tile... which is not quite nice in terms of
+#! execution time and resourse consumption. Maybe there's a better way.
+#@ for/end v in tas_versions:
+- name: #@ 'tas-for-vms-' + v["pool_without_location"]
   type: pivnet
   source:
     api_token: ((pivnet.refresh_token))
     product_slug: elastic-runtime
     sort_by: semver
-    product_version: 2\.12\..*
+    product_version: #@ v["version"]
+
+#@ for/end v in tas_versions:
+- icon: pool
+  name: #@ 'tas-' + v["pool_without_location"] + '-env'
+  source:
+    api_token: ((toolsmiths.api_token))
+    hostname: environments.toolsmiths.cf-app.com
+    pool_name: #@ 'us_' + v["pool_without_location"]
+  type: pcf-pool
 
 - name: source
   type: git
@@ -70,14 +91,6 @@ resources:
     api_token: ((toolsmiths.api_token))
     hostname: environments.toolsmiths.cf-app.com
     pool_name: cf-deployment
-
-- icon: pool
-  name: tas-2-12-env
-  source:
-    api_token: ((toolsmiths.api_token))
-    hostname: environments.toolsmiths.cf-app.com
-    pool_name: us_2_12
-  type: pcf-pool
 
 - name: every-day
   type: time
@@ -138,26 +151,26 @@ jobs:
         action: unclaim
         env_file: cf-deployment-env/metadata
 
-- name: test-against-tas-2-12
+#@ for/end v in tas_versions:
+- name: #@ 'test-against-tas-' + v["pool_without_location"]
   plan:
     - in_parallel:
-      - get: tas-for-vms-2-12
+      - get: #@ 'tas-for-vms-' + v["pool_without_location"]
         trigger: true
       - get: source
         trigger: true
         resource: source
-      - put: tas-2-12-env
+      - put: #@ 'tas-' + v["pool_without_location"] +'-env'
         params:
           action: claim
     - task: integration-test
       file: source/ci/tasks/runIntegrationTestsAgainstTAS.yml
       input_mapping:
-        env: tas-2-12-env
-    - put: tas-2-12-env
+        env: #@ 'tas-' + v["pool_without_location"] +'-env'
+    - put: #@ 'tas-' + v["pool_without_location"] +'-env'
       params:
         action: unclaim
-        env_file: tas-2-12-env/metadata
-
+        env_file: #@ 'tas-' + v["pool_without_location"] +'-env/metadata'
 
 - name: deploy
   plan:
