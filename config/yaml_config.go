@@ -553,6 +553,11 @@ func (m *yamlManager) LdapConfig(ldapBindUser, ldapBindPassword, ldapServer stri
 	if config.Origin == "" {
 		config.Origin = "ldap"
 	}
+
+	if config.LdapOrigin == "" {
+		config.LdapOrigin = config.Origin
+	}
+
 	return config, nil
 }
 

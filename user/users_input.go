@@ -6,15 +6,15 @@ import (
 
 //UsersInput
 type UsersInput struct {
-	SpaceGUID                                   string
-	OrgGUID                                     string
-	LdapUsers, Users, LdapGroupNames, SamlUsers []string
-	SpaceName                                   string
-	OrgName                                     string
-	RemoveUsers                                 bool
-	ListUsers                                   func(updateUserInput UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error)
-	AddUser                                     func(updateUserInput UsersInput, userName, userGUID string) error
-	RemoveUser                                  func(updateUserInput UsersInput, userName, userGUID string) error
+	SpaceGUID                                                   string
+	OrgGUID                                                     string
+	LdapUsers, Users, LdapGroupNames, SamlGroupNames, SamlUsers []string
+	SpaceName                                                   string
+	OrgName                                                     string
+	RemoveUsers                                                 bool
+	ListUsers                                                   func(updateUserInput UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error)
+	AddUser                                                     func(updateUserInput UsersInput, userName, userGUID string) error
+	RemoveUser                                                  func(updateUserInput UsersInput, userName, userGUID string) error
 }
 
 func (u *UsersInput) UniqueUsers() []string {
@@ -31,6 +31,10 @@ func (u *UsersInput) UniqueLdapUsers() []string {
 
 func (u *UsersInput) UniqueLdapGroupNames() []string {
 	return uniqueSlice(u.LdapGroupNames)
+}
+
+func (u *UsersInput) UniqueSamlGroupNames() []string {
+	return uniqueSlice(u.SamlGroupNames)
 }
 
 func uniqueSlice(input []string) []string {

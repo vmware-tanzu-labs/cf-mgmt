@@ -7,6 +7,7 @@ type UserMgmt struct {
 	SamlUsers  []string `yaml:"saml_users"`
 	LDAPGroup  string   `yaml:"ldap_group,omitempty"`
 	LDAPGroups []string `yaml:"ldap_groups"`
+	SAMLGroups []string `yaml:"saml_groups"`
 }
 
 // UserOrigin is an enum type encoding from what source a user originated.
@@ -24,6 +25,26 @@ const (
 	// LDAPOrigin corresponds to a LDAP backed user
 	LDAPOrigin
 )
+
+// groups are always defined as ldap groups for compatibility
+func (u *UserMgmt) saml_groups(groupName string) []string {
+	groupMap := make(map[string]string)
+	for _, group := range u.SAMLGroups {
+		groupMap[group] = group
+	}
+	if groupName != "" {
+		groupMap[groupName] = groupName
+	}
+
+	result := make([]string, 0, len(groupMap))
+	for k := range groupMap {
+		result = append(result, k)
+	}
+	return result
+}
+
+// ne function to get the saml_groups (which are technically ldap groups, but the contained users will be synced)
+// to cf as user with saml origin
 
 func (u *UserMgmt) groups(groupName string) []string {
 	groupMap := make(map[string]string)

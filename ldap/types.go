@@ -17,4 +17,5 @@ type User struct {
 	UserDN string
 	UserID string
 	Email  string
+	Origin string
 }

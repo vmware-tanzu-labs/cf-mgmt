@@ -122,3 +122,15 @@ func (i *SpaceConfig) GetManagerGroups() []string {
 func (i *SpaceConfig) GetAuditorGroups() []string {
 	return i.Auditor.groups(i.AuditorGroup)
 }
+
+func (i *SpaceConfig) GetDeveloperSamlGroups() []string {
+	return i.Developer.saml_groups(i.DeveloperGroup)
+}
+
+func (i *SpaceConfig) GetManagerSamlGroups() []string {
+	return i.Manager.saml_groups(i.ManagerGroup)
+}
+
+func (i *SpaceConfig) GetAuditorSamlGroups() []string {
+	return i.Auditor.saml_groups(i.AuditorGroup)
+}

@@ -21,4 +21,9 @@ type LdapConfig struct {
 	UseIDForSAMLUser   bool   `yaml:"useIDForSAMLUser"`
 	MinTLSVersion      string `yaml:"minTLSVersion"`
 	MaxTLSVersion      string `yaml:"maxTLSVersion"`
+	LdapOrigin         string `yaml:"ldapOrigin"`
+	LdapUserFilter     string `yaml:"ldapUserFilter"`
+	SamlUserFilter     string `yaml:"samlUserFilter"`
+	LdapUserFilterMode string `yaml:"ldapUserFilterMode"`
+	SamlUserFilterMode string `yaml:"samlUserFilterMode"`
 }

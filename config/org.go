@@ -125,3 +125,15 @@ func (o *OrgConfig) GetManagerGroups() []string {
 func (o *OrgConfig) GetAuditorGroups() []string {
 	return o.Auditor.groups(o.AuditorGroup)
 }
+
+func (o *OrgConfig) GetBillingManagerSamlGroups() []string {
+	return o.BillingManager.saml_groups(o.BillingManagerGroup)
+}
+
+func (o *OrgConfig) GetManagerSamlGroups() []string {
+	return o.Manager.saml_groups(o.ManagerGroup)
+}
+
+func (o *OrgConfig) GetAuditorSamlGroups() []string {
+	return o.Auditor.saml_groups(o.AuditorGroup)
+}

@@ -411,6 +411,56 @@ minTLSVersion: 1.0
 maxTLSVersion: 1.3
 ```
 
+### SAML Configuration with saml group lookups AND ldap group lookups
+
+LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users.  In orgConfig.yml and spaceConfig.yml leverage saml_groups.
+
+If you provide ldapOrigin in the ldap.yaml in addition to origin (which is the saml origin in this case) ldap_groups and ldap_users the users are created with ldapOrigin. If you do not provide ldapOrigin ldap_users and ldap_groups are created with Origin (in this case saml origin)
+```yml
+enabled: true
+ldapHost: 127.0.0.1
+ldapPort: 10389
+#true/false (default false)
+use_tls: true
+bindDN: uid=admin,ou=system
+userSearchBase: ou=users,dc=example,dc=com
+userNameAttribute: uid
+# optional added in v1.0.20+
+userObjectClass: <object class that matches your ldap/active directory configuration for users (inetOrgPerson, organizationalPerson)>
+userMailAttribute: mail
+groupSearchBase: ou=groups,dc=example,dc=com
+groupAttribute: member
+# optional added in v1.0.20+
+groupObjectClass: <object class that matches your ldap/active directory configuration for groups (group, groupOfNames)>
+origin: <needs to match origin configured for elastic runtime>
+ldapOrigin: "ldap"
+
+# optional added in 1.0.11+ - true/false
+insecure_skip_verify: false
+# optional added in 1.0.11+ if ldap server is signed by non-public CA provide ca pem here
+ca_cert: |
+
+# optional added in 1.0.37 - true/false.  If true it will use userid from ldap group lookup vs email address for userid
+useIDForSAMLUser: false
+
+# optional added in 1.0.47+ if omitted 1.0 is min, 1.3 is max.  Valid values 1.0, 1.1, 1.2, 1.3 or blank
+minTLSVersion: 1.0
+maxTLSVersion: 1.3
+```
+
+### Filtering saml_groups and ldap_groups
+
+LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. If you leverage ldap_groups or saml_groups in orgConfig.yml and/or spaceConfig.yml, the users found in accordig groups may be filtered through a samlGroupFilter or ldapGroupFilter in ldap.yaml. Filter values may be all valid golang regular expressions. Via ldapUserFilterMode/samlUserFilterMode the filter can be set to include or exclude
+
+```yml
+ldapGroupFilter: "^foo"
+samlGroupFilter: ".*"
+ldapUserFilterMode: "include"
+samlUserFilterMode: "exclude"
+
+```
+
+
 ### SAML Configuration
 
 LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users you can disable ldap integration for looking up users in ldap groups with v0.0.66+ as orgConfig.yml and spaceConfig.yml now includes a saml_users array attribute which can contain a list of email addresses.
