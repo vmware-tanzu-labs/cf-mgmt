@@ -17,7 +17,7 @@ require (
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/onsi/ginkgo v1.16.4
-	github.com/onsi/gomega v1.16.0
+	github.com/onsi/gomega v1.17.0
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/pkg/errors v0.9.1
