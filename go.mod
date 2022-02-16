@@ -11,7 +11,7 @@ require (
 	github.com/cloudfoundry-community/go-cfclient v0.0.0-20210823134051-721f0e559306
 	github.com/cloudfoundry-community/go-uaa v0.3.2-0.20191219133444-673d775e96b5
 	github.com/go-asn1-ber/asn1-ber v1.5.3 // indirect
-	github.com/go-ldap/ldap/v3 v3.4.1
+	github.com/go-ldap/ldap/v3 v3.4.2
 	github.com/gopherjs/gopherjs v0.0.0-20210803090616-8f023c250c89 // indirect
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kr/pretty v0.3.0 // indirect
