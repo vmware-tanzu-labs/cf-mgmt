@@ -40,7 +40,7 @@ resources:
 - name: #@ 'tas-for-vms-' + v["pool_without_location"]
   type: pivnet
   source:
-    api_token: ((pivnet.refresh_token))
+    api_token: ((pivnet-admin.api_token))
     product_slug: elastic-runtime
     sort_by: semver
     product_version: #@ v["version"]
