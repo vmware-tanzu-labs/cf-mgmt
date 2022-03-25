@@ -2,6 +2,7 @@
 #! to set pipeline run: fly set-pipeline -p cf-mgmt -c <(ytt -f ci/pipeline.yml)
 
 #@ tas_versions = [
+#@   {"version": "2.13.*", "pool_without_location": "2_13"},
 #@   {"version": "2.12.*", "pool_without_location": "2_12"},
 #@   {"version": "2.11.*", "pool_without_location": "2_11_lts2"},
 #@   {"version": "2.10.*", "pool_without_location": "2_10"},
