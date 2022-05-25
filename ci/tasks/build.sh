@@ -7,7 +7,7 @@ ssh-keyscan github.com >>~/.ssh/known_hosts
 
 SOURCE_DIR=$PWD/source
 
-go get github.com/xchapter7x/versioning
+go install github.com/xchapter7x/versioning@latest
 
 pushd ${SOURCE_DIR} > /dev/null
   if [ -d ".git" ]; then
