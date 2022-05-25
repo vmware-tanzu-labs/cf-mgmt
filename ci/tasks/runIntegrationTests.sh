@@ -9,7 +9,7 @@ get_from_credhub() {
 
 eval "$(bbl print-env --metadata-file cf-deployment-env/metadata)"
 
-go get code.cloudfoundry.org/uaa-cli
+go install code.cloudfoundry.org/uaa-cli@latest
 
 uaa-cli target "https://uaa.${SYSTEM_DOMAIN}" -k
 uaa-cli get-client-credentials-token "admin" -s $(get_from_credhub uaa_admin_client_secret)
