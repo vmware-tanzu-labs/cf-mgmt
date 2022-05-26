@@ -106,38 +106,63 @@ resources:
     access_token: ((github.token))
     base_branch: main
 
+- name: cryogenics-concourse-tasks
+  type: git
+  icon: github
+  source:
+    uri: git@github.com:pivotal/cryogenics-concourse-tasks.git
+    private_key: ((github.ssh_key))
+
 jobs:
 - name: test
   plan:
+  - in_parallel:
     - get: source
       resource: pull-request
       trigger: true
-    - task: unit-test
-      file: source/ci/tasks/runTests.yml
-    - put: cf-deployment-env
+    - get: cryogenics-concourse-tasks
+  - in_parallel:
+    - do:
+      - task: unit-test
+        file: source/ci/tasks/runTests.yml
+    - do:
+      - put: cf-deployment-env
+        params:
+          action: claim
+      - load_var: pooled-env
+        file: cf-deployment-env/metadata
+        format: json
+      - task: integration-test
+        file: source/ci/tasks/runIntegrationTests.yml
+        params:
+          SYSTEM_DOMAIN: ((.:pooled-env.name)).cf-app.com
+      - put: cf-deployment-env
+        params:
+          action: unclaim
+          env_file: cf-deployment-env/metadata
+  on_success:
+    do:
+    - put: pull-request
       params:
-        action: claim
-    - load_var: pooled-env
-      file: cf-deployment-env/metadata
+        merge: false
+        status: success
+    - load_var: pr-metadata
+      file: source/.git/resource/version.json
       format: json
-    - task: integration-test
-      file: source/ci/tasks/runIntegrationTests.yml
+    - task: merge-pr
+      file: cryogenics-concourse-tasks/github-automation/merge-pr/task.yml
+      input_mapping:
+        source-repo: pull-request
       params:
-        SYSTEM_DOMAIN: ((.:pooled-env.name)).cf-app.com
-      on_success:
-        put: pull-request
-        params:
-          merge: false
-          status: success
-      on_failure:
-        put: pull-request
-        params:
-          merge: false
-          status: failure
-    - put: cf-deployment-env
-      params:
-        action: unclaim
-        env_file: cf-deployment-env/metadata
+        DELETE: TRUE
+        AUTHOR: dependabot
+        GH_TOKEN: ((github.token))
+        PR_REF: ((.:pr-metadata.pr))
+  on_failure:
+    put: pull-request
+    params:
+      merge: false
+      status: failure
 
 #@ for/end v in tas_versions:
 - name: #@ 'test-against-tas-' + v["pool_without_location"]
