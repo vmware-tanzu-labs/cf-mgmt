@@ -25,6 +25,7 @@ resource_types:
   type: docker-image
   source:
     repository: cryogenics/pr-queue-resource
+    tag: add-status-param
 
 - name: pcf-pool
   type: docker-image
@@ -123,9 +124,16 @@ jobs:
       file: source/ci/tasks/runIntegrationTests.yml
       params:
         SYSTEM_DOMAIN: ((.:pooled-env.name)).cf-app.com
-    - put: pull-request
-      params:
-        merge: false
+      on_success:
+        put: pull-request
+        params:
+          merge: false
+          status: success
+      on_failure:
+        put: pull-request
+        params:
+          merge: false
+          status: failure
     - put: cf-deployment-env
       params:
         action: unclaim
