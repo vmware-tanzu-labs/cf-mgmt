@@ -10,8 +10,7 @@ require (
 	github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f // indirect
 	github.com/cloudfoundry-community/go-cfclient v0.0.0-20210823134051-721f0e559306
 	github.com/cloudfoundry-community/go-uaa v0.3.2-0.20191219133444-673d775e96b5
-	github.com/go-asn1-ber/asn1-ber v1.5.3 // indirect
-	github.com/go-ldap/ldap/v3 v3.4.1
+	github.com/go-ldap/ldap/v3 v3.4.3
 	github.com/gopherjs/gopherjs v0.0.0-20210803090616-8f023c250c89 // indirect
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kr/pretty v0.3.0 // indirect
@@ -26,7 +25,6 @@ require (
 	github.com/tedsuo/rata v1.0.1-0.20170830210128-07d200713958 // indirect
 	github.com/vito/go-sse v1.0.0 // indirect
 	github.com/xchapter7x/lo v0.0.0-20160804235750-e33b245fc7a8
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
