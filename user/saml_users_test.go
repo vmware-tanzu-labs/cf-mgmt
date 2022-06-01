@@ -53,8 +53,8 @@ var _ = Describe("SamlUsers", func() {
 			uaaUsers.Add(uaa.User{Username: "test@test.com", Origin: "saml_origin", GUID: "test-id"})
 			uaaUsers.Add(uaa.User{Username: "test@test2.com", Origin: "saml_origin", GUID: "test2-id"})
 			roleUsers, _ = NewRoleUsers(
-				[]cfclient.User{
-					cfclient.User{Username: "test@test.com", Guid: "test-id"},
+				[]cfclient.V3User{
+					{Username: "test@test.com", GUID: "test-id"},
 				},
 				uaaUsers,
 			)
@@ -66,17 +66,21 @@ var _ = Describe("SamlUsers", func() {
 				OrgGUID:   "org_guid",
 				OrgName:   "test-org",
 				SpaceName: "test-space",
+				OrgUsers:  InitRoleUsers(),
 				AddUser:   userManager.AssociateSpaceAuditor,
 			}
 			err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(client.AssociateOrgUserCallCount()).Should(Equal(1))
-			orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+			Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
+			orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 			Expect(orgGUID).Should(Equal("org_guid"))
 			Expect(userGUID).Should(Equal("test2-id"))
-			spaceGUID, userGUID := client.AssociateSpaceAuditorArgsForCall(0)
+			Expect(role).To(Equal(ORG_USER))
+
+			spaceGUID, userGUID, roleType := client.CreateV3SpaceRoleArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("space_guid"))
 			Expect(userGUID).Should(Equal("test2-id"))
+			Expect(roleType).Should(Equal(SPACE_AUDITOR))
 		})
 
 		It("Should not add existing saml user to role", func() {
@@ -85,13 +89,14 @@ var _ = Describe("SamlUsers", func() {
 				SpaceGUID: "space_guid",
 				OrgGUID:   "org_guid",
 				AddUser:   userManager.AssociateSpaceAuditor,
+				OrgUsers:  InitRoleUsers(),
 			}
 			err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(roleUsers.HasUser("test@test.com")).Should(BeFalse())
 			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(0))
-			Expect(client.AssociateOrgUserCallCount()).Should(Equal(0))
-			Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(0))
+			Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(0))
+			Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
 		})
 		It("Should create external user when user doesn't exist in uaa", func() {
 			updateUsersInput := UsersInput{
@@ -99,6 +104,7 @@ var _ = Describe("SamlUsers", func() {
 				SpaceGUID: "space_guid",
 				OrgGUID:   "org_guid",
 				AddUser:   userManager.AssociateSpaceAuditor,
+				OrgUsers:  InitRoleUsers(),
 			}
 			err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -116,6 +122,7 @@ var _ = Describe("SamlUsers", func() {
 				SpaceGUID: "space_guid",
 				OrgGUID:   "org_guid",
 				AddUser:   userManager.AssociateSpaceAuditor,
+				OrgUsers:  InitRoleUsers(),
 			}
 			uaaFake.CreateExternalUserReturns("guid", errors.New("error"))
 			err := userManager.SyncSamlUsers(roleUsers, &uaa.Users{}, updateUsersInput)
@@ -126,7 +133,7 @@ var _ = Describe("SamlUsers", func() {
 		It("Should return error", func() {
 			roleUsers := InitRoleUsers()
 			roleUsers.AddUsers([]RoleUser{
-				RoleUser{UserName: "test"},
+				{UserName: "test"},
 			})
 			uaaUsers := &uaa.Users{}
 			uaaUsers.Add(uaa.User{Username: "test@test.com"})
@@ -135,12 +142,13 @@ var _ = Describe("SamlUsers", func() {
 				SpaceGUID: "space_guid",
 				OrgGUID:   "org_guid",
 				AddUser:   userManager.AssociateSpaceAuditor,
+				OrgUsers:  InitRoleUsers(),
 			}
-			client.AssociateOrgUserReturns(cfclient.Org{}, errors.New("error"))
+			client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
 			err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
 			Expect(err).Should(HaveOccurred())
-			Expect(client.AssociateOrgUserCallCount()).Should(Equal(1))
-			Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(0))
+			Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
+			Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
 		})
 	})
 })

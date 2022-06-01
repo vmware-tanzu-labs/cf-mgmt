@@ -1,5 +1,6 @@
 # go-cfclient
-[![Travis-CI](https://travis-ci.org/cloudfoundry-community/go-cfclient.svg)](https://travis-ci.org/cloudfoundry-community/go-cfclient)
+
+[![build workflow](https://github.com/cloudfoundry-community/go-cfclient/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/cloudfoundry-community/go-cfclient/actions/workflows/build.yml)
 [![GoDoc](https://godoc.org/github.com/cloudfoundry-community/go-cfclient?status.svg)](http://godoc.org/github.com/cloudfoundry-community/go-cfclient)
 [![Report card](https://goreportcard.com/badge/github.com/cloudfoundry-community/go-cfclient)](https://goreportcard.com/report/github.com/cloudfoundry-community/go-cfclient)
 
@@ -92,6 +93,10 @@ func processSpacesOnePageAtATime(client *cfclient.Client) error {
 
 ## Development
 
+```shell
+make all
+```
+
 ### Errors
 
 If the Cloud Foundry error definitions change at <https://github.com/cloudfoundry/cloud_controller_ng/blob/master/vendor/errors/v2.yml>
@@ -99,10 +104,10 @@ then the error predicate functions in this package need to be regenerated.
 
 To do this, simply use Go to regenerate the code:
 
-```
-go generate
+```shell
+make generate
 ```
 
 ## Contributing
 
-Pull requests welcome.
+Pull requests welcome. Please ensure you run all the unit tests, go fmt the code, and golangci-lint via `make all`

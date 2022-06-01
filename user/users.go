@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -13,6 +14,15 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
 )
+
+const ORG_USER string = "organization_user"
+const ORG_AUDITOR string = "organization_auditor"
+const ORG_MANAGER string = "organization_manager"
+const ORG_BILLING_MANAGER string = "organization_billing_manager"
+const SPACE_AUDITOR string = "space_auditor"
+const SPACE_DEVELOPER string = "space_developer"
+const SPACE_MANAGER string = "space_manager"
+const SPACE_SUPPORTER string = "space_supporter"
 
 // NewManager -
 func NewManager(
@@ -49,7 +59,11 @@ func (m *DefaultManager) RemoveSpaceAuditor(input UsersInput, userName, userGUID
 		return nil
 	}
 	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Auditor")
-	return m.Client.RemoveSpaceAuditor(input.SpaceGUID, userGUID)
+	role, err := m.GetSpaceRoleGUID(input.SpaceGUID, userGUID, SPACE_AUDITOR)
+	if err != nil {
+		return err
+	}
+	return m.Client.DeleteV3Role(role)
 }
 func (m *DefaultManager) RemoveSpaceDeveloper(input UsersInput, userName, userGUID string) error {
 	if m.Peek {
@@ -57,7 +71,11 @@ func (m *DefaultManager) RemoveSpaceDeveloper(input UsersInput, userName, userGU
 		return nil
 	}
 	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Developer")
-	return m.Client.RemoveSpaceDeveloper(input.SpaceGUID, userGUID)
+	role, err := m.GetSpaceRoleGUID(input.SpaceGUID, userGUID, SPACE_DEVELOPER)
+	if err != nil {
+		return err
+	}
+	return m.Client.DeleteV3Role(role)
 }
 func (m *DefaultManager) RemoveSpaceManager(input UsersInput, userName, userGUID string) error {
 	if m.Peek {
@@ -65,11 +83,36 @@ func (m *DefaultManager) RemoveSpaceManager(input UsersInput, userName, userGUID
 		return nil
 	}
 	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "Manager")
-	return m.Client.RemoveSpaceManager(input.SpaceGUID, userGUID)
+	role, err := m.GetSpaceRoleGUID(input.SpaceGUID, userGUID, SPACE_MANAGER)
+	if err != nil {
+		return err
+	}
+	return m.Client.DeleteV3Role(role)
+}
+
+func (m *DefaultManager) RemoveSpaceSupporter(input UsersInput, userName, userGUID string) error {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "supporter")
+		return nil
+	}
+	supports, err := m.Client.SupportsSpaceSupporterRole()
+	if err != nil {
+		return err
+	}
+	if !supports {
+		lo.G.Infof("this instance of cloud foundry does not support space_supporter role")
+		return nil
+	}
+	lo.G.Infof("removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "supporter")
+	role, err := m.GetSpaceRoleGUID(input.SpaceGUID, userGUID, SPACE_SUPPORTER)
+	if err != nil {
+		return err
+	}
+	return m.Client.DeleteV3Role(role)
 }
 
 func (m *DefaultManager) AssociateSpaceAuditor(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -79,11 +122,11 @@ func (m *DefaultManager) AssociateSpaceAuditor(input UsersInput, userName, userG
 	}
 
 	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "auditor", input.OrgName, input.SpaceName)
-	_, err = m.Client.AssociateSpaceAuditor(input.SpaceGUID, userGUID)
+	_, err = m.Client.CreateV3SpaceRole(input.SpaceGUID, userGUID, SPACE_AUDITOR)
 	return err
 }
 func (m *DefaultManager) AssociateSpaceDeveloper(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -92,11 +135,11 @@ func (m *DefaultManager) AssociateSpaceDeveloper(input UsersInput, userName, use
 		return nil
 	}
 	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "developer", input.OrgName, input.SpaceName)
-	_, err = m.Client.AssociateSpaceDeveloper(input.SpaceGUID, userGUID)
+	_, err = m.Client.CreateV3SpaceRole(input.SpaceGUID, userGUID, SPACE_DEVELOPER)
 	return err
 }
 func (m *DefaultManager) AssociateSpaceManager(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -106,16 +149,46 @@ func (m *DefaultManager) AssociateSpaceManager(input UsersInput, userName, userG
 	}
 
 	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "manager", input.OrgName, input.SpaceName)
-	_, err = m.Client.AssociateSpaceManager(input.SpaceGUID, userGUID)
+	_, err = m.Client.CreateV3SpaceRole(input.SpaceGUID, userGUID, SPACE_MANAGER)
 	return err
 }
 
-func (m *DefaultManager) AddUserToOrg(orgGUID string, userName, userGUID string) error {
+func (m *DefaultManager) AssociateSpaceSupporter(input UsersInput, userName, userGUID string) error {
+	supports, err := m.Client.SupportsSpaceSupporterRole()
+	if err != nil {
+		return err
+	}
+	if !supports {
+		lo.G.Infof("this instance of cloud foundry does not support space_supporter role")
+		return nil
+	}
+	err = m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
+	if err != nil {
+		return err
+	}
+	if m.Peek {
+		lo.G.Infof("[dry-run]: adding %s to role %s for org/space %s/%s", userName, "supporter", input.OrgName, input.SpaceName)
+		return nil
+	}
+
+	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "supporter", input.OrgName, input.SpaceName)
+	_, err = m.Client.CreateV3SpaceRole(input.SpaceGUID, userGUID, SPACE_SUPPORTER)
+	return err
+}
+
+func (m *DefaultManager) AddUserToOrg(orgUsers *RoleUsers, orgGUID string, userName, userGUID string) error {
 	if m.Peek {
 		return nil
 	}
-	_, err := m.Client.AssociateOrgUser(orgGUID, userGUID)
-	return err
+	if !orgUsers.HasUserForGUID(userName, userGUID) {
+		_, err := m.Client.CreateV3OrganizationRole(orgGUID, userGUID, ORG_USER)
+		if err != nil {
+			return err
+		}
+		orgUsers.addUser(RoleUser{UserName: userName, GUID: userGUID})
+		return err
+	}
+	return nil
 }
 
 func (m *DefaultManager) RemoveOrgAuditor(input UsersInput, userName, userGUID string) error {
@@ -124,7 +197,11 @@ func (m *DefaultManager) RemoveOrgAuditor(input UsersInput, userName, userGUID s
 		return nil
 	}
 	lo.G.Infof("removing user %s from org %s with role %s", userName, input.OrgName, "auditor")
-	return m.Client.RemoveOrgAuditor(input.OrgGUID, userGUID)
+	role, err := m.GetOrgRoleGUID(input.OrgGUID, userGUID, ORG_AUDITOR)
+	if err != nil {
+		return err
+	}
+	return m.Client.DeleteV3Role(role)
 }
 func (m *DefaultManager) RemoveOrgBillingManager(input UsersInput, userName, userGUID string) error {
 	if m.Peek {
@@ -132,7 +209,11 @@ func (m *DefaultManager) RemoveOrgBillingManager(input UsersInput, userName, use
 		return nil
 	}
 	lo.G.Infof("removing user %s from org %s with role %s", userName, input.OrgName, "billing manager")
-	return m.Client.RemoveOrgBillingManager(input.OrgGUID, userGUID)
+	role, err := m.GetOrgRoleGUID(input.OrgGUID, userGUID, ORG_BILLING_MANAGER)
+	if err != nil {
+		return err
+	}
+	return m.Client.DeleteV3Role(role)
 }
 
 func (m *DefaultManager) RemoveOrgManager(input UsersInput, userName, userGUID string) error {
@@ -141,11 +222,15 @@ func (m *DefaultManager) RemoveOrgManager(input UsersInput, userName, userGUID s
 		return nil
 	}
 	lo.G.Infof("removing user %s from org %s with role %s", userName, input.OrgName, "manager")
-	return m.Client.RemoveOrgManager(input.OrgGUID, userGUID)
+	role, err := m.GetOrgRoleGUID(input.OrgGUID, userGUID, ORG_MANAGER)
+	if err != nil {
+		return err
+	}
+	return m.Client.DeleteV3Role(role)
 }
 
 func (m *DefaultManager) AssociateOrgAuditor(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -155,11 +240,11 @@ func (m *DefaultManager) AssociateOrgAuditor(input UsersInput, userName, userGUI
 	}
 
 	lo.G.Infof("Add User %s to role %s for org %s", userName, "auditor", input.OrgName)
-	_, err = m.Client.AssociateOrgAuditor(input.OrgGUID, userGUID)
+	_, err = m.Client.CreateV3OrganizationRole(input.OrgGUID, userGUID, ORG_AUDITOR)
 	return err
 }
 func (m *DefaultManager) AssociateOrgBillingManager(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -169,12 +254,12 @@ func (m *DefaultManager) AssociateOrgBillingManager(input UsersInput, userName, 
 	}
 
 	lo.G.Infof("Add User %s to role %s for org %s", userName, "billing manager", input.OrgName)
-	_, err = m.Client.AssociateOrgBillingManager(input.OrgGUID, userGUID)
+	_, err = m.Client.CreateV3OrganizationRole(input.OrgGUID, userGUID, ORG_BILLING_MANAGER)
 	return err
 }
 
 func (m *DefaultManager) AssociateOrgManager(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -184,7 +269,7 @@ func (m *DefaultManager) AssociateOrgManager(input UsersInput, userName, userGUI
 	}
 
 	lo.G.Infof("Add User %s to role %s for org %s", userName, "manager", input.OrgName)
-	_, err = m.Client.AssociateOrgManager(input.OrgGUID, userGUID)
+	_, err = m.Client.CreateV3OrganizationRole(input.OrgGUID, userGUID, ORG_MANAGER)
 	return err
 }
 
@@ -219,11 +304,17 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 	lo.G.Debugf("Processing Org(%s)/Space(%s)", input.Org, input.Space)
 	lo.G.Debug("")
 	lo.G.Debug("")
+
+	orgUsers, err := m.ListOrgUsers(space.OrganizationGuid, uaaUsers)
+	if err != nil {
+		return err
+	}
 	if err = m.SyncUsers(uaaUsers, UsersInput{
 		SpaceName:      space.Name,
 		SpaceGUID:      space.Guid,
 		OrgName:        input.Org,
 		OrgGUID:        space.OrganizationGuid,
+		OrgUsers:       orgUsers,
 		LdapGroupNames: input.GetDeveloperGroups(),
 		LdapUsers:      input.Developer.LDAPUsers,
 		Users:          input.Developer.Users,
@@ -242,6 +333,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 			SpaceGUID:      space.Guid,
 			OrgGUID:        space.OrganizationGuid,
 			OrgName:        input.Org,
+			OrgUsers:       orgUsers,
 			LdapGroupNames: input.GetManagerGroups(),
 			LdapUsers:      input.Manager.LDAPUsers,
 			Users:          input.Manager.Users,
@@ -259,6 +351,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 			SpaceGUID:      space.Guid,
 			OrgGUID:        space.OrganizationGuid,
 			OrgName:        input.Org,
+			OrgUsers:       orgUsers,
 			LdapGroupNames: input.GetAuditorGroups(),
 			LdapUsers:      input.Auditor.LDAPUsers,
 			Users:          input.Auditor.Users,
@@ -269,6 +362,24 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 			AddUser:        m.AssociateSpaceAuditor,
 		}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "auditor"))
+	}
+
+	if err = m.SyncUsers(uaaUsers, UsersInput{
+		SpaceName:      space.Name,
+		SpaceGUID:      space.Guid,
+		OrgName:        input.Org,
+		OrgGUID:        space.OrganizationGuid,
+		OrgUsers:       orgUsers,
+		LdapGroupNames: input.GetSupporterGroups(),
+		LdapUsers:      input.Supporter.LDAPUsers,
+		Users:          input.Supporter.Users,
+		SamlUsers:      input.Supporter.SamlUsers,
+		RemoveUsers:    input.RemoveUsers,
+		ListUsers:      m.listSpaceSupporters,
+		RemoveUser:     m.RemoveSpaceSupporter,
+		AddUser:        m.AssociateSpaceSupporter,
+	}); err != nil {
+		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "developer"))
 	}
 
 	lo.G.Debug("")
@@ -307,10 +418,15 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.U
 		return err
 	}
 
+	orgUsers, err := m.ListOrgUsers(org.Guid, uaaUsers)
+	if err != nil {
+		return err
+	}
 	err = m.SyncUsers(
 		uaaUsers, UsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
+			OrgUsers:       orgUsers,
 			LdapGroupNames: input.GetBillingManagerGroups(),
 			LdapUsers:      input.BillingManager.LDAPUsers,
 			Users:          input.BillingManager.Users,
@@ -328,6 +444,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.U
 		uaaUsers, UsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
+			OrgUsers:       orgUsers,
 			LdapGroupNames: input.GetAuditorGroups(),
 			LdapUsers:      input.Auditor.LDAPUsers,
 			Users:          input.Auditor.Users,
@@ -345,6 +462,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.U
 		uaaUsers, UsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
+			OrgUsers:       orgUsers,
 			LdapGroupNames: input.GetManagerGroups(),
 			LdapUsers:      input.Manager.LDAPUsers,
 			Users:          input.Manager.Users,
@@ -470,4 +588,40 @@ func (m *DefaultManager) DeinitializeLdap() error {
 		m.LdapMgr.Close()
 	}
 	return nil
+}
+
+func (m *DefaultManager) GetOrgRoleGUID(orgGUID, userGUID, role string) (string, error) {
+	roles, err := m.Client.ListV3RolesByQuery(url.Values{
+		"organization_guids": []string{orgGUID},
+		"user_guids":         []string{userGUID},
+		"types":              []string{role},
+	})
+	if err != nil {
+		return "", err
+	}
+	if len(roles) == 0 {
+		return "", fmt.Errorf("no role found for orgGUID: %s, userGUID: %s and types: %s", orgGUID, userGUID, role)
+	}
+	if len(roles) > 1 {
+		return "", fmt.Errorf("more than 1 role found for orgGUID: %s, userGUID: %s and types: %s", orgGUID, userGUID, role)
+	}
+	return roles[0].GUID, nil
+}
+
+func (m *DefaultManager) GetSpaceRoleGUID(spaceGUID, userGUID, role string) (string, error) {
+	roles, err := m.Client.ListV3RolesByQuery(url.Values{
+		"space_guids": []string{spaceGUID},
+		"user_guids":  []string{userGUID},
+		"types":       []string{role},
+	})
+	if err != nil {
+		return "", err
+	}
+	if len(roles) == 0 {
+		return "", fmt.Errorf("no role found for spaceGUID: %s, userGUID: %s and types: %s", spaceGUID, userGUID, role)
+	}
+	if len(roles) > 1 {
+		return "", fmt.Errorf("more than 1 role found for spaceGUID: %s, userGUID: %s and types: %s", spaceGUID, userGUID, role)
+	}
+	return roles[0].GUID, nil
 }

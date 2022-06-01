@@ -21,9 +21,11 @@ type SpaceConfig struct {
 	Developer                   UserMgmt  `yaml:"space-developer"`
 	Manager                     UserMgmt  `yaml:"space-manager"`
 	Auditor                     UserMgmt  `yaml:"space-auditor"`
+	Supporter                   UserMgmt  `yaml:"space-supporter"`
 	DeveloperGroup              string    `yaml:"space-developer-group,omitempty"`
 	ManagerGroup                string    `yaml:"space-manager-group,omitempty"`
 	AuditorGroup                string    `yaml:"space-auditor-group,omitempty"`
+	SupporterGroup              string    `yaml:"space-supporter-group,omitempty"`
 	AllowSSH                    bool      `yaml:"allow-ssh"`
 	AllowSSHUntil               string    `yaml:"allow-ssh-until,omitempty"`
 	EnableSpaceQuota            bool      `yaml:"enable-space-quota"`
@@ -121,4 +123,8 @@ func (i *SpaceConfig) GetManagerGroups() []string {
 
 func (i *SpaceConfig) GetAuditorGroups() []string {
 	return i.Auditor.groups(i.AuditorGroup)
+}
+
+func (i *SpaceConfig) GetSupporterGroups() []string {
+	return i.Supporter.groups(i.SupporterGroup)
 }

@@ -52,7 +52,7 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 	if err != nil {
 		return err
 	}
-	orgUsers, err := m.Client.ListOrgUsers(org.Guid)
+	orgUsers, err := m.Client.ListV3OrganizationRolesByGUIDAndType(org.Guid, ORG_USER)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error listing org users for org %s", input.Org))
 	}
@@ -69,11 +69,11 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 		return err
 	}
 	for _, orgUser := range orgUsers {
-		uaaUser := uaaUsers.GetByID(orgUser.Guid)
+		uaaUser := uaaUsers.GetByID(orgUser.GUID)
 		var guid string
 		if uaaUser == nil {
 			lo.G.Infof("Unable to find user (%s) GUID from uaa, using org user guid instead", orgUser.Username)
-			guid = orgUser.Guid
+			guid = orgUser.GUID
 		} else {
 			guid = uaaUser.GUID
 		}
@@ -84,7 +84,11 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 					continue
 				}
 				lo.G.Infof("Removing User %s from org %s", orgUser.Username, input.Org)
-				err := m.Client.RemoveOrgUser(org.Guid, guid)
+				role, err := m.GetOrgRoleGUID(org.Guid, guid, ORG_USER)
+				if err != nil {
+					return err
+				}
+				err = m.Client.DeleteV3Role(role)
 				if err != nil {
 					return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
 				}

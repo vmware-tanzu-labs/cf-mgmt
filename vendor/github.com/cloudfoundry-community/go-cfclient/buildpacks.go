@@ -197,7 +197,7 @@ func (b *Buildpack) Upload(file io.Reader, fileName string) error {
 		req.ContentLength = fileStats.Size()
 		contentType := fmt.Sprintf("multipart/form-data; boundary=%s", writer.Boundary())
 		req.Header.Set("Content-Type", contentType)
-		resp, err := b.c.Do(req) //client.Do() handles the HTTP status code checking for us
+		resp, err := b.c.Do(req) // client.Do() handles the HTTP status code checking for us
 		if err != nil {
 			capturedErr = err
 			return

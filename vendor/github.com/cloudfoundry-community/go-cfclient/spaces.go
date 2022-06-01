@@ -299,6 +299,29 @@ func (c *Client) ListSpaceDevelopers(spaceGUID string) ([]User, error) {
 	return c.ListSpaceDevelopersByQuery(spaceGUID, nil)
 }
 
+func (c *Client) ListSpaceServiceInstances(spaceGUID string) ([]ServiceInstance, error) {
+	return c.ListSpaceServiceInstancesByQuery(spaceGUID, nil)
+}
+
+func (c *Client) ListSpaceServiceInstancesByQuery(spaceGUID string, query url.Values) ([]ServiceInstance, error) {
+	var instances []ServiceInstance
+	requestURL := fmt.Sprintf("/v2/spaces/%s/service_instances?%s", spaceGUID, query.Encode())
+	for {
+		res, err := c.getServiceInstancesResponse(requestURL)
+		if err != nil {
+			return instances, err
+		}
+		for _, instance := range res.Resources {
+			instances = append(instances, c.mergeServiceInstance(instance))
+		}
+		requestURL = res.NextUrl
+		if requestURL == "" || query.Get("page") != "" {
+			break
+		}
+	}
+	return instances, nil
+}
+
 func (c *Client) AssociateSpaceDeveloper(spaceGUID, userGUID string) (Space, error) {
 	space := Space{Guid: spaceGUID, c: c}
 	return space.AssociateDeveloper(userGUID)
@@ -664,17 +687,19 @@ func (c *Client) fetchSpaces(path string, query url.Values) ([]Space, error) {
 	return spaces, nil
 }
 
-func (c *Client) GetSpaceByName(spaceName string, orgGuid string) (space Space, err error) {
+func (c *Client) GetSpaceByName(spaceName string, orgGuid string) (Space, error) {
 	query := url.Values{}
 	query.Add("q", fmt.Sprintf("organization_guid:%s", orgGuid))
 	query.Add("q", fmt.Sprintf("name:%s", spaceName))
 	spaces, err := c.ListSpacesByQuery(query)
 	if err != nil {
-		return
+		return Space{}, err
 	}
 
 	if len(spaces) == 0 {
-		return space, fmt.Errorf("No space found with name: `%s` in org with GUID: `%s`", spaceName, orgGuid)
+		cfErr := NewSpaceNotFoundError()
+		cfErr.Description = fmt.Sprintf(cfErr.Description, spaceName)
+		return Space{}, cfErr
 	}
 
 	return spaces[0], nil

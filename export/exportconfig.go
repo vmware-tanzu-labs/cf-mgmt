@@ -514,6 +514,7 @@ func (im *Manager) addSpaceUsers(spaceConfig *config.SpaceConfig, uaaUsers *uaa.
 	im.addSpaceDevelopers(spaceConfig, uaaUsers, spaceGUID)
 	im.addSpaceManagers(spaceConfig, uaaUsers, spaceGUID)
 	im.addSpaceAuditors(spaceConfig, uaaUsers, spaceGUID)
+	im.addSpaceSupporters(spaceConfig, uaaUsers, spaceGUID)
 }
 
 func (im *Manager) addOrgManagers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
@@ -550,6 +551,11 @@ func (im *Manager) addSpaceAuditors(spaceConfig *config.SpaceConfig, uaaUsers *u
 	spaceAuditors, _ := im.UserManager.ListSpaceAuditors(spaceGUID, uaaUsers)
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceAuditors, &spaceConfig.Auditor.Users, &spaceConfig.Auditor.LDAPUsers, &spaceConfig.Auditor.SamlUsers)
+}
+func (im *Manager) addSpaceSupporters(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
+	spaceSupporters, _ := im.UserManager.ListSpaceSupporters(spaceGUID, uaaUsers)
+	lo.G.Debugf("Found %d Space Supporters for Org: %s and  Space:  %s", len(spaceSupporters.Users()), spaceConfig.Org, spaceConfig.Space)
+	doAddUsers(spaceSupporters, &spaceConfig.Supporter.Users, &spaceConfig.Supporter.LDAPUsers, &spaceConfig.Supporter.SamlUsers)
 }
 
 func doAddUsers(roleUser *user.RoleUsers, uaaUsers *[]string, ldapUsers *[]string, samlUsers *[]string) {

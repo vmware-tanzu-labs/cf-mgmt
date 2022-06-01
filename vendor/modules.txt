@@ -18,7 +18,7 @@ github.com/Masterminds/semver
 # github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f
 ## explicit
 github.com/bmizerany/pat
-# github.com/cloudfoundry-community/go-cfclient v0.0.0-20210823134051-721f0e559306
+# github.com/cloudfoundry-community/go-cfclient v0.0.0-20220601192014-596c068bcda2
 ## explicit
 github.com/cloudfoundry-community/go-cfclient
 # github.com/cloudfoundry-community/go-uaa v0.3.2-0.20191219133444-673d775e96b5
@@ -110,24 +110,22 @@ github.com/xchapter7x/lo
 # golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 ## explicit
 golang.org/x/crypto/md4
-# golang.org/x/net v0.0.0-20210929193557-e81a3d93ecf6
+# golang.org/x/net v0.0.0-20220531201128-c960675eff93
 ## explicit
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
-# golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
+# golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e
-## explicit
+# golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.7
-## explicit
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex
@@ -154,7 +152,7 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/protobuf v1.27.1
+# google.golang.org/protobuf v1.28.0
 ## explicit
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire

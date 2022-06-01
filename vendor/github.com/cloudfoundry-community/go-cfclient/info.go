@@ -77,3 +77,28 @@ func (c *Client) SupportsMetadataAPI() (bool, error) {
 
 	return false, nil
 }
+
+func (c *Client) SupportsSpaceSupporterRole() (bool, error) {
+	r := c.NewRequest("GET", "/")
+	resp, err := c.DoRequest(r)
+	if err != nil {
+		return false, errors.Wrap(err, "Error requesting info")
+	}
+	defer resp.Body.Close()
+	var v3 V3Version
+	err = json.NewDecoder(resp.Body).Decode(&v3)
+	if err != nil {
+		return false, errors.Wrap(err, "Error unmarshalling info")
+	}
+
+	minimumSupportedVersion := semver.MustParse("3.102.0")
+	actualVersion, err := semver.NewVersion(v3.Links.CCV3.Meta.Version)
+	if err != nil {
+		return false, errors.Wrap(err, "Error parsing semver")
+	}
+	if !actualVersion.LessThan(minimumSupportedVersion) {
+		return true, nil
+	}
+
+	return false, nil
+}

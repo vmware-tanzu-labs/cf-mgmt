@@ -116,13 +116,13 @@ func (c *Client) getSpaceQuotasResponse(requestUrl string) (SpaceQuotasResponse,
 }
 
 func (c *Client) AssignSpaceQuota(quotaGUID, spaceGUID string) error {
-	//Perform the PUT and check for errors
+	// Perform the PUT and check for errors
 	resp, err := c.DoRequest(c.NewRequest("PUT", fmt.Sprintf("/v2/space_quota_definitions/%s/spaces/%s", quotaGUID, spaceGUID)))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusCreated { //201
+	if resp.StatusCode != http.StatusCreated { // 201
 		return fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
 	return nil

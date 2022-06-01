@@ -52,10 +52,10 @@ type UserProvidedServiceInstanceRequest struct {
 func (c *Client) ListUserProvidedServiceInstancesByQuery(query url.Values) ([]UserProvidedServiceInstance, error) {
 	var instances []UserProvidedServiceInstance
 
-	requestUrl := "/v2/user_provided_service_instances?" + query.Encode()
+	requestURL := "/v2/user_provided_service_instances?" + query.Encode()
 	for {
 		var sir UserProvidedServiceInstancesResponse
-		r := c.NewRequest("GET", requestUrl)
+		r := c.NewRequest("GET", requestURL)
 		resp, err := c.DoRequest(r)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error requesting user provided service instances")
@@ -78,8 +78,8 @@ func (c *Client) ListUserProvidedServiceInstancesByQuery(query url.Values) ([]Us
 			instances = append(instances, instance.Entity)
 		}
 
-		requestUrl = sir.NextUrl
-		if requestUrl == "" {
+		requestURL = sir.NextUrl
+		if requestURL == "" {
 			break
 		}
 	}

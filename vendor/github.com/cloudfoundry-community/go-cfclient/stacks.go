@@ -32,9 +32,9 @@ type Stack struct {
 
 func (c *Client) ListStacksByQuery(query url.Values) ([]Stack, error) {
 	var stacks []Stack
-	requestUrl := "/v2/stacks?" + query.Encode()
+	requestURL := "/v2/stacks?" + query.Encode()
 	for {
-		stacksResp, err := c.getStacksResponse(requestUrl)
+		stacksResp, err := c.getStacksResponse(requestURL)
 		if err != nil {
 			return []Stack{}, err
 		}
@@ -45,8 +45,8 @@ func (c *Client) ListStacksByQuery(query url.Values) ([]Stack, error) {
 			stack.Entity.c = c
 			stacks = append(stacks, stack.Entity)
 		}
-		requestUrl = stacksResp.NextUrl
-		if requestUrl == "" {
+		requestURL = stacksResp.NextUrl
+		if requestURL == "" {
 			break
 		}
 	}
@@ -59,8 +59,8 @@ func (c *Client) ListStacks() ([]Stack, error) {
 
 func (c *Client) GetStackByGuid(stackGUID string) (Stack, error) {
 	var stacksRes StacksResource
-	requestUrl := fmt.Sprintf("/v2/stacks/%s", stackGUID)
-	r := c.NewRequest("GET", requestUrl)
+	requestURL := fmt.Sprintf("/v2/stacks/%s", stackGUID)
+	r := c.NewRequest("GET", requestURL)
 	resp, err := c.DoRequest(r)
 	if err != nil {
 		return Stack{}, errors.Wrap(err, "Error requesting stack info")
@@ -83,9 +83,9 @@ func (c *Client) GetStackByGuid(stackGUID string) (Stack, error) {
 	return stacksRes.Entity, nil
 }
 
-func (c *Client) getStacksResponse(requestUrl string) (StacksResponse, error) {
+func (c *Client) getStacksResponse(requestURL string) (StacksResponse, error) {
 	var stacksResp StacksResponse
-	r := c.NewRequest("GET", requestUrl)
+	r := c.NewRequest("GET", requestURL)
 	resp, err := c.DoRequest(r)
 	if err != nil {
 		return StacksResponse{}, errors.Wrap(err, "Error requesting stacks")

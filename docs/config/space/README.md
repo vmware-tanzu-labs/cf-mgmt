@@ -72,6 +72,16 @@ auditor:
       --auditor-saml-user-to-remove=                SAML user to remove, specify multiple times
       --auditor-ldap-group-to-remove=               Group to remove, specify multiple times
 
+supporter:
+      --supporter-ldap-user=                          Ldap User to add, specify multiple times
+      --supporter-user=                               User to add, specify multiple times
+      --supporter-saml-user=                          SAML user to add, specify multiple times
+      --supporter-ldap-group=                         Group to add, specify multiple times
+      --supporter-ldap-user-to-remove=                Ldap User to remove, specify multiple times
+      --supporter-user-to-remove=                     User to remove, specify multiple times
+      --supporter-saml-user-to-remove=                SAML user to remove, specify multiple times
+      --supporter-ldap-group-to-remove=               Group to remove, specify multiple times
+
 metadata:
       --label=                                      Label to add, can specify multiple
       --label-value=                                Label value to add, can specify multiple but need to match number of label args

@@ -40,25 +40,28 @@ type ServiceInstanceResource struct {
 }
 
 type ServiceInstance struct {
-	Name               string                 `json:"name"`
-	CreatedAt          string                 `json:"created_at"`
-	UpdatedAt          string                 `json:"updated_at"`
-	Credentials        map[string]interface{} `json:"credentials"`
-	ServicePlanGuid    string                 `json:"service_plan_guid"`
-	SpaceGuid          string                 `json:"space_guid"`
-	DashboardUrl       string                 `json:"dashboard_url"`
-	Type               string                 `json:"type"`
-	LastOperation      LastOperation          `json:"last_operation"`
-	Tags               []string               `json:"tags"`
-	ServiceGuid        string                 `json:"service_guid"`
-	SpaceUrl           string                 `json:"space_url"`
-	ServicePlanUrl     string                 `json:"service_plan_url"`
-	ServiceBindingsUrl string                 `json:"service_bindings_url"`
-	ServiceKeysUrl     string                 `json:"service_keys_url"`
-	RoutesUrl          string                 `json:"routes_url"`
-	ServiceUrl         string                 `json:"service_url"`
-	Guid               string                 `json:"guid"`
-	c                  *Client
+	Name                         string                 `json:"name"`
+	CreatedAt                    string                 `json:"created_at"`
+	UpdatedAt                    string                 `json:"updated_at"`
+	Credentials                  map[string]interface{} `json:"credentials"`
+	ServicePlanGuid              string                 `json:"service_plan_guid"`
+	SpaceGuid                    string                 `json:"space_guid"`
+	DashboardUrl                 string                 `json:"dashboard_url"`
+	Type                         string                 `json:"type"`
+	LastOperation                LastOperation          `json:"last_operation"`
+	Tags                         []string               `json:"tags"`
+	ServiceGuid                  string                 `json:"service_guid"`
+	SpaceUrl                     string                 `json:"space_url"`
+	ServicePlanUrl               string                 `json:"service_plan_url"`
+	ServiceBindingsUrl           string                 `json:"service_bindings_url"`
+	ServiceKeysUrl               string                 `json:"service_keys_url"`
+	ServiceInstanceParametersUrl string                 `json:"service_instance_parameters_url"`
+	SharedFromUrl                string                 `json:"shared_from_url"`
+	SharedToUrl                  string                 `json:"shared_to_url"`
+	RoutesUrl                    string                 `json:"routes_url"`
+	ServiceUrl                   string                 `json:"service_url"`
+	Guid                         string                 `json:"guid"`
+	c                            *Client
 }
 
 type LastOperation struct {
@@ -74,26 +77,13 @@ func (c *Client) ListServiceInstancesByQuery(query url.Values) ([]ServiceInstanc
 
 	requestUrl := "/v2/service_instances?" + query.Encode()
 	for {
-		var sir ServiceInstancesResponse
-		r := c.NewRequest("GET", requestUrl)
-		resp, err := c.DoRequest(r)
+		sir, err := c.getServiceInstancesResponse(requestUrl)
 		if err != nil {
-			return nil, errors.Wrap(err, "Error requesting service instances")
-		}
-		defer resp.Body.Close()
-		resBody, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, errors.Wrap(err, "Error reading service instances request:")
-		}
-
-		err = json.Unmarshal(resBody, &sir)
-		if err != nil {
-			return nil, errors.Wrap(err, "Error unmarshaling service instances")
+			return instances, err
 		}
 		for _, instance := range sir.Resources {
 			instances = append(instances, c.mergeServiceInstance(instance))
 		}
-
 		requestUrl = sir.NextUrl
 		if requestUrl == "" || query.Get("page") != "" {
 			break
@@ -145,6 +135,26 @@ func (c *Client) GetServiceInstanceByGuid(guid string) (ServiceInstance, error) 
 
 func (c *Client) ServiceInstanceByGuid(guid string) (ServiceInstance, error) {
 	return c.GetServiceInstanceByGuid(guid)
+}
+
+func (c *Client) getServiceInstancesResponse(requestUrl string) (ServiceInstancesResponse, error) {
+	var serviceInstancesResponse ServiceInstancesResponse
+	r := c.NewRequest("GET", requestUrl)
+	resp, err := c.DoRequest(r)
+	if err != nil {
+		return ServiceInstancesResponse{}, errors.Wrap(err, "Error requesting service instances")
+	}
+	defer resp.Body.Close()
+	resBody, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return ServiceInstancesResponse{}, errors.Wrap(err, "Error reading service instance request")
+	}
+	err = json.Unmarshal(resBody, &serviceInstancesResponse)
+	if err != nil {
+		return ServiceInstancesResponse{}, errors.Wrap(err, "Error unmarshalling service instance")
+	}
+	return serviceInstancesResponse, nil
 }
 
 func (c *Client) mergeServiceInstance(instance ServiceInstanceResource) ServiceInstance {

@@ -226,8 +226,7 @@ func extractPathFromURL(requestURL string) (string, error) {
 		return "", err
 	}
 	result := url.Path
-	q := url.Query().Encode()
-	if q != "" {
+	if q := url.Query().Encode(); q != "" {
 		result = result + "?" + q
 	}
 	return result, nil
@@ -255,4 +254,32 @@ func (c *Client) GetV3AppEnvironment(appGUID string) (V3AppEnvironment, error) {
 	}
 
 	return result, nil
+}
+
+type V3EnvVar struct {
+	Var map[string]*string `json:"var"`
+}
+
+type v3EnvVarResponse struct {
+	V3EnvVar
+	Links map[string]Link `json:"links"`
+}
+
+func (c *Client) SetV3AppEnvVariables(appGUID string, envRequest V3EnvVar) (V3EnvVar, error) {
+	var result v3EnvVarResponse
+
+	req := c.NewRequest("PATCH", "/v3/apps/"+appGUID+"/environment_variables")
+	req.obj = envRequest
+
+	resp, err := c.DoRequest(req)
+	if err != nil {
+		return result.V3EnvVar, errors.Wrapf(err, "Error setting app env variables for %s", appGUID)
+	}
+
+	defer resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return result.V3EnvVar, errors.Wrap(err, "Error parsing JSON for app env")
+	}
+
+	return result.V3EnvVar, nil
 }

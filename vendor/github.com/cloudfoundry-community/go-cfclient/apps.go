@@ -194,7 +194,10 @@ func (s *sinceTime) UnmarshalJSON(b []byte) (err error) {
 }
 
 func (s sinceTime) ToTime() time.Time {
-	t, _ := time.Parse(time.UnixDate, s.Format(time.UnixDate))
+	t, err := time.Parse(time.UnixDate, s.Format(time.UnixDate))
+	if err != nil {
+		panic(err)
+	}
 	return t
 }
 
@@ -222,7 +225,10 @@ func (s *statTime) UnmarshalJSON(b []byte) (err error) {
 }
 
 func (s statTime) ToTime() time.Time {
-	t, _ := time.Parse(time.UnixDate, s.Format(time.UnixDate))
+	t, err := time.Parse(time.UnixDate, s.Format(time.UnixDate))
+	if err != nil {
+		panic(err)
+	}
 	return t
 }
 
@@ -300,7 +306,7 @@ func (c *Client) GetAppByGuidNoInlineCall(guid string) (App, error) {
 
 	// If no Space Information no need to check org.
 	if app.SpaceGuid != "" {
-		//Getting Spaces Resource
+		// Getting Spaces Resource
 		space, err := app.Space()
 		if err != nil {
 			return App{}, errors.Wrap(err, "Unable to get the Space for the app "+app.Name)
@@ -308,7 +314,7 @@ func (c *Client) GetAppByGuidNoInlineCall(guid string) (App, error) {
 			app.SpaceData.Entity = space
 		}
 
-		//Getting orgResource
+		// Getting orgResource
 		org, err := app.SpaceData.Entity.Org()
 		if err != nil {
 			return App{}, errors.Wrap(err, "Unable to get the Org for the app "+app.Name)
@@ -365,7 +371,7 @@ func (c *Client) listApps(path string, query url.Values, totalPages int) ([]App,
 			break
 		}
 
-		pages += 1
+		pages++
 		if totalPages > 0 && pages >= totalPages {
 			break
 		}
@@ -448,7 +454,7 @@ func (c *Client) KillAppInstance(guid string, index string) error {
 		return errors.Wrapf(err, "Error stopping app %s at index %s", guid, index)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 204 {
+	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error stopping app %s at index %s", guid, index)
 	}
 	return nil
@@ -478,24 +484,24 @@ func (c *Client) AppByGuid(guid string) (App, error) {
 	return c.GetAppByGuid(guid)
 }
 
-//AppByName takes an appName, and GUIDs for a space and org, and performs
+// AppByName takes an appName, and GUIDs for a space and org, and performs
 // the API lookup with those query parameters set to return you the desired
 // App object.
-func (c *Client) AppByName(appName, spaceGuid, orgGuid string) (app App, err error) {
+func (c *Client) AppByName(appName, spaceGuid, orgGuid string) (App, error) {
 	query := url.Values{}
 	query.Add("q", fmt.Sprintf("organization_guid:%s", orgGuid))
 	query.Add("q", fmt.Sprintf("space_guid:%s", spaceGuid))
 	query.Add("q", fmt.Sprintf("name:%s", appName))
 	apps, err := c.ListAppsByQuery(query)
 	if err != nil {
-		return
+		return App{}, err
 	}
 	if len(apps) == 0 {
-		err = fmt.Errorf("No app found with name: `%s` in space with GUID `%s` and org with GUID `%s`", appName, spaceGuid, orgGuid)
-		return
+		cfErr := NewAppNotFoundError()
+		cfErr.Description = fmt.Sprintf(cfErr.Description, appName)
+		return App{}, cfErr
 	}
-	app = apps[0]
-	return
+	return apps[0], nil
 }
 
 // UploadAppBits uploads the application's contents
@@ -736,6 +742,7 @@ func (c *Client) StopApp(guid string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error stopping app %s, response code: %d", guid, resp.StatusCode)
 	}

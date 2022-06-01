@@ -255,6 +255,7 @@ func (i *IsolationSegment) RemoveSpace(spaceGuid string) error {
 	if err != nil {
 		return errors.Wrapf(err, "Error during deleting space %s in isolation segment %s", spaceGuid, i.Name)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("Error deleting space %s from isolation segment %s, response code: %d", spaceGuid, i.Name, resp.StatusCode)
 	}

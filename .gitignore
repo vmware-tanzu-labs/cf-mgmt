@@ -11,3 +11,4 @@ vars.yml
 foo
 concourse-outputs
 config_tests
+.envrc
