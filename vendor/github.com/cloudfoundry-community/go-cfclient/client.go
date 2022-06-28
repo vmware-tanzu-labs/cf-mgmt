@@ -9,6 +9,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"time"
@@ -19,7 +21,7 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 )
 
-//Client used to communicate with Cloud Foundry
+// Client used to communicate with Cloud Foundry
 type Client struct {
 	Config   Config
 	Endpoint Endpoint
@@ -34,7 +36,7 @@ type Endpoint struct {
 	AppSSHOauthClient string `json:"app_ssh_oauth_client"`
 }
 
-//Config is used to configure the creation of a client
+// Config is used to configure the creation of a client
 type Config struct {
 	ApiAddress          string `json:"api_url"`
 	Username            string `json:"user"`
@@ -63,9 +65,69 @@ type Request struct {
 	obj    interface{}
 }
 
-//DefaultConfig configuration for client
-//Keep LoginAdress for backward compatibility
-//Need to be remove in close future
+type cfHomeConfig struct {
+	AccessToken           string
+	RefreshToken          string
+	Target                string
+	AuthorizationEndpoint string
+	OrganizationFields    struct {
+		Name string
+	}
+	SpaceFields struct {
+		Name string
+	}
+	SSLDisabled bool
+}
+
+func NewConfigFromCF() (*Config, error) {
+	return NewConfigFromCFHome("")
+}
+
+func NewConfigFromCFHome(cfHomeDir string) (*Config, error) {
+	var err error
+
+	if cfHomeDir == "" {
+		cfHomeDir = os.Getenv("CF_HOME")
+		if cfHomeDir == "" {
+			cfHomeDir, err = os.UserHomeDir()
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	cfHomeConfig, err := loadCFHomeConfig(cfHomeDir)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := DefaultConfig()
+	cfg.Token = cfHomeConfig.AccessToken
+	cfg.ApiAddress = cfHomeConfig.Target
+	cfg.SkipSslValidation = cfHomeConfig.SSLDisabled
+
+	return cfg, nil
+}
+
+func loadCFHomeConfig(cfHomeDir string) (*cfHomeConfig, error) {
+	cfConfigDir := filepath.Join(cfHomeDir, ".cf")
+	cfJSON, err := ioutil.ReadFile(filepath.Join(cfConfigDir, "config.json"))
+	if err != nil {
+		return nil, err
+	}
+
+	var cfg cfHomeConfig
+	err = json.Unmarshal(cfJSON, &cfg)
+	if err == nil {
+		if len(cfg.AccessToken) > len("bearer ") {
+			cfg.AccessToken = cfg.AccessToken[len("bearer "):]
+		}
+	}
+
+	return &cfg, nil
+}
+
+// DefaultConfig creates a default config object used by CF client
 func DefaultConfig() *Config {
 	return &Config{
 		ApiAddress:        "http://api.bosh-lite.com",
@@ -470,6 +532,7 @@ func (c *Client) GetSSHCode() (string, error) {
 	if err == nil {
 		return "", errors.New("authorization server did not redirect with one time code")
 	}
+	defer resp.Body.Close()
 	if netErr, ok := err.(*url.Error); !ok || netErr.Err != ErrPreventRedirect {
 		return "", errors.New(fmt.Sprintf("error requesting one time code from server: %s", err.Error()))
 	}

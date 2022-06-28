@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//The Resource match Api retruns the response in the following data structure
+// The Resource match Api retruns the response in the following data structure
 type Resource struct {
 	Sha1 string `json:"sha1"`
 	Size int    `json:"size"`

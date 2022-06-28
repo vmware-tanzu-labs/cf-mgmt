@@ -12,6 +12,7 @@ type UsersInput struct {
 	SpaceName                                   string
 	OrgName                                     string
 	RemoveUsers                                 bool
+	OrgUsers                                    *RoleUsers
 	ListUsers                                   func(updateUserInput UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error)
 	AddUser                                     func(updateUserInput UsersInput, userName, userGUID string) error
 	RemoveUser                                  func(updateUserInput UsersInput, userName, userGUID string) error

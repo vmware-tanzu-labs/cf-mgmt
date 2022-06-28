@@ -58,8 +58,8 @@ var _ = Describe("given UserSpaces", func() {
 				uaaUsers = &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap", GUID: "test_ldap-id"})
 				uaaUsers.Add(uaa.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2", GUID: "test_ldap2-id"})
-				roleUsers, _ = NewRoleUsers([]cfclient.User{
-					cfclient.User{Username: "test_ldap", Guid: "test_ldap-id"},
+				roleUsers, _ = NewRoleUsers([]cfclient.V3User{
+					{Username: "test_ldap", GUID: "test_ldap-id"},
 				}, uaaUsers)
 			})
 			It("Should add ldap user to role", func() {
@@ -69,6 +69,7 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID:      "space_guid",
 					OrgGUID:        "org_guid",
 					AddUser:        userManager.AssociateSpaceAuditor,
+					OrgUsers:       InitRoleUsers(),
 				}
 
 				ldapFake.GetUserByIDReturns(
@@ -81,15 +82,17 @@ var _ = Describe("given UserSpaces", func() {
 
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).Should(Equal(1))
-				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(1))
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org_guid"))
 				Expect(userGUID).Should(Equal("test_ldap2-id"))
+				Expect(role).To(Equal(ORG_USER))
 
-				spaceGUID, userGUID := client.AssociateSpaceAuditorArgsForCall(0)
+				spaceGUID, userGUID, roleType := client.CreateV3SpaceRoleArgsForCall(0)
 				Expect(spaceGUID).Should(Equal("space_guid"))
 				Expect(userGUID).Should(Equal("test_ldap2-id"))
+				Expect(roleType).Should(Equal(SPACE_AUDITOR))
 			})
 
 			It("Should add ldap user to role", func() {
@@ -101,8 +104,8 @@ var _ = Describe("given UserSpaces", func() {
 				uaaUsers = &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap", GUID: "test_ldap-id"})
 				uaaUsers.Add(uaa.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2", GUID: "test_ldap2-id"})
-				roleUsers, _ = NewRoleUsers([]cfclient.User{
-					cfclient.User{Username: "test_ldap", Guid: "test_ldap-id"},
+				roleUsers, _ = NewRoleUsers([]cfclient.V3User{
+					{Username: "test_ldap", GUID: "test_ldap-id"},
 				}, uaaUsers)
 
 				updateUsersInput := UsersInput{
@@ -111,6 +114,7 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID:      "space_guid",
 					OrgGUID:        "org_guid",
 					AddUser:        userManager.AssociateSpaceAuditor,
+					OrgUsers:       InitRoleUsers(),
 				}
 
 				ldapFake.GetUserByIDReturns(
@@ -123,15 +127,17 @@ var _ = Describe("given UserSpaces", func() {
 
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).Should(Equal(1))
-				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(1))
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org_guid"))
 				Expect(userGUID).Should(Equal("test_ldap2-id"))
+				Expect(role).To(Equal(ORG_USER))
 
-				spaceGUID, userGUID := client.AssociateSpaceAuditorArgsForCall(0)
+				spaceGUID, userGUID, roleType := client.CreateV3SpaceRoleArgsForCall(0)
 				Expect(spaceGUID).Should(Equal("space_guid"))
 				Expect(userGUID).Should(Equal("test_ldap2-id"))
+				Expect(roleType).Should(Equal(SPACE_AUDITOR))
 			})
 
 			It("Should add ldap group member to role", func() {
@@ -141,6 +147,7 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID:      "space_guid",
 					OrgGUID:        "org_guid",
 					AddUser:        userManager.AssociateSpaceAuditor,
+					OrgUsers:       InitRoleUsers(),
 				}
 
 				ldapFake.GetUserDNsReturns([]string{"cn=ldap_test_dn"}, nil)
@@ -154,16 +161,17 @@ var _ = Describe("given UserSpaces", func() {
 
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).Should(Equal(1))
-				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(1))
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org_guid"))
 				Expect(userGUID).Should(Equal("test_ldap2-id"))
+				Expect(role).To(Equal(ORG_USER))
 
-				spaceGUID, userGUID := client.AssociateSpaceAuditorArgsForCall(0)
+				spaceGUID, userGUID, roleType := client.CreateV3SpaceRoleArgsForCall(0)
 				Expect(spaceGUID).Should(Equal("space_guid"))
 				Expect(userGUID).Should(Equal("test_ldap2-id"))
-
+				Expect(roleType).Should(Equal(SPACE_AUDITOR))
 			})
 
 			It("Should not add existing ldap user to role", func() {
@@ -172,6 +180,7 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
+					OrgUsers:  InitRoleUsers(),
 				}
 				ldapFake.GetUserByIDReturns(
 					&ldap.User{
@@ -182,8 +191,8 @@ var _ = Describe("given UserSpaces", func() {
 					nil)
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).Should(Equal(0))
-				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(0))
+				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
 			})
 			It("Should create external user when user doesn't exist in uaa", func() {
 				updateUsersInput := UsersInput{
@@ -191,6 +200,7 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
+					OrgUsers:  InitRoleUsers(),
 				}
 				ldapFake.GetUserByIDReturns(
 					&ldap.User{
@@ -215,6 +225,7 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
+					OrgUsers:  InitRoleUsers(),
 				}
 				ldapFake.GetUserByIDReturns(
 					&ldap.User{
@@ -236,6 +247,7 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
+					OrgUsers:  InitRoleUsers(),
 				}
 				ldapFake.GetUserByIDReturns(
 					&ldap.User{
@@ -244,12 +256,12 @@ var _ = Describe("given UserSpaces", func() {
 						Email:  "test@test.com",
 					},
 					nil)
-				client.AssociateOrgUserReturns(cfclient.Org{}, errors.New("error"))
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).Should(Equal("User test_ldap3 with origin ldap: error"))
-				Expect(client.AssociateOrgUserCallCount()).Should(Equal(1))
-				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
 			})
 
 			It("Should not query ldap if user exists in UAA", func() {
@@ -258,12 +270,13 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
+					OrgUsers:  InitRoleUsers(),
 				}
 
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).Should(Equal(1))
-				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(1))
 				Expect(ldapFake.GetUserByIDCallCount()).Should(Equal(0))
 			})
 
@@ -274,12 +287,13 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID:      "space_guid",
 					OrgGUID:        "org_guid",
 					AddUser:        userManager.AssociateSpaceAuditor,
+					OrgUsers:       InitRoleUsers(),
 				}
 				ldapFake.GetUserDNsReturns([]string{"cn=test_ldap2"}, nil)
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).Should(Equal(1))
-				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(1))
 				Expect(ldapFake.GetUserDNsCallCount()).Should(Equal(1))
 				Expect(ldapFake.GetUserByIDCallCount()).Should(Equal(0))
 				Expect(ldapFake.GetUserByDNCallCount()).Should(Equal(0))
@@ -290,13 +304,14 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
+					OrgUsers:  InitRoleUsers(),
 				}
 				ldapFake.GetUserByIDReturns(nil, errors.New("error"))
 				err := userManager.SyncLdapUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).Should(Equal("error"))
-				Expect(client.AssociateOrgUserCallCount()).Should(Equal(0))
-				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(0))
+				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
 			})
 		})
 		Context("UpdateUserInfo", func() {

@@ -48,12 +48,12 @@ type SecGroup struct {
 
 type SecGroupRule struct {
 	Protocol    string `json:"protocol"`
-	Ports       string `json:"ports,omitempty"`       //e.g. "4000-5000,9142"
-	Destination string `json:"destination"`           //CIDR Format
-	Description string `json:"description,omitempty"` //Optional description
+	Ports       string `json:"ports,omitempty"`       // e.g. "4000-5000,9142"
+	Destination string `json:"destination"`           // CIDR Format
+	Description string `json:"description,omitempty"` // Optional description
 	Code        int    `json:"code"`                  // ICMP code
-	Type        int    `json:"type"`                  //ICMP type. Only valid if Protocol=="icmp"
-	Log         bool   `json:"log,omitempty"`         //If true, log this rule
+	Type        int    `json:"type"`                  // ICMP type. Only valid if Protocol=="icmp"
+	Log         bool   `json:"log,omitempty"`         // If true, log this rule
 }
 
 var MinStagingSpacesVersion *semver.Version = getMinStagingSpacesVersion()
@@ -204,7 +204,9 @@ func (c *Client) GetSecGroupByName(name string) (secGroup SecGroup, err error) {
 		return secGroup, errors.Wrap(err, "Error unmarshaling sec group")
 	}
 	if len(secGroupResp.Resources) == 0 {
-		return secGroup, fmt.Errorf("No security group with name %v found", name)
+		cfErr := NewSecurityGroupNotFoundError()
+		cfErr.Description = fmt.Sprintf(cfErr.Description, name)
+		return secGroup, cfErr
 	}
 	secGroup = secGroupResp.Resources[0].Entity
 	secGroup.Guid = secGroupResp.Resources[0].Meta.Guid
@@ -245,7 +247,7 @@ func (secGroup *SecGroup) ListStagingSpaceResources() ([]SpaceResource, error) {
 			// if this is a 404, let's make sure that it's not because we're on a legacy system
 			if cause := errors.Cause(err); cause != nil {
 				if httpErr, ok := cause.(CloudFoundryHTTPError); ok {
-					if httpErr.StatusCode == 404 {
+					if httpErr.StatusCode == http.StatusNotFound {
 						info, infoErr := secGroup.c.GetInfo()
 						if infoErr != nil {
 							return nil, infoErr
@@ -308,13 +310,13 @@ DeleteSecGroup contacts the CF endpoint to delete an existing security group.
 guid: Indentifies the security group to be deleted.
 */
 func (c *Client) DeleteSecGroup(guid string) error {
-	//Perform the DELETE and check for errors
+	// Perform the DELETE and check for errors
 	resp, err := c.DoRequest(c.NewRequest("DELETE", fmt.Sprintf("/v2/security_groups/%s", guid)))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 204 { //204 No Content
+	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
 	return nil
@@ -325,16 +327,16 @@ GetSecGroup contacts the CF endpoint for fetching the info for a particular secu
 guid: Identifies the security group to fetch information from
 */
 func (c *Client) GetSecGroup(guid string) (*SecGroup, error) {
-	//Perform the GET and check for errors
+	// Perform the GET and check for errors
 	resp, err := c.DoRequest(c.NewRequest("GET", "/v2/security_groups/"+guid))
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
-	//get the json out of the response body
+	// get the json out of the response body
 	return respBodyToSecGroup(resp.Body, c)
 }
 
@@ -344,13 +346,13 @@ secGUID: identifies the security group to add a space to
 spaceGUID: identifies the space to associate
 */
 func (c *Client) BindSecGroup(secGUID, spaceGUID string) error {
-	//Perform the PUT and check for errors
+	// Perform the PUT and check for errors
 	resp, err := c.DoRequest(c.NewRequest("PUT", fmt.Sprintf("/v2/security_groups/%s/spaces/%s", secGUID, spaceGUID)))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 201 { //201 Created
+	if resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
 	return nil
@@ -362,13 +364,13 @@ secGUID: identifies the security group to add a space to
 spaceGUID: identifies the space to associate
 */
 func (c *Client) BindStagingSecGroupToSpace(secGUID, spaceGUID string) error {
-	//Perform the PUT and check for errors
+	// Perform the PUT and check for errors
 	resp, err := c.DoRequest(c.NewRequest("PUT", fmt.Sprintf("/v2/security_groups/%s/staging_spaces/%s", secGUID, spaceGUID)))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 201 { //201 Created
+	if resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
 	return nil
@@ -379,13 +381,13 @@ BindRunningSecGroup contacts the CF endpoint to associate  a security group
 secGUID: identifies the security group to add a space to
 */
 func (c *Client) BindRunningSecGroup(secGUID string) error {
-	//Perform the PUT and check for errors
+	// Perform the PUT and check for errors
 	resp, err := c.DoRequest(c.NewRequest("PUT", fmt.Sprintf("/v2/config/running_security_groups/%s", secGUID)))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 { //200
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
 	return nil
@@ -396,13 +398,13 @@ UnbindRunningSecGroup contacts the CF endpoint to dis-associate  a security grou
 secGUID: identifies the security group to add a space to
 */
 func (c *Client) UnbindRunningSecGroup(secGUID string) error {
-	//Perform the DELETE and check for errors
+	// Perform the DELETE and check for errors
 	resp, err := c.DoRequest(c.NewRequest("DELETE", fmt.Sprintf("/v2/config/running_security_groups/%s", secGUID)))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusNoContent { //204
+	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
 	return nil
@@ -413,13 +415,13 @@ BindStagingSecGroup contacts the CF endpoint to associate a space with a securit
 secGUID: identifies the security group to add a space to
 */
 func (c *Client) BindStagingSecGroup(secGUID string) error {
-	//Perform the PUT and check for errors
+	// Perform the PUT and check for errors
 	resp, err := c.DoRequest(c.NewRequest("PUT", fmt.Sprintf("/v2/config/staging_security_groups/%s", secGUID)))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 { //200
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
 	return nil
@@ -430,13 +432,13 @@ UnbindStagingSecGroup contacts the CF endpoint to dis-associate a space with a s
 secGUID: identifies the security group to add a space to
 */
 func (c *Client) UnbindStagingSecGroup(secGUID string) error {
-	//Perform the DELETE and check for errors
+	// Perform the DELETE and check for errors
 	resp, err := c.DoRequest(c.NewRequest("DELETE", fmt.Sprintf("/v2/config/staging_security_groups/%s", secGUID)))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusNoContent { //204
+	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
 	return nil
@@ -448,32 +450,32 @@ secGUID: identifies the security group to remove a space from
 spaceGUID: identifies the space to dissociate from the security group
 */
 func (c *Client) UnbindSecGroup(secGUID, spaceGUID string) error {
-	//Perform the DELETE and check for errors
+	// Perform the DELETE and check for errors
 	resp, err := c.DoRequest(c.NewRequest("DELETE", fmt.Sprintf("/v2/security_groups/%s/spaces/%s", secGUID, spaceGUID)))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 204 { //204 No Content
+	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
 	return nil
 }
 
-//Reads most security group response bodies into a SecGroup object
+// Reads most security group response bodies into a SecGroup object
 func respBodyToSecGroup(body io.ReadCloser, c *Client) (*SecGroup, error) {
-	//get the json from the response body
+	// get the json from the response body
 	bodyRaw, err := ioutil.ReadAll(body)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not read response body")
 	}
 	jStruct := SecGroupResource{}
-	//make it a SecGroup
+	// make it a SecGroup
 	err = json.Unmarshal(bodyRaw, &jStruct)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not unmarshal response body as json")
 	}
-	//pull a few extra fields from other places
+	// pull a few extra fields from other places
 	ret := jStruct.Entity
 	ret.Guid = jStruct.Meta.Guid
 	ret.CreatedAt = jStruct.Meta.CreatedAt
@@ -500,22 +502,22 @@ func convertStructToMap(st interface{}) map[string]interface{} {
 			key = jsonName
 		}
 
-		if typ == "string" {
+		switch typ {
+		case "string":
 			if !(value.String() == "" && strings.Contains(structTag, "omitempty")) {
 				reqRules[key] = value.String()
 			}
-		} else if typ == "int" {
+		case "int":
 			reqRules[key] = value.Int()
-		} else {
+		default:
 			reqRules[key] = value.Interface()
 		}
-
 	}
 
 	return reqRules
 }
 
-//Create and Update secGroup pretty much do the same thing, so this function abstracts those out.
+// Create and Update secGroup pretty much do the same thing, so this function abstracts those out.
 func (c *Client) secGroupCreateHelper(url, method, name string, rules []SecGroupRule, spaceGuids []string) (*SecGroup, error) {
 	reqRules := make([]map[string]interface{}, len(rules))
 
@@ -531,7 +533,7 @@ func (c *Client) secGroupCreateHelper(url, method, name string, rules []SecGroup
 	}
 
 	req := c.NewRequest(method, url)
-	//set up request body
+	// set up request body
 	inputs := map[string]interface{}{
 		"name":  name,
 		"rules": reqRules,
@@ -541,12 +543,13 @@ func (c *Client) secGroupCreateHelper(url, method, name string, rules []SecGroup
 		inputs["space_guids"] = spaceGuids
 	}
 	req.obj = inputs
-	//fire off the request and check for problems
+	// fire off the request and check for problems
 	resp, err := c.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != 201 { // Both create and update should give 201 CREATED
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusCreated { // Both create and update should give 201 CREATED
 		var response SecGroupCreateResponse
 
 		bodyRaw, _ := ioutil.ReadAll(resp.Body)
@@ -563,7 +566,7 @@ Code        %d
 Description %s`,
 			resp.StatusCode, response.ErrorCode, response.Code, response.Description)
 	}
-	//get the json from the response body
+	// get the json from the response body
 	return respBodyToSecGroup(resp.Body, c)
 }
 

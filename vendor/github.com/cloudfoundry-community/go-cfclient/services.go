@@ -90,10 +90,10 @@ func (c *Client) GetServiceByGuid(guid string) (Service, error) {
 
 func (c *Client) ListServicesByQuery(query url.Values) ([]Service, error) {
 	var services []Service
-	requestUrl := "/v2/services?" + query.Encode()
+	requestURL := "/v2/services?" + query.Encode()
 	for {
 		var serviceResp ServicesResponse
-		r := c.NewRequest("GET", requestUrl)
+		r := c.NewRequest("GET", requestURL)
 		resp, err := c.DoRequest(r)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error requesting services")
@@ -115,8 +115,8 @@ func (c *Client) ListServicesByQuery(query url.Values) ([]Service, error) {
 			service.Entity.c = c
 			services = append(services, service.Entity)
 		}
-		requestUrl = serviceResp.NextUrl
-		if requestUrl == "" {
+		requestURL = serviceResp.NextUrl
+		if requestURL == "" {
 			break
 		}
 	}

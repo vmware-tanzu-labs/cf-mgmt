@@ -10,102 +10,34 @@ import (
 )
 
 type FakeCFClient struct {
-	AssociateOrgAuditorStub        func(string, string) (cfclient.Org, error)
-	associateOrgAuditorMutex       sync.RWMutex
-	associateOrgAuditorArgsForCall []struct {
+	CreateV3OrganizationRoleStub        func(string, string, string) (*cfclient.V3Role, error)
+	createV3OrganizationRoleMutex       sync.RWMutex
+	createV3OrganizationRoleArgsForCall []struct {
 		arg1 string
 		arg2 string
+		arg3 string
 	}
-	associateOrgAuditorReturns struct {
-		result1 cfclient.Org
+	createV3OrganizationRoleReturns struct {
+		result1 *cfclient.V3Role
 		result2 error
 	}
-	associateOrgAuditorReturnsOnCall map[int]struct {
-		result1 cfclient.Org
+	createV3OrganizationRoleReturnsOnCall map[int]struct {
+		result1 *cfclient.V3Role
 		result2 error
 	}
-	AssociateOrgBillingManagerStub        func(string, string) (cfclient.Org, error)
-	associateOrgBillingManagerMutex       sync.RWMutex
-	associateOrgBillingManagerArgsForCall []struct {
+	CreateV3SpaceRoleStub        func(string, string, string) (*cfclient.V3Role, error)
+	createV3SpaceRoleMutex       sync.RWMutex
+	createV3SpaceRoleArgsForCall []struct {
 		arg1 string
 		arg2 string
+		arg3 string
 	}
-	associateOrgBillingManagerReturns struct {
-		result1 cfclient.Org
+	createV3SpaceRoleReturns struct {
+		result1 *cfclient.V3Role
 		result2 error
 	}
-	associateOrgBillingManagerReturnsOnCall map[int]struct {
-		result1 cfclient.Org
-		result2 error
-	}
-	AssociateOrgManagerStub        func(string, string) (cfclient.Org, error)
-	associateOrgManagerMutex       sync.RWMutex
-	associateOrgManagerArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	associateOrgManagerReturns struct {
-		result1 cfclient.Org
-		result2 error
-	}
-	associateOrgManagerReturnsOnCall map[int]struct {
-		result1 cfclient.Org
-		result2 error
-	}
-	AssociateOrgUserStub        func(string, string) (cfclient.Org, error)
-	associateOrgUserMutex       sync.RWMutex
-	associateOrgUserArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	associateOrgUserReturns struct {
-		result1 cfclient.Org
-		result2 error
-	}
-	associateOrgUserReturnsOnCall map[int]struct {
-		result1 cfclient.Org
-		result2 error
-	}
-	AssociateSpaceAuditorStub        func(string, string) (cfclient.Space, error)
-	associateSpaceAuditorMutex       sync.RWMutex
-	associateSpaceAuditorArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	associateSpaceAuditorReturns struct {
-		result1 cfclient.Space
-		result2 error
-	}
-	associateSpaceAuditorReturnsOnCall map[int]struct {
-		result1 cfclient.Space
-		result2 error
-	}
-	AssociateSpaceDeveloperStub        func(string, string) (cfclient.Space, error)
-	associateSpaceDeveloperMutex       sync.RWMutex
-	associateSpaceDeveloperArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	associateSpaceDeveloperReturns struct {
-		result1 cfclient.Space
-		result2 error
-	}
-	associateSpaceDeveloperReturnsOnCall map[int]struct {
-		result1 cfclient.Space
-		result2 error
-	}
-	AssociateSpaceManagerStub        func(string, string) (cfclient.Space, error)
-	associateSpaceManagerMutex       sync.RWMutex
-	associateSpaceManagerArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	associateSpaceManagerReturns struct {
-		result1 cfclient.Space
-		result2 error
-	}
-	associateSpaceManagerReturnsOnCall map[int]struct {
-		result1 cfclient.Space
+	createV3SpaceRoleReturnsOnCall map[int]struct {
+		result1 *cfclient.V3Role
 		result2 error
 	}
 	DeleteUserStub        func(string) error
@@ -119,96 +51,16 @@ type FakeCFClient struct {
 	deleteUserReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ListOrgAuditorsStub        func(string) ([]cfclient.User, error)
-	listOrgAuditorsMutex       sync.RWMutex
-	listOrgAuditorsArgsForCall []struct {
+	DeleteV3RoleStub        func(string) error
+	deleteV3RoleMutex       sync.RWMutex
+	deleteV3RoleArgsForCall []struct {
 		arg1 string
 	}
-	listOrgAuditorsReturns struct {
-		result1 []cfclient.User
-		result2 error
+	deleteV3RoleReturns struct {
+		result1 error
 	}
-	listOrgAuditorsReturnsOnCall map[int]struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	ListOrgBillingManagersStub        func(string) ([]cfclient.User, error)
-	listOrgBillingManagersMutex       sync.RWMutex
-	listOrgBillingManagersArgsForCall []struct {
-		arg1 string
-	}
-	listOrgBillingManagersReturns struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	listOrgBillingManagersReturnsOnCall map[int]struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	ListOrgManagersStub        func(string) ([]cfclient.User, error)
-	listOrgManagersMutex       sync.RWMutex
-	listOrgManagersArgsForCall []struct {
-		arg1 string
-	}
-	listOrgManagersReturns struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	listOrgManagersReturnsOnCall map[int]struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	ListOrgUsersStub        func(string) ([]cfclient.User, error)
-	listOrgUsersMutex       sync.RWMutex
-	listOrgUsersArgsForCall []struct {
-		arg1 string
-	}
-	listOrgUsersReturns struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	listOrgUsersReturnsOnCall map[int]struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	ListSpaceAuditorsStub        func(string) ([]cfclient.User, error)
-	listSpaceAuditorsMutex       sync.RWMutex
-	listSpaceAuditorsArgsForCall []struct {
-		arg1 string
-	}
-	listSpaceAuditorsReturns struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	listSpaceAuditorsReturnsOnCall map[int]struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	ListSpaceDevelopersStub        func(string) ([]cfclient.User, error)
-	listSpaceDevelopersMutex       sync.RWMutex
-	listSpaceDevelopersArgsForCall []struct {
-		arg1 string
-	}
-	listSpaceDevelopersReturns struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	listSpaceDevelopersReturnsOnCall map[int]struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	ListSpaceManagersStub        func(string) ([]cfclient.User, error)
-	listSpaceManagersMutex       sync.RWMutex
-	listSpaceManagersArgsForCall []struct {
-		arg1 string
-	}
-	listSpaceManagersReturns struct {
-		result1 []cfclient.User
-		result2 error
-	}
-	listSpaceManagersReturnsOnCall map[int]struct {
-		result1 []cfclient.User
-		result2 error
+	deleteV3RoleReturnsOnCall map[int]struct {
+		result1 error
 	}
 	ListSpacesByQueryStub        func(url.Values) ([]cfclient.Space, error)
 	listSpacesByQueryMutex       sync.RWMutex
@@ -223,538 +75,189 @@ type FakeCFClient struct {
 		result1 []cfclient.Space
 		result2 error
 	}
-	RemoveOrgAuditorStub        func(string, string) error
-	removeOrgAuditorMutex       sync.RWMutex
-	removeOrgAuditorArgsForCall []struct {
+	ListV3OrganizationRolesByGUIDAndTypeStub        func(string, string) ([]cfclient.V3User, error)
+	listV3OrganizationRolesByGUIDAndTypeMutex       sync.RWMutex
+	listV3OrganizationRolesByGUIDAndTypeArgsForCall []struct {
 		arg1 string
 		arg2 string
 	}
-	removeOrgAuditorReturns struct {
-		result1 error
+	listV3OrganizationRolesByGUIDAndTypeReturns struct {
+		result1 []cfclient.V3User
+		result2 error
 	}
-	removeOrgAuditorReturnsOnCall map[int]struct {
-		result1 error
+	listV3OrganizationRolesByGUIDAndTypeReturnsOnCall map[int]struct {
+		result1 []cfclient.V3User
+		result2 error
 	}
-	RemoveOrgBillingManagerStub        func(string, string) error
-	removeOrgBillingManagerMutex       sync.RWMutex
-	removeOrgBillingManagerArgsForCall []struct {
+	ListV3RolesByQueryStub        func(url.Values) ([]cfclient.V3Role, error)
+	listV3RolesByQueryMutex       sync.RWMutex
+	listV3RolesByQueryArgsForCall []struct {
+		arg1 url.Values
+	}
+	listV3RolesByQueryReturns struct {
+		result1 []cfclient.V3Role
+		result2 error
+	}
+	listV3RolesByQueryReturnsOnCall map[int]struct {
+		result1 []cfclient.V3Role
+		result2 error
+	}
+	ListV3SpaceRolesByGUIDAndTypeStub        func(string, string) ([]cfclient.V3User, error)
+	listV3SpaceRolesByGUIDAndTypeMutex       sync.RWMutex
+	listV3SpaceRolesByGUIDAndTypeArgsForCall []struct {
 		arg1 string
 		arg2 string
 	}
-	removeOrgBillingManagerReturns struct {
-		result1 error
+	listV3SpaceRolesByGUIDAndTypeReturns struct {
+		result1 []cfclient.V3User
+		result2 error
 	}
-	removeOrgBillingManagerReturnsOnCall map[int]struct {
-		result1 error
+	listV3SpaceRolesByGUIDAndTypeReturnsOnCall map[int]struct {
+		result1 []cfclient.V3User
+		result2 error
 	}
-	RemoveOrgManagerStub        func(string, string) error
-	removeOrgManagerMutex       sync.RWMutex
-	removeOrgManagerArgsForCall []struct {
-		arg1 string
-		arg2 string
+	SupportsSpaceSupporterRoleStub        func() (bool, error)
+	supportsSpaceSupporterRoleMutex       sync.RWMutex
+	supportsSpaceSupporterRoleArgsForCall []struct {
 	}
-	removeOrgManagerReturns struct {
-		result1 error
+	supportsSpaceSupporterRoleReturns struct {
+		result1 bool
+		result2 error
 	}
-	removeOrgManagerReturnsOnCall map[int]struct {
-		result1 error
-	}
-	RemoveOrgUserStub        func(string, string) error
-	removeOrgUserMutex       sync.RWMutex
-	removeOrgUserArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	removeOrgUserReturns struct {
-		result1 error
-	}
-	removeOrgUserReturnsOnCall map[int]struct {
-		result1 error
-	}
-	RemoveSpaceAuditorStub        func(string, string) error
-	removeSpaceAuditorMutex       sync.RWMutex
-	removeSpaceAuditorArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	removeSpaceAuditorReturns struct {
-		result1 error
-	}
-	removeSpaceAuditorReturnsOnCall map[int]struct {
-		result1 error
-	}
-	RemoveSpaceDeveloperStub        func(string, string) error
-	removeSpaceDeveloperMutex       sync.RWMutex
-	removeSpaceDeveloperArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	removeSpaceDeveloperReturns struct {
-		result1 error
-	}
-	removeSpaceDeveloperReturnsOnCall map[int]struct {
-		result1 error
-	}
-	RemoveSpaceManagerStub        func(string, string) error
-	removeSpaceManagerMutex       sync.RWMutex
-	removeSpaceManagerArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	removeSpaceManagerReturns struct {
-		result1 error
-	}
-	removeSpaceManagerReturnsOnCall map[int]struct {
-		result1 error
+	supportsSpaceSupporterRoleReturnsOnCall map[int]struct {
+		result1 bool
+		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCFClient) AssociateOrgAuditor(arg1 string, arg2 string) (cfclient.Org, error) {
-	fake.associateOrgAuditorMutex.Lock()
-	ret, specificReturn := fake.associateOrgAuditorReturnsOnCall[len(fake.associateOrgAuditorArgsForCall)]
-	fake.associateOrgAuditorArgsForCall = append(fake.associateOrgAuditorArgsForCall, struct {
+func (fake *FakeCFClient) CreateV3OrganizationRole(arg1 string, arg2 string, arg3 string) (*cfclient.V3Role, error) {
+	fake.createV3OrganizationRoleMutex.Lock()
+	ret, specificReturn := fake.createV3OrganizationRoleReturnsOnCall[len(fake.createV3OrganizationRoleArgsForCall)]
+	fake.createV3OrganizationRoleArgsForCall = append(fake.createV3OrganizationRoleArgsForCall, struct {
 		arg1 string
 		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("AssociateOrgAuditor", []interface{}{arg1, arg2})
-	fake.associateOrgAuditorMutex.Unlock()
-	if fake.AssociateOrgAuditorStub != nil {
-		return fake.AssociateOrgAuditorStub(arg1, arg2)
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("CreateV3OrganizationRole", []interface{}{arg1, arg2, arg3})
+	fake.createV3OrganizationRoleMutex.Unlock()
+	if fake.CreateV3OrganizationRoleStub != nil {
+		return fake.CreateV3OrganizationRoleStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.associateOrgAuditorReturns
+	fakeReturns := fake.createV3OrganizationRoleReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCFClient) AssociateOrgAuditorCallCount() int {
-	fake.associateOrgAuditorMutex.RLock()
-	defer fake.associateOrgAuditorMutex.RUnlock()
-	return len(fake.associateOrgAuditorArgsForCall)
+func (fake *FakeCFClient) CreateV3OrganizationRoleCallCount() int {
+	fake.createV3OrganizationRoleMutex.RLock()
+	defer fake.createV3OrganizationRoleMutex.RUnlock()
+	return len(fake.createV3OrganizationRoleArgsForCall)
 }
 
-func (fake *FakeCFClient) AssociateOrgAuditorCalls(stub func(string, string) (cfclient.Org, error)) {
-	fake.associateOrgAuditorMutex.Lock()
-	defer fake.associateOrgAuditorMutex.Unlock()
-	fake.AssociateOrgAuditorStub = stub
+func (fake *FakeCFClient) CreateV3OrganizationRoleCalls(stub func(string, string, string) (*cfclient.V3Role, error)) {
+	fake.createV3OrganizationRoleMutex.Lock()
+	defer fake.createV3OrganizationRoleMutex.Unlock()
+	fake.CreateV3OrganizationRoleStub = stub
 }
 
-func (fake *FakeCFClient) AssociateOrgAuditorArgsForCall(i int) (string, string) {
-	fake.associateOrgAuditorMutex.RLock()
-	defer fake.associateOrgAuditorMutex.RUnlock()
-	argsForCall := fake.associateOrgAuditorArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+func (fake *FakeCFClient) CreateV3OrganizationRoleArgsForCall(i int) (string, string, string) {
+	fake.createV3OrganizationRoleMutex.RLock()
+	defer fake.createV3OrganizationRoleMutex.RUnlock()
+	argsForCall := fake.createV3OrganizationRoleArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeCFClient) AssociateOrgAuditorReturns(result1 cfclient.Org, result2 error) {
-	fake.associateOrgAuditorMutex.Lock()
-	defer fake.associateOrgAuditorMutex.Unlock()
-	fake.AssociateOrgAuditorStub = nil
-	fake.associateOrgAuditorReturns = struct {
-		result1 cfclient.Org
+func (fake *FakeCFClient) CreateV3OrganizationRoleReturns(result1 *cfclient.V3Role, result2 error) {
+	fake.createV3OrganizationRoleMutex.Lock()
+	defer fake.createV3OrganizationRoleMutex.Unlock()
+	fake.CreateV3OrganizationRoleStub = nil
+	fake.createV3OrganizationRoleReturns = struct {
+		result1 *cfclient.V3Role
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) AssociateOrgAuditorReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
-	fake.associateOrgAuditorMutex.Lock()
-	defer fake.associateOrgAuditorMutex.Unlock()
-	fake.AssociateOrgAuditorStub = nil
-	if fake.associateOrgAuditorReturnsOnCall == nil {
-		fake.associateOrgAuditorReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Org
+func (fake *FakeCFClient) CreateV3OrganizationRoleReturnsOnCall(i int, result1 *cfclient.V3Role, result2 error) {
+	fake.createV3OrganizationRoleMutex.Lock()
+	defer fake.createV3OrganizationRoleMutex.Unlock()
+	fake.CreateV3OrganizationRoleStub = nil
+	if fake.createV3OrganizationRoleReturnsOnCall == nil {
+		fake.createV3OrganizationRoleReturnsOnCall = make(map[int]struct {
+			result1 *cfclient.V3Role
 			result2 error
 		})
 	}
-	fake.associateOrgAuditorReturnsOnCall[i] = struct {
-		result1 cfclient.Org
+	fake.createV3OrganizationRoleReturnsOnCall[i] = struct {
+		result1 *cfclient.V3Role
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) AssociateOrgBillingManager(arg1 string, arg2 string) (cfclient.Org, error) {
-	fake.associateOrgBillingManagerMutex.Lock()
-	ret, specificReturn := fake.associateOrgBillingManagerReturnsOnCall[len(fake.associateOrgBillingManagerArgsForCall)]
-	fake.associateOrgBillingManagerArgsForCall = append(fake.associateOrgBillingManagerArgsForCall, struct {
+func (fake *FakeCFClient) CreateV3SpaceRole(arg1 string, arg2 string, arg3 string) (*cfclient.V3Role, error) {
+	fake.createV3SpaceRoleMutex.Lock()
+	ret, specificReturn := fake.createV3SpaceRoleReturnsOnCall[len(fake.createV3SpaceRoleArgsForCall)]
+	fake.createV3SpaceRoleArgsForCall = append(fake.createV3SpaceRoleArgsForCall, struct {
 		arg1 string
 		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("AssociateOrgBillingManager", []interface{}{arg1, arg2})
-	fake.associateOrgBillingManagerMutex.Unlock()
-	if fake.AssociateOrgBillingManagerStub != nil {
-		return fake.AssociateOrgBillingManagerStub(arg1, arg2)
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("CreateV3SpaceRole", []interface{}{arg1, arg2, arg3})
+	fake.createV3SpaceRoleMutex.Unlock()
+	if fake.CreateV3SpaceRoleStub != nil {
+		return fake.CreateV3SpaceRoleStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.associateOrgBillingManagerReturns
+	fakeReturns := fake.createV3SpaceRoleReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCFClient) AssociateOrgBillingManagerCallCount() int {
-	fake.associateOrgBillingManagerMutex.RLock()
-	defer fake.associateOrgBillingManagerMutex.RUnlock()
-	return len(fake.associateOrgBillingManagerArgsForCall)
+func (fake *FakeCFClient) CreateV3SpaceRoleCallCount() int {
+	fake.createV3SpaceRoleMutex.RLock()
+	defer fake.createV3SpaceRoleMutex.RUnlock()
+	return len(fake.createV3SpaceRoleArgsForCall)
 }
 
-func (fake *FakeCFClient) AssociateOrgBillingManagerCalls(stub func(string, string) (cfclient.Org, error)) {
-	fake.associateOrgBillingManagerMutex.Lock()
-	defer fake.associateOrgBillingManagerMutex.Unlock()
-	fake.AssociateOrgBillingManagerStub = stub
+func (fake *FakeCFClient) CreateV3SpaceRoleCalls(stub func(string, string, string) (*cfclient.V3Role, error)) {
+	fake.createV3SpaceRoleMutex.Lock()
+	defer fake.createV3SpaceRoleMutex.Unlock()
+	fake.CreateV3SpaceRoleStub = stub
 }
 
-func (fake *FakeCFClient) AssociateOrgBillingManagerArgsForCall(i int) (string, string) {
-	fake.associateOrgBillingManagerMutex.RLock()
-	defer fake.associateOrgBillingManagerMutex.RUnlock()
-	argsForCall := fake.associateOrgBillingManagerArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+func (fake *FakeCFClient) CreateV3SpaceRoleArgsForCall(i int) (string, string, string) {
+	fake.createV3SpaceRoleMutex.RLock()
+	defer fake.createV3SpaceRoleMutex.RUnlock()
+	argsForCall := fake.createV3SpaceRoleArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeCFClient) AssociateOrgBillingManagerReturns(result1 cfclient.Org, result2 error) {
-	fake.associateOrgBillingManagerMutex.Lock()
-	defer fake.associateOrgBillingManagerMutex.Unlock()
-	fake.AssociateOrgBillingManagerStub = nil
-	fake.associateOrgBillingManagerReturns = struct {
-		result1 cfclient.Org
+func (fake *FakeCFClient) CreateV3SpaceRoleReturns(result1 *cfclient.V3Role, result2 error) {
+	fake.createV3SpaceRoleMutex.Lock()
+	defer fake.createV3SpaceRoleMutex.Unlock()
+	fake.CreateV3SpaceRoleStub = nil
+	fake.createV3SpaceRoleReturns = struct {
+		result1 *cfclient.V3Role
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) AssociateOrgBillingManagerReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
-	fake.associateOrgBillingManagerMutex.Lock()
-	defer fake.associateOrgBillingManagerMutex.Unlock()
-	fake.AssociateOrgBillingManagerStub = nil
-	if fake.associateOrgBillingManagerReturnsOnCall == nil {
-		fake.associateOrgBillingManagerReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Org
+func (fake *FakeCFClient) CreateV3SpaceRoleReturnsOnCall(i int, result1 *cfclient.V3Role, result2 error) {
+	fake.createV3SpaceRoleMutex.Lock()
+	defer fake.createV3SpaceRoleMutex.Unlock()
+	fake.CreateV3SpaceRoleStub = nil
+	if fake.createV3SpaceRoleReturnsOnCall == nil {
+		fake.createV3SpaceRoleReturnsOnCall = make(map[int]struct {
+			result1 *cfclient.V3Role
 			result2 error
 		})
 	}
-	fake.associateOrgBillingManagerReturnsOnCall[i] = struct {
-		result1 cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) AssociateOrgManager(arg1 string, arg2 string) (cfclient.Org, error) {
-	fake.associateOrgManagerMutex.Lock()
-	ret, specificReturn := fake.associateOrgManagerReturnsOnCall[len(fake.associateOrgManagerArgsForCall)]
-	fake.associateOrgManagerArgsForCall = append(fake.associateOrgManagerArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("AssociateOrgManager", []interface{}{arg1, arg2})
-	fake.associateOrgManagerMutex.Unlock()
-	if fake.AssociateOrgManagerStub != nil {
-		return fake.AssociateOrgManagerStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.associateOrgManagerReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) AssociateOrgManagerCallCount() int {
-	fake.associateOrgManagerMutex.RLock()
-	defer fake.associateOrgManagerMutex.RUnlock()
-	return len(fake.associateOrgManagerArgsForCall)
-}
-
-func (fake *FakeCFClient) AssociateOrgManagerCalls(stub func(string, string) (cfclient.Org, error)) {
-	fake.associateOrgManagerMutex.Lock()
-	defer fake.associateOrgManagerMutex.Unlock()
-	fake.AssociateOrgManagerStub = stub
-}
-
-func (fake *FakeCFClient) AssociateOrgManagerArgsForCall(i int) (string, string) {
-	fake.associateOrgManagerMutex.RLock()
-	defer fake.associateOrgManagerMutex.RUnlock()
-	argsForCall := fake.associateOrgManagerArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) AssociateOrgManagerReturns(result1 cfclient.Org, result2 error) {
-	fake.associateOrgManagerMutex.Lock()
-	defer fake.associateOrgManagerMutex.Unlock()
-	fake.AssociateOrgManagerStub = nil
-	fake.associateOrgManagerReturns = struct {
-		result1 cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) AssociateOrgManagerReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
-	fake.associateOrgManagerMutex.Lock()
-	defer fake.associateOrgManagerMutex.Unlock()
-	fake.AssociateOrgManagerStub = nil
-	if fake.associateOrgManagerReturnsOnCall == nil {
-		fake.associateOrgManagerReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Org
-			result2 error
-		})
-	}
-	fake.associateOrgManagerReturnsOnCall[i] = struct {
-		result1 cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) AssociateOrgUser(arg1 string, arg2 string) (cfclient.Org, error) {
-	fake.associateOrgUserMutex.Lock()
-	ret, specificReturn := fake.associateOrgUserReturnsOnCall[len(fake.associateOrgUserArgsForCall)]
-	fake.associateOrgUserArgsForCall = append(fake.associateOrgUserArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("AssociateOrgUser", []interface{}{arg1, arg2})
-	fake.associateOrgUserMutex.Unlock()
-	if fake.AssociateOrgUserStub != nil {
-		return fake.AssociateOrgUserStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.associateOrgUserReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) AssociateOrgUserCallCount() int {
-	fake.associateOrgUserMutex.RLock()
-	defer fake.associateOrgUserMutex.RUnlock()
-	return len(fake.associateOrgUserArgsForCall)
-}
-
-func (fake *FakeCFClient) AssociateOrgUserCalls(stub func(string, string) (cfclient.Org, error)) {
-	fake.associateOrgUserMutex.Lock()
-	defer fake.associateOrgUserMutex.Unlock()
-	fake.AssociateOrgUserStub = stub
-}
-
-func (fake *FakeCFClient) AssociateOrgUserArgsForCall(i int) (string, string) {
-	fake.associateOrgUserMutex.RLock()
-	defer fake.associateOrgUserMutex.RUnlock()
-	argsForCall := fake.associateOrgUserArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) AssociateOrgUserReturns(result1 cfclient.Org, result2 error) {
-	fake.associateOrgUserMutex.Lock()
-	defer fake.associateOrgUserMutex.Unlock()
-	fake.AssociateOrgUserStub = nil
-	fake.associateOrgUserReturns = struct {
-		result1 cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) AssociateOrgUserReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
-	fake.associateOrgUserMutex.Lock()
-	defer fake.associateOrgUserMutex.Unlock()
-	fake.AssociateOrgUserStub = nil
-	if fake.associateOrgUserReturnsOnCall == nil {
-		fake.associateOrgUserReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Org
-			result2 error
-		})
-	}
-	fake.associateOrgUserReturnsOnCall[i] = struct {
-		result1 cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) AssociateSpaceAuditor(arg1 string, arg2 string) (cfclient.Space, error) {
-	fake.associateSpaceAuditorMutex.Lock()
-	ret, specificReturn := fake.associateSpaceAuditorReturnsOnCall[len(fake.associateSpaceAuditorArgsForCall)]
-	fake.associateSpaceAuditorArgsForCall = append(fake.associateSpaceAuditorArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("AssociateSpaceAuditor", []interface{}{arg1, arg2})
-	fake.associateSpaceAuditorMutex.Unlock()
-	if fake.AssociateSpaceAuditorStub != nil {
-		return fake.AssociateSpaceAuditorStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.associateSpaceAuditorReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) AssociateSpaceAuditorCallCount() int {
-	fake.associateSpaceAuditorMutex.RLock()
-	defer fake.associateSpaceAuditorMutex.RUnlock()
-	return len(fake.associateSpaceAuditorArgsForCall)
-}
-
-func (fake *FakeCFClient) AssociateSpaceAuditorCalls(stub func(string, string) (cfclient.Space, error)) {
-	fake.associateSpaceAuditorMutex.Lock()
-	defer fake.associateSpaceAuditorMutex.Unlock()
-	fake.AssociateSpaceAuditorStub = stub
-}
-
-func (fake *FakeCFClient) AssociateSpaceAuditorArgsForCall(i int) (string, string) {
-	fake.associateSpaceAuditorMutex.RLock()
-	defer fake.associateSpaceAuditorMutex.RUnlock()
-	argsForCall := fake.associateSpaceAuditorArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) AssociateSpaceAuditorReturns(result1 cfclient.Space, result2 error) {
-	fake.associateSpaceAuditorMutex.Lock()
-	defer fake.associateSpaceAuditorMutex.Unlock()
-	fake.AssociateSpaceAuditorStub = nil
-	fake.associateSpaceAuditorReturns = struct {
-		result1 cfclient.Space
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) AssociateSpaceAuditorReturnsOnCall(i int, result1 cfclient.Space, result2 error) {
-	fake.associateSpaceAuditorMutex.Lock()
-	defer fake.associateSpaceAuditorMutex.Unlock()
-	fake.AssociateSpaceAuditorStub = nil
-	if fake.associateSpaceAuditorReturnsOnCall == nil {
-		fake.associateSpaceAuditorReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Space
-			result2 error
-		})
-	}
-	fake.associateSpaceAuditorReturnsOnCall[i] = struct {
-		result1 cfclient.Space
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) AssociateSpaceDeveloper(arg1 string, arg2 string) (cfclient.Space, error) {
-	fake.associateSpaceDeveloperMutex.Lock()
-	ret, specificReturn := fake.associateSpaceDeveloperReturnsOnCall[len(fake.associateSpaceDeveloperArgsForCall)]
-	fake.associateSpaceDeveloperArgsForCall = append(fake.associateSpaceDeveloperArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("AssociateSpaceDeveloper", []interface{}{arg1, arg2})
-	fake.associateSpaceDeveloperMutex.Unlock()
-	if fake.AssociateSpaceDeveloperStub != nil {
-		return fake.AssociateSpaceDeveloperStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.associateSpaceDeveloperReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) AssociateSpaceDeveloperCallCount() int {
-	fake.associateSpaceDeveloperMutex.RLock()
-	defer fake.associateSpaceDeveloperMutex.RUnlock()
-	return len(fake.associateSpaceDeveloperArgsForCall)
-}
-
-func (fake *FakeCFClient) AssociateSpaceDeveloperCalls(stub func(string, string) (cfclient.Space, error)) {
-	fake.associateSpaceDeveloperMutex.Lock()
-	defer fake.associateSpaceDeveloperMutex.Unlock()
-	fake.AssociateSpaceDeveloperStub = stub
-}
-
-func (fake *FakeCFClient) AssociateSpaceDeveloperArgsForCall(i int) (string, string) {
-	fake.associateSpaceDeveloperMutex.RLock()
-	defer fake.associateSpaceDeveloperMutex.RUnlock()
-	argsForCall := fake.associateSpaceDeveloperArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) AssociateSpaceDeveloperReturns(result1 cfclient.Space, result2 error) {
-	fake.associateSpaceDeveloperMutex.Lock()
-	defer fake.associateSpaceDeveloperMutex.Unlock()
-	fake.AssociateSpaceDeveloperStub = nil
-	fake.associateSpaceDeveloperReturns = struct {
-		result1 cfclient.Space
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) AssociateSpaceDeveloperReturnsOnCall(i int, result1 cfclient.Space, result2 error) {
-	fake.associateSpaceDeveloperMutex.Lock()
-	defer fake.associateSpaceDeveloperMutex.Unlock()
-	fake.AssociateSpaceDeveloperStub = nil
-	if fake.associateSpaceDeveloperReturnsOnCall == nil {
-		fake.associateSpaceDeveloperReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Space
-			result2 error
-		})
-	}
-	fake.associateSpaceDeveloperReturnsOnCall[i] = struct {
-		result1 cfclient.Space
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) AssociateSpaceManager(arg1 string, arg2 string) (cfclient.Space, error) {
-	fake.associateSpaceManagerMutex.Lock()
-	ret, specificReturn := fake.associateSpaceManagerReturnsOnCall[len(fake.associateSpaceManagerArgsForCall)]
-	fake.associateSpaceManagerArgsForCall = append(fake.associateSpaceManagerArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("AssociateSpaceManager", []interface{}{arg1, arg2})
-	fake.associateSpaceManagerMutex.Unlock()
-	if fake.AssociateSpaceManagerStub != nil {
-		return fake.AssociateSpaceManagerStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.associateSpaceManagerReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) AssociateSpaceManagerCallCount() int {
-	fake.associateSpaceManagerMutex.RLock()
-	defer fake.associateSpaceManagerMutex.RUnlock()
-	return len(fake.associateSpaceManagerArgsForCall)
-}
-
-func (fake *FakeCFClient) AssociateSpaceManagerCalls(stub func(string, string) (cfclient.Space, error)) {
-	fake.associateSpaceManagerMutex.Lock()
-	defer fake.associateSpaceManagerMutex.Unlock()
-	fake.AssociateSpaceManagerStub = stub
-}
-
-func (fake *FakeCFClient) AssociateSpaceManagerArgsForCall(i int) (string, string) {
-	fake.associateSpaceManagerMutex.RLock()
-	defer fake.associateSpaceManagerMutex.RUnlock()
-	argsForCall := fake.associateSpaceManagerArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) AssociateSpaceManagerReturns(result1 cfclient.Space, result2 error) {
-	fake.associateSpaceManagerMutex.Lock()
-	defer fake.associateSpaceManagerMutex.Unlock()
-	fake.AssociateSpaceManagerStub = nil
-	fake.associateSpaceManagerReturns = struct {
-		result1 cfclient.Space
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) AssociateSpaceManagerReturnsOnCall(i int, result1 cfclient.Space, result2 error) {
-	fake.associateSpaceManagerMutex.Lock()
-	defer fake.associateSpaceManagerMutex.Unlock()
-	fake.AssociateSpaceManagerStub = nil
-	if fake.associateSpaceManagerReturnsOnCall == nil {
-		fake.associateSpaceManagerReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Space
-			result2 error
-		})
-	}
-	fake.associateSpaceManagerReturnsOnCall[i] = struct {
-		result1 cfclient.Space
+	fake.createV3SpaceRoleReturnsOnCall[i] = struct {
+		result1 *cfclient.V3Role
 		result2 error
 	}{result1, result2}
 }
@@ -819,445 +322,64 @@ func (fake *FakeCFClient) DeleteUserReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeCFClient) ListOrgAuditors(arg1 string) ([]cfclient.User, error) {
-	fake.listOrgAuditorsMutex.Lock()
-	ret, specificReturn := fake.listOrgAuditorsReturnsOnCall[len(fake.listOrgAuditorsArgsForCall)]
-	fake.listOrgAuditorsArgsForCall = append(fake.listOrgAuditorsArgsForCall, struct {
+func (fake *FakeCFClient) DeleteV3Role(arg1 string) error {
+	fake.deleteV3RoleMutex.Lock()
+	ret, specificReturn := fake.deleteV3RoleReturnsOnCall[len(fake.deleteV3RoleArgsForCall)]
+	fake.deleteV3RoleArgsForCall = append(fake.deleteV3RoleArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	fake.recordInvocation("ListOrgAuditors", []interface{}{arg1})
-	fake.listOrgAuditorsMutex.Unlock()
-	if fake.ListOrgAuditorsStub != nil {
-		return fake.ListOrgAuditorsStub(arg1)
+	fake.recordInvocation("DeleteV3Role", []interface{}{arg1})
+	fake.deleteV3RoleMutex.Unlock()
+	if fake.DeleteV3RoleStub != nil {
+		return fake.DeleteV3RoleStub(arg1)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1
 	}
-	fakeReturns := fake.listOrgAuditorsReturns
-	return fakeReturns.result1, fakeReturns.result2
+	fakeReturns := fake.deleteV3RoleReturns
+	return fakeReturns.result1
 }
 
-func (fake *FakeCFClient) ListOrgAuditorsCallCount() int {
-	fake.listOrgAuditorsMutex.RLock()
-	defer fake.listOrgAuditorsMutex.RUnlock()
-	return len(fake.listOrgAuditorsArgsForCall)
+func (fake *FakeCFClient) DeleteV3RoleCallCount() int {
+	fake.deleteV3RoleMutex.RLock()
+	defer fake.deleteV3RoleMutex.RUnlock()
+	return len(fake.deleteV3RoleArgsForCall)
 }
 
-func (fake *FakeCFClient) ListOrgAuditorsCalls(stub func(string) ([]cfclient.User, error)) {
-	fake.listOrgAuditorsMutex.Lock()
-	defer fake.listOrgAuditorsMutex.Unlock()
-	fake.ListOrgAuditorsStub = stub
+func (fake *FakeCFClient) DeleteV3RoleCalls(stub func(string) error) {
+	fake.deleteV3RoleMutex.Lock()
+	defer fake.deleteV3RoleMutex.Unlock()
+	fake.DeleteV3RoleStub = stub
 }
 
-func (fake *FakeCFClient) ListOrgAuditorsArgsForCall(i int) string {
-	fake.listOrgAuditorsMutex.RLock()
-	defer fake.listOrgAuditorsMutex.RUnlock()
-	argsForCall := fake.listOrgAuditorsArgsForCall[i]
+func (fake *FakeCFClient) DeleteV3RoleArgsForCall(i int) string {
+	fake.deleteV3RoleMutex.RLock()
+	defer fake.deleteV3RoleMutex.RUnlock()
+	argsForCall := fake.deleteV3RoleArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeCFClient) ListOrgAuditorsReturns(result1 []cfclient.User, result2 error) {
-	fake.listOrgAuditorsMutex.Lock()
-	defer fake.listOrgAuditorsMutex.Unlock()
-	fake.ListOrgAuditorsStub = nil
-	fake.listOrgAuditorsReturns = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
+func (fake *FakeCFClient) DeleteV3RoleReturns(result1 error) {
+	fake.deleteV3RoleMutex.Lock()
+	defer fake.deleteV3RoleMutex.Unlock()
+	fake.DeleteV3RoleStub = nil
+	fake.deleteV3RoleReturns = struct {
+		result1 error
+	}{result1}
 }
 
-func (fake *FakeCFClient) ListOrgAuditorsReturnsOnCall(i int, result1 []cfclient.User, result2 error) {
-	fake.listOrgAuditorsMutex.Lock()
-	defer fake.listOrgAuditorsMutex.Unlock()
-	fake.ListOrgAuditorsStub = nil
-	if fake.listOrgAuditorsReturnsOnCall == nil {
-		fake.listOrgAuditorsReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.User
-			result2 error
+func (fake *FakeCFClient) DeleteV3RoleReturnsOnCall(i int, result1 error) {
+	fake.deleteV3RoleMutex.Lock()
+	defer fake.deleteV3RoleMutex.Unlock()
+	fake.DeleteV3RoleStub = nil
+	if fake.deleteV3RoleReturnsOnCall == nil {
+		fake.deleteV3RoleReturnsOnCall = make(map[int]struct {
+			result1 error
 		})
 	}
-	fake.listOrgAuditorsReturnsOnCall[i] = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListOrgBillingManagers(arg1 string) ([]cfclient.User, error) {
-	fake.listOrgBillingManagersMutex.Lock()
-	ret, specificReturn := fake.listOrgBillingManagersReturnsOnCall[len(fake.listOrgBillingManagersArgsForCall)]
-	fake.listOrgBillingManagersArgsForCall = append(fake.listOrgBillingManagersArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("ListOrgBillingManagers", []interface{}{arg1})
-	fake.listOrgBillingManagersMutex.Unlock()
-	if fake.ListOrgBillingManagersStub != nil {
-		return fake.ListOrgBillingManagersStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listOrgBillingManagersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListOrgBillingManagersCallCount() int {
-	fake.listOrgBillingManagersMutex.RLock()
-	defer fake.listOrgBillingManagersMutex.RUnlock()
-	return len(fake.listOrgBillingManagersArgsForCall)
-}
-
-func (fake *FakeCFClient) ListOrgBillingManagersCalls(stub func(string) ([]cfclient.User, error)) {
-	fake.listOrgBillingManagersMutex.Lock()
-	defer fake.listOrgBillingManagersMutex.Unlock()
-	fake.ListOrgBillingManagersStub = stub
-}
-
-func (fake *FakeCFClient) ListOrgBillingManagersArgsForCall(i int) string {
-	fake.listOrgBillingManagersMutex.RLock()
-	defer fake.listOrgBillingManagersMutex.RUnlock()
-	argsForCall := fake.listOrgBillingManagersArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) ListOrgBillingManagersReturns(result1 []cfclient.User, result2 error) {
-	fake.listOrgBillingManagersMutex.Lock()
-	defer fake.listOrgBillingManagersMutex.Unlock()
-	fake.ListOrgBillingManagersStub = nil
-	fake.listOrgBillingManagersReturns = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListOrgBillingManagersReturnsOnCall(i int, result1 []cfclient.User, result2 error) {
-	fake.listOrgBillingManagersMutex.Lock()
-	defer fake.listOrgBillingManagersMutex.Unlock()
-	fake.ListOrgBillingManagersStub = nil
-	if fake.listOrgBillingManagersReturnsOnCall == nil {
-		fake.listOrgBillingManagersReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.User
-			result2 error
-		})
-	}
-	fake.listOrgBillingManagersReturnsOnCall[i] = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListOrgManagers(arg1 string) ([]cfclient.User, error) {
-	fake.listOrgManagersMutex.Lock()
-	ret, specificReturn := fake.listOrgManagersReturnsOnCall[len(fake.listOrgManagersArgsForCall)]
-	fake.listOrgManagersArgsForCall = append(fake.listOrgManagersArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("ListOrgManagers", []interface{}{arg1})
-	fake.listOrgManagersMutex.Unlock()
-	if fake.ListOrgManagersStub != nil {
-		return fake.ListOrgManagersStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listOrgManagersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListOrgManagersCallCount() int {
-	fake.listOrgManagersMutex.RLock()
-	defer fake.listOrgManagersMutex.RUnlock()
-	return len(fake.listOrgManagersArgsForCall)
-}
-
-func (fake *FakeCFClient) ListOrgManagersCalls(stub func(string) ([]cfclient.User, error)) {
-	fake.listOrgManagersMutex.Lock()
-	defer fake.listOrgManagersMutex.Unlock()
-	fake.ListOrgManagersStub = stub
-}
-
-func (fake *FakeCFClient) ListOrgManagersArgsForCall(i int) string {
-	fake.listOrgManagersMutex.RLock()
-	defer fake.listOrgManagersMutex.RUnlock()
-	argsForCall := fake.listOrgManagersArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) ListOrgManagersReturns(result1 []cfclient.User, result2 error) {
-	fake.listOrgManagersMutex.Lock()
-	defer fake.listOrgManagersMutex.Unlock()
-	fake.ListOrgManagersStub = nil
-	fake.listOrgManagersReturns = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListOrgManagersReturnsOnCall(i int, result1 []cfclient.User, result2 error) {
-	fake.listOrgManagersMutex.Lock()
-	defer fake.listOrgManagersMutex.Unlock()
-	fake.ListOrgManagersStub = nil
-	if fake.listOrgManagersReturnsOnCall == nil {
-		fake.listOrgManagersReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.User
-			result2 error
-		})
-	}
-	fake.listOrgManagersReturnsOnCall[i] = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListOrgUsers(arg1 string) ([]cfclient.User, error) {
-	fake.listOrgUsersMutex.Lock()
-	ret, specificReturn := fake.listOrgUsersReturnsOnCall[len(fake.listOrgUsersArgsForCall)]
-	fake.listOrgUsersArgsForCall = append(fake.listOrgUsersArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("ListOrgUsers", []interface{}{arg1})
-	fake.listOrgUsersMutex.Unlock()
-	if fake.ListOrgUsersStub != nil {
-		return fake.ListOrgUsersStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listOrgUsersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListOrgUsersCallCount() int {
-	fake.listOrgUsersMutex.RLock()
-	defer fake.listOrgUsersMutex.RUnlock()
-	return len(fake.listOrgUsersArgsForCall)
-}
-
-func (fake *FakeCFClient) ListOrgUsersCalls(stub func(string) ([]cfclient.User, error)) {
-	fake.listOrgUsersMutex.Lock()
-	defer fake.listOrgUsersMutex.Unlock()
-	fake.ListOrgUsersStub = stub
-}
-
-func (fake *FakeCFClient) ListOrgUsersArgsForCall(i int) string {
-	fake.listOrgUsersMutex.RLock()
-	defer fake.listOrgUsersMutex.RUnlock()
-	argsForCall := fake.listOrgUsersArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) ListOrgUsersReturns(result1 []cfclient.User, result2 error) {
-	fake.listOrgUsersMutex.Lock()
-	defer fake.listOrgUsersMutex.Unlock()
-	fake.ListOrgUsersStub = nil
-	fake.listOrgUsersReturns = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListOrgUsersReturnsOnCall(i int, result1 []cfclient.User, result2 error) {
-	fake.listOrgUsersMutex.Lock()
-	defer fake.listOrgUsersMutex.Unlock()
-	fake.ListOrgUsersStub = nil
-	if fake.listOrgUsersReturnsOnCall == nil {
-		fake.listOrgUsersReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.User
-			result2 error
-		})
-	}
-	fake.listOrgUsersReturnsOnCall[i] = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListSpaceAuditors(arg1 string) ([]cfclient.User, error) {
-	fake.listSpaceAuditorsMutex.Lock()
-	ret, specificReturn := fake.listSpaceAuditorsReturnsOnCall[len(fake.listSpaceAuditorsArgsForCall)]
-	fake.listSpaceAuditorsArgsForCall = append(fake.listSpaceAuditorsArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("ListSpaceAuditors", []interface{}{arg1})
-	fake.listSpaceAuditorsMutex.Unlock()
-	if fake.ListSpaceAuditorsStub != nil {
-		return fake.ListSpaceAuditorsStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listSpaceAuditorsReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListSpaceAuditorsCallCount() int {
-	fake.listSpaceAuditorsMutex.RLock()
-	defer fake.listSpaceAuditorsMutex.RUnlock()
-	return len(fake.listSpaceAuditorsArgsForCall)
-}
-
-func (fake *FakeCFClient) ListSpaceAuditorsCalls(stub func(string) ([]cfclient.User, error)) {
-	fake.listSpaceAuditorsMutex.Lock()
-	defer fake.listSpaceAuditorsMutex.Unlock()
-	fake.ListSpaceAuditorsStub = stub
-}
-
-func (fake *FakeCFClient) ListSpaceAuditorsArgsForCall(i int) string {
-	fake.listSpaceAuditorsMutex.RLock()
-	defer fake.listSpaceAuditorsMutex.RUnlock()
-	argsForCall := fake.listSpaceAuditorsArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) ListSpaceAuditorsReturns(result1 []cfclient.User, result2 error) {
-	fake.listSpaceAuditorsMutex.Lock()
-	defer fake.listSpaceAuditorsMutex.Unlock()
-	fake.ListSpaceAuditorsStub = nil
-	fake.listSpaceAuditorsReturns = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListSpaceAuditorsReturnsOnCall(i int, result1 []cfclient.User, result2 error) {
-	fake.listSpaceAuditorsMutex.Lock()
-	defer fake.listSpaceAuditorsMutex.Unlock()
-	fake.ListSpaceAuditorsStub = nil
-	if fake.listSpaceAuditorsReturnsOnCall == nil {
-		fake.listSpaceAuditorsReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.User
-			result2 error
-		})
-	}
-	fake.listSpaceAuditorsReturnsOnCall[i] = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListSpaceDevelopers(arg1 string) ([]cfclient.User, error) {
-	fake.listSpaceDevelopersMutex.Lock()
-	ret, specificReturn := fake.listSpaceDevelopersReturnsOnCall[len(fake.listSpaceDevelopersArgsForCall)]
-	fake.listSpaceDevelopersArgsForCall = append(fake.listSpaceDevelopersArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("ListSpaceDevelopers", []interface{}{arg1})
-	fake.listSpaceDevelopersMutex.Unlock()
-	if fake.ListSpaceDevelopersStub != nil {
-		return fake.ListSpaceDevelopersStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listSpaceDevelopersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListSpaceDevelopersCallCount() int {
-	fake.listSpaceDevelopersMutex.RLock()
-	defer fake.listSpaceDevelopersMutex.RUnlock()
-	return len(fake.listSpaceDevelopersArgsForCall)
-}
-
-func (fake *FakeCFClient) ListSpaceDevelopersCalls(stub func(string) ([]cfclient.User, error)) {
-	fake.listSpaceDevelopersMutex.Lock()
-	defer fake.listSpaceDevelopersMutex.Unlock()
-	fake.ListSpaceDevelopersStub = stub
-}
-
-func (fake *FakeCFClient) ListSpaceDevelopersArgsForCall(i int) string {
-	fake.listSpaceDevelopersMutex.RLock()
-	defer fake.listSpaceDevelopersMutex.RUnlock()
-	argsForCall := fake.listSpaceDevelopersArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) ListSpaceDevelopersReturns(result1 []cfclient.User, result2 error) {
-	fake.listSpaceDevelopersMutex.Lock()
-	defer fake.listSpaceDevelopersMutex.Unlock()
-	fake.ListSpaceDevelopersStub = nil
-	fake.listSpaceDevelopersReturns = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListSpaceDevelopersReturnsOnCall(i int, result1 []cfclient.User, result2 error) {
-	fake.listSpaceDevelopersMutex.Lock()
-	defer fake.listSpaceDevelopersMutex.Unlock()
-	fake.ListSpaceDevelopersStub = nil
-	if fake.listSpaceDevelopersReturnsOnCall == nil {
-		fake.listSpaceDevelopersReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.User
-			result2 error
-		})
-	}
-	fake.listSpaceDevelopersReturnsOnCall[i] = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListSpaceManagers(arg1 string) ([]cfclient.User, error) {
-	fake.listSpaceManagersMutex.Lock()
-	ret, specificReturn := fake.listSpaceManagersReturnsOnCall[len(fake.listSpaceManagersArgsForCall)]
-	fake.listSpaceManagersArgsForCall = append(fake.listSpaceManagersArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("ListSpaceManagers", []interface{}{arg1})
-	fake.listSpaceManagersMutex.Unlock()
-	if fake.ListSpaceManagersStub != nil {
-		return fake.ListSpaceManagersStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listSpaceManagersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCFClient) ListSpaceManagersCallCount() int {
-	fake.listSpaceManagersMutex.RLock()
-	defer fake.listSpaceManagersMutex.RUnlock()
-	return len(fake.listSpaceManagersArgsForCall)
-}
-
-func (fake *FakeCFClient) ListSpaceManagersCalls(stub func(string) ([]cfclient.User, error)) {
-	fake.listSpaceManagersMutex.Lock()
-	defer fake.listSpaceManagersMutex.Unlock()
-	fake.ListSpaceManagersStub = stub
-}
-
-func (fake *FakeCFClient) ListSpaceManagersArgsForCall(i int) string {
-	fake.listSpaceManagersMutex.RLock()
-	defer fake.listSpaceManagersMutex.RUnlock()
-	argsForCall := fake.listSpaceManagersArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCFClient) ListSpaceManagersReturns(result1 []cfclient.User, result2 error) {
-	fake.listSpaceManagersMutex.Lock()
-	defer fake.listSpaceManagersMutex.Unlock()
-	fake.ListSpaceManagersStub = nil
-	fake.listSpaceManagersReturns = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCFClient) ListSpaceManagersReturnsOnCall(i int, result1 []cfclient.User, result2 error) {
-	fake.listSpaceManagersMutex.Lock()
-	defer fake.listSpaceManagersMutex.Unlock()
-	fake.ListSpaceManagersStub = nil
-	if fake.listSpaceManagersReturnsOnCall == nil {
-		fake.listSpaceManagersReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.User
-			result2 error
-		})
-	}
-	fake.listSpaceManagersReturnsOnCall[i] = struct {
-		result1 []cfclient.User
-		result2 error
-	}{result1, result2}
+	fake.deleteV3RoleReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeCFClient) ListSpacesByQuery(arg1 url.Values) ([]cfclient.Space, error) {
@@ -1323,482 +445,273 @@ func (fake *FakeCFClient) ListSpacesByQueryReturnsOnCall(i int, result1 []cfclie
 	}{result1, result2}
 }
 
-func (fake *FakeCFClient) RemoveOrgAuditor(arg1 string, arg2 string) error {
-	fake.removeOrgAuditorMutex.Lock()
-	ret, specificReturn := fake.removeOrgAuditorReturnsOnCall[len(fake.removeOrgAuditorArgsForCall)]
-	fake.removeOrgAuditorArgsForCall = append(fake.removeOrgAuditorArgsForCall, struct {
+func (fake *FakeCFClient) ListV3OrganizationRolesByGUIDAndType(arg1 string, arg2 string) ([]cfclient.V3User, error) {
+	fake.listV3OrganizationRolesByGUIDAndTypeMutex.Lock()
+	ret, specificReturn := fake.listV3OrganizationRolesByGUIDAndTypeReturnsOnCall[len(fake.listV3OrganizationRolesByGUIDAndTypeArgsForCall)]
+	fake.listV3OrganizationRolesByGUIDAndTypeArgsForCall = append(fake.listV3OrganizationRolesByGUIDAndTypeArgsForCall, struct {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
-	fake.recordInvocation("RemoveOrgAuditor", []interface{}{arg1, arg2})
-	fake.removeOrgAuditorMutex.Unlock()
-	if fake.RemoveOrgAuditorStub != nil {
-		return fake.RemoveOrgAuditorStub(arg1, arg2)
+	fake.recordInvocation("ListV3OrganizationRolesByGUIDAndType", []interface{}{arg1, arg2})
+	fake.listV3OrganizationRolesByGUIDAndTypeMutex.Unlock()
+	if fake.ListV3OrganizationRolesByGUIDAndTypeStub != nil {
+		return fake.ListV3OrganizationRolesByGUIDAndTypeStub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.removeOrgAuditorReturns
-	return fakeReturns.result1
+	fakeReturns := fake.listV3OrganizationRolesByGUIDAndTypeReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCFClient) RemoveOrgAuditorCallCount() int {
-	fake.removeOrgAuditorMutex.RLock()
-	defer fake.removeOrgAuditorMutex.RUnlock()
-	return len(fake.removeOrgAuditorArgsForCall)
+func (fake *FakeCFClient) ListV3OrganizationRolesByGUIDAndTypeCallCount() int {
+	fake.listV3OrganizationRolesByGUIDAndTypeMutex.RLock()
+	defer fake.listV3OrganizationRolesByGUIDAndTypeMutex.RUnlock()
+	return len(fake.listV3OrganizationRolesByGUIDAndTypeArgsForCall)
 }
 
-func (fake *FakeCFClient) RemoveOrgAuditorCalls(stub func(string, string) error) {
-	fake.removeOrgAuditorMutex.Lock()
-	defer fake.removeOrgAuditorMutex.Unlock()
-	fake.RemoveOrgAuditorStub = stub
+func (fake *FakeCFClient) ListV3OrganizationRolesByGUIDAndTypeCalls(stub func(string, string) ([]cfclient.V3User, error)) {
+	fake.listV3OrganizationRolesByGUIDAndTypeMutex.Lock()
+	defer fake.listV3OrganizationRolesByGUIDAndTypeMutex.Unlock()
+	fake.ListV3OrganizationRolesByGUIDAndTypeStub = stub
 }
 
-func (fake *FakeCFClient) RemoveOrgAuditorArgsForCall(i int) (string, string) {
-	fake.removeOrgAuditorMutex.RLock()
-	defer fake.removeOrgAuditorMutex.RUnlock()
-	argsForCall := fake.removeOrgAuditorArgsForCall[i]
+func (fake *FakeCFClient) ListV3OrganizationRolesByGUIDAndTypeArgsForCall(i int) (string, string) {
+	fake.listV3OrganizationRolesByGUIDAndTypeMutex.RLock()
+	defer fake.listV3OrganizationRolesByGUIDAndTypeMutex.RUnlock()
+	argsForCall := fake.listV3OrganizationRolesByGUIDAndTypeArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCFClient) RemoveOrgAuditorReturns(result1 error) {
-	fake.removeOrgAuditorMutex.Lock()
-	defer fake.removeOrgAuditorMutex.Unlock()
-	fake.RemoveOrgAuditorStub = nil
-	fake.removeOrgAuditorReturns = struct {
-		result1 error
-	}{result1}
+func (fake *FakeCFClient) ListV3OrganizationRolesByGUIDAndTypeReturns(result1 []cfclient.V3User, result2 error) {
+	fake.listV3OrganizationRolesByGUIDAndTypeMutex.Lock()
+	defer fake.listV3OrganizationRolesByGUIDAndTypeMutex.Unlock()
+	fake.ListV3OrganizationRolesByGUIDAndTypeStub = nil
+	fake.listV3OrganizationRolesByGUIDAndTypeReturns = struct {
+		result1 []cfclient.V3User
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeCFClient) RemoveOrgAuditorReturnsOnCall(i int, result1 error) {
-	fake.removeOrgAuditorMutex.Lock()
-	defer fake.removeOrgAuditorMutex.Unlock()
-	fake.RemoveOrgAuditorStub = nil
-	if fake.removeOrgAuditorReturnsOnCall == nil {
-		fake.removeOrgAuditorReturnsOnCall = make(map[int]struct {
-			result1 error
+func (fake *FakeCFClient) ListV3OrganizationRolesByGUIDAndTypeReturnsOnCall(i int, result1 []cfclient.V3User, result2 error) {
+	fake.listV3OrganizationRolesByGUIDAndTypeMutex.Lock()
+	defer fake.listV3OrganizationRolesByGUIDAndTypeMutex.Unlock()
+	fake.ListV3OrganizationRolesByGUIDAndTypeStub = nil
+	if fake.listV3OrganizationRolesByGUIDAndTypeReturnsOnCall == nil {
+		fake.listV3OrganizationRolesByGUIDAndTypeReturnsOnCall = make(map[int]struct {
+			result1 []cfclient.V3User
+			result2 error
 		})
 	}
-	fake.removeOrgAuditorReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
+	fake.listV3OrganizationRolesByGUIDAndTypeReturnsOnCall[i] = struct {
+		result1 []cfclient.V3User
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeCFClient) RemoveOrgBillingManager(arg1 string, arg2 string) error {
-	fake.removeOrgBillingManagerMutex.Lock()
-	ret, specificReturn := fake.removeOrgBillingManagerReturnsOnCall[len(fake.removeOrgBillingManagerArgsForCall)]
-	fake.removeOrgBillingManagerArgsForCall = append(fake.removeOrgBillingManagerArgsForCall, struct {
+func (fake *FakeCFClient) ListV3RolesByQuery(arg1 url.Values) ([]cfclient.V3Role, error) {
+	fake.listV3RolesByQueryMutex.Lock()
+	ret, specificReturn := fake.listV3RolesByQueryReturnsOnCall[len(fake.listV3RolesByQueryArgsForCall)]
+	fake.listV3RolesByQueryArgsForCall = append(fake.listV3RolesByQueryArgsForCall, struct {
+		arg1 url.Values
+	}{arg1})
+	fake.recordInvocation("ListV3RolesByQuery", []interface{}{arg1})
+	fake.listV3RolesByQueryMutex.Unlock()
+	if fake.ListV3RolesByQueryStub != nil {
+		return fake.ListV3RolesByQueryStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listV3RolesByQueryReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCFClient) ListV3RolesByQueryCallCount() int {
+	fake.listV3RolesByQueryMutex.RLock()
+	defer fake.listV3RolesByQueryMutex.RUnlock()
+	return len(fake.listV3RolesByQueryArgsForCall)
+}
+
+func (fake *FakeCFClient) ListV3RolesByQueryCalls(stub func(url.Values) ([]cfclient.V3Role, error)) {
+	fake.listV3RolesByQueryMutex.Lock()
+	defer fake.listV3RolesByQueryMutex.Unlock()
+	fake.ListV3RolesByQueryStub = stub
+}
+
+func (fake *FakeCFClient) ListV3RolesByQueryArgsForCall(i int) url.Values {
+	fake.listV3RolesByQueryMutex.RLock()
+	defer fake.listV3RolesByQueryMutex.RUnlock()
+	argsForCall := fake.listV3RolesByQueryArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeCFClient) ListV3RolesByQueryReturns(result1 []cfclient.V3Role, result2 error) {
+	fake.listV3RolesByQueryMutex.Lock()
+	defer fake.listV3RolesByQueryMutex.Unlock()
+	fake.ListV3RolesByQueryStub = nil
+	fake.listV3RolesByQueryReturns = struct {
+		result1 []cfclient.V3Role
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFClient) ListV3RolesByQueryReturnsOnCall(i int, result1 []cfclient.V3Role, result2 error) {
+	fake.listV3RolesByQueryMutex.Lock()
+	defer fake.listV3RolesByQueryMutex.Unlock()
+	fake.ListV3RolesByQueryStub = nil
+	if fake.listV3RolesByQueryReturnsOnCall == nil {
+		fake.listV3RolesByQueryReturnsOnCall = make(map[int]struct {
+			result1 []cfclient.V3Role
+			result2 error
+		})
+	}
+	fake.listV3RolesByQueryReturnsOnCall[i] = struct {
+		result1 []cfclient.V3Role
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFClient) ListV3SpaceRolesByGUIDAndType(arg1 string, arg2 string) ([]cfclient.V3User, error) {
+	fake.listV3SpaceRolesByGUIDAndTypeMutex.Lock()
+	ret, specificReturn := fake.listV3SpaceRolesByGUIDAndTypeReturnsOnCall[len(fake.listV3SpaceRolesByGUIDAndTypeArgsForCall)]
+	fake.listV3SpaceRolesByGUIDAndTypeArgsForCall = append(fake.listV3SpaceRolesByGUIDAndTypeArgsForCall, struct {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
-	fake.recordInvocation("RemoveOrgBillingManager", []interface{}{arg1, arg2})
-	fake.removeOrgBillingManagerMutex.Unlock()
-	if fake.RemoveOrgBillingManagerStub != nil {
-		return fake.RemoveOrgBillingManagerStub(arg1, arg2)
+	fake.recordInvocation("ListV3SpaceRolesByGUIDAndType", []interface{}{arg1, arg2})
+	fake.listV3SpaceRolesByGUIDAndTypeMutex.Unlock()
+	if fake.ListV3SpaceRolesByGUIDAndTypeStub != nil {
+		return fake.ListV3SpaceRolesByGUIDAndTypeStub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.removeOrgBillingManagerReturns
-	return fakeReturns.result1
+	fakeReturns := fake.listV3SpaceRolesByGUIDAndTypeReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCFClient) RemoveOrgBillingManagerCallCount() int {
-	fake.removeOrgBillingManagerMutex.RLock()
-	defer fake.removeOrgBillingManagerMutex.RUnlock()
-	return len(fake.removeOrgBillingManagerArgsForCall)
+func (fake *FakeCFClient) ListV3SpaceRolesByGUIDAndTypeCallCount() int {
+	fake.listV3SpaceRolesByGUIDAndTypeMutex.RLock()
+	defer fake.listV3SpaceRolesByGUIDAndTypeMutex.RUnlock()
+	return len(fake.listV3SpaceRolesByGUIDAndTypeArgsForCall)
 }
 
-func (fake *FakeCFClient) RemoveOrgBillingManagerCalls(stub func(string, string) error) {
-	fake.removeOrgBillingManagerMutex.Lock()
-	defer fake.removeOrgBillingManagerMutex.Unlock()
-	fake.RemoveOrgBillingManagerStub = stub
+func (fake *FakeCFClient) ListV3SpaceRolesByGUIDAndTypeCalls(stub func(string, string) ([]cfclient.V3User, error)) {
+	fake.listV3SpaceRolesByGUIDAndTypeMutex.Lock()
+	defer fake.listV3SpaceRolesByGUIDAndTypeMutex.Unlock()
+	fake.ListV3SpaceRolesByGUIDAndTypeStub = stub
 }
 
-func (fake *FakeCFClient) RemoveOrgBillingManagerArgsForCall(i int) (string, string) {
-	fake.removeOrgBillingManagerMutex.RLock()
-	defer fake.removeOrgBillingManagerMutex.RUnlock()
-	argsForCall := fake.removeOrgBillingManagerArgsForCall[i]
+func (fake *FakeCFClient) ListV3SpaceRolesByGUIDAndTypeArgsForCall(i int) (string, string) {
+	fake.listV3SpaceRolesByGUIDAndTypeMutex.RLock()
+	defer fake.listV3SpaceRolesByGUIDAndTypeMutex.RUnlock()
+	argsForCall := fake.listV3SpaceRolesByGUIDAndTypeArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCFClient) RemoveOrgBillingManagerReturns(result1 error) {
-	fake.removeOrgBillingManagerMutex.Lock()
-	defer fake.removeOrgBillingManagerMutex.Unlock()
-	fake.RemoveOrgBillingManagerStub = nil
-	fake.removeOrgBillingManagerReturns = struct {
-		result1 error
-	}{result1}
+func (fake *FakeCFClient) ListV3SpaceRolesByGUIDAndTypeReturns(result1 []cfclient.V3User, result2 error) {
+	fake.listV3SpaceRolesByGUIDAndTypeMutex.Lock()
+	defer fake.listV3SpaceRolesByGUIDAndTypeMutex.Unlock()
+	fake.ListV3SpaceRolesByGUIDAndTypeStub = nil
+	fake.listV3SpaceRolesByGUIDAndTypeReturns = struct {
+		result1 []cfclient.V3User
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeCFClient) RemoveOrgBillingManagerReturnsOnCall(i int, result1 error) {
-	fake.removeOrgBillingManagerMutex.Lock()
-	defer fake.removeOrgBillingManagerMutex.Unlock()
-	fake.RemoveOrgBillingManagerStub = nil
-	if fake.removeOrgBillingManagerReturnsOnCall == nil {
-		fake.removeOrgBillingManagerReturnsOnCall = make(map[int]struct {
-			result1 error
+func (fake *FakeCFClient) ListV3SpaceRolesByGUIDAndTypeReturnsOnCall(i int, result1 []cfclient.V3User, result2 error) {
+	fake.listV3SpaceRolesByGUIDAndTypeMutex.Lock()
+	defer fake.listV3SpaceRolesByGUIDAndTypeMutex.Unlock()
+	fake.ListV3SpaceRolesByGUIDAndTypeStub = nil
+	if fake.listV3SpaceRolesByGUIDAndTypeReturnsOnCall == nil {
+		fake.listV3SpaceRolesByGUIDAndTypeReturnsOnCall = make(map[int]struct {
+			result1 []cfclient.V3User
+			result2 error
 		})
 	}
-	fake.removeOrgBillingManagerReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
+	fake.listV3SpaceRolesByGUIDAndTypeReturnsOnCall[i] = struct {
+		result1 []cfclient.V3User
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeCFClient) RemoveOrgManager(arg1 string, arg2 string) error {
-	fake.removeOrgManagerMutex.Lock()
-	ret, specificReturn := fake.removeOrgManagerReturnsOnCall[len(fake.removeOrgManagerArgsForCall)]
-	fake.removeOrgManagerArgsForCall = append(fake.removeOrgManagerArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("RemoveOrgManager", []interface{}{arg1, arg2})
-	fake.removeOrgManagerMutex.Unlock()
-	if fake.RemoveOrgManagerStub != nil {
-		return fake.RemoveOrgManagerStub(arg1, arg2)
+func (fake *FakeCFClient) SupportsSpaceSupporterRole() (bool, error) {
+	fake.supportsSpaceSupporterRoleMutex.Lock()
+	ret, specificReturn := fake.supportsSpaceSupporterRoleReturnsOnCall[len(fake.supportsSpaceSupporterRoleArgsForCall)]
+	fake.supportsSpaceSupporterRoleArgsForCall = append(fake.supportsSpaceSupporterRoleArgsForCall, struct {
+	}{})
+	fake.recordInvocation("SupportsSpaceSupporterRole", []interface{}{})
+	fake.supportsSpaceSupporterRoleMutex.Unlock()
+	if fake.SupportsSpaceSupporterRoleStub != nil {
+		return fake.SupportsSpaceSupporterRoleStub()
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.removeOrgManagerReturns
-	return fakeReturns.result1
+	fakeReturns := fake.supportsSpaceSupporterRoleReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCFClient) RemoveOrgManagerCallCount() int {
-	fake.removeOrgManagerMutex.RLock()
-	defer fake.removeOrgManagerMutex.RUnlock()
-	return len(fake.removeOrgManagerArgsForCall)
+func (fake *FakeCFClient) SupportsSpaceSupporterRoleCallCount() int {
+	fake.supportsSpaceSupporterRoleMutex.RLock()
+	defer fake.supportsSpaceSupporterRoleMutex.RUnlock()
+	return len(fake.supportsSpaceSupporterRoleArgsForCall)
 }
 
-func (fake *FakeCFClient) RemoveOrgManagerCalls(stub func(string, string) error) {
-	fake.removeOrgManagerMutex.Lock()
-	defer fake.removeOrgManagerMutex.Unlock()
-	fake.RemoveOrgManagerStub = stub
+func (fake *FakeCFClient) SupportsSpaceSupporterRoleCalls(stub func() (bool, error)) {
+	fake.supportsSpaceSupporterRoleMutex.Lock()
+	defer fake.supportsSpaceSupporterRoleMutex.Unlock()
+	fake.SupportsSpaceSupporterRoleStub = stub
 }
 
-func (fake *FakeCFClient) RemoveOrgManagerArgsForCall(i int) (string, string) {
-	fake.removeOrgManagerMutex.RLock()
-	defer fake.removeOrgManagerMutex.RUnlock()
-	argsForCall := fake.removeOrgManagerArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+func (fake *FakeCFClient) SupportsSpaceSupporterRoleReturns(result1 bool, result2 error) {
+	fake.supportsSpaceSupporterRoleMutex.Lock()
+	defer fake.supportsSpaceSupporterRoleMutex.Unlock()
+	fake.SupportsSpaceSupporterRoleStub = nil
+	fake.supportsSpaceSupporterRoleReturns = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeCFClient) RemoveOrgManagerReturns(result1 error) {
-	fake.removeOrgManagerMutex.Lock()
-	defer fake.removeOrgManagerMutex.Unlock()
-	fake.RemoveOrgManagerStub = nil
-	fake.removeOrgManagerReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) RemoveOrgManagerReturnsOnCall(i int, result1 error) {
-	fake.removeOrgManagerMutex.Lock()
-	defer fake.removeOrgManagerMutex.Unlock()
-	fake.RemoveOrgManagerStub = nil
-	if fake.removeOrgManagerReturnsOnCall == nil {
-		fake.removeOrgManagerReturnsOnCall = make(map[int]struct {
-			result1 error
+func (fake *FakeCFClient) SupportsSpaceSupporterRoleReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.supportsSpaceSupporterRoleMutex.Lock()
+	defer fake.supportsSpaceSupporterRoleMutex.Unlock()
+	fake.SupportsSpaceSupporterRoleStub = nil
+	if fake.supportsSpaceSupporterRoleReturnsOnCall == nil {
+		fake.supportsSpaceSupporterRoleReturnsOnCall = make(map[int]struct {
+			result1 bool
+			result2 error
 		})
 	}
-	fake.removeOrgManagerReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) RemoveOrgUser(arg1 string, arg2 string) error {
-	fake.removeOrgUserMutex.Lock()
-	ret, specificReturn := fake.removeOrgUserReturnsOnCall[len(fake.removeOrgUserArgsForCall)]
-	fake.removeOrgUserArgsForCall = append(fake.removeOrgUserArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("RemoveOrgUser", []interface{}{arg1, arg2})
-	fake.removeOrgUserMutex.Unlock()
-	if fake.RemoveOrgUserStub != nil {
-		return fake.RemoveOrgUserStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.removeOrgUserReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeCFClient) RemoveOrgUserCallCount() int {
-	fake.removeOrgUserMutex.RLock()
-	defer fake.removeOrgUserMutex.RUnlock()
-	return len(fake.removeOrgUserArgsForCall)
-}
-
-func (fake *FakeCFClient) RemoveOrgUserCalls(stub func(string, string) error) {
-	fake.removeOrgUserMutex.Lock()
-	defer fake.removeOrgUserMutex.Unlock()
-	fake.RemoveOrgUserStub = stub
-}
-
-func (fake *FakeCFClient) RemoveOrgUserArgsForCall(i int) (string, string) {
-	fake.removeOrgUserMutex.RLock()
-	defer fake.removeOrgUserMutex.RUnlock()
-	argsForCall := fake.removeOrgUserArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) RemoveOrgUserReturns(result1 error) {
-	fake.removeOrgUserMutex.Lock()
-	defer fake.removeOrgUserMutex.Unlock()
-	fake.RemoveOrgUserStub = nil
-	fake.removeOrgUserReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) RemoveOrgUserReturnsOnCall(i int, result1 error) {
-	fake.removeOrgUserMutex.Lock()
-	defer fake.removeOrgUserMutex.Unlock()
-	fake.RemoveOrgUserStub = nil
-	if fake.removeOrgUserReturnsOnCall == nil {
-		fake.removeOrgUserReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.removeOrgUserReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) RemoveSpaceAuditor(arg1 string, arg2 string) error {
-	fake.removeSpaceAuditorMutex.Lock()
-	ret, specificReturn := fake.removeSpaceAuditorReturnsOnCall[len(fake.removeSpaceAuditorArgsForCall)]
-	fake.removeSpaceAuditorArgsForCall = append(fake.removeSpaceAuditorArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("RemoveSpaceAuditor", []interface{}{arg1, arg2})
-	fake.removeSpaceAuditorMutex.Unlock()
-	if fake.RemoveSpaceAuditorStub != nil {
-		return fake.RemoveSpaceAuditorStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.removeSpaceAuditorReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeCFClient) RemoveSpaceAuditorCallCount() int {
-	fake.removeSpaceAuditorMutex.RLock()
-	defer fake.removeSpaceAuditorMutex.RUnlock()
-	return len(fake.removeSpaceAuditorArgsForCall)
-}
-
-func (fake *FakeCFClient) RemoveSpaceAuditorCalls(stub func(string, string) error) {
-	fake.removeSpaceAuditorMutex.Lock()
-	defer fake.removeSpaceAuditorMutex.Unlock()
-	fake.RemoveSpaceAuditorStub = stub
-}
-
-func (fake *FakeCFClient) RemoveSpaceAuditorArgsForCall(i int) (string, string) {
-	fake.removeSpaceAuditorMutex.RLock()
-	defer fake.removeSpaceAuditorMutex.RUnlock()
-	argsForCall := fake.removeSpaceAuditorArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) RemoveSpaceAuditorReturns(result1 error) {
-	fake.removeSpaceAuditorMutex.Lock()
-	defer fake.removeSpaceAuditorMutex.Unlock()
-	fake.RemoveSpaceAuditorStub = nil
-	fake.removeSpaceAuditorReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) RemoveSpaceAuditorReturnsOnCall(i int, result1 error) {
-	fake.removeSpaceAuditorMutex.Lock()
-	defer fake.removeSpaceAuditorMutex.Unlock()
-	fake.RemoveSpaceAuditorStub = nil
-	if fake.removeSpaceAuditorReturnsOnCall == nil {
-		fake.removeSpaceAuditorReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.removeSpaceAuditorReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) RemoveSpaceDeveloper(arg1 string, arg2 string) error {
-	fake.removeSpaceDeveloperMutex.Lock()
-	ret, specificReturn := fake.removeSpaceDeveloperReturnsOnCall[len(fake.removeSpaceDeveloperArgsForCall)]
-	fake.removeSpaceDeveloperArgsForCall = append(fake.removeSpaceDeveloperArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("RemoveSpaceDeveloper", []interface{}{arg1, arg2})
-	fake.removeSpaceDeveloperMutex.Unlock()
-	if fake.RemoveSpaceDeveloperStub != nil {
-		return fake.RemoveSpaceDeveloperStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.removeSpaceDeveloperReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeCFClient) RemoveSpaceDeveloperCallCount() int {
-	fake.removeSpaceDeveloperMutex.RLock()
-	defer fake.removeSpaceDeveloperMutex.RUnlock()
-	return len(fake.removeSpaceDeveloperArgsForCall)
-}
-
-func (fake *FakeCFClient) RemoveSpaceDeveloperCalls(stub func(string, string) error) {
-	fake.removeSpaceDeveloperMutex.Lock()
-	defer fake.removeSpaceDeveloperMutex.Unlock()
-	fake.RemoveSpaceDeveloperStub = stub
-}
-
-func (fake *FakeCFClient) RemoveSpaceDeveloperArgsForCall(i int) (string, string) {
-	fake.removeSpaceDeveloperMutex.RLock()
-	defer fake.removeSpaceDeveloperMutex.RUnlock()
-	argsForCall := fake.removeSpaceDeveloperArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) RemoveSpaceDeveloperReturns(result1 error) {
-	fake.removeSpaceDeveloperMutex.Lock()
-	defer fake.removeSpaceDeveloperMutex.Unlock()
-	fake.RemoveSpaceDeveloperStub = nil
-	fake.removeSpaceDeveloperReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) RemoveSpaceDeveloperReturnsOnCall(i int, result1 error) {
-	fake.removeSpaceDeveloperMutex.Lock()
-	defer fake.removeSpaceDeveloperMutex.Unlock()
-	fake.RemoveSpaceDeveloperStub = nil
-	if fake.removeSpaceDeveloperReturnsOnCall == nil {
-		fake.removeSpaceDeveloperReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.removeSpaceDeveloperReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) RemoveSpaceManager(arg1 string, arg2 string) error {
-	fake.removeSpaceManagerMutex.Lock()
-	ret, specificReturn := fake.removeSpaceManagerReturnsOnCall[len(fake.removeSpaceManagerArgsForCall)]
-	fake.removeSpaceManagerArgsForCall = append(fake.removeSpaceManagerArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("RemoveSpaceManager", []interface{}{arg1, arg2})
-	fake.removeSpaceManagerMutex.Unlock()
-	if fake.RemoveSpaceManagerStub != nil {
-		return fake.RemoveSpaceManagerStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.removeSpaceManagerReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeCFClient) RemoveSpaceManagerCallCount() int {
-	fake.removeSpaceManagerMutex.RLock()
-	defer fake.removeSpaceManagerMutex.RUnlock()
-	return len(fake.removeSpaceManagerArgsForCall)
-}
-
-func (fake *FakeCFClient) RemoveSpaceManagerCalls(stub func(string, string) error) {
-	fake.removeSpaceManagerMutex.Lock()
-	defer fake.removeSpaceManagerMutex.Unlock()
-	fake.RemoveSpaceManagerStub = stub
-}
-
-func (fake *FakeCFClient) RemoveSpaceManagerArgsForCall(i int) (string, string) {
-	fake.removeSpaceManagerMutex.RLock()
-	defer fake.removeSpaceManagerMutex.RUnlock()
-	argsForCall := fake.removeSpaceManagerArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeCFClient) RemoveSpaceManagerReturns(result1 error) {
-	fake.removeSpaceManagerMutex.Lock()
-	defer fake.removeSpaceManagerMutex.Unlock()
-	fake.RemoveSpaceManagerStub = nil
-	fake.removeSpaceManagerReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeCFClient) RemoveSpaceManagerReturnsOnCall(i int, result1 error) {
-	fake.removeSpaceManagerMutex.Lock()
-	defer fake.removeSpaceManagerMutex.Unlock()
-	fake.RemoveSpaceManagerStub = nil
-	if fake.removeSpaceManagerReturnsOnCall == nil {
-		fake.removeSpaceManagerReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.removeSpaceManagerReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
+	fake.supportsSpaceSupporterRoleReturnsOnCall[i] = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.associateOrgAuditorMutex.RLock()
-	defer fake.associateOrgAuditorMutex.RUnlock()
-	fake.associateOrgBillingManagerMutex.RLock()
-	defer fake.associateOrgBillingManagerMutex.RUnlock()
-	fake.associateOrgManagerMutex.RLock()
-	defer fake.associateOrgManagerMutex.RUnlock()
-	fake.associateOrgUserMutex.RLock()
-	defer fake.associateOrgUserMutex.RUnlock()
-	fake.associateSpaceAuditorMutex.RLock()
-	defer fake.associateSpaceAuditorMutex.RUnlock()
-	fake.associateSpaceDeveloperMutex.RLock()
-	defer fake.associateSpaceDeveloperMutex.RUnlock()
-	fake.associateSpaceManagerMutex.RLock()
-	defer fake.associateSpaceManagerMutex.RUnlock()
+	fake.createV3OrganizationRoleMutex.RLock()
+	defer fake.createV3OrganizationRoleMutex.RUnlock()
+	fake.createV3SpaceRoleMutex.RLock()
+	defer fake.createV3SpaceRoleMutex.RUnlock()
 	fake.deleteUserMutex.RLock()
 	defer fake.deleteUserMutex.RUnlock()
-	fake.listOrgAuditorsMutex.RLock()
-	defer fake.listOrgAuditorsMutex.RUnlock()
-	fake.listOrgBillingManagersMutex.RLock()
-	defer fake.listOrgBillingManagersMutex.RUnlock()
-	fake.listOrgManagersMutex.RLock()
-	defer fake.listOrgManagersMutex.RUnlock()
-	fake.listOrgUsersMutex.RLock()
-	defer fake.listOrgUsersMutex.RUnlock()
-	fake.listSpaceAuditorsMutex.RLock()
-	defer fake.listSpaceAuditorsMutex.RUnlock()
-	fake.listSpaceDevelopersMutex.RLock()
-	defer fake.listSpaceDevelopersMutex.RUnlock()
-	fake.listSpaceManagersMutex.RLock()
-	defer fake.listSpaceManagersMutex.RUnlock()
+	fake.deleteV3RoleMutex.RLock()
+	defer fake.deleteV3RoleMutex.RUnlock()
 	fake.listSpacesByQueryMutex.RLock()
 	defer fake.listSpacesByQueryMutex.RUnlock()
-	fake.removeOrgAuditorMutex.RLock()
-	defer fake.removeOrgAuditorMutex.RUnlock()
-	fake.removeOrgBillingManagerMutex.RLock()
-	defer fake.removeOrgBillingManagerMutex.RUnlock()
-	fake.removeOrgManagerMutex.RLock()
-	defer fake.removeOrgManagerMutex.RUnlock()
-	fake.removeOrgUserMutex.RLock()
-	defer fake.removeOrgUserMutex.RUnlock()
-	fake.removeSpaceAuditorMutex.RLock()
-	defer fake.removeSpaceAuditorMutex.RUnlock()
-	fake.removeSpaceDeveloperMutex.RLock()
-	defer fake.removeSpaceDeveloperMutex.RUnlock()
-	fake.removeSpaceManagerMutex.RLock()
-	defer fake.removeSpaceManagerMutex.RUnlock()
+	fake.listV3OrganizationRolesByGUIDAndTypeMutex.RLock()
+	defer fake.listV3OrganizationRolesByGUIDAndTypeMutex.RUnlock()
+	fake.listV3RolesByQueryMutex.RLock()
+	defer fake.listV3RolesByQueryMutex.RUnlock()
+	fake.listV3SpaceRolesByGUIDAndTypeMutex.RLock()
+	defer fake.listV3SpaceRolesByGUIDAndTypeMutex.RUnlock()
+	fake.supportsSpaceSupporterRoleMutex.RLock()
+	defer fake.supportsSpaceSupporterRoleMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

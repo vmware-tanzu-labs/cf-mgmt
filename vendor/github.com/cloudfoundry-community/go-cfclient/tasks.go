@@ -201,7 +201,7 @@ func (c *Client) TerminateTask(guid string) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 202 {
+	if resp.StatusCode != http.StatusAccepted {
 		return errors.Wrapf(err, "Failed terminating task, response status code %d", resp.StatusCode)
 	}
 	return nil

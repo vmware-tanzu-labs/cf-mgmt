@@ -9,12 +9,12 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func NewRoleUsers(users []cfclient.User, uaaUsers *uaa.Users) (*RoleUsers, error) {
+func NewRoleUsers(users []cfclient.V3User, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers := InitRoleUsers()
 	for _, user := range users {
-		uaaUser := uaaUsers.GetByID(user.Guid)
+		uaaUser := uaaUsers.GetByID(user.GUID)
 		if uaaUser == nil {
-			roleUsers.addOrphanedUser(user.Guid)
+			roleUsers.addOrphanedUser(user.GUID)
 			continue
 		}
 		roleUser := RoleUser{
@@ -24,7 +24,7 @@ func NewRoleUsers(users []cfclient.User, uaaUsers *uaa.Users) (*RoleUsers, error
 		}
 
 		if roleUser.UserName == "" {
-			return nil, fmt.Errorf("Username is blank for user with id %s", user.Guid)
+			return nil, fmt.Errorf("Username is blank for user with id %s", user.GUID)
 		}
 		roleUsers.addUser(roleUser)
 	}
@@ -43,6 +43,16 @@ func (r *RoleUsers) OrphanedUsers() []string {
 func (r *RoleUsers) HasUser(userName string) bool {
 	_, ok := r.users[strings.ToLower(userName)]
 	return ok
+}
+
+func (r *RoleUsers) HasUserForGUID(userName, userGUID string) bool {
+	userList := r.users[strings.ToLower(userName)]
+	for _, user := range userList {
+		if strings.EqualFold(user.GUID, userGUID) {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *RoleUsers) HasUserForOrigin(userName, origin string) bool {
@@ -107,7 +117,7 @@ func (m *DefaultManager) ListSpaceAuditors(spaceGUID string, uaaUsers *uaa.Users
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
 		return InitRoleUsers(), nil
 	}
-	users, err := m.Client.ListSpaceAuditors(spaceGUID)
+	users, err := m.Client.ListV3SpaceRolesByGUIDAndType(spaceGUID, SPACE_AUDITOR)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +127,7 @@ func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string, uaaUsers *uaa.Use
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
 		return InitRoleUsers(), nil
 	}
-	users, err := m.Client.ListSpaceDevelopers(spaceGUID)
+	users, err := m.Client.ListV3SpaceRolesByGUIDAndType(spaceGUID, SPACE_DEVELOPER)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +137,22 @@ func (m *DefaultManager) ListSpaceManagers(spaceGUID string, uaaUsers *uaa.Users
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
 		return InitRoleUsers(), nil
 	}
-	users, err := m.Client.ListSpaceManagers(spaceGUID)
+	users, err := m.Client.ListV3SpaceRolesByGUIDAndType(spaceGUID, SPACE_MANAGER)
+	if err != nil {
+		return nil, err
+	}
+	return NewRoleUsers(users, uaaUsers)
+}
+
+func (m *DefaultManager) ListSpaceSupporters(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
+	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
+		return InitRoleUsers(), nil
+	}
+	supports, err := m.Client.SupportsSpaceSupporterRole()
+	if err != nil || !supports {
+		return InitRoleUsers(), err
+	}
+	users, err := m.Client.ListV3SpaceRolesByGUIDAndType(spaceGUID, SPACE_SUPPORTER)
 	if err != nil {
 		return nil, err
 	}
@@ -148,6 +173,14 @@ func (m *DefaultManager) listSpaceDevelopers(input UsersInput, uaaUsers *uaa.Use
 	}
 	return roleUsers, err
 }
+
+func (m *DefaultManager) listSpaceSupporters(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
+	roleUsers, err := m.ListSpaceSupporters(input.SpaceGUID, uaaUsers)
+	if err == nil {
+		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-supporter", roleUsers)
+	}
+	return roleUsers, err
+}
 func (m *DefaultManager) listSpaceManagers(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers, err := m.ListSpaceManagers(input.SpaceGUID, uaaUsers)
 	if err == nil {
@@ -160,7 +193,7 @@ func (m *DefaultManager) ListOrgAuditors(orgGUID string, uaaUsers *uaa.Users) (*
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
 		return InitRoleUsers(), nil
 	}
-	users, err := m.Client.ListOrgAuditors(orgGUID)
+	users, err := m.Client.ListV3OrganizationRolesByGUIDAndType(orgGUID, ORG_AUDITOR)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +203,7 @@ func (m *DefaultManager) ListOrgBillingManagers(orgGUID string, uaaUsers *uaa.Us
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
 		return InitRoleUsers(), nil
 	}
-	users, err := m.Client.ListOrgBillingManagers(orgGUID)
+	users, err := m.Client.ListV3OrganizationRolesByGUIDAndType(orgGUID, ORG_BILLING_MANAGER)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +214,18 @@ func (m *DefaultManager) ListOrgManagers(orgGUID string, uaaUsers *uaa.Users) (*
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
 		return InitRoleUsers(), nil
 	}
-	users, err := m.Client.ListOrgManagers(orgGUID)
+	users, err := m.Client.ListV3OrganizationRolesByGUIDAndType(orgGUID, ORG_MANAGER)
+	if err != nil {
+		return nil, err
+	}
+	return NewRoleUsers(users, uaaUsers)
+}
+
+func (m *DefaultManager) ListOrgUsers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return InitRoleUsers(), nil
+	}
+	users, err := m.Client.ListV3OrganizationRolesByGUIDAndType(orgGUID, ORG_USER)
 	if err != nil {
 		return nil, err
 	}

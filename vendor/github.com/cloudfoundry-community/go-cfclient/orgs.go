@@ -96,7 +96,9 @@ func (c *Client) GetOrgByName(name string) (Org, error) {
 		return org, err
 	}
 	if len(orgs) == 0 {
-		return org, fmt.Errorf("Unable to find org %s", name)
+		cfErr := NewOrganizationNotFoundError()
+		cfErr.Description = fmt.Sprintf(cfErr.Description, name)
+		return org, cfErr
 	}
 	return orgs[0], nil
 }
@@ -837,6 +839,7 @@ func (c *Client) updateOrgDefaultIsolationSegment(orgGUID string, data interface
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return errors.Wrapf(err, "Error setting default isolation segment for org %s, response code: %d", orgGUID, resp.StatusCode)
 	}

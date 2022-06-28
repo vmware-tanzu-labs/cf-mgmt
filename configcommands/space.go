@@ -29,6 +29,7 @@ type SpaceConfigurationCommand struct {
 	Developer                   UserRole   `group:"developer" namespace:"developer"`
 	Manager                     UserRole   `group:"manager" namespace:"manager"`
 	Auditor                     UserRole   `group:"auditor" namespace:"auditor"`
+	Supporter                   UserRole   `group:"supporter" namespace:"supporter"`
 	Metadata                    Metadata   `group:"metadata"`
 }
 
@@ -163,10 +164,12 @@ func (c *SpaceConfigurationCommand) updateUsers(spaceConfig *config.SpaceConfig,
 	updateUsersBasedOnRole(&spaceConfig.Developer, spaceConfig.GetDeveloperGroups(), &c.Developer, errorString)
 	updateUsersBasedOnRole(&spaceConfig.Auditor, spaceConfig.GetAuditorGroups(), &c.Auditor, errorString)
 	updateUsersBasedOnRole(&spaceConfig.Manager, spaceConfig.GetManagerGroups(), &c.Manager, errorString)
+	updateUsersBasedOnRole(&spaceConfig.Supporter, spaceConfig.GetSupporterGroups(), &c.Supporter, errorString)
 
 	spaceConfig.DeveloperGroup = ""
 	spaceConfig.ManagerGroup = ""
 	spaceConfig.AuditorGroup = ""
+	spaceConfig.SupporterGroup = ""
 }
 
 func (c *SpaceConfigurationCommand) initConfig() {

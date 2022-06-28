@@ -51,76 +51,90 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("Success", func() {
 			It("Should succeed on RemoveSpaceAuditor", func() {
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
 				err := userManager.RemoveSpaceAuditor(UsersInput{SpaceGUID: "foo"}, "bar", "test-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.RemoveSpaceAuditorCallCount()).To(Equal(1))
-				spaceGUID, userGUID := client.RemoveSpaceAuditorArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
-				Expect(userGUID).To(Equal("test-guid"))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).To(Equal("role-guid"))
 			})
 			It("Should succeed on RemoveSpaceDeveloper", func() {
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
 				err := userManager.RemoveSpaceDeveloper(UsersInput{SpaceGUID: "foo"}, "bar", "test-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.RemoveSpaceDeveloperCallCount()).To(Equal(1))
-				spaceGUID, userGUID := client.RemoveSpaceDeveloperArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
-				Expect(userGUID).To(Equal("test-guid"))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).To(Equal("role-guid"))
 			})
 			It("Should succeed on RemoveSpaceManager", func() {
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
 				err := userManager.RemoveSpaceManager(UsersInput{SpaceGUID: "foo"}, "bar", "test-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.RemoveSpaceManagerCallCount()).To(Equal(1))
-				spaceGUID, userGUID := client.RemoveSpaceManagerArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
-				Expect(userGUID).To(Equal("test-guid"))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).To(Equal("role-guid"))
 			})
 
 			It("Should succeed on AssociateSpaceAuditor", func() {
-				client.AssociateSpaceAuditorReturns(cfclient.Space{}, nil)
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, nil)
 				err := userManager.AssociateSpaceAuditor(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateSpaceAuditorCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
-				spaceGUID, userGUID := client.AssociateSpaceAuditorArgsForCall(0)
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
+				spaceGUID, userGUID, roleType := client.CreateV3SpaceRoleArgsForCall(0)
 				Expect(spaceGUID).To(Equal("spaceGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(roleType).Should(Equal(SPACE_AUDITOR))
 
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 			})
 
 			It("Should succeed on AssociateSpaceDeveloper", func() {
-				client.AssociateSpaceDeveloperReturns(cfclient.Space{}, nil)
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, nil)
 				err := userManager.AssociateSpaceDeveloper(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateSpaceDeveloperCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
-				spaceGUID, userGUID := client.AssociateSpaceDeveloperArgsForCall(0)
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
+				spaceGUID, userGUID, roleType := client.CreateV3SpaceRoleArgsForCall(0)
 				Expect(spaceGUID).To(Equal("spaceGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(roleType).Should(Equal(SPACE_DEVELOPER))
 
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 			})
 
 			It("Should succeed on AssociateSpaceManager", func() {
-				client.AssociateSpaceManagerReturns(cfclient.Space{}, nil)
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, nil)
 				err := userManager.AssociateSpaceManager(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateSpaceManagerCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 			})
 		})
 
@@ -131,8 +145,8 @@ var _ = Describe("given UserSpaces", func() {
 				uaaUsers = &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "test", Origin: "uaa", GUID: "test-user-guid"})
 				uaaUsers.Add(uaa.User{Username: "test-existing", Origin: "uaa", GUID: "test-existing-id"})
-				roleUsers, _ = NewRoleUsers([]cfclient.User{
-					cfclient.User{Username: "test-existing", Guid: "test-existing-id"},
+				roleUsers, _ = NewRoleUsers([]cfclient.V3User{
+					{Username: "test-existing", GUID: "test-existing-id"},
 				}, uaaUsers)
 			})
 			It("Should add internal user to role", func() {
@@ -141,16 +155,19 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
+					OrgUsers:  InitRoleUsers(),
 				}
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org_guid"))
 				Expect(userGUID).Should(Equal("test-user-guid"))
+				Expect(role).Should(Equal(ORG_USER))
 
-				spaceGUID, userGUID := client.AssociateSpaceAuditorArgsForCall(0)
+				spaceGUID, userGUID, roleType := client.CreateV3SpaceRoleArgsForCall(0)
 				Expect(spaceGUID).Should(Equal("space_guid"))
 				Expect(userGUID).Should(Equal("test-user-guid"))
+				Expect(roleType).Should(Equal(SPACE_AUDITOR))
 
 			})
 
@@ -160,11 +177,12 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
+					OrgUsers:  InitRoleUsers(),
 				}
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).Should(Equal(0))
-				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(0))
+				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
 			})
 			It("Should error when user doesn't exist in uaa", func() {
 				updateUsersInput := UsersInput{
@@ -172,6 +190,7 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
+					OrgUsers:  InitRoleUsers(),
 				}
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).Should(HaveOccurred())
@@ -184,12 +203,13 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID: "space_guid",
 					OrgGUID:   "org_guid",
 					AddUser:   userManager.AssociateSpaceAuditor,
+					OrgUsers:  InitRoleUsers(),
 				}
-				client.AssociateOrgUserReturns(cfclient.Org{}, errors.New("error"))
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
 				err := userManager.SyncInternalUsers(roleUsers, uaaUsers, updateUsersInput)
 				Expect(err).Should(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).Should(Equal(1))
-				Expect(client.AssociateSpaceAuditorCallCount()).Should(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
 			})
 
 		})
@@ -199,8 +219,8 @@ var _ = Describe("given UserSpaces", func() {
 			BeforeEach(func() {
 				uaaUsers := &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "test", Origin: "uaa", GUID: "test-id"})
-				roleUsers, _ = NewRoleUsers([]cfclient.User{
-					cfclient.User{Username: "test", Guid: "test-id"},
+				roleUsers, _ = NewRoleUsers([]cfclient.V3User{
+					{Username: "test", GUID: "test-id"},
 				}, uaaUsers)
 			})
 
@@ -210,16 +230,17 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID:   "space_guid",
 					OrgGUID:     "org_guid",
 					RemoveUser:  userManager.RemoveSpaceAuditor,
+					OrgUsers:    InitRoleUsers(),
 				}
-
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
 				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.RemoveSpaceAuditorCallCount()).Should(Equal(1))
+				Expect(client.DeleteV3RoleCallCount()).Should(Equal(1))
 
-				spaceGUID, userGUID := client.RemoveSpaceAuditorArgsForCall(0)
-				Expect(spaceGUID).Should(Equal("space_guid"))
-				Expect(userGUID).Should(Equal("test-id"))
-
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).Should(Equal("role-guid"))
 			})
 
 			It("Should not remove users", func() {
@@ -228,24 +249,26 @@ var _ = Describe("given UserSpaces", func() {
 					SpaceGUID:   "space_guid",
 					OrgGUID:     "org_guid",
 					RemoveUser:  userManager.RemoveSpaceAuditor,
+					OrgUsers:    InitRoleUsers(),
 				}
 
 				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.RemoveSpaceAuditorCallCount()).Should(Equal(0))
+				Expect(client.DeleteV3RoleCallCount()).Should(Equal(0))
 			})
 
 			It("Should skip users that match protected user pattern", func() {
 				uaaUsers := &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "abcd_123_0919191", Origin: "uaa", GUID: "test-id"})
-				roleUsers, _ = NewRoleUsers([]cfclient.User{
-					cfclient.User{Username: "abcd_123_0919191", Guid: "test-id"},
+				roleUsers, _ = NewRoleUsers([]cfclient.V3User{
+					{Username: "abcd_123_0919191", GUID: "test-id"},
 				}, uaaUsers)
 				updateUsersInput := UsersInput{
 					RemoveUsers: true,
 					SpaceGUID:   "space_guid",
 					OrgGUID:     "org_guid",
 					RemoveUser:  userManager.RemoveSpaceAuditor,
+					OrgUsers:    InitRoleUsers(),
 				}
 
 				fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -254,20 +277,24 @@ var _ = Describe("given UserSpaces", func() {
 
 				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.RemoveSpaceAuditorCallCount()).Should(Equal(0))
+				Expect(client.DeleteV3RoleCallCount()).Should(Equal(0))
 			})
 
 			It("Should return error", func() {
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
 				updateUsersInput := UsersInput{
 					RemoveUsers: true,
 					SpaceGUID:   "space_guid",
 					OrgGUID:     "org_guid",
 					RemoveUser:  userManager.RemoveSpaceAuditor,
+					OrgUsers:    InitRoleUsers(),
 				}
-				client.RemoveSpaceAuditorReturns(errors.New("error"))
+				client.DeleteV3RoleReturns(errors.New("error"))
 				err := userManager.RemoveUsers(roleUsers, updateUsersInput)
 				Expect(err).Should(HaveOccurred())
-				Expect(client.RemoveSpaceAuditorCallCount()).Should(Equal(1))
+				Expect(client.DeleteV3RoleCallCount()).Should(Equal(1))
 			})
 		})
 
@@ -283,404 +310,416 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should succeed on RemoveSpaceAuditor", func() {
 				err := userManager.RemoveSpaceAuditor(UsersInput{SpaceGUID: "foo"}, "bar", "uaa")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.RemoveSpaceAuditorCallCount()).To(Equal(0))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(0))
 			})
 			It("Should succeed on RemoveSpaceDeveloper", func() {
 				err := userManager.RemoveSpaceDeveloper(UsersInput{SpaceGUID: "foo"}, "bar", "uaa")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.RemoveSpaceDeveloperCallCount()).To(Equal(0))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(0))
 			})
 			It("Should succeed on RemoveSpaceManager", func() {
 				err := userManager.RemoveSpaceManager(UsersInput{SpaceGUID: "foo"}, "bar", "uaa")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.RemoveSpaceManagerCallCount()).To(Equal(0))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(0))
 			})
 			It("Should succeed on AssociateSpaceAuditor", func() {
-				client.AssociateSpaceAuditorReturns(cfclient.Space{}, nil)
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, nil)
 				err := userManager.AssociateSpaceAuditor(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateSpaceAuditorCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(0))
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(0))
 			})
 			It("Should succeed on AssociateSpaceDeveloper", func() {
-				client.AssociateSpaceDeveloperReturns(cfclient.Space{}, nil)
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, nil)
 				err := userManager.AssociateSpaceDeveloper(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateSpaceDeveloperCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(0))
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(0))
 			})
 			It("Should succeed on AssociateSpaceManager", func() {
-				client.AssociateSpaceManagerReturns(cfclient.Space{}, nil)
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, nil)
 				err := userManager.AssociateSpaceManager(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateSpaceManagerCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(0))
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(0))
 			})
 		})
 		Context("Error", func() {
 			It("Should error on RemoveSpaceAuditor", func() {
-				client.RemoveSpaceAuditorReturns(errors.New("error"))
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
+				client.DeleteV3RoleReturns(errors.New("error"))
 				err := userManager.RemoveSpaceAuditor(UsersInput{SpaceGUID: "foo"}, "bar", "user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.RemoveSpaceAuditorCallCount()).To(Equal(1))
-				spaceGUID, userGUID := client.RemoveSpaceAuditorArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
-				Expect(userGUID).To(Equal("user-guid"))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).To(Equal("role-guid"))
 			})
 			It("Should error on RemoveSpaceDeveloper", func() {
-				client.RemoveSpaceDeveloperReturns(errors.New("error"))
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
+				client.DeleteV3RoleReturns(errors.New("error"))
 				err := userManager.RemoveSpaceDeveloper(UsersInput{SpaceGUID: "foo"}, "bar", "user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.RemoveSpaceDeveloperCallCount()).To(Equal(1))
-				spaceGUID, userGUID := client.RemoveSpaceDeveloperArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
-				Expect(userGUID).To(Equal("user-guid"))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).To(Equal("role-guid"))
 			})
 			It("Should error on RemoveSpaceManager", func() {
-				client.RemoveSpaceManagerReturns(errors.New("error"))
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
+				client.DeleteV3RoleReturns(errors.New("error"))
 				err := userManager.RemoveSpaceManager(UsersInput{SpaceGUID: "foo"}, "bar", "user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.RemoveSpaceManagerCallCount()).To(Equal(1))
-				spaceGUID, userGUID := client.RemoveSpaceManagerArgsForCall(0)
-				Expect(spaceGUID).To(Equal("foo"))
-				Expect(userGUID).To(Equal("user-guid"))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).To(Equal("role-guid"))
 			})
 			It("Should error on AssociateSpaceAuditor", func() {
-				client.AssociateSpaceAuditorReturns(cfclient.Space{}, errors.New("error"))
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, errors.New("error"))
 				err := userManager.AssociateSpaceAuditor(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.AssociateSpaceAuditorCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 			})
 			It("Should error on AssociateSpaceAuditor", func() {
-				client.AssociateSpaceAuditorReturns(cfclient.Space{}, nil)
-				client.AssociateOrgUserReturns(cfclient.Org{}, errors.New("error"))
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, nil)
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
 				err := userManager.AssociateSpaceAuditor(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.AssociateSpaceAuditorCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 			})
 			It("Should error on AssociateSpaceDeveloper", func() {
-				client.AssociateSpaceDeveloperReturns(cfclient.Space{}, errors.New("error"))
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, errors.New("error"))
 				err := userManager.AssociateSpaceDeveloper(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.AssociateSpaceDeveloperCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 			})
 			It("Should error on AssociateSpaceDeveloper", func() {
-				client.AssociateSpaceDeveloperReturns(cfclient.Space{}, nil)
-				client.AssociateOrgUserReturns(cfclient.Org{}, errors.New("error"))
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, nil)
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
 				err := userManager.AssociateSpaceDeveloper(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.AssociateSpaceDeveloperCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 			})
 			It("Should error on AssociateSpaceManager", func() {
-				client.AssociateSpaceManagerReturns(cfclient.Space{}, errors.New("error"))
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, errors.New("error"))
 				err := userManager.AssociateSpaceManager(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.AssociateSpaceManagerCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 			})
 			It("Should error on AssociateSpaceManager", func() {
-				client.AssociateSpaceManagerReturns(cfclient.Space{}, nil)
-				client.AssociateOrgUserReturns(cfclient.Org{}, errors.New("error"))
+				client.CreateV3SpaceRoleReturns(&cfclient.V3Role{}, nil)
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
 				err := userManager.AssociateSpaceManager(UsersInput{
 					OrgGUID:   "orgGUID",
-					SpaceGUID: "spaceGUID"}, "userName", "user-guid")
+					SpaceGUID: "spaceGUID",
+					OrgUsers:  InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.AssociateSpaceManagerCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
+				Expect(client.CreateV3SpaceRoleCallCount()).To(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 			})
 		})
 		Context("AddUserToOrg", func() {
 			It("should associate user", func() {
-				err := userManager.AddUserToOrg("test-org-guid", "test", "test-user-guid")
+				err := userManager.AddUserToOrg(InitRoleUsers(), "test-org-guid", "test", "test-user-guid")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).Should(Equal("test-org-guid"))
 				Expect(userGUID).Should(Equal("test-user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 
 			})
 
 			It("should peek", func() {
 				userManager.Peek = true
-				err := userManager.AddUserToOrg("test-org-guid", "test", "test-user-guid")
+				err := userManager.AddUserToOrg(InitRoleUsers(), "test-org-guid", "test", "test-user-guid")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(0))
 			})
 
 			It("should error", func() {
-				client.AssociateOrgUserReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AddUserToOrg("test-org-guid", "test", "test-user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
+				err := userManager.AddUserToOrg(InitRoleUsers(), "test-org-guid", "test", "test-user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).Should(Equal("test-org-guid"))
 				Expect(userGUID).Should(Equal("test-user-guid"))
-
+				Expect(role).To(Equal(ORG_USER))
 			})
 		})
 		Context("RemoveOrgAuditor", func() {
 			It("should succeed", func() {
-				err := userManager.RemoveOrgAuditor(UsersInput{OrgGUID: "test-org-guid"}, "test", "test-user-guid")
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
+				err := userManager.RemoveOrgAuditor(UsersInput{OrgGUID: "test-org-guid", OrgUsers: InitRoleUsers()}, "test", "test-user-guid")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.RemoveOrgAuditorCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.RemoveOrgAuditorArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-				Expect(userGUID).Should(Equal("test-user-guid"))
-
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).Should(Equal("role-guid"))
 			})
 
 			It("should peek", func() {
 				userManager.Peek = true
-				err := userManager.RemoveOrgAuditor(UsersInput{OrgGUID: "test-org-guid"}, "test", "test-user-guid")
+				err := userManager.RemoveOrgAuditor(UsersInput{OrgGUID: "test-org-guid", OrgUsers: InitRoleUsers()}, "test", "test-user-guid")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.RemoveOrgAuditorCallCount()).To(Equal(0))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(0))
 			})
 
 			It("should error", func() {
-				client.RemoveOrgAuditorReturns(errors.New("error"))
-				err := userManager.RemoveOrgAuditor(UsersInput{OrgGUID: "test-org-guid"}, "test", "test-user-guid")
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
+				client.DeleteV3RoleReturns(errors.New("error"))
+				err := userManager.RemoveOrgAuditor(UsersInput{OrgGUID: "test-org-guid", OrgUsers: InitRoleUsers()}, "test", "test-user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.RemoveOrgAuditorCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.RemoveOrgAuditorArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-				Expect(userGUID).Should(Equal("test-user-guid"))
-
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).Should(Equal("role-guid"))
 			})
 		})
 
 		Context("RemoveOrgBillingManager", func() {
 			It("should succeed", func() {
-				err := userManager.RemoveOrgBillingManager(UsersInput{OrgGUID: "test-org-guid"}, "test", "test-user-guid")
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
+				err := userManager.RemoveOrgBillingManager(UsersInput{OrgGUID: "test-org-guid", OrgUsers: InitRoleUsers()}, "test", "test-user-guid")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.RemoveOrgBillingManagerCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.RemoveOrgBillingManagerArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-				Expect(userGUID).Should(Equal("test-user-guid"))
-
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).Should(Equal("role-guid"))
 			})
 
 			It("should peek", func() {
 				userManager.Peek = true
-				err := userManager.RemoveOrgBillingManager(UsersInput{OrgGUID: "test-org-guid"}, "test", "test-user-guid")
+				err := userManager.RemoveOrgBillingManager(UsersInput{OrgGUID: "test-org-guid", OrgUsers: InitRoleUsers()}, "test", "test-user-guid")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.RemoveOrgBillingManagerCallCount()).To(Equal(0))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(0))
 			})
 
 			It("should error", func() {
-				client.RemoveOrgBillingManagerReturns(errors.New("error"))
-				err := userManager.RemoveOrgBillingManager(UsersInput{OrgGUID: "test-org-guid"}, "test", "test-user-guid")
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
+				client.DeleteV3RoleReturns(errors.New("error"))
+				err := userManager.RemoveOrgBillingManager(UsersInput{OrgGUID: "test-org-guid", OrgUsers: InitRoleUsers()}, "test", "test-user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.RemoveOrgBillingManagerCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.RemoveOrgBillingManagerArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-				Expect(userGUID).Should(Equal("test-user-guid"))
-
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).Should(Equal("role-guid"))
 			})
 		})
 
 		Context("RemoveOrgManager", func() {
 			It("should succeed", func() {
-				err := userManager.RemoveOrgManager(UsersInput{OrgGUID: "test-org-guid"}, "test", "test-user-guid")
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
+				err := userManager.RemoveOrgManager(UsersInput{OrgGUID: "test-org-guid", OrgUsers: InitRoleUsers()}, "test", "test-user-guid")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.RemoveOrgManagerCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.RemoveOrgManagerArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-				Expect(userGUID).Should(Equal("test-user-guid"))
-
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).Should(Equal("role-guid"))
 			})
 
 			It("should peek", func() {
 				userManager.Peek = true
-				err := userManager.RemoveOrgManager(UsersInput{OrgGUID: "test-org-guid"}, "test", "test-user-guid")
+				err := userManager.RemoveOrgManager(UsersInput{OrgGUID: "test-org-guid", OrgUsers: InitRoleUsers()}, "test", "test-user-guid")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.RemoveOrgManagerCallCount()).To(Equal(0))
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(0))
 			})
 
 			It("should error", func() {
-				client.RemoveOrgManagerReturns(errors.New("error"))
-				err := userManager.RemoveOrgManager(UsersInput{OrgGUID: "test-org-guid"}, "test", "test-user-guid")
+				client.ListV3RolesByQueryReturns([]cfclient.V3Role{
+					{GUID: "role-guid"},
+				}, nil)
+				client.DeleteV3RoleReturns(errors.New("error"))
+				err := userManager.RemoveOrgManager(UsersInput{OrgGUID: "test-org-guid", OrgUsers: InitRoleUsers()}, "test", "test-user-guid")
 				Expect(err).Should(HaveOccurred())
-				Expect(client.RemoveOrgManagerCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.RemoveOrgManagerArgsForCall(0)
-				Expect(orgGUID).Should(Equal("test-org-guid"))
-				Expect(userGUID).Should(Equal("test-user-guid"))
-
+				Expect(client.DeleteV3RoleCallCount()).To(Equal(1))
+				roleGUID := client.DeleteV3RoleArgsForCall(0)
+				Expect(roleGUID).Should(Equal("role-guid"))
 			})
 		})
 
 		Context("AssociateOrgAuditor", func() {
 			It("Should succeed", func() {
-				client.AssociateOrgAuditorReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgAuditor(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, nil)
+				err := userManager.AssociateOrgAuditor(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateOrgAuditorCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgAuditorArgsForCall(0)
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(2))
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 
-				orgGUID, userGUID = client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role = client.CreateV3OrganizationRoleArgsForCall(1)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_AUDITOR))
 			})
 
 			It("Should fail", func() {
-				client.AssociateOrgAuditorReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgAuditor(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
+				err := userManager.AssociateOrgAuditor(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).To(HaveOccurred())
-				Expect(client.AssociateOrgAuditorCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgAuditorArgsForCall(0)
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
-
-				orgGUID, userGUID = client.AssociateOrgUserArgsForCall(0)
-				Expect(orgGUID).To(Equal("orgGUID"))
-				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 			})
 			It("Should fail", func() {
-				client.AssociateOrgUserReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgAuditor(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
+				err := userManager.AssociateOrgAuditor(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).To(HaveOccurred())
-				Expect(client.AssociateOrgAuditorCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 			})
 
 			It("Should peek", func() {
 				userManager.Peek = true
-				client.AssociateOrgAuditorReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgAuditor(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, nil)
+				err := userManager.AssociateOrgAuditor(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateOrgAuditorCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(0))
 			})
 		})
 		Context("AssociateOrgBillingManager", func() {
 			It("Should succeed", func() {
-				client.AssociateOrgBillingManagerReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgBillingManager(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, nil)
+				err := userManager.AssociateOrgBillingManager(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateOrgBillingManagerCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgBillingManagerArgsForCall(0)
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(2))
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 
-				orgGUID, userGUID = client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role = client.CreateV3OrganizationRoleArgsForCall(1)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_BILLING_MANAGER))
 			})
 
 			It("Should fail", func() {
-				client.AssociateOrgBillingManagerReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgBillingManager(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
+				err := userManager.AssociateOrgBillingManager(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).To(HaveOccurred())
-				Expect(client.AssociateOrgBillingManagerCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgBillingManagerArgsForCall(0)
-				Expect(orgGUID).To(Equal("orgGUID"))
-				Expect(userGUID).To(Equal("user-guid"))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 
-				orgGUID, userGUID = client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 			})
 
 			It("Should fail", func() {
-				client.AssociateOrgUserReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgBillingManager(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
+				err := userManager.AssociateOrgBillingManager(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).To(HaveOccurred())
-				Expect(client.AssociateOrgBillingManagerCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 			})
 
 			It("Should peek", func() {
 				userManager.Peek = true
-				client.AssociateOrgBillingManagerReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgBillingManager(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, nil)
+				err := userManager.AssociateOrgBillingManager(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateOrgBillingManagerCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(0))
 			})
 		})
 
 		Context("AssociateOrgManager", func() {
 			It("Should succeed", func() {
-				client.AssociateOrgManagerReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgManager(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, nil)
+				err := userManager.AssociateOrgManager(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateOrgManagerCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgManagerArgsForCall(0)
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(2))
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 
-				orgGUID, userGUID = client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role = client.CreateV3OrganizationRoleArgsForCall(1)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_MANAGER))
 			})
 
 			It("Should fail", func() {
-				client.AssociateOrgManagerReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgManager(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
+				err := userManager.AssociateOrgManager(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).To(HaveOccurred())
-				Expect(client.AssociateOrgManagerCallCount()).To(Equal(1))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
-				orgGUID, userGUID := client.AssociateOrgManagerArgsForCall(0)
-				Expect(orgGUID).To(Equal("orgGUID"))
-				Expect(userGUID).To(Equal("user-guid"))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 
-				orgGUID, userGUID = client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 			})
 			It("Should fail", func() {
-				client.AssociateOrgUserReturns(cfclient.Org{}, errors.New("error"))
-				err := userManager.AssociateOrgManager(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
+				err := userManager.AssociateOrgManager(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).To(HaveOccurred())
-				Expect(client.AssociateOrgManagerCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(1))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(1))
 
-				orgGUID, userGUID := client.AssociateOrgUserArgsForCall(0)
+				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).To(Equal("orgGUID"))
 				Expect(userGUID).To(Equal("user-guid"))
+				Expect(role).To(Equal(ORG_USER))
 			})
 
 			It("Should peek", func() {
 				userManager.Peek = true
-				client.AssociateOrgManagerReturns(cfclient.Org{}, nil)
-				err := userManager.AssociateOrgManager(UsersInput{OrgGUID: "orgGUID"}, "userName", "user-guid")
+				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, nil)
+				err := userManager.AssociateOrgManager(UsersInput{OrgGUID: "orgGUID", OrgUsers: InitRoleUsers()}, "userName", "user-guid")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(client.AssociateOrgManagerCallCount()).To(Equal(0))
-				Expect(client.AssociateOrgUserCallCount()).To(Equal(0))
+				Expect(client.CreateV3OrganizationRoleCallCount()).To(Equal(0))
 			})
 		})
 
@@ -690,7 +729,7 @@ var _ = Describe("given UserSpaces", func() {
 				userMap.Add(uaa.User{Username: "test-user-guid", GUID: "test-user"})
 				uaaFake.ListUsersReturns(userMap, nil)
 				fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-					config.SpaceConfig{
+					{
 						Space: "test-space",
 						Org:   "test-org",
 					},
@@ -712,7 +751,7 @@ var _ = Describe("given UserSpaces", func() {
 				userMap.Add(uaa.User{Username: "test-user-guid", GUID: "test-user"})
 				uaaFake.ListUsersReturns(userMap, nil)
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org: "test-org",
 					},
 				}, nil)

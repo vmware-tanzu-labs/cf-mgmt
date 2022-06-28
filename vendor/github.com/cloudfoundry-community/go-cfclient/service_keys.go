@@ -113,22 +113,24 @@ func (c *Client) GetServiceKeyByName(name string) (ServiceKey, error) {
 		return serviceKey, err
 	}
 	if len(serviceKeys) == 0 {
-		return serviceKey, fmt.Errorf("Unable to find service key %s", name)
+		cfErr := NewServiceKeyNotFoundError()
+		cfErr.Description = fmt.Sprintf(cfErr.Description, name)
+		return ServiceKey{}, cfErr
 	}
 	return serviceKeys[0], nil
 }
 
 // GetServiceKeyByInstanceGuid is deprecated in favor of GetServiceKeysByInstanceGuid
 func (c *Client) GetServiceKeyByInstanceGuid(guid string) (ServiceKey, error) {
-	var serviceKey ServiceKey
 	q := url.Values{}
 	q.Set("q", "service_instance_guid:"+guid)
 	serviceKeys, err := c.ListServiceKeysByQuery(q)
 	if err != nil {
-		return serviceKey, err
+		return ServiceKey{}, err
 	}
 	if len(serviceKeys) == 0 {
-		return serviceKey, fmt.Errorf("Unable to find service key for guid %s", guid)
+		cfErr := NewServiceKeyNotFoundError()
+		return ServiceKey{}, cfErr
 	}
 	return serviceKeys[0], nil
 }
@@ -143,7 +145,8 @@ func (c *Client) GetServiceKeysByInstanceGuid(guid string) ([]ServiceKey, error)
 		return serviceKeys, err
 	}
 	if len(serviceKeys) == 0 {
-		return serviceKeys, fmt.Errorf("Unable to find service key for guid %s", guid)
+		cfErr := NewServiceKeyNotFoundError()
+		return serviceKeys, cfErr
 	}
 	return serviceKeys, nil
 }

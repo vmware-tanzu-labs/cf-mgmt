@@ -84,6 +84,20 @@ type FakeManager struct {
 		result1 *user.RoleUsers
 		result2 error
 	}
+	ListOrgUsersStub        func(string, *uaa.Users) (*user.RoleUsers, error)
+	listOrgUsersMutex       sync.RWMutex
+	listOrgUsersArgsForCall []struct {
+		arg1 string
+		arg2 *uaa.Users
+	}
+	listOrgUsersReturns struct {
+		result1 *user.RoleUsers
+		result2 error
+	}
+	listOrgUsersReturnsOnCall map[int]struct {
+		result1 *user.RoleUsers
+		result2 error
+	}
 	ListSpaceAuditorsStub        func(string, *uaa.Users) (*user.RoleUsers, error)
 	listSpaceAuditorsMutex       sync.RWMutex
 	listSpaceAuditorsArgsForCall []struct {
@@ -123,6 +137,20 @@ type FakeManager struct {
 		result2 error
 	}
 	listSpaceManagersReturnsOnCall map[int]struct {
+		result1 *user.RoleUsers
+		result2 error
+	}
+	ListSpaceSupportersStub        func(string, *uaa.Users) (*user.RoleUsers, error)
+	listSpaceSupportersMutex       sync.RWMutex
+	listSpaceSupportersArgsForCall []struct {
+		arg1 string
+		arg2 *uaa.Users
+	}
+	listSpaceSupportersReturns struct {
+		result1 *user.RoleUsers
+		result2 error
+	}
+	listSpaceSupportersReturnsOnCall map[int]struct {
 		result1 *user.RoleUsers
 		result2 error
 	}
@@ -508,6 +536,70 @@ func (fake *FakeManager) ListOrgManagersReturnsOnCall(i int, result1 *user.RoleU
 	}{result1, result2}
 }
 
+func (fake *FakeManager) ListOrgUsers(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
+	fake.listOrgUsersMutex.Lock()
+	ret, specificReturn := fake.listOrgUsersReturnsOnCall[len(fake.listOrgUsersArgsForCall)]
+	fake.listOrgUsersArgsForCall = append(fake.listOrgUsersArgsForCall, struct {
+		arg1 string
+		arg2 *uaa.Users
+	}{arg1, arg2})
+	fake.recordInvocation("ListOrgUsers", []interface{}{arg1, arg2})
+	fake.listOrgUsersMutex.Unlock()
+	if fake.ListOrgUsersStub != nil {
+		return fake.ListOrgUsersStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listOrgUsersReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeManager) ListOrgUsersCallCount() int {
+	fake.listOrgUsersMutex.RLock()
+	defer fake.listOrgUsersMutex.RUnlock()
+	return len(fake.listOrgUsersArgsForCall)
+}
+
+func (fake *FakeManager) ListOrgUsersCalls(stub func(string, *uaa.Users) (*user.RoleUsers, error)) {
+	fake.listOrgUsersMutex.Lock()
+	defer fake.listOrgUsersMutex.Unlock()
+	fake.ListOrgUsersStub = stub
+}
+
+func (fake *FakeManager) ListOrgUsersArgsForCall(i int) (string, *uaa.Users) {
+	fake.listOrgUsersMutex.RLock()
+	defer fake.listOrgUsersMutex.RUnlock()
+	argsForCall := fake.listOrgUsersArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeManager) ListOrgUsersReturns(result1 *user.RoleUsers, result2 error) {
+	fake.listOrgUsersMutex.Lock()
+	defer fake.listOrgUsersMutex.Unlock()
+	fake.ListOrgUsersStub = nil
+	fake.listOrgUsersReturns = struct {
+		result1 *user.RoleUsers
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) ListOrgUsersReturnsOnCall(i int, result1 *user.RoleUsers, result2 error) {
+	fake.listOrgUsersMutex.Lock()
+	defer fake.listOrgUsersMutex.Unlock()
+	fake.ListOrgUsersStub = nil
+	if fake.listOrgUsersReturnsOnCall == nil {
+		fake.listOrgUsersReturnsOnCall = make(map[int]struct {
+			result1 *user.RoleUsers
+			result2 error
+		})
+	}
+	fake.listOrgUsersReturnsOnCall[i] = struct {
+		result1 *user.RoleUsers
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeManager) ListSpaceAuditors(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
 	fake.listSpaceAuditorsMutex.Lock()
 	ret, specificReturn := fake.listSpaceAuditorsReturnsOnCall[len(fake.listSpaceAuditorsArgsForCall)]
@@ -700,6 +792,70 @@ func (fake *FakeManager) ListSpaceManagersReturnsOnCall(i int, result1 *user.Rol
 	}{result1, result2}
 }
 
+func (fake *FakeManager) ListSpaceSupporters(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
+	fake.listSpaceSupportersMutex.Lock()
+	ret, specificReturn := fake.listSpaceSupportersReturnsOnCall[len(fake.listSpaceSupportersArgsForCall)]
+	fake.listSpaceSupportersArgsForCall = append(fake.listSpaceSupportersArgsForCall, struct {
+		arg1 string
+		arg2 *uaa.Users
+	}{arg1, arg2})
+	fake.recordInvocation("ListSpaceSupporters", []interface{}{arg1, arg2})
+	fake.listSpaceSupportersMutex.Unlock()
+	if fake.ListSpaceSupportersStub != nil {
+		return fake.ListSpaceSupportersStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listSpaceSupportersReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeManager) ListSpaceSupportersCallCount() int {
+	fake.listSpaceSupportersMutex.RLock()
+	defer fake.listSpaceSupportersMutex.RUnlock()
+	return len(fake.listSpaceSupportersArgsForCall)
+}
+
+func (fake *FakeManager) ListSpaceSupportersCalls(stub func(string, *uaa.Users) (*user.RoleUsers, error)) {
+	fake.listSpaceSupportersMutex.Lock()
+	defer fake.listSpaceSupportersMutex.Unlock()
+	fake.ListSpaceSupportersStub = stub
+}
+
+func (fake *FakeManager) ListSpaceSupportersArgsForCall(i int) (string, *uaa.Users) {
+	fake.listSpaceSupportersMutex.RLock()
+	defer fake.listSpaceSupportersMutex.RUnlock()
+	argsForCall := fake.listSpaceSupportersArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeManager) ListSpaceSupportersReturns(result1 *user.RoleUsers, result2 error) {
+	fake.listSpaceSupportersMutex.Lock()
+	defer fake.listSpaceSupportersMutex.Unlock()
+	fake.ListSpaceSupportersStub = nil
+	fake.listSpaceSupportersReturns = struct {
+		result1 *user.RoleUsers
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) ListSpaceSupportersReturnsOnCall(i int, result1 *user.RoleUsers, result2 error) {
+	fake.listSpaceSupportersMutex.Lock()
+	defer fake.listSpaceSupportersMutex.Unlock()
+	fake.ListSpaceSupportersStub = nil
+	if fake.listSpaceSupportersReturnsOnCall == nil {
+		fake.listSpaceSupportersReturnsOnCall = make(map[int]struct {
+			result1 *user.RoleUsers
+			result2 error
+		})
+	}
+	fake.listSpaceSupportersReturnsOnCall[i] = struct {
+		result1 *user.RoleUsers
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeManager) UpdateOrgUsers() error {
 	fake.updateOrgUsersMutex.Lock()
 	ret, specificReturn := fake.updateOrgUsersReturnsOnCall[len(fake.updateOrgUsersArgsForCall)]
@@ -819,12 +975,16 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.listOrgBillingManagersMutex.RUnlock()
 	fake.listOrgManagersMutex.RLock()
 	defer fake.listOrgManagersMutex.RUnlock()
+	fake.listOrgUsersMutex.RLock()
+	defer fake.listOrgUsersMutex.RUnlock()
 	fake.listSpaceAuditorsMutex.RLock()
 	defer fake.listSpaceAuditorsMutex.RUnlock()
 	fake.listSpaceDevelopersMutex.RLock()
 	defer fake.listSpaceDevelopersMutex.RUnlock()
 	fake.listSpaceManagersMutex.RLock()
 	defer fake.listSpaceManagersMutex.RUnlock()
+	fake.listSpaceSupportersMutex.RLock()
+	defer fake.listSpaceSupportersMutex.RUnlock()
 	fake.updateOrgUsersMutex.RLock()
 	defer fake.updateOrgUsersMutex.RUnlock()
 	fake.updateSpaceUsersMutex.RLock()

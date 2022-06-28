@@ -8,7 +8,7 @@ require (
 	code.cloudfoundry.org/trace-logger v0.0.0-20170119230301-107ef08a939d // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f // indirect
-	github.com/cloudfoundry-community/go-cfclient v0.0.0-20210823134051-721f0e559306
+	github.com/cloudfoundry-community/go-cfclient v0.0.0-20220601192014-596c068bcda2
 	github.com/cloudfoundry-community/go-uaa v0.3.2-0.20191219133444-673d775e96b5
 	github.com/go-ldap/ldap/v3 v3.4.3
 	github.com/gopherjs/gopherjs v0.0.0-20210803090616-8f023c250c89 // indirect
@@ -25,9 +25,10 @@ require (
 	github.com/tedsuo/rata v1.0.1-0.20170830210128-07d200713958 // indirect
 	github.com/vito/go-sse v1.0.0 // indirect
 	github.com/xchapter7x/lo v0.0.0-20160804235750-e33b245fc7a8
-	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
+	golang.org/x/net v0.0.0-20220531201128-c960675eff93 // indirect
+	golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.27.1 // indirect
+	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )

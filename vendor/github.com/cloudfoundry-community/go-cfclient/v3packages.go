@@ -147,3 +147,46 @@ func (c *Client) CopyPackageV3(packageGUID, appGUID string) (*V3Package, error) 
 
 	return &pkg, nil
 }
+
+type v3DockerPackageData struct {
+	Image string `json:"image"`
+	*DockerCredentials
+}
+
+type createV3DockerPackageRequest struct {
+	Type          string                         `json:"type"`
+	Relationships map[string]V3ToOneRelationship `json:"relationships"`
+	Data          v3DockerPackageData            `json:"data"`
+}
+
+// CreateV3DockerPackage creates a Docker package
+func (c *Client) CreateV3DockerPackage(image string, appGUID string, dockerCredentials *DockerCredentials) (*V3Package, error) {
+	req := c.NewRequest("POST", "/v3/packages")
+	req.obj = createV3DockerPackageRequest{
+		Type: "docker",
+		Relationships: map[string]V3ToOneRelationship{
+			"app": {Data: V3Relationship{GUID: appGUID}},
+		},
+		Data: v3DockerPackageData{
+			Image:             image,
+			DockerCredentials: dockerCredentials,
+		},
+	}
+
+	resp, err := c.DoRequest(req)
+	if err != nil {
+		return nil, errors.Wrap(err, "Error while copying v3 package")
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("error creating v3 docker package, response code: %d", resp.StatusCode)
+	}
+
+	var pkg V3Package
+	if err := json.NewDecoder(resp.Body).Decode(&pkg); err != nil {
+		return nil, errors.Wrap(err, "Error reading v3 app package")
+	}
+
+	return &pkg, nil
+}

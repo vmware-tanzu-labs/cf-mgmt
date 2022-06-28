@@ -16,8 +16,14 @@ type Link struct {
 	Method string `json:"method,omitempty"`
 }
 
+// V3ToOneRelationship is a relationship to a single object
 type V3ToOneRelationship struct {
 	Data V3Relationship `json:"data,omitempty"`
+}
+
+// V3ToManyRelationships is a relationship to multiple objects
+type V3ToManyRelationships struct {
+	Data []V3Relationship `json:"data,omitempty"`
 }
 
 type V3Relationship struct {

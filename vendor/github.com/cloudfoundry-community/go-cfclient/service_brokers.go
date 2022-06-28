@@ -50,15 +50,15 @@ type ServiceBroker struct {
 }
 
 func (c *Client) DeleteServiceBroker(guid string) error {
-	requestUrl := fmt.Sprintf("/v2/service_brokers/%s", guid)
-	r := c.NewRequest("DELETE", requestUrl)
+	requestURL := fmt.Sprintf("/v2/service_brokers/%s", guid)
+	r := c.NewRequest("DELETE", requestURL)
 	resp, err := c.DoRequest(r)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
-		return errors.Wrapf(err, "Error deleteing service broker %s, response code: %d", guid, resp.StatusCode)
+		return errors.Wrapf(err, "Error deleting service broker %s, response code: %d", guid, resp.StatusCode)
 	}
 	return nil
 
@@ -127,9 +127,9 @@ func (c *Client) CreateServiceBroker(csb CreateServiceBrokerRequest) (ServiceBro
 
 func (c *Client) ListServiceBrokersByQuery(query url.Values) ([]ServiceBroker, error) {
 	var sbs []ServiceBroker
-	requestUrl := "/v2/service_brokers?" + query.Encode()
+	requestURL := "/v2/service_brokers?" + query.Encode()
 	for {
-		serviceBrokerResp, err := c.getServiceBrokerResponse(requestUrl)
+		serviceBrokerResp, err := c.getServiceBrokerResponse(requestURL)
 		if err != nil {
 			return []ServiceBroker{}, err
 		}
@@ -139,8 +139,8 @@ func (c *Client) ListServiceBrokersByQuery(query url.Values) ([]ServiceBroker, e
 			sb.Entity.UpdatedAt = sb.Meta.UpdatedAt
 			sbs = append(sbs, sb.Entity)
 		}
-		requestUrl = serviceBrokerResp.NextUrl
-		if requestUrl == "" {
+		requestURL = serviceBrokerResp.NextUrl
+		if requestURL == "" {
 			break
 		}
 	}
@@ -174,22 +174,23 @@ func (c *Client) GetServiceBrokerByGuid(guid string) (ServiceBroker, error) {
 }
 
 func (c *Client) GetServiceBrokerByName(name string) (ServiceBroker, error) {
-	var sb ServiceBroker
 	q := url.Values{}
 	q.Set("q", "name:"+name)
 	sbs, err := c.ListServiceBrokersByQuery(q)
 	if err != nil {
-		return sb, err
+		return ServiceBroker{}, err
 	}
 	if len(sbs) == 0 {
-		return sb, fmt.Errorf("Unable to find service broker %s", name)
+		cfErr := NewServiceBrokerNotFoundError()
+		cfErr.Description = fmt.Sprintf(cfErr.Description, name)
+		return ServiceBroker{}, cfErr
 	}
 	return sbs[0], nil
 }
 
-func (c *Client) getServiceBrokerResponse(requestUrl string) (ServiceBrokerResponse, error) {
+func (c *Client) getServiceBrokerResponse(requestURL string) (ServiceBrokerResponse, error) {
 	var serviceBrokerResp ServiceBrokerResponse
-	r := c.NewRequest("GET", requestUrl)
+	r := c.NewRequest("GET", requestURL)
 	resp, err := c.DoRequest(r)
 	if err != nil {
 		return ServiceBrokerResponse{}, errors.Wrap(err, "Error requesting Service Brokers")
