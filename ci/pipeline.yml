@@ -10,17 +10,23 @@
 #@ ]
 
 groups:
-- name: compile
+- name: pull-requests
   jobs:
-  - claim-cf-deployment
-  - test-and-build
+  - test
+- name: release
+  jobs:
 #@ for/end v in tas_versions:
   - #@ 'test-against-tas-' + v["pool_without_location"]
-- name: deploy
-  jobs:
-  - deploy
+  - release
+  - publish
 
 resource_types:
+- name: pr-queue-resource
+  type: docker-image
+  source:
+    repository: cryogenics/pr-queue-resource
+    tag: add-status-param
+
 - name: pcf-pool
   type: docker-image
   source:
@@ -90,64 +96,73 @@ resources:
     hostname: environments.toolsmiths.cf-app.com
     pool_name: cf-deployment
 
-- name: every-day
-  type: time
-  icon: timer-outline
+- name: pull-request
+  type: pr-queue-resource
+  check_every: 1h
+  icon: source-pull
   source:
-    start: 9:00 AM
-    stop: 10:00 PM
-    days: [Monday, Tuesday, Wednesday, Thursday, Friday]
+    repository: vmwarepivotallabs/cf-mgmt
+    disable_forks: true
+    access_token: ((github.token))
+    base_branch: main
+
+- name: cryogenics-concourse-tasks
+  type: git
+  icon: github
+  source:
+    uri: git@github.com:pivotal/cryogenics-concourse-tasks.git
+    private_key: ((github.ssh_key))
 
 jobs:
-- name: claim-cf-deployment
+- name: test
   plan:
-  - get: every-day
-    trigger: true
-  - get: source
-    trigger: true
-  - put: cf-deployment-env
-    params:
-      action: claim
-
-- name: test-and-build
-  plan:
-    - in_parallel:
-      - get: every-day
-        trigger: true
-        passed: ['claim-cf-deployment']
-      - get: source
-        trigger: true
-        passed: ['claim-cf-deployment']
-      - get: cf-deployment-env
-        passed: ['claim-cf-deployment']
-        trigger: true
-        version: every
-    - task: unit-test
-      file: source/ci/tasks/runTests.yml
-    - load_var: pooled-env
-      file: cf-deployment-env/metadata
+  - in_parallel:
+    - get: source
+      resource: pull-request
+      trigger: true
+    - get: cryogenics-concourse-tasks
+  - in_parallel:
+    - do:
+      - task: unit-test
+        file: source/ci/tasks/runTests.yml
+    - do:
+      - put: cf-deployment-env
+        params:
+          action: claim
+      - load_var: pooled-env
+        file: cf-deployment-env/metadata
+        format: json
+      - task: integration-test
+        file: source/ci/tasks/runIntegrationTests.yml
+        params:
+          SYSTEM_DOMAIN: ((.:pooled-env.name)).cf-app.com
+      - put: cf-deployment-env
+        params:
+          action: unclaim
+          env_file: cf-deployment-env/metadata
+  on_success:
+    do:
+    - put: pull-request
+      params:
+        merge: false
+        status: success
+    - load_var: pr-metadata
+      file: source/.git/resource/version.json
       format: json
-    - task: integration-test
-      file: source/ci/tasks/runIntegrationTests.yml
+    - task: merge-pr
+      file: cryogenics-concourse-tasks/github-automation/merge-pr/task.yml
+      input_mapping:
+        source-repo: pull-request
       params:
-        SYSTEM_DOMAIN: ((.:pooled-env.name)).cf-app.com
-    - task: build
-      file: source/ci/tasks/build.yml
-    - put: draft-cfmgmt-resource
-      params:
-        name: compiled-output/name
-        tag: compiled-output/tag
-        globs:
-        - compiled-output/cf-mgmt-linux
-        - compiled-output/cf-mgmt-osx
-        - compiled-output/cf-mgmt.exe
-        - compiled-output/cf-mgmt-config-linux
-        - compiled-output/cf-mgmt-config-osx
-        - compiled-output/cf-mgmt-config.exe
-    - put: cf-deployment-env
-      params:
-        action: unclaim
-        env_file: cf-deployment-env/metadata
+        DELETE: TRUE
+        AUTHOR: dependabot
+        GH_TOKEN: ((github.token))
+        PR_REF: ((.:pr-metadata.pr))
+  on_failure:
+    put: pull-request
+    params:
+      merge: false
+      status: failure
 
 #@ for/end v in tas_versions:
 - name: #@ 'test-against-tas-' + v["pool_without_location"]
@@ -172,10 +187,34 @@ jobs:
         action: unclaim
         env_file: #@ 'tas-' + v["pool_without_location"] +'-env/metadata'
 
-- name: deploy
+- name: release
+  plan:
+    - get: source
+      trigger: true
+      resource: source
+      passed:
+      #@ for/end v in tas_versions:
+        - #@ 'test-against-tas-' + v["pool_without_location"]
+    - task: build
+      file: source/ci/tasks/build.yml
+    - put: draft-cfmgmt-resource
+      params:
+        name: compiled-output/name
+        tag: compiled-output/tag
+        globs:
+        - compiled-output/cf-mgmt-linux
+        - compiled-output/cf-mgmt-osx
+        - compiled-output/cf-mgmt.exe
+        - compiled-output/cf-mgmt-config-linux
+        - compiled-output/cf-mgmt-config-osx
+        - compiled-output/cf-mgmt-config.exe
+
+- name: publish
   plan:
     - in_parallel:
       - get: source
+        passed:
+          - release
       - get: releases
         trigger: true
     - task: prepare
