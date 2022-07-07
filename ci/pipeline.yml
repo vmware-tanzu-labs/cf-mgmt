@@ -174,7 +174,7 @@ jobs:
           globs: []
       - get: source
         trigger: true
-        resource: source
+        resource: pull-request
       - put: #@ 'tas-' + v["pool_without_location"] +'-env'
         params:
           action: claim
@@ -192,9 +192,6 @@ jobs:
     - get: source
       trigger: true
       resource: source
-      passed:
-      #@ for/end v in tas_versions:
-        - #@ 'test-against-tas-' + v["pool_without_location"]
     - task: build
       file: source/ci/tasks/build.yml
     - put: draft-cfmgmt-resource
