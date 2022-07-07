@@ -13,10 +13,11 @@ groups:
 - name: pull-requests
   jobs:
   - test
-- name: release
-  jobs:
 #@ for/end v in tas_versions:
   - #@ 'test-against-tas-' + v["pool_without_location"]
+  - merge
+- name: release
+  jobs:
   - release
   - publish
 
@@ -140,29 +141,37 @@ jobs:
         params:
           action: unclaim
           env_file: cf-deployment-env/metadata
-  on_success:
-    do:
-    - put: pull-request
-      params:
-        merge: false
-        status: success
-    - load_var: pr-metadata
-      file: source/.git/resource/version.json
-      format: json
-    - task: merge-pr
-      file: cryogenics-concourse-tasks/github-automation/merge-pr/task.yml
-      input_mapping:
-        source-repo: pull-request
-      params:
-        DELETE: TRUE
-        AUTHOR: dependabot
-        GH_TOKEN: ((github.token))
-        PR_REF: ((.:pr-metadata.pr))
   on_failure:
     put: pull-request
     params:
       merge: false
       status: failure
+
+- name: merge
+  plan:
+  - get: pull-request
+    trigger: true
+    passed:
+    - test
+#@ for v in tas_versions:
+    - #@ 'test-against-tas-' + v["pool_without_location"]
+#@ end
+  - put: pull-request
+    params:
+      merge: false
+      status: success
+  - load_var: pr-metadata
+    file: source/.git/resource/version.json
+    format: json
+  - task: merge-pr
+    file: cryogenics-concourse-tasks/github-automation/merge-pr/task.yml
+    input_mapping:
+      source-repo: pull-request
+    params:
+      DELETE: TRUE
+      AUTHOR: dependabot
+      GH_TOKEN: ((github.token))
+      PR_REF: ((.:pr-metadata.pr))
 
 #@ for/end v in tas_versions:
 - name: #@ 'test-against-tas-' + v["pool_without_location"]
