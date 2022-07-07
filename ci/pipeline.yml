@@ -13,8 +13,11 @@ groups:
 - name: pull-requests
   jobs:
   - test
-#@ for/end v in tas_versions:
+#@ for v in tas_versions:
+  - #@ 'claim-tas-' + v["pool_without_location"]
   - #@ 'test-against-tas-' + v["pool_without_location"]
+  - #@ 'unclaim-tas-' + v["pool_without_location"]
+#@ end
   - merge
 - name: release
   jobs:
@@ -173,28 +176,48 @@ jobs:
       GH_TOKEN: ((github.token))
       PR_REF: ((.:pr-metadata.pr))
 
-#@ for/end v in tas_versions:
+#@ for v in tas_versions:
+- name: #@ 'claim-tas-' + v["pool_without_location"]
+  plan:
+  - get: pull-request
+    trigger: true
+  - put: #@ 'tas-' + v["pool_without_location"] +'-env'
+    params:
+      action: claim
+
 - name: #@ 'test-against-tas-' + v["pool_without_location"]
   plan:
     - in_parallel:
       - get: #@ 'tas-for-vms-' + v["pool_without_location"]
-        trigger: true
         params:
           globs: []
       - get: source
-        trigger: true
         resource: pull-request
-      - put: #@ 'tas-' + v["pool_without_location"] +'-env'
-        params:
-          action: claim
+        passed:
+        - #@ 'claim-tas-' + v["pool_without_location"]
+      - get: #@ 'tas-' + v["pool_without_location"] +'-env'
+        trigger: true
+        passed:
+        - #@ 'claim-tas-' + v["pool_without_location"]
     - task: integration-test
       file: source/ci/tasks/runIntegrationTestsAgainstTAS.yml
       input_mapping:
         env: #@ 'tas-' + v["pool_without_location"] +'-env'
-    - put: #@ 'tas-' + v["pool_without_location"] +'-env'
-      params:
-        action: unclaim
-        env_file: #@ 'tas-' + v["pool_without_location"] +'-env/metadata'
+
+- name: #@ 'unclaim-tas-' + v["pool_without_location"]
+  plan:
+  - get: pull-request
+    passed:
+    - #@ 'test-against-tas-' + v["pool_without_location"]
+  - get: #@ 'tas-' + v["pool_without_location"] + '-env'
+    trigger: true
+    passed:
+    - #@ 'test-against-tas-' + v["pool_without_location"]
+  - put: #@ 'tas-' + v["pool_without_location"] + '-env'
+    params:
+      action: unclaim
+      env_file: #@ 'tas-' + v["pool_without_location"] + '-env/metadata'
+#@ end
 
 - name: release
   plan:
