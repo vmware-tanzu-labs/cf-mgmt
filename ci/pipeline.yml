@@ -44,15 +44,6 @@ resource_types:
 
 resources:
 #@ for/end v in tas_versions:
-- name: #@ 'tas-for-vms-' + v["pool_without_location"]
-  type: pivnet
-  source:
-    api_token: ((pivnet-admin.api_token))
-    product_slug: elastic-runtime
-    sort_by: semver
-    product_version: #@ v["version"]
-
-#@ for/end v in tas_versions:
 - icon: pool
   name: #@ 'tas-' + v["pool_without_location"] + '-env'
   source:
@@ -188,9 +179,6 @@ jobs:
 - name: #@ 'test-against-tas-' + v["pool_without_location"]
   plan:
     - in_parallel:
-      - get: #@ 'tas-for-vms-' + v["pool_without_location"]
-        params:
-          globs: []
       - get: source
         resource: pull-request
         passed:
