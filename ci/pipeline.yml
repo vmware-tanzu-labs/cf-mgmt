@@ -162,6 +162,7 @@ jobs:
 
 - name: merge
   plan:
+  - get: cryogenics-concourse-tasks
   - get: pull-request
     trigger: true
     passed:
@@ -174,7 +175,7 @@ jobs:
       merge: false
       status: success
   - load_var: pr-metadata
-    file: source/.git/resource/version.json
+    file: pull-request/.git/resource/version.json
     format: json
   - task: merge-pr
     file: cryogenics-concourse-tasks/github-automation/merge-pr/task.yml
