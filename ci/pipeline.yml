@@ -12,11 +12,17 @@
 groups:
 - name: pull-requests
   jobs:
+  - claim-cf
   - test
+  - unclaim-cf
+#@ for v in tas_versions:
+  - #@ 'claim-tas-' + v["pool_without_location"]
+  - #@ 'test-against-tas-' + v["pool_without_location"]
+  - #@ 'unclaim-tas-' + v["pool_without_location"]
+#@ end
+  - merge
 - name: release
   jobs:
-#@ for/end v in tas_versions:
-  - #@ 'test-against-tas-' + v["pool_without_location"]
   - release
   - publish
 
@@ -39,15 +45,6 @@ resource_types:
   type: registry-image
 
 resources:
-#@ for/end v in tas_versions:
-- name: #@ 'tas-for-vms-' + v["pool_without_location"]
-  type: pivnet
-  source:
-    api_token: ((pivnet-admin.api_token))
-    product_slug: elastic-runtime
-    sort_by: semver
-    product_version: #@ v["version"]
-
 #@ for/end v in tas_versions:
 - icon: pool
   name: #@ 'tas-' + v["pool_without_location"] + '-env'
@@ -114,21 +111,30 @@ resources:
     private_key: ((github.ssh_key))
 
 jobs:
+- name: claim-cf
+  plan:
+  - get: source
+    resource: pull-request
+    trigger: true
+  - put: cf-deployment-env
+    params:
+      action: claim
+
 - name: test
   plan:
   - in_parallel:
     - get: source
       resource: pull-request
+      passed: [claim-cf]
+    - get: cf-deployment-env
       trigger: true
+      passed: [claim-cf]
     - get: cryogenics-concourse-tasks
   - in_parallel:
     - do:
       - task: unit-test
         file: source/ci/tasks/runTests.yml
     - do:
-      - put: cf-deployment-env
-        params:
-          action: claim
       - load_var: pooled-env
         file: cf-deployment-env/metadata
         format: json
@@ -136,65 +142,96 @@ jobs:
         file: source/ci/tasks/runIntegrationTests.yml
         params:
           SYSTEM_DOMAIN: ((.:pooled-env.name)).cf-app.com
-      - put: cf-deployment-env
-        params:
-          action: unclaim
-          env_file: cf-deployment-env/metadata
-  on_success:
-    do:
-    - put: pull-request
-      params:
-        merge: false
-        status: success
-    - load_var: pr-metadata
-      file: source/.git/resource/version.json
-      format: json
-    - task: merge-pr
-      file: cryogenics-concourse-tasks/github-automation/merge-pr/task.yml
-      input_mapping:
-        source-repo: pull-request
-      params:
-        DELETE: TRUE
-        AUTHOR: dependabot
-        GH_TOKEN: ((github.token))
-        PR_REF: ((.:pr-metadata.pr))
   on_failure:
     put: pull-request
     params:
       merge: false
       status: failure
 
-#@ for/end v in tas_versions:
+- name: unclaim-cf
+  plan:
+  - get: cf-deployment-env
+    trigger: true
+    passed: [test]
+  - get: pull-request
+    passed: [test]
+  - put: cf-deployment-env
+    params:
+      action: unclaim
+      env_file: cf-deployment-env/metadata
+
+- name: merge
+  plan:
+  - get: cryogenics-concourse-tasks
+  - get: pull-request
+    trigger: true
+    passed:
+    - unclaim-cf
+#@ for v in tas_versions:
+    - #@ 'unclaim-tas-' + v["pool_without_location"]
+#@ end
+  - put: pull-request
+    params:
+      merge: false
+      status: success
+  - load_var: pr-metadata
+    file: pull-request/.git/resource/version.json
+    format: json
+  - task: merge-pr
+    file: cryogenics-concourse-tasks/github-automation/merge-pr/task.yml
+    input_mapping:
+      source-repo: pull-request
+    params:
+      DELETE: TRUE
+      AUTHOR: dependabot
+      GH_TOKEN: ((github.token))
+      PR_REF: ((.:pr-metadata.pr))
+
+#@ for v in tas_versions:
+- name: #@ 'claim-tas-' + v["pool_without_location"]
+  plan:
+  - get: pull-request
+    trigger: true
+  - put: #@ 'tas-' + v["pool_without_location"] +'-env'
+    params:
+      action: claim
+
 - name: #@ 'test-against-tas-' + v["pool_without_location"]
   plan:
     - in_parallel:
-      - get: #@ 'tas-for-vms-' + v["pool_without_location"]
-        trigger: true
-        params:
-          globs: []
       - get: source
+        resource: pull-request
+        passed:
+        - #@ 'claim-tas-' + v["pool_without_location"]
+      - get: #@ 'tas-' + v["pool_without_location"] +'-env'
         trigger: true
-        resource: source
-      - put: #@ 'tas-' + v["pool_without_location"] +'-env'
-        params:
-          action: claim
+        passed:
+        - #@ 'claim-tas-' + v["pool_without_location"]
     - task: integration-test
       file: source/ci/tasks/runIntegrationTestsAgainstTAS.yml
       input_mapping:
         env: #@ 'tas-' + v["pool_without_location"] +'-env'
-    - put: #@ 'tas-' + v["pool_without_location"] +'-env'
-      params:
-        action: unclaim
-        env_file: #@ 'tas-' + v["pool_without_location"] +'-env/metadata'
+
+- name: #@ 'unclaim-tas-' + v["pool_without_location"]
+  plan:
+  - get: pull-request
+    passed:
+    - #@ 'test-against-tas-' + v["pool_without_location"]
+  - get: #@ 'tas-' + v["pool_without_location"] + '-env'
+    trigger: true
+    passed:
+    - #@ 'test-against-tas-' + v["pool_without_location"]
+  - put: #@ 'tas-' + v["pool_without_location"] + '-env'
+    params:
+      action: unclaim
+      env_file: #@ 'tas-' + v["pool_without_location"] + '-env/metadata'
+#@ end
 
 - name: release
   plan:
     - get: source
       trigger: true
       resource: source
-      passed:
-      #@ for/end v in tas_versions:
-        - #@ 'test-against-tas-' + v["pool_without_location"]
     - task: build
       file: source/ci/tasks/build.yml
     - put: draft-cfmgmt-resource
