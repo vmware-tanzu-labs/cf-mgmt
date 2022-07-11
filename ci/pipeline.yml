@@ -5,8 +5,6 @@
 #@   {"version": "2.13.*", "pool_without_location": "2_13"},
 #@   {"version": "2.12.*", "pool_without_location": "2_12"},
 #@   {"version": "2.11.*", "pool_without_location": "2_11_lts2"},
-#@   {"version": "2.10.*", "pool_without_location": "2_10"},
-#@   {"version": "2.7.*", "pool_without_location": "2_7_lts"},
 #@ ]
 
 groups:
