@@ -10,7 +10,7 @@ code.cloudfoundry.org/routing-api/models
 # code.cloudfoundry.org/trace-logger v0.0.0-20170119230301-107ef08a939d
 ## explicit
 code.cloudfoundry.org/trace-logger
-# github.com/Azure/go-ntlmssp v0.0.0-20211209120228-48547f28849e
+# github.com/Azure/go-ntlmssp v0.0.0-20220621081337-cb9428e4ac1e
 github.com/Azure/go-ntlmssp
 # github.com/Masterminds/semver v1.5.0
 ## explicit
@@ -29,7 +29,7 @@ github.com/cloudfoundry-community/go-uaa/passwordcredentials
 github.com/fsnotify/fsnotify
 # github.com/go-asn1-ber/asn1-ber v1.5.4
 github.com/go-asn1-ber/asn1-ber
-# github.com/go-ldap/ldap/v3 v3.4.3
+# github.com/go-ldap/ldap/v3 v3.4.4
 ## explicit
 github.com/go-ldap/ldap/v3
 # github.com/golang/protobuf v1.5.2
@@ -113,7 +113,7 @@ github.com/vito/go-sse/sse
 # github.com/xchapter7x/lo v0.0.0-20160804235750-e33b245fc7a8
 ## explicit
 github.com/xchapter7x/lo
-# golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29
+# golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 golang.org/x/crypto/md4
 # golang.org/x/net v0.0.0-20220531201128-c960675eff93
 ## explicit
