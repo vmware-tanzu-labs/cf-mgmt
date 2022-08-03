@@ -31,26 +31,33 @@ func NewManager(
 	spaceMgr space.Manager,
 	orgReader organizationreader.Reader,
 	uaaMgr uaa.Manager,
-	peek bool) Manager {
-	return &DefaultManager{
-		Client:    client,
-		Peek:      peek,
-		SpaceMgr:  spaceMgr,
-		OrgReader: orgReader,
-		UAAMgr:    uaaMgr,
-		Cfg:       cfg,
+	peek bool) (Manager, error) {
+
+	supports, err := client.SupportsSpaceSupporterRole()
+	if err != nil {
+		return nil, err
 	}
+	return &DefaultManager{
+		Client:                 client,
+		Peek:                   peek,
+		SpaceMgr:               spaceMgr,
+		OrgReader:              orgReader,
+		UAAMgr:                 uaaMgr,
+		Cfg:                    cfg,
+		SupportsSpaceSupporter: supports,
+	}, nil
 }
 
 type DefaultManager struct {
-	Client     CFClient
-	Cfg        config.Reader
-	SpaceMgr   space.Manager
-	OrgReader  organizationreader.Reader
-	UAAMgr     uaa.Manager
-	Peek       bool
-	LdapMgr    LdapManager
-	LdapConfig *config.LdapConfig
+	Client                 CFClient
+	Cfg                    config.Reader
+	SpaceMgr               space.Manager
+	OrgReader              organizationreader.Reader
+	UAAMgr                 uaa.Manager
+	Peek                   bool
+	LdapMgr                LdapManager
+	LdapConfig             *config.LdapConfig
+	SupportsSpaceSupporter bool
 }
 
 func (m *DefaultManager) RemoveSpaceAuditor(input UsersInput, userName, userGUID string) error {
@@ -95,11 +102,8 @@ func (m *DefaultManager) RemoveSpaceSupporter(input UsersInput, userName, userGU
 		lo.G.Infof("[dry-run]: removing user %s from org/space %s/%s with role %s", userName, input.OrgName, input.SpaceName, "supporter")
 		return nil
 	}
-	supports, err := m.Client.SupportsSpaceSupporterRole()
-	if err != nil {
-		return err
-	}
-	if !supports {
+
+	if !m.SupportsSpaceSupporter {
 		lo.G.Infof("this instance of cloud foundry does not support space_supporter role")
 		return nil
 	}
@@ -154,15 +158,12 @@ func (m *DefaultManager) AssociateSpaceManager(input UsersInput, userName, userG
 }
 
 func (m *DefaultManager) AssociateSpaceSupporter(input UsersInput, userName, userGUID string) error {
-	supports, err := m.Client.SupportsSpaceSupporterRole()
-	if err != nil {
-		return err
-	}
-	if !supports {
+
+	if !m.SupportsSpaceSupporter {
 		lo.G.Infof("this instance of cloud foundry does not support space_supporter role")
 		return nil
 	}
-	err = m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -286,6 +287,7 @@ func (m *DefaultManager) UpdateSpaceUsers() error {
 	}
 
 	for _, input := range spaceConfigs {
+		lo.G.Infof("Add updating space user for org %s and space %s", input.Org, input.Space)
 		if err := m.updateSpaceUsers(&input, uaaUsers); err != nil {
 			return err
 		}

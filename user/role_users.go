@@ -148,9 +148,9 @@ func (m *DefaultManager) ListSpaceSupporters(spaceGUID string, uaaUsers *uaa.Use
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
 		return InitRoleUsers(), nil
 	}
-	supports, err := m.Client.SupportsSpaceSupporterRole()
-	if err != nil || !supports {
-		return InitRoleUsers(), err
+
+	if !m.SupportsSpaceSupporter {
+		return InitRoleUsers(), nil
 	}
 	users, err := m.Client.ListV3SpaceRolesByGUIDAndType(spaceGUID, SPACE_SUPPORTER)
 	if err != nil {
