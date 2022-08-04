@@ -1,9 +1,5 @@
 package user
 
-import (
-	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
-)
-
 //UsersInput
 type UsersInput struct {
 	SpaceGUID                                   string
@@ -12,8 +8,7 @@ type UsersInput struct {
 	SpaceName                                   string
 	OrgName                                     string
 	RemoveUsers                                 bool
-	OrgUsers                                    *RoleUsers
-	ListUsers                                   func(updateUserInput UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error)
+	RoleUsers                                   *RoleUsers
 	AddUser                                     func(updateUserInput UsersInput, userName, userGUID string) error
 	RemoveUser                                  func(updateUserInput UsersInput, userName, userGUID string) error
 }

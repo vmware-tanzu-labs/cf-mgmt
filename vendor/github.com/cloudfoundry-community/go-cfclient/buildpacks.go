@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"code.cloudfoundry.org/gofileutils/fileutils"
 	"github.com/pkg/errors"
 )
 
@@ -153,7 +152,7 @@ func (c *Client) handleBuildpackResp(resp *http.Response) (Buildpack, error) {
 
 func (b *Buildpack) Upload(file io.Reader, fileName string) error {
 	var capturedErr error
-	fileutils.TempFile("requests", func(requestFile *os.File, err error) {
+	tempFile("requests", func(requestFile *os.File, err error) {
 		if err != nil {
 			capturedErr = err
 			return
@@ -251,4 +250,15 @@ func (bpr *BuildpackRequest) SetName(s string) {
 }
 func (bpr *BuildpackRequest) SetStack(s string) {
 	bpr.Stack = &s
+}
+
+func tempFile(namePrefix string, cb func(tmpFile *os.File, err error)) {
+	tmpFile, err := ioutil.TempFile("", namePrefix)
+
+	defer func() {
+		_ = tmpFile.Close()
+		_ = os.Remove(tmpFile.Name())
+	}()
+
+	cb(tmpFile, err)
 }

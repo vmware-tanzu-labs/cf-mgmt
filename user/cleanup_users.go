@@ -57,7 +57,7 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 		return errors.Wrap(err, fmt.Sprintf("Error listing org users for org %s", input.Org))
 	}
 
-	usersInRoles, err := m.usersInOrgRoles(org.Name, org.Guid, uaaUsers)
+	usersInRoles, err := m.usersInOrgRoles(org.Name, org.Guid)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error usersInOrgRoles for org %s", input.Org))
 	}
@@ -109,16 +109,16 @@ func (m *DefaultManager) unassociatedOrphanedUser(input UsersInput, userGUIDs []
 	return nil
 }
 
-func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
+func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string) (*RoleUsers, error) {
 	roleUsers := InitRoleUsers()
 
 	userInput := UsersInput{
 		OrgGUID: orgGUID,
 		OrgName: orgName,
 	}
-	orgAuditors, err := m.ListOrgAuditors(orgGUID, uaaUsers)
+	_, orgManagers, orgBillingManagers, orgAuditors, err := m.ListOrgUsersByRole(orgGUID)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("Error listing org auditors for org %s", orgName))
+		return nil, err
 	}
 	roleUsers.AddUsers(orgAuditors.Users())
 	roleUsers.AddOrphanedUsers(orgAuditors.OrphanedUsers())
@@ -127,26 +127,18 @@ func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string, uaaUsers *uaa.
 		return nil, err
 	}
 
-	orgManagers, err := m.ListOrgManagers(orgGUID, uaaUsers)
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("Error listing org managers for org %s", orgName))
-	}
 	roleUsers.AddUsers(orgManagers.Users())
 	roleUsers.AddOrphanedUsers(orgManagers.OrphanedUsers())
 
-	err = m.unassociatedOrphanedUser(userInput, orgAuditors.OrphanedUsers(), m.RemoveOrgManager)
+	err = m.unassociatedOrphanedUser(userInput, orgManagers.OrphanedUsers(), m.RemoveOrgManager)
 	if err != nil {
 		return nil, err
 	}
 
-	orgBillingManagers, err := m.ListOrgBillingManagers(orgGUID, uaaUsers)
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("Error listing org billing managers for org %s", orgName))
-	}
 	roleUsers.AddUsers(orgBillingManagers.Users())
 	roleUsers.AddOrphanedUsers(orgBillingManagers.OrphanedUsers())
 
-	err = m.unassociatedOrphanedUser(userInput, orgAuditors.OrphanedUsers(), m.RemoveOrgBillingManager)
+	err = m.unassociatedOrphanedUser(userInput, orgBillingManagers.OrphanedUsers(), m.RemoveOrgBillingManager)
 	if err != nil {
 		return nil, err
 	}
@@ -158,36 +150,36 @@ func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string, uaaUsers *uaa.
 	for _, space := range spaces {
 		userInput.SpaceGUID = space.Guid
 		userInput.SpaceName = space.Name
-		spaceAuditors, err := m.ListSpaceAuditors(space.Guid, uaaUsers)
+		spaceManagers, spaceDevelopers, spaceAuditors, spaceSupporters, err := m.ListSpaceUsersByRole(space.Guid)
 		if err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("Error listing space auditors for org/space %s/%s", orgName, space.Name))
+			return nil, err
 		}
 		roleUsers.AddUsers(spaceAuditors.Users())
 		roleUsers.AddOrphanedUsers(spaceAuditors.OrphanedUsers())
-		err = m.unassociatedOrphanedUser(userInput, orgAuditors.OrphanedUsers(), m.RemoveSpaceAuditor)
+		err = m.unassociatedOrphanedUser(userInput, spaceAuditors.OrphanedUsers(), m.RemoveSpaceAuditor)
 		if err != nil {
 			return nil, err
 		}
 
-		spaceDevelopers, err := m.ListSpaceDevelopers(space.Guid, uaaUsers)
-		if err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("Error listing space developers for org/space %s/%s", orgName, space.Name))
-		}
 		roleUsers.AddUsers(spaceDevelopers.Users())
 		roleUsers.AddOrphanedUsers(spaceDevelopers.OrphanedUsers())
-		err = m.unassociatedOrphanedUser(userInput, orgAuditors.OrphanedUsers(), m.RemoveSpaceDeveloper)
+		err = m.unassociatedOrphanedUser(userInput, spaceDevelopers.OrphanedUsers(), m.RemoveSpaceDeveloper)
 		if err != nil {
 			return nil, err
 		}
 
-		spaceManagers, err := m.ListSpaceManagers(space.Guid, uaaUsers)
-		if err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("Error listing space managers for org/space %s/%s", orgName, space.Name))
-		}
 		roleUsers.AddUsers(spaceManagers.Users())
 		roleUsers.AddOrphanedUsers(spaceManagers.OrphanedUsers())
 
-		err = m.unassociatedOrphanedUser(userInput, orgAuditors.OrphanedUsers(), m.RemoveSpaceManager)
+		err = m.unassociatedOrphanedUser(userInput, spaceManagers.OrphanedUsers(), m.RemoveSpaceManager)
+		if err != nil {
+			return nil, err
+		}
+
+		roleUsers.AddUsers(spaceSupporters.Users())
+		roleUsers.AddOrphanedUsers(spaceSupporters.OrphanedUsers())
+
+		err = m.unassociatedOrphanedUser(userInput, spaceSupporters.OrphanedUsers(), m.RemoveSpaceSupporter)
 		if err != nil {
 			return nil, err
 		}

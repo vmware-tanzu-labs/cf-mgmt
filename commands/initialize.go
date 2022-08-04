@@ -99,8 +99,11 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	cfMgmt.OrgReader = organizationreader.NewReader(client, cfg, peek)
 	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgReader, cfg, peek)
 	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.OrgReader, cfMgmt.SpaceManager, cfg, peek)
-
-	cfMgmt.UserManager = user.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.UAAManager, peek)
+	userManager, err := user.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.UAAManager, peek)
+	if err != nil {
+		return nil, err
+	}
+	cfMgmt.UserManager = userManager
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
 	cfMgmt.QuotaManager = quota.NewManager(client, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.OrgManager, cfg, peek)
 	cfMgmt.PrivateDomainManager = privatedomain.NewManager(client, cfMgmt.OrgReader, cfg, peek)

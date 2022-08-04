@@ -46,10 +46,9 @@ var _ = Describe("SamlUsers", func() {
 	})
 	Context("SyncSamlUsers", func() {
 		var roleUsers *RoleUsers
-		var uaaUsers *uaa.Users
 		BeforeEach(func() {
 			userManager.LdapConfig = &config.LdapConfig{Origin: "saml_origin"}
-			uaaUsers = &uaa.Users{}
+			uaaUsers := &uaa.Users{}
 			uaaUsers.Add(uaa.User{Username: "test@test.com", Origin: "saml_origin", GUID: "test-id"})
 			uaaUsers.Add(uaa.User{Username: "test@test2.com", Origin: "saml_origin", GUID: "test2-id"})
 			roleUsers, _ = NewRoleUsers(
@@ -58,6 +57,7 @@ var _ = Describe("SamlUsers", func() {
 				},
 				uaaUsers,
 			)
+			userManager.UAAUsers = uaaUsers
 		})
 		It("Should add saml user to role", func() {
 			updateUsersInput := UsersInput{
@@ -66,10 +66,10 @@ var _ = Describe("SamlUsers", func() {
 				OrgGUID:   "org_guid",
 				OrgName:   "test-org",
 				SpaceName: "test-space",
-				OrgUsers:  InitRoleUsers(),
+				RoleUsers: InitRoleUsers(),
 				AddUser:   userManager.AssociateSpaceAuditor,
 			}
-			err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
+			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
 			orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
@@ -89,9 +89,9 @@ var _ = Describe("SamlUsers", func() {
 				SpaceGUID: "space_guid",
 				OrgGUID:   "org_guid",
 				AddUser:   userManager.AssociateSpaceAuditor,
-				OrgUsers:  InitRoleUsers(),
+				RoleUsers: InitRoleUsers(),
 			}
-			err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
+			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(roleUsers.HasUser("test@test.com")).Should(BeFalse())
 			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(0))
@@ -104,9 +104,9 @@ var _ = Describe("SamlUsers", func() {
 				SpaceGUID: "space_guid",
 				OrgGUID:   "org_guid",
 				AddUser:   userManager.AssociateSpaceAuditor,
-				OrgUsers:  InitRoleUsers(),
+				RoleUsers: InitRoleUsers(),
 			}
-			err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
+			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(1))
 			arg1, arg2, arg3, origin := uaaFake.CreateExternalUserArgsForCall(0)
@@ -122,10 +122,11 @@ var _ = Describe("SamlUsers", func() {
 				SpaceGUID: "space_guid",
 				OrgGUID:   "org_guid",
 				AddUser:   userManager.AssociateSpaceAuditor,
-				OrgUsers:  InitRoleUsers(),
+				RoleUsers: InitRoleUsers(),
 			}
+			userManager.UAAUsers = &uaa.Users{}
 			uaaFake.CreateExternalUserReturns("guid", errors.New("error"))
-			err := userManager.SyncSamlUsers(roleUsers, &uaa.Users{}, updateUsersInput)
+			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(1))
 		})
@@ -142,10 +143,11 @@ var _ = Describe("SamlUsers", func() {
 				SpaceGUID: "space_guid",
 				OrgGUID:   "org_guid",
 				AddUser:   userManager.AssociateSpaceAuditor,
-				OrgUsers:  InitRoleUsers(),
+				RoleUsers: InitRoleUsers(),
 			}
+			userManager.UAAUsers = uaaUsers
 			client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
-			err := userManager.SyncSamlUsers(roleUsers, uaaUsers, updateUsersInput)
+			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).Should(HaveOccurred())
 			Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
 			Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))

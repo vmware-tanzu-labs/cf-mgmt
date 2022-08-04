@@ -1,8 +1,6 @@
 package user_test
 
 import (
-	"errors"
-
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
@@ -25,8 +23,6 @@ var _ = Describe("RoleUsers", func() {
 		ldapFake    *fakes.FakeLdapManager
 		uaaFake     *uaafakes.FakeManager
 		fakeReader  *configfakes.FakeReader
-		userList    []cfclient.V3User
-		uaaUsers    *uaa.Users
 		spaceFake   *spacefakes.FakeManager
 		orgFake     *orgfakes.FakeReader
 	)
@@ -47,7 +43,7 @@ var _ = Describe("RoleUsers", func() {
 			Peek:       false,
 			LdapConfig: &config.LdapConfig{Origin: "ldap"},
 		}
-		userList = []cfclient.V3User{
+		userList := []cfclient.V3User{
 			{
 				Username: "hello",
 				GUID:     "world",
@@ -57,7 +53,7 @@ var _ = Describe("RoleUsers", func() {
 				GUID:     "world2",
 			},
 		}
-		uaaUsers = &uaa.Users{}
+		uaaUsers := &uaa.Users{}
 		uaaUsers.Add(uaa.User{
 			Username: "test",
 			Origin:   "uaa",
@@ -78,190 +74,19 @@ var _ = Describe("RoleUsers", func() {
 			Origin:   "uaa",
 			GUID:     "world2",
 		})
+		userManager.UAAUsers = uaaUsers
+		userMap := make(map[string]cfclient.V3User)
+		for _, user := range userList {
+			userMap[user.GUID] = user
+		}
+		userManager.CFUsers = userMap
 	})
-	Context("Space Auditors", func() {
+	Context("List Space Users", func() {
+		BeforeEach(func() {
 
-		It("Should succeed on ListSpaceAuditors", func() {
-			client.ListV3SpaceRolesByGUIDAndTypeReturns(userList, nil)
-			users, err := userManager.ListSpaceAuditors("foo", uaaUsers)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(users.Users())).Should(Equal(2))
-			Expect(client.ListV3SpaceRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			spaceGUID, role := client.ListV3SpaceRolesByGUIDAndTypeArgsForCall(0)
-			Expect(spaceGUID).To(Equal("foo"))
-			Expect(role).To(Equal(SPACE_AUDITOR))
 		})
-		It("Should remove orphaned users from ListSpaceAuditors", func() {
-			userList = []cfclient.V3User{
-				{
-					Username: "hello",
-					GUID:     "world",
-				},
-				{
-					Username: "hello2",
-					GUID:     "world2",
-				},
-				{
-					Username: "orphaned_user",
-					GUID:     "orphaned_user_guid",
-				},
-			}
-			client.ListV3SpaceRolesByGUIDAndTypeReturns(userList, nil)
-			users, err := userManager.ListSpaceManagers("foo", uaaUsers)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(users.Users())).Should(Equal(2))
-			Expect(client.ListV3SpaceRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			Expect(len(users.OrphanedUsers())).Should(Equal(1))
-			spaceGUID, role := client.ListV3SpaceRolesByGUIDAndTypeArgsForCall(0)
-			Expect(spaceGUID).To(Equal("foo"))
-			Expect(role).To(Equal(SPACE_MANAGER))
-		})
-		It("Should error on ListSpaceAuditors", func() {
-			client.ListV3SpaceRolesByGUIDAndTypeReturns(nil, errors.New("error"))
-			_, err := userManager.ListSpaceAuditors("foo", uaaUsers)
-			Expect(err).Should(HaveOccurred())
-			Expect(client.ListV3SpaceRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			spaceGUID, role := client.ListV3SpaceRolesByGUIDAndTypeArgsForCall(0)
-			Expect(spaceGUID).To(Equal("foo"))
-			Expect(role).To(Equal(SPACE_AUDITOR))
-		})
-	})
-	Context("Space Develpers", func() {
-		It("Should succeed on ListSpaceDevelopers", func() {
-			client.ListV3SpaceRolesByGUIDAndTypeReturns(userList, nil)
-			users, err := userManager.ListSpaceDevelopers("foo", uaaUsers)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(users.Users())).Should(Equal(2))
-			Expect(client.ListV3SpaceRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			spaceGUID, role := client.ListV3SpaceRolesByGUIDAndTypeArgsForCall(0)
-			Expect(spaceGUID).To(Equal("foo"))
-			Expect(role).To(Equal(SPACE_DEVELOPER))
-		})
-
-		It("Should error on ListSpaceDevelopers", func() {
-			client.ListV3SpaceRolesByGUIDAndTypeReturns(nil, errors.New("error"))
-			_, err := userManager.ListSpaceDevelopers("foo", uaaUsers)
-			Expect(err).Should(HaveOccurred())
-			Expect(client.ListV3SpaceRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			spaceGUID, role := client.ListV3SpaceRolesByGUIDAndTypeArgsForCall(0)
-			Expect(spaceGUID).To(Equal("foo"))
-			Expect(role).To(Equal(SPACE_DEVELOPER))
-		})
-	})
-
-	Context("Space Managers", func() {
-		It("Should succeed on ListSpaceManagers", func() {
-			client.ListV3SpaceRolesByGUIDAndTypeReturns(userList, nil)
-			users, err := userManager.ListSpaceManagers("foo", uaaUsers)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(users.Users())).Should(Equal(2))
-			Expect(client.ListV3SpaceRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			spaceGUID, role := client.ListV3SpaceRolesByGUIDAndTypeArgsForCall(0)
-			Expect(spaceGUID).To(Equal("foo"))
-			Expect(role).To(Equal(SPACE_MANAGER))
-		})
-
-		It("Should error on ListSpaceManagers", func() {
-			client.ListV3SpaceRolesByGUIDAndTypeReturns(nil, errors.New("error"))
-			_, err := userManager.ListSpaceManagers("foo", uaaUsers)
-			Expect(err).Should(HaveOccurred())
-			Expect(client.ListV3SpaceRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			spaceGUID, role := client.ListV3SpaceRolesByGUIDAndTypeArgsForCall(0)
-			Expect(spaceGUID).To(Equal("foo"))
-			Expect(role).To(Equal(SPACE_MANAGER))
-		})
-	})
-
-	Context("ListOrgManager", func() {
-		It("should succeed", func() {
-			client.ListV3OrganizationRolesByGUIDAndTypeReturns([]cfclient.V3User{
-				{
-					Username: "test",
-					GUID:     "test-guid",
-				},
-				{
-					Username: "test2",
-					GUID:     "test2-guid",
-				},
-			}, nil)
-			users, err := userManager.ListOrgManagers("test-org-guid", uaaUsers)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(len(users.Users())).To(Equal(2))
-			Expect(client.ListV3OrganizationRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			orgGUID, role := client.ListV3OrganizationRolesByGUIDAndTypeArgsForCall(0)
-			Expect(orgGUID).Should(Equal("test-org-guid"))
-			Expect(role).To(Equal(ORG_MANAGER))
-		})
-		It("should error", func() {
-			client.ListV3OrganizationRolesByGUIDAndTypeReturns(nil, errors.New("error"))
-			_, err := userManager.ListOrgManagers("test-org-guid", uaaUsers)
-			Expect(err).Should(HaveOccurred())
-			Expect(client.ListV3OrganizationRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			orgGUID, role := client.ListV3OrganizationRolesByGUIDAndTypeArgsForCall(0)
-			Expect(orgGUID).Should(Equal("test-org-guid"))
-			Expect(role).To(Equal(ORG_MANAGER))
-		})
-	})
-
-	Context("ListOrgAuditors", func() {
-		It("should succeed", func() {
-			client.ListV3OrganizationRolesByGUIDAndTypeReturns([]cfclient.V3User{
-				{
-					Username: "test",
-					GUID:     "test-guid",
-				},
-				{
-					Username: "test2",
-					GUID:     "test2-guid",
-				},
-			}, nil)
-			users, err := userManager.ListOrgAuditors("test-org-guid", uaaUsers)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(len(users.Users())).To(Equal(2))
-			Expect(client.ListV3OrganizationRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			orgGUID, role := client.ListV3OrganizationRolesByGUIDAndTypeArgsForCall(0)
-			Expect(orgGUID).Should(Equal("test-org-guid"))
-			Expect(role).To(Equal(ORG_AUDITOR))
-		})
-		It("should error", func() {
-			client.ListV3OrganizationRolesByGUIDAndTypeReturns(nil, errors.New("error"))
-			_, err := userManager.ListOrgAuditors("test-org-guid", uaaUsers)
-			Expect(err).Should(HaveOccurred())
-			Expect(client.ListV3OrganizationRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			orgGUID, role := client.ListV3OrganizationRolesByGUIDAndTypeArgsForCall(0)
-			Expect(orgGUID).Should(Equal("test-org-guid"))
-			Expect(role).To(Equal(ORG_AUDITOR))
-		})
-	})
-
-	Context("ListOrgBillingManager", func() {
-		It("should succeed", func() {
-			client.ListV3OrganizationRolesByGUIDAndTypeReturns([]cfclient.V3User{
-				{
-					Username: "test",
-					GUID:     "test-guid",
-				},
-				{
-					Username: "test2",
-					GUID:     "test2-guid",
-				},
-			}, nil)
-			users, err := userManager.ListOrgBillingManagers("test-org-guid", uaaUsers)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(len(users.Users())).To(Equal(2))
-			Expect(client.ListV3OrganizationRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			orgGUID, role := client.ListV3OrganizationRolesByGUIDAndTypeArgsForCall(0)
-			Expect(orgGUID).Should(Equal("test-org-guid"))
-			Expect(role).To(Equal(ORG_BILLING_MANAGER))
-		})
-		It("should error", func() {
-			client.ListV3OrganizationRolesByGUIDAndTypeReturns(nil, errors.New("error"))
-			_, err := userManager.ListOrgBillingManagers("test-org-guid", uaaUsers)
-			Expect(err).Should(HaveOccurred())
-			Expect(client.ListV3OrganizationRolesByGUIDAndTypeCallCount()).To(Equal(1))
-			orgGUID, role := client.ListV3OrganizationRolesByGUIDAndTypeArgsForCall(0)
-			Expect(orgGUID).Should(Equal("test-org-guid"))
-			Expect(role).To(Equal(ORG_BILLING_MANAGER))
+		It("Return list of users by role", func() {
+			Expect(true).Should(BeTrue())
 		})
 	})
 })

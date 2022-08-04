@@ -10,10 +10,10 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, usersInput UsersInput) error {
+func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
 	origin := m.LdapConfig.Origin
 	if m.LdapConfig.Enabled {
-		ldapUsers, err := m.GetLDAPUsers(uaaUsers, usersInput)
+		ldapUsers, err := m.GetLDAPUsers(usersInput)
 		if err != nil {
 			return err
 		}
@@ -21,14 +21,14 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 		for _, inputUser := range ldapUsers {
 			userToUse := m.UpdateUserInfo(inputUser)
 			userID := userToUse.UserID
-			userList := uaaUsers.GetByName(userID)
+			userList := m.UAAUsers.GetByName(userID)
 			if len(userList) == 0 {
 				lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
 				if userGUID, err := m.UAAMgr.CreateExternalUser(userID, userToUse.Email, userToUse.UserDN, m.LdapConfig.Origin); err != nil {
 					lo.G.Errorf("Unable to create user %s with error %s", userID, err.Error())
 					continue
 				} else {
-					uaaUsers.Add(uaa.User{
+					m.UAAUsers.Add(uaa.User{
 						Username:   userID,
 						ExternalID: userToUse.UserDN,
 						Origin:     m.LdapConfig.Origin,
@@ -38,7 +38,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 				}
 			}
 			if !roleUsers.HasUserForOrigin(userID, origin) {
-				user := uaaUsers.GetByNameAndOrigin(userID, origin)
+				user := m.UAAUsers.GetByNameAndOrigin(userID, origin)
 				if user == nil {
 					return fmt.Errorf("Unable to find user %s for origin %s", userID, origin)
 				}
@@ -56,7 +56,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users
 	return nil
 }
 
-func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, usersInput UsersInput) ([]ldap.User, error) {
+func (m *DefaultManager) GetLDAPUsers(usersInput UsersInput) ([]ldap.User, error) {
 	var ldapUsers []ldap.User
 	for _, groupName := range usersInput.UniqueLdapGroupNames() {
 		userDNList, err := m.LdapMgr.GetUserDNs(groupName)
@@ -65,7 +65,7 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, usersInput UsersInput
 		}
 		for _, userDN := range userDNList {
 			lo.G.Debugf("Checking for userDN %s", userDN)
-			uaaUser := uaaUsers.GetByExternalID(userDN)
+			uaaUser := m.UAAUsers.GetByExternalID(userDN)
 			if uaaUser != nil {
 				lo.G.Debugf("UserDN [%s] found in UAA as [%s], skipping ldap lookup", userDN, uaaUser.Username)
 				ldapUsers = append(ldapUsers, ldap.User{
@@ -88,7 +88,7 @@ func (m *DefaultManager) GetLDAPUsers(uaaUsers *uaa.Users, usersInput UsersInput
 		}
 	}
 	for _, userID := range usersInput.LdapUsers {
-		userList := uaaUsers.GetByName(userID)
+		userList := m.UAAUsers.GetByName(userID)
 		if len(userList) > 0 {
 			lo.G.Debugf("UserID [%s] found in UAA, skipping ldap lookup", userID)
 			for _, uaaUser := range userList {

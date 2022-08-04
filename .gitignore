@@ -12,3 +12,5 @@ foo
 concourse-outputs
 config_tests
 .envrc
+.vscode
+cf-mgmt-*

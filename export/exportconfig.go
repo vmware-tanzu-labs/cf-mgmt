@@ -184,7 +184,10 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		lo.G.Infof("Processing org: %s ", orgName)
 		orgConfig := &config.OrgConfig{Org: orgName}
 		//Add users
-		im.addOrgUsers(orgConfig, uaaUsers, org.Guid)
+		err = im.addOrgUsers(orgConfig, org.Guid)
+		if err != nil {
+			return err
+		}
 		//Add Quota definition if applicable
 		if org.QuotaDefinitionGuid != "" {
 			orgQuota, err := org.Quota()
@@ -208,7 +211,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		if err != nil {
 			return err
 		}
-		for privatedomain, _ := range privatedomains {
+		for privatedomain := range privatedomains {
 			orgConfig.SharedPrivateDomains = append(orgConfig.SharedPrivateDomains, privatedomain)
 		}
 
@@ -216,7 +219,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		if err != nil {
 			return err
 		}
-		for privatedomain, _ := range privatedomains {
+		for privatedomain := range privatedomains {
 			orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, privatedomain)
 		}
 
@@ -230,7 +233,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		}
 		lo.G.Infof("Done creating org %s", orgConfig.Org)
 		if !skipSpaces {
-			err := im.processSpaces(orgConfig, org.Guid, excludedSpaces, uaaUsers, isolationSegments, securityGroups)
+			err := im.processSpaces(orgConfig, org.Guid, excludedSpaces, isolationSegments, securityGroups)
 			if err != nil {
 				return errors.Wrapf(err, "Processing org %s", orgConfig.Org)
 			}
@@ -321,7 +324,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 	return im.ConfigMgr.SaveGlobalConfig(globalConfig)
 }
 
-func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, uaaUsers *uaa.Users, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]cfclient.SecGroup) error {
+func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]cfclient.SecGroup) error {
 	lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
 	spaces, _ := im.SpaceManager.ListSpaces(orgGUID)
 	lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
@@ -362,7 +365,10 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 
 		spaceConfig := &config.SpaceConfig{Org: orgConfig.Org, Space: spaceName, EnableUnassignSecurityGroup: true}
 		//Add users
-		im.addSpaceUsers(spaceConfig, uaaUsers, orgSpace.Guid)
+		err = im.addSpaceUsers(spaceConfig, orgSpace.Guid)
+		if err != nil {
+			return err
+		}
 		//Add Quota definition if applicable
 		if orgSpace.QuotaDefinitionGuid != "" {
 			quota, err := orgSpace.Quota()
@@ -411,7 +417,7 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 
 		spaceSGName := fmt.Sprintf("%s-%s", orgConfig.Org, spaceName)
 		if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.Guid); err == nil {
-			for securityGroupName, _ := range spaceSGNames {
+			for securityGroupName := range spaceSGNames {
 				lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
 				if securityGroupName != spaceSGName {
 					spaceConfig.ASGs = append(spaceConfig.ASGs, securityGroupName)
@@ -477,15 +483,6 @@ func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs [
 	return nil
 }
 
-func (im *Manager) doesOrgExist(orgs []cfclient.Org, orgName string) bool {
-	for _, org := range orgs {
-		if org.Name == orgName {
-			return true
-		}
-	}
-	return false
-}
-
 func (im *Manager) getOrgName(orgs []cfclient.Org, orgGUID string) (string, error) {
 	for _, org := range orgs {
 		if org.Guid == orgGUID {
@@ -504,56 +501,59 @@ func (im *Manager) doesSpaceExist(spaces []cfclient.Space, spaceName string) boo
 	return false
 }
 
-func (im *Manager) addOrgUsers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
-	im.addOrgManagers(orgConfig, uaaUsers, orgGUID)
-	im.addBillingManagers(orgConfig, uaaUsers, orgGUID)
-	im.addOrgAuditors(orgConfig, uaaUsers, orgGUID)
+func (im *Manager) addOrgUsers(orgConfig *config.OrgConfig, orgGUID string) error {
+	_, managerRoleUsers, billingManagerRoleUsers, auditorRoleUsers, err := im.UserManager.ListOrgUsersByRole(orgGUID)
+	if err != nil {
+		return err
+	}
+	im.addOrgManagers(orgConfig, orgGUID, managerRoleUsers)
+	im.addBillingManagers(orgConfig, orgGUID, billingManagerRoleUsers)
+	im.addOrgAuditors(orgConfig, orgGUID, auditorRoleUsers)
+	return nil
 }
 
-func (im *Manager) addSpaceUsers(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
-	im.addSpaceDevelopers(spaceConfig, uaaUsers, spaceGUID)
-	im.addSpaceManagers(spaceConfig, uaaUsers, spaceGUID)
-	im.addSpaceAuditors(spaceConfig, uaaUsers, spaceGUID)
-	im.addSpaceSupporters(spaceConfig, uaaUsers, spaceGUID)
+func (im *Manager) addSpaceUsers(spaceConfig *config.SpaceConfig, spaceGUID string) error {
+	managerRoleUsers, developerRoleUsers, auditorRoleUsers, supporterRoleUsers, err := im.UserManager.ListSpaceUsersByRole(spaceGUID)
+	if err != nil {
+		return err
+	}
+	im.addSpaceDevelopers(spaceConfig, spaceGUID, developerRoleUsers)
+	im.addSpaceManagers(spaceConfig, spaceGUID, managerRoleUsers)
+	im.addSpaceAuditors(spaceConfig, spaceGUID, auditorRoleUsers)
+	im.addSpaceSupporters(spaceConfig, spaceGUID, supporterRoleUsers)
+	return nil
 }
 
-func (im *Manager) addOrgManagers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
-	orgMgrs, _ := im.UserManager.ListOrgManagers(orgGUID, uaaUsers)
+func (im *Manager) addOrgManagers(orgConfig *config.OrgConfig, orgGUID string, orgMgrs *user.RoleUsers) {
 	lo.G.Debugf("Found %d Org Managers for Org: %s", len(orgMgrs.Users()), orgConfig.Org)
 	doAddUsers(orgMgrs, &orgConfig.Manager.Users, &orgConfig.Manager.LDAPUsers, &orgConfig.Manager.SamlUsers)
 }
 
-func (im *Manager) addBillingManagers(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
-	orgBillingMgrs, _ := im.UserManager.ListOrgBillingManagers(orgGUID, uaaUsers)
+func (im *Manager) addBillingManagers(orgConfig *config.OrgConfig, orgGUID string, orgBillingMgrs *user.RoleUsers) {
 	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs.Users()), orgConfig.Org)
 	doAddUsers(orgBillingMgrs, &orgConfig.BillingManager.Users, &orgConfig.BillingManager.LDAPUsers, &orgConfig.BillingManager.SamlUsers)
 }
 
-func (im *Manager) addOrgAuditors(orgConfig *config.OrgConfig, uaaUsers *uaa.Users, orgGUID string) {
-	orgAuditors, _ := im.UserManager.ListOrgAuditors(orgGUID, uaaUsers)
+func (im *Manager) addOrgAuditors(orgConfig *config.OrgConfig, orgGUID string, orgAuditors *user.RoleUsers) {
 	lo.G.Debugf("Found %d Org Auditors for Org: %s", len(orgAuditors.Users()), orgConfig.Org)
 	doAddUsers(orgAuditors, &orgConfig.Auditor.Users, &orgConfig.Auditor.LDAPUsers, &orgConfig.Auditor.SamlUsers)
 }
 
-func (im *Manager) addSpaceManagers(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
-	spaceMgrs, _ := im.UserManager.ListSpaceManagers(spaceGUID, uaaUsers)
+func (im *Manager) addSpaceManagers(spaceConfig *config.SpaceConfig, spaceGUID string, spaceMgrs *user.RoleUsers) {
 	lo.G.Debugf("Found %d Space Managers for Org: %s and  Space:  %s", len(spaceMgrs.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceMgrs, &spaceConfig.Manager.Users, &spaceConfig.Manager.LDAPUsers, &spaceConfig.Manager.SamlUsers)
 }
 
-func (im *Manager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
-	spaceDevs, _ := im.UserManager.ListSpaceDevelopers(spaceGUID, uaaUsers)
+func (im *Manager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, spaceGUID string, spaceDevs *user.RoleUsers) {
 	lo.G.Debugf("Found %d Space Developers for Org: %s and  Space:  %s", len(spaceDevs.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceDevs, &spaceConfig.Developer.Users, &spaceConfig.Developer.LDAPUsers, &spaceConfig.Developer.SamlUsers)
 }
 
-func (im *Manager) addSpaceAuditors(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
-	spaceAuditors, _ := im.UserManager.ListSpaceAuditors(spaceGUID, uaaUsers)
+func (im *Manager) addSpaceAuditors(spaceConfig *config.SpaceConfig, spaceGUID string, spaceAuditors *user.RoleUsers) {
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceAuditors, &spaceConfig.Auditor.Users, &spaceConfig.Auditor.LDAPUsers, &spaceConfig.Auditor.SamlUsers)
 }
-func (im *Manager) addSpaceSupporters(spaceConfig *config.SpaceConfig, uaaUsers *uaa.Users, spaceGUID string) {
-	spaceSupporters, _ := im.UserManager.ListSpaceSupporters(spaceGUID, uaaUsers)
+func (im *Manager) addSpaceSupporters(spaceConfig *config.SpaceConfig, spaceGUID string, spaceSupporters *user.RoleUsers) {
 	lo.G.Debugf("Found %d Space Supporters for Org: %s and  Space:  %s", len(spaceSupporters.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceSupporters, &spaceConfig.Supporter.Users, &spaceConfig.Supporter.LDAPUsers, &spaceConfig.Supporter.SamlUsers)
 }
