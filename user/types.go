@@ -5,7 +5,6 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/vmwarepivotallabs/cf-mgmt/ldap"
-	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 )
 
 func InitRoleUsers() *RoleUsers {
@@ -32,14 +31,8 @@ type Manager interface {
 	UpdateSpaceUsers() error
 	UpdateOrgUsers() error
 	CleanupOrgUsers() error
-	ListSpaceAuditors(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
-	ListSpaceDevelopers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
-	ListSpaceManagers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
-	ListSpaceSupporters(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
-	ListOrgAuditors(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
-	ListOrgBillingManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
-	ListOrgManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
-	ListOrgUsers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error)
+	ListOrgUsersByRole(orgGUID string) (*RoleUsers, *RoleUsers, *RoleUsers, *RoleUsers, error)
+	ListSpaceUsersByRole(spaceGUID string) (*RoleUsers, *RoleUsers, *RoleUsers, *RoleUsers, error)
 }
 
 type CFClient interface {
@@ -52,6 +45,7 @@ type CFClient interface {
 	CreateV3SpaceRole(spaceGUID, userGUID, roleType string) (*cfclient.V3Role, error)
 	SupportsSpaceSupporterRole() (bool, error)
 	ListV3RolesByQuery(query url.Values) ([]cfclient.V3Role, error)
+	ListV3UsersByQuery(query url.Values) ([]cfclient.V3User, error)
 }
 
 type LdapManager interface {

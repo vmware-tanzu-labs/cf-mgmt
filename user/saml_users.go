@@ -8,27 +8,26 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, usersInput UsersInput) error {
+func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
 	origin := m.LdapConfig.Origin
 	for _, userEmail := range usersInput.UniqueSamlUsers() {
-		userList := uaaUsers.GetByName(userEmail)
+		userList := m.UAAUsers.GetByName(userEmail)
 		if len(userList) == 0 {
 			lo.G.Debug("User", userEmail, "doesn't exist in cloud foundry, so creating user")
 			if userGUID, err := m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, origin); err != nil {
 				lo.G.Error("Unable to create user", userEmail)
 				continue
 			} else {
-				uaaUsers.Add(uaa.User{
+				m.UAAUsers.Add(uaa.User{
 					Username:   userEmail,
 					Email:      userEmail,
 					ExternalID: userEmail,
 					Origin:     origin,
 					GUID:       userGUID,
 				})
-				userList = uaaUsers.GetByName(userEmail)
 			}
 		}
-		user := uaaUsers.GetByNameAndOrigin(userEmail, origin)
+		user := m.UAAUsers.GetByNameAndOrigin(userEmail, origin)
 		if user == nil {
 			return fmt.Errorf("Unable to find user %s for origin %s", userEmail, origin)
 		}

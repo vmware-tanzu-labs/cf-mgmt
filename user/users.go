@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/ldap"
@@ -37,6 +38,18 @@ func NewManager(
 	if err != nil {
 		return nil, err
 	}
+	uaaUsers, err := uaaMgr.ListUsers()
+	if err != nil {
+		return nil, err
+	}
+	cfUserMap := make(map[string]cfclient.V3User)
+	cfUsers, err := client.ListV3UsersByQuery(url.Values{})
+	if err != nil {
+		return nil, err
+	}
+	for _, cfUser := range cfUsers {
+		cfUserMap[cfUser.GUID] = cfUser
+	}
 	return &DefaultManager{
 		Client:                 client,
 		Peek:                   peek,
@@ -45,6 +58,8 @@ func NewManager(
 		UAAMgr:                 uaaMgr,
 		Cfg:                    cfg,
 		SupportsSpaceSupporter: supports,
+		UAAUsers:               uaaUsers,
+		CFUsers:                cfUserMap,
 	}, nil
 }
 
@@ -58,6 +73,8 @@ type DefaultManager struct {
 	LdapMgr                LdapManager
 	LdapConfig             *config.LdapConfig
 	SupportsSpaceSupporter bool
+	UAAUsers               *uaa.Users
+	CFUsers                map[string]cfclient.V3User
 }
 
 func (m *DefaultManager) RemoveSpaceAuditor(input UsersInput, userName, userGUID string) error {
@@ -116,7 +133,7 @@ func (m *DefaultManager) RemoveSpaceSupporter(input UsersInput, userName, userGU
 }
 
 func (m *DefaultManager) AssociateSpaceAuditor(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -130,7 +147,7 @@ func (m *DefaultManager) AssociateSpaceAuditor(input UsersInput, userName, userG
 	return err
 }
 func (m *DefaultManager) AssociateSpaceDeveloper(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -143,7 +160,7 @@ func (m *DefaultManager) AssociateSpaceDeveloper(input UsersInput, userName, use
 	return err
 }
 func (m *DefaultManager) AssociateSpaceManager(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -163,7 +180,7 @@ func (m *DefaultManager) AssociateSpaceSupporter(input UsersInput, userName, use
 		lo.G.Infof("this instance of cloud foundry does not support space_supporter role")
 		return nil
 	}
-	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -177,16 +194,19 @@ func (m *DefaultManager) AssociateSpaceSupporter(input UsersInput, userName, use
 	return err
 }
 
-func (m *DefaultManager) AddUserToOrg(orgUsers *RoleUsers, orgGUID string, userName, userGUID string) error {
+func (m *DefaultManager) AddUserToOrg(orgGUID string, userName, userGUID string) error {
 	if m.Peek {
 		return nil
+	}
+	orgUsers, err := m.ListOrgUsers(orgGUID)
+	if err != nil {
+		return err
 	}
 	if !orgUsers.HasUserForGUID(userName, userGUID) {
 		_, err := m.Client.CreateV3OrganizationRole(orgGUID, userGUID, ORG_USER)
 		if err != nil {
 			return err
 		}
-		orgUsers.addUser(RoleUser{UserName: userName, GUID: userGUID})
 		return err
 	}
 	return nil
@@ -231,7 +251,7 @@ func (m *DefaultManager) RemoveOrgManager(input UsersInput, userName, userGUID s
 }
 
 func (m *DefaultManager) AssociateOrgAuditor(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -245,7 +265,7 @@ func (m *DefaultManager) AssociateOrgAuditor(input UsersInput, userName, userGUI
 	return err
 }
 func (m *DefaultManager) AssociateOrgBillingManager(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -260,7 +280,7 @@ func (m *DefaultManager) AssociateOrgBillingManager(input UsersInput, userName, 
 }
 
 func (m *DefaultManager) AssociateOrgManager(input UsersInput, userName, userGUID string) error {
-	err := m.AddUserToOrg(input.OrgUsers, input.OrgGUID, userName, userGUID)
+	err := m.AddUserToOrg(input.OrgGUID, userName, userGUID)
 	if err != nil {
 		return err
 	}
@@ -276,19 +296,13 @@ func (m *DefaultManager) AssociateOrgManager(input UsersInput, userName, userGUI
 
 //UpdateSpaceUsers -
 func (m *DefaultManager) UpdateSpaceUsers() error {
-	uaaUsers, err := m.UAAMgr.ListUsers()
-	if err != nil {
-		return err
-	}
-
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		return err
 	}
 
 	for _, input := range spaceConfigs {
-		lo.G.Infof("Add updating space user for org %s and space %s", input.Org, input.Space)
-		if err := m.updateSpaceUsers(&input, uaaUsers); err != nil {
+		if err := m.updateSpaceUsers(&input); err != nil {
 			return err
 		}
 	}
@@ -296,7 +310,7 @@ func (m *DefaultManager) UpdateSpaceUsers() error {
 	return nil
 }
 
-func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *uaa.Users) error {
+func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 	space, err := m.SpaceMgr.FindSpace(input.Org, input.Space)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error finding space for org %s, space %s", input.Org, input.Space))
@@ -307,77 +321,74 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 	lo.G.Debug("")
 	lo.G.Debug("")
 
-	orgUsers, err := m.ListOrgUsers(space.OrganizationGuid, uaaUsers)
+	managers, developers, auditors, supporters, err := m.ListSpaceUsersByRole(space.Guid)
 	if err != nil {
 		return err
 	}
-	if err = m.SyncUsers(uaaUsers, UsersInput{
+
+	if err = m.SyncUsers(UsersInput{
 		SpaceName:      space.Name,
 		SpaceGUID:      space.Guid,
 		OrgName:        input.Org,
 		OrgGUID:        space.OrganizationGuid,
-		OrgUsers:       orgUsers,
 		LdapGroupNames: input.GetDeveloperGroups(),
 		LdapUsers:      input.Developer.LDAPUsers,
 		Users:          input.Developer.Users,
 		SamlUsers:      input.Developer.SamlUsers,
 		RemoveUsers:    input.RemoveUsers,
-		ListUsers:      m.listSpaceDevelopers,
+		RoleUsers:      developers,
 		RemoveUser:     m.RemoveSpaceDeveloper,
 		AddUser:        m.AssociateSpaceDeveloper,
 	}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "developer"))
 	}
 
-	if err = m.SyncUsers(uaaUsers,
+	if err = m.SyncUsers(
 		UsersInput{
 			SpaceName:      space.Name,
 			SpaceGUID:      space.Guid,
 			OrgGUID:        space.OrganizationGuid,
 			OrgName:        input.Org,
-			OrgUsers:       orgUsers,
 			LdapGroupNames: input.GetManagerGroups(),
 			LdapUsers:      input.Manager.LDAPUsers,
 			Users:          input.Manager.Users,
 			SamlUsers:      input.Manager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
-			ListUsers:      m.listSpaceManagers,
+			RoleUsers:      managers,
 			RemoveUser:     m.RemoveSpaceManager,
 			AddUser:        m.AssociateSpaceManager,
 		}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "manager"))
 	}
-	if err = m.SyncUsers(uaaUsers,
+	if err = m.SyncUsers(
 		UsersInput{
 			SpaceName:      space.Name,
 			SpaceGUID:      space.Guid,
 			OrgGUID:        space.OrganizationGuid,
 			OrgName:        input.Org,
-			OrgUsers:       orgUsers,
 			LdapGroupNames: input.GetAuditorGroups(),
 			LdapUsers:      input.Auditor.LDAPUsers,
 			Users:          input.Auditor.Users,
 			SamlUsers:      input.Auditor.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
-			ListUsers:      m.listSpaceAuditors,
+			RoleUsers:      auditors,
 			RemoveUser:     m.RemoveSpaceAuditor,
 			AddUser:        m.AssociateSpaceAuditor,
 		}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "auditor"))
 	}
 
-	if err = m.SyncUsers(uaaUsers, UsersInput{
+	if err = m.SyncUsers(UsersInput{
 		SpaceName:      space.Name,
 		SpaceGUID:      space.Guid,
 		OrgName:        input.Org,
 		OrgGUID:        space.OrganizationGuid,
-		OrgUsers:       orgUsers,
 		LdapGroupNames: input.GetSupporterGroups(),
 		LdapUsers:      input.Supporter.LDAPUsers,
 		Users:          input.Supporter.Users,
 		SamlUsers:      input.Supporter.SamlUsers,
 		RemoveUsers:    input.RemoveUsers,
-		ListUsers:      m.listSpaceSupporters,
+		RoleUsers:      supporters,
 		RemoveUser:     m.RemoveSpaceSupporter,
 		AddUser:        m.AssociateSpaceSupporter,
 	}); err != nil {
@@ -394,18 +405,13 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig, uaaUsers *u
 
 //UpdateOrgUsers -
 func (m *DefaultManager) UpdateOrgUsers() error {
-	uaacUsers, err := m.UAAMgr.ListUsers()
-	if err != nil {
-		return err
-	}
-
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return err
 	}
 
 	for _, input := range orgConfigs {
-		if err := m.updateOrgUsers(&input, uaacUsers); err != nil {
+		if err := m.updateOrgUsers(&input); err != nil {
 			return err
 		}
 
@@ -414,27 +420,26 @@ func (m *DefaultManager) UpdateOrgUsers() error {
 	return nil
 }
 
-func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.Users) error {
+func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 	org, err := m.OrgReader.FindOrg(input.Org)
 	if err != nil {
 		return err
 	}
 
-	orgUsers, err := m.ListOrgUsers(org.Guid, uaaUsers)
+	_, managers, billingManagers, auditors, err := m.ListOrgUsersByRole(org.Guid)
 	if err != nil {
 		return err
 	}
 	err = m.SyncUsers(
-		uaaUsers, UsersInput{
+		UsersInput{
 			OrgName:        org.Name,
 			OrgGUID:        org.Guid,
-			OrgUsers:       orgUsers,
 			LdapGroupNames: input.GetBillingManagerGroups(),
 			LdapUsers:      input.BillingManager.LDAPUsers,
 			Users:          input.BillingManager.Users,
 			SamlUsers:      input.BillingManager.SamlUsers,
 			RemoveUsers:    input.RemoveUsers,
-			ListUsers:      m.listOrgBillingManagers,
+			RoleUsers:      billingManagers,
 			RemoveUser:     m.RemoveOrgBillingManager,
 			AddUser:        m.AssociateOrgBillingManager,
 		})
@@ -442,38 +447,34 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.U
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s role %s", input.Org, "billing_managers"))
 	}
 
-	err = m.SyncUsers(
-		uaaUsers, UsersInput{
-			OrgName:        org.Name,
-			OrgGUID:        org.Guid,
-			OrgUsers:       orgUsers,
-			LdapGroupNames: input.GetAuditorGroups(),
-			LdapUsers:      input.Auditor.LDAPUsers,
-			Users:          input.Auditor.Users,
-			SamlUsers:      input.Auditor.SamlUsers,
-			RemoveUsers:    input.RemoveUsers,
-			ListUsers:      m.listOrgAuditors,
-			RemoveUser:     m.RemoveOrgAuditor,
-			AddUser:        m.AssociateOrgAuditor,
-		})
+	err = m.SyncUsers(UsersInput{
+		OrgName:        org.Name,
+		OrgGUID:        org.Guid,
+		LdapGroupNames: input.GetAuditorGroups(),
+		LdapUsers:      input.Auditor.LDAPUsers,
+		Users:          input.Auditor.Users,
+		SamlUsers:      input.Auditor.SamlUsers,
+		RemoveUsers:    input.RemoveUsers,
+		RoleUsers:      auditors,
+		RemoveUser:     m.RemoveOrgAuditor,
+		AddUser:        m.AssociateOrgAuditor,
+	})
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s role %s", input.Org, "org-auditors"))
 	}
 
-	err = m.SyncUsers(
-		uaaUsers, UsersInput{
-			OrgName:        org.Name,
-			OrgGUID:        org.Guid,
-			OrgUsers:       orgUsers,
-			LdapGroupNames: input.GetManagerGroups(),
-			LdapUsers:      input.Manager.LDAPUsers,
-			Users:          input.Manager.Users,
-			SamlUsers:      input.Manager.SamlUsers,
-			RemoveUsers:    input.RemoveUsers,
-			ListUsers:      m.listOrgManagers,
-			RemoveUser:     m.RemoveOrgManager,
-			AddUser:        m.AssociateOrgManager,
-		})
+	err = m.SyncUsers(UsersInput{
+		OrgName:        org.Name,
+		OrgGUID:        org.Guid,
+		LdapGroupNames: input.GetManagerGroups(),
+		LdapUsers:      input.Manager.LDAPUsers,
+		Users:          input.Manager.Users,
+		SamlUsers:      input.Manager.SamlUsers,
+		RemoveUsers:    input.RemoveUsers,
+		RoleUsers:      managers,
+		RemoveUser:     m.RemoveOrgManager,
+		AddUser:        m.AssociateOrgManager,
+	})
 
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s role %s", input.Org, "org-manager"))
@@ -483,28 +484,29 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig, uaaUsers *uaa.U
 }
 
 //SyncUsers
-func (m *DefaultManager) SyncUsers(uaaUsers *uaa.Users, usersInput UsersInput) error {
-	roleUsers, err := usersInput.ListUsers(usersInput, uaaUsers)
-	if err != nil {
-		return err
-	}
+func (m *DefaultManager) SyncUsers(usersInput UsersInput) error {
+	// roleUsers, err := usersInput.ListUsers(usersInput, uaaUsers)
+	// if err != nil {
+	// 	return err
+	// }
+	roleUsers := usersInput.RoleUsers
 	lo.G.Debugf("Current Users In Role %+v", roleUsers.Users())
 
-	if err := m.SyncLdapUsers(roleUsers, uaaUsers, usersInput); err != nil {
+	if err := m.SyncLdapUsers(roleUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding ldap users")
 	}
 	if len(roleUsers.Users()) > 0 {
 		lo.G.Debugf("Users after LDAP sync %+v", roleUsers.Users())
 	}
 
-	if err := m.SyncInternalUsers(roleUsers, uaaUsers, usersInput); err != nil {
+	if err := m.SyncInternalUsers(roleUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding internal users")
 	}
 	if len(roleUsers.Users()) > 0 {
 		lo.G.Debugf("Users after Internal sync %+v", roleUsers.Users())
 	}
 
-	if err := m.SyncSamlUsers(roleUsers, uaaUsers, usersInput); err != nil {
+	if err := m.SyncSamlUsers(roleUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding saml users")
 	}
 	if len(roleUsers.Users()) > 0 {
@@ -517,17 +519,17 @@ func (m *DefaultManager) SyncUsers(uaaUsers *uaa.Users, usersInput UsersInput) e
 	return nil
 }
 
-func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, uaaUsers *uaa.Users, usersInput UsersInput) error {
+func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
 	origin := "uaa"
 	for _, userID := range usersInput.UniqueUsers() {
 		lowerUserID := strings.ToLower(userID)
-		uaaUserList := uaaUsers.GetByName(lowerUserID)
+		uaaUserList := m.UAAUsers.GetByName(lowerUserID)
 		if len(uaaUserList) == 0 || !strings.EqualFold(uaaUserList[0].Origin, origin) {
 			return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
 		}
 		if !roleUsers.HasUser(lowerUserID) {
 			lo.G.Debugf("Role Users %+v", roleUsers.users)
-			user := uaaUsers.GetByNameAndOrigin(lowerUserID, origin)
+			user := m.UAAUsers.GetByNameAndOrigin(lowerUserID, origin)
 			if user == nil {
 				return fmt.Errorf("Unable to find user %s for origin %s", lowerUserID, origin)
 			}

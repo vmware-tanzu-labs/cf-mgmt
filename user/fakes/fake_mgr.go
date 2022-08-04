@@ -4,7 +4,6 @@ package fakes
 import (
 	"sync"
 
-	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/vmwarepivotallabs/cf-mgmt/user"
 )
 
@@ -42,117 +41,43 @@ type FakeManager struct {
 	initializeLdapReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ListOrgAuditorsStub        func(string, *uaa.Users) (*user.RoleUsers, error)
-	listOrgAuditorsMutex       sync.RWMutex
-	listOrgAuditorsArgsForCall []struct {
+	ListOrgUsersByRoleStub        func(string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error)
+	listOrgUsersByRoleMutex       sync.RWMutex
+	listOrgUsersByRoleArgsForCall []struct {
 		arg1 string
-		arg2 *uaa.Users
 	}
-	listOrgAuditorsReturns struct {
+	listOrgUsersByRoleReturns struct {
 		result1 *user.RoleUsers
-		result2 error
+		result2 *user.RoleUsers
+		result3 *user.RoleUsers
+		result4 *user.RoleUsers
+		result5 error
 	}
-	listOrgAuditorsReturnsOnCall map[int]struct {
+	listOrgUsersByRoleReturnsOnCall map[int]struct {
 		result1 *user.RoleUsers
-		result2 error
+		result2 *user.RoleUsers
+		result3 *user.RoleUsers
+		result4 *user.RoleUsers
+		result5 error
 	}
-	ListOrgBillingManagersStub        func(string, *uaa.Users) (*user.RoleUsers, error)
-	listOrgBillingManagersMutex       sync.RWMutex
-	listOrgBillingManagersArgsForCall []struct {
+	ListSpaceUsersByRoleStub        func(string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error)
+	listSpaceUsersByRoleMutex       sync.RWMutex
+	listSpaceUsersByRoleArgsForCall []struct {
 		arg1 string
-		arg2 *uaa.Users
 	}
-	listOrgBillingManagersReturns struct {
+	listSpaceUsersByRoleReturns struct {
 		result1 *user.RoleUsers
-		result2 error
+		result2 *user.RoleUsers
+		result3 *user.RoleUsers
+		result4 *user.RoleUsers
+		result5 error
 	}
-	listOrgBillingManagersReturnsOnCall map[int]struct {
+	listSpaceUsersByRoleReturnsOnCall map[int]struct {
 		result1 *user.RoleUsers
-		result2 error
-	}
-	ListOrgManagersStub        func(string, *uaa.Users) (*user.RoleUsers, error)
-	listOrgManagersMutex       sync.RWMutex
-	listOrgManagersArgsForCall []struct {
-		arg1 string
-		arg2 *uaa.Users
-	}
-	listOrgManagersReturns struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	listOrgManagersReturnsOnCall map[int]struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	ListOrgUsersStub        func(string, *uaa.Users) (*user.RoleUsers, error)
-	listOrgUsersMutex       sync.RWMutex
-	listOrgUsersArgsForCall []struct {
-		arg1 string
-		arg2 *uaa.Users
-	}
-	listOrgUsersReturns struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	listOrgUsersReturnsOnCall map[int]struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	ListSpaceAuditorsStub        func(string, *uaa.Users) (*user.RoleUsers, error)
-	listSpaceAuditorsMutex       sync.RWMutex
-	listSpaceAuditorsArgsForCall []struct {
-		arg1 string
-		arg2 *uaa.Users
-	}
-	listSpaceAuditorsReturns struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	listSpaceAuditorsReturnsOnCall map[int]struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	ListSpaceDevelopersStub        func(string, *uaa.Users) (*user.RoleUsers, error)
-	listSpaceDevelopersMutex       sync.RWMutex
-	listSpaceDevelopersArgsForCall []struct {
-		arg1 string
-		arg2 *uaa.Users
-	}
-	listSpaceDevelopersReturns struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	listSpaceDevelopersReturnsOnCall map[int]struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	ListSpaceManagersStub        func(string, *uaa.Users) (*user.RoleUsers, error)
-	listSpaceManagersMutex       sync.RWMutex
-	listSpaceManagersArgsForCall []struct {
-		arg1 string
-		arg2 *uaa.Users
-	}
-	listSpaceManagersReturns struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	listSpaceManagersReturnsOnCall map[int]struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	ListSpaceSupportersStub        func(string, *uaa.Users) (*user.RoleUsers, error)
-	listSpaceSupportersMutex       sync.RWMutex
-	listSpaceSupportersArgsForCall []struct {
-		arg1 string
-		arg2 *uaa.Users
-	}
-	listSpaceSupportersReturns struct {
-		result1 *user.RoleUsers
-		result2 error
-	}
-	listSpaceSupportersReturnsOnCall map[int]struct {
-		result1 *user.RoleUsers
-		result2 error
+		result2 *user.RoleUsers
+		result3 *user.RoleUsers
+		result4 *user.RoleUsers
+		result5 error
 	}
 	UpdateOrgUsersStub        func() error
 	updateOrgUsersMutex       sync.RWMutex
@@ -344,516 +269,148 @@ func (fake *FakeManager) InitializeLdapReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) ListOrgAuditors(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
-	fake.listOrgAuditorsMutex.Lock()
-	ret, specificReturn := fake.listOrgAuditorsReturnsOnCall[len(fake.listOrgAuditorsArgsForCall)]
-	fake.listOrgAuditorsArgsForCall = append(fake.listOrgAuditorsArgsForCall, struct {
+func (fake *FakeManager) ListOrgUsersByRole(arg1 string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error) {
+	fake.listOrgUsersByRoleMutex.Lock()
+	ret, specificReturn := fake.listOrgUsersByRoleReturnsOnCall[len(fake.listOrgUsersByRoleArgsForCall)]
+	fake.listOrgUsersByRoleArgsForCall = append(fake.listOrgUsersByRoleArgsForCall, struct {
 		arg1 string
-		arg2 *uaa.Users
-	}{arg1, arg2})
-	fake.recordInvocation("ListOrgAuditors", []interface{}{arg1, arg2})
-	fake.listOrgAuditorsMutex.Unlock()
-	if fake.ListOrgAuditorsStub != nil {
-		return fake.ListOrgAuditorsStub(arg1, arg2)
+	}{arg1})
+	fake.recordInvocation("ListOrgUsersByRole", []interface{}{arg1})
+	fake.listOrgUsersByRoleMutex.Unlock()
+	if fake.ListOrgUsersByRoleStub != nil {
+		return fake.ListOrgUsersByRoleStub(arg1)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1, ret.result2, ret.result3, ret.result4, ret.result5
 	}
-	fakeReturns := fake.listOrgAuditorsReturns
-	return fakeReturns.result1, fakeReturns.result2
+	fakeReturns := fake.listOrgUsersByRoleReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3, fakeReturns.result4, fakeReturns.result5
 }
 
-func (fake *FakeManager) ListOrgAuditorsCallCount() int {
-	fake.listOrgAuditorsMutex.RLock()
-	defer fake.listOrgAuditorsMutex.RUnlock()
-	return len(fake.listOrgAuditorsArgsForCall)
+func (fake *FakeManager) ListOrgUsersByRoleCallCount() int {
+	fake.listOrgUsersByRoleMutex.RLock()
+	defer fake.listOrgUsersByRoleMutex.RUnlock()
+	return len(fake.listOrgUsersByRoleArgsForCall)
 }
 
-func (fake *FakeManager) ListOrgAuditorsCalls(stub func(string, *uaa.Users) (*user.RoleUsers, error)) {
-	fake.listOrgAuditorsMutex.Lock()
-	defer fake.listOrgAuditorsMutex.Unlock()
-	fake.ListOrgAuditorsStub = stub
+func (fake *FakeManager) ListOrgUsersByRoleCalls(stub func(string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error)) {
+	fake.listOrgUsersByRoleMutex.Lock()
+	defer fake.listOrgUsersByRoleMutex.Unlock()
+	fake.ListOrgUsersByRoleStub = stub
 }
 
-func (fake *FakeManager) ListOrgAuditorsArgsForCall(i int) (string, *uaa.Users) {
-	fake.listOrgAuditorsMutex.RLock()
-	defer fake.listOrgAuditorsMutex.RUnlock()
-	argsForCall := fake.listOrgAuditorsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+func (fake *FakeManager) ListOrgUsersByRoleArgsForCall(i int) string {
+	fake.listOrgUsersByRoleMutex.RLock()
+	defer fake.listOrgUsersByRoleMutex.RUnlock()
+	argsForCall := fake.listOrgUsersByRoleArgsForCall[i]
+	return argsForCall.arg1
 }
 
-func (fake *FakeManager) ListOrgAuditorsReturns(result1 *user.RoleUsers, result2 error) {
-	fake.listOrgAuditorsMutex.Lock()
-	defer fake.listOrgAuditorsMutex.Unlock()
-	fake.ListOrgAuditorsStub = nil
-	fake.listOrgAuditorsReturns = struct {
+func (fake *FakeManager) ListOrgUsersByRoleReturns(result1 *user.RoleUsers, result2 *user.RoleUsers, result3 *user.RoleUsers, result4 *user.RoleUsers, result5 error) {
+	fake.listOrgUsersByRoleMutex.Lock()
+	defer fake.listOrgUsersByRoleMutex.Unlock()
+	fake.ListOrgUsersByRoleStub = nil
+	fake.listOrgUsersByRoleReturns = struct {
 		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
+		result2 *user.RoleUsers
+		result3 *user.RoleUsers
+		result4 *user.RoleUsers
+		result5 error
+	}{result1, result2, result3, result4, result5}
 }
 
-func (fake *FakeManager) ListOrgAuditorsReturnsOnCall(i int, result1 *user.RoleUsers, result2 error) {
-	fake.listOrgAuditorsMutex.Lock()
-	defer fake.listOrgAuditorsMutex.Unlock()
-	fake.ListOrgAuditorsStub = nil
-	if fake.listOrgAuditorsReturnsOnCall == nil {
-		fake.listOrgAuditorsReturnsOnCall = make(map[int]struct {
+func (fake *FakeManager) ListOrgUsersByRoleReturnsOnCall(i int, result1 *user.RoleUsers, result2 *user.RoleUsers, result3 *user.RoleUsers, result4 *user.RoleUsers, result5 error) {
+	fake.listOrgUsersByRoleMutex.Lock()
+	defer fake.listOrgUsersByRoleMutex.Unlock()
+	fake.ListOrgUsersByRoleStub = nil
+	if fake.listOrgUsersByRoleReturnsOnCall == nil {
+		fake.listOrgUsersByRoleReturnsOnCall = make(map[int]struct {
 			result1 *user.RoleUsers
-			result2 error
+			result2 *user.RoleUsers
+			result3 *user.RoleUsers
+			result4 *user.RoleUsers
+			result5 error
 		})
 	}
-	fake.listOrgAuditorsReturnsOnCall[i] = struct {
+	fake.listOrgUsersByRoleReturnsOnCall[i] = struct {
 		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
+		result2 *user.RoleUsers
+		result3 *user.RoleUsers
+		result4 *user.RoleUsers
+		result5 error
+	}{result1, result2, result3, result4, result5}
 }
 
-func (fake *FakeManager) ListOrgBillingManagers(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
-	fake.listOrgBillingManagersMutex.Lock()
-	ret, specificReturn := fake.listOrgBillingManagersReturnsOnCall[len(fake.listOrgBillingManagersArgsForCall)]
-	fake.listOrgBillingManagersArgsForCall = append(fake.listOrgBillingManagersArgsForCall, struct {
+func (fake *FakeManager) ListSpaceUsersByRole(arg1 string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error) {
+	fake.listSpaceUsersByRoleMutex.Lock()
+	ret, specificReturn := fake.listSpaceUsersByRoleReturnsOnCall[len(fake.listSpaceUsersByRoleArgsForCall)]
+	fake.listSpaceUsersByRoleArgsForCall = append(fake.listSpaceUsersByRoleArgsForCall, struct {
 		arg1 string
-		arg2 *uaa.Users
-	}{arg1, arg2})
-	fake.recordInvocation("ListOrgBillingManagers", []interface{}{arg1, arg2})
-	fake.listOrgBillingManagersMutex.Unlock()
-	if fake.ListOrgBillingManagersStub != nil {
-		return fake.ListOrgBillingManagersStub(arg1, arg2)
+	}{arg1})
+	fake.recordInvocation("ListSpaceUsersByRole", []interface{}{arg1})
+	fake.listSpaceUsersByRoleMutex.Unlock()
+	if fake.ListSpaceUsersByRoleStub != nil {
+		return fake.ListSpaceUsersByRoleStub(arg1)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1, ret.result2, ret.result3, ret.result4, ret.result5
 	}
-	fakeReturns := fake.listOrgBillingManagersReturns
-	return fakeReturns.result1, fakeReturns.result2
+	fakeReturns := fake.listSpaceUsersByRoleReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3, fakeReturns.result4, fakeReturns.result5
 }
 
-func (fake *FakeManager) ListOrgBillingManagersCallCount() int {
-	fake.listOrgBillingManagersMutex.RLock()
-	defer fake.listOrgBillingManagersMutex.RUnlock()
-	return len(fake.listOrgBillingManagersArgsForCall)
+func (fake *FakeManager) ListSpaceUsersByRoleCallCount() int {
+	fake.listSpaceUsersByRoleMutex.RLock()
+	defer fake.listSpaceUsersByRoleMutex.RUnlock()
+	return len(fake.listSpaceUsersByRoleArgsForCall)
 }
 
-func (fake *FakeManager) ListOrgBillingManagersCalls(stub func(string, *uaa.Users) (*user.RoleUsers, error)) {
-	fake.listOrgBillingManagersMutex.Lock()
-	defer fake.listOrgBillingManagersMutex.Unlock()
-	fake.ListOrgBillingManagersStub = stub
+func (fake *FakeManager) ListSpaceUsersByRoleCalls(stub func(string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error)) {
+	fake.listSpaceUsersByRoleMutex.Lock()
+	defer fake.listSpaceUsersByRoleMutex.Unlock()
+	fake.ListSpaceUsersByRoleStub = stub
 }
 
-func (fake *FakeManager) ListOrgBillingManagersArgsForCall(i int) (string, *uaa.Users) {
-	fake.listOrgBillingManagersMutex.RLock()
-	defer fake.listOrgBillingManagersMutex.RUnlock()
-	argsForCall := fake.listOrgBillingManagersArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+func (fake *FakeManager) ListSpaceUsersByRoleArgsForCall(i int) string {
+	fake.listSpaceUsersByRoleMutex.RLock()
+	defer fake.listSpaceUsersByRoleMutex.RUnlock()
+	argsForCall := fake.listSpaceUsersByRoleArgsForCall[i]
+	return argsForCall.arg1
 }
 
-func (fake *FakeManager) ListOrgBillingManagersReturns(result1 *user.RoleUsers, result2 error) {
-	fake.listOrgBillingManagersMutex.Lock()
-	defer fake.listOrgBillingManagersMutex.Unlock()
-	fake.ListOrgBillingManagersStub = nil
-	fake.listOrgBillingManagersReturns = struct {
+func (fake *FakeManager) ListSpaceUsersByRoleReturns(result1 *user.RoleUsers, result2 *user.RoleUsers, result3 *user.RoleUsers, result4 *user.RoleUsers, result5 error) {
+	fake.listSpaceUsersByRoleMutex.Lock()
+	defer fake.listSpaceUsersByRoleMutex.Unlock()
+	fake.ListSpaceUsersByRoleStub = nil
+	fake.listSpaceUsersByRoleReturns = struct {
 		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
+		result2 *user.RoleUsers
+		result3 *user.RoleUsers
+		result4 *user.RoleUsers
+		result5 error
+	}{result1, result2, result3, result4, result5}
 }
 
-func (fake *FakeManager) ListOrgBillingManagersReturnsOnCall(i int, result1 *user.RoleUsers, result2 error) {
-	fake.listOrgBillingManagersMutex.Lock()
-	defer fake.listOrgBillingManagersMutex.Unlock()
-	fake.ListOrgBillingManagersStub = nil
-	if fake.listOrgBillingManagersReturnsOnCall == nil {
-		fake.listOrgBillingManagersReturnsOnCall = make(map[int]struct {
+func (fake *FakeManager) ListSpaceUsersByRoleReturnsOnCall(i int, result1 *user.RoleUsers, result2 *user.RoleUsers, result3 *user.RoleUsers, result4 *user.RoleUsers, result5 error) {
+	fake.listSpaceUsersByRoleMutex.Lock()
+	defer fake.listSpaceUsersByRoleMutex.Unlock()
+	fake.ListSpaceUsersByRoleStub = nil
+	if fake.listSpaceUsersByRoleReturnsOnCall == nil {
+		fake.listSpaceUsersByRoleReturnsOnCall = make(map[int]struct {
 			result1 *user.RoleUsers
-			result2 error
+			result2 *user.RoleUsers
+			result3 *user.RoleUsers
+			result4 *user.RoleUsers
+			result5 error
 		})
 	}
-	fake.listOrgBillingManagersReturnsOnCall[i] = struct {
+	fake.listSpaceUsersByRoleReturnsOnCall[i] = struct {
 		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListOrgManagers(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
-	fake.listOrgManagersMutex.Lock()
-	ret, specificReturn := fake.listOrgManagersReturnsOnCall[len(fake.listOrgManagersArgsForCall)]
-	fake.listOrgManagersArgsForCall = append(fake.listOrgManagersArgsForCall, struct {
-		arg1 string
-		arg2 *uaa.Users
-	}{arg1, arg2})
-	fake.recordInvocation("ListOrgManagers", []interface{}{arg1, arg2})
-	fake.listOrgManagersMutex.Unlock()
-	if fake.ListOrgManagersStub != nil {
-		return fake.ListOrgManagersStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listOrgManagersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeManager) ListOrgManagersCallCount() int {
-	fake.listOrgManagersMutex.RLock()
-	defer fake.listOrgManagersMutex.RUnlock()
-	return len(fake.listOrgManagersArgsForCall)
-}
-
-func (fake *FakeManager) ListOrgManagersCalls(stub func(string, *uaa.Users) (*user.RoleUsers, error)) {
-	fake.listOrgManagersMutex.Lock()
-	defer fake.listOrgManagersMutex.Unlock()
-	fake.ListOrgManagersStub = stub
-}
-
-func (fake *FakeManager) ListOrgManagersArgsForCall(i int) (string, *uaa.Users) {
-	fake.listOrgManagersMutex.RLock()
-	defer fake.listOrgManagersMutex.RUnlock()
-	argsForCall := fake.listOrgManagersArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeManager) ListOrgManagersReturns(result1 *user.RoleUsers, result2 error) {
-	fake.listOrgManagersMutex.Lock()
-	defer fake.listOrgManagersMutex.Unlock()
-	fake.ListOrgManagersStub = nil
-	fake.listOrgManagersReturns = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListOrgManagersReturnsOnCall(i int, result1 *user.RoleUsers, result2 error) {
-	fake.listOrgManagersMutex.Lock()
-	defer fake.listOrgManagersMutex.Unlock()
-	fake.ListOrgManagersStub = nil
-	if fake.listOrgManagersReturnsOnCall == nil {
-		fake.listOrgManagersReturnsOnCall = make(map[int]struct {
-			result1 *user.RoleUsers
-			result2 error
-		})
-	}
-	fake.listOrgManagersReturnsOnCall[i] = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListOrgUsers(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
-	fake.listOrgUsersMutex.Lock()
-	ret, specificReturn := fake.listOrgUsersReturnsOnCall[len(fake.listOrgUsersArgsForCall)]
-	fake.listOrgUsersArgsForCall = append(fake.listOrgUsersArgsForCall, struct {
-		arg1 string
-		arg2 *uaa.Users
-	}{arg1, arg2})
-	fake.recordInvocation("ListOrgUsers", []interface{}{arg1, arg2})
-	fake.listOrgUsersMutex.Unlock()
-	if fake.ListOrgUsersStub != nil {
-		return fake.ListOrgUsersStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listOrgUsersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeManager) ListOrgUsersCallCount() int {
-	fake.listOrgUsersMutex.RLock()
-	defer fake.listOrgUsersMutex.RUnlock()
-	return len(fake.listOrgUsersArgsForCall)
-}
-
-func (fake *FakeManager) ListOrgUsersCalls(stub func(string, *uaa.Users) (*user.RoleUsers, error)) {
-	fake.listOrgUsersMutex.Lock()
-	defer fake.listOrgUsersMutex.Unlock()
-	fake.ListOrgUsersStub = stub
-}
-
-func (fake *FakeManager) ListOrgUsersArgsForCall(i int) (string, *uaa.Users) {
-	fake.listOrgUsersMutex.RLock()
-	defer fake.listOrgUsersMutex.RUnlock()
-	argsForCall := fake.listOrgUsersArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeManager) ListOrgUsersReturns(result1 *user.RoleUsers, result2 error) {
-	fake.listOrgUsersMutex.Lock()
-	defer fake.listOrgUsersMutex.Unlock()
-	fake.ListOrgUsersStub = nil
-	fake.listOrgUsersReturns = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListOrgUsersReturnsOnCall(i int, result1 *user.RoleUsers, result2 error) {
-	fake.listOrgUsersMutex.Lock()
-	defer fake.listOrgUsersMutex.Unlock()
-	fake.ListOrgUsersStub = nil
-	if fake.listOrgUsersReturnsOnCall == nil {
-		fake.listOrgUsersReturnsOnCall = make(map[int]struct {
-			result1 *user.RoleUsers
-			result2 error
-		})
-	}
-	fake.listOrgUsersReturnsOnCall[i] = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListSpaceAuditors(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
-	fake.listSpaceAuditorsMutex.Lock()
-	ret, specificReturn := fake.listSpaceAuditorsReturnsOnCall[len(fake.listSpaceAuditorsArgsForCall)]
-	fake.listSpaceAuditorsArgsForCall = append(fake.listSpaceAuditorsArgsForCall, struct {
-		arg1 string
-		arg2 *uaa.Users
-	}{arg1, arg2})
-	fake.recordInvocation("ListSpaceAuditors", []interface{}{arg1, arg2})
-	fake.listSpaceAuditorsMutex.Unlock()
-	if fake.ListSpaceAuditorsStub != nil {
-		return fake.ListSpaceAuditorsStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listSpaceAuditorsReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeManager) ListSpaceAuditorsCallCount() int {
-	fake.listSpaceAuditorsMutex.RLock()
-	defer fake.listSpaceAuditorsMutex.RUnlock()
-	return len(fake.listSpaceAuditorsArgsForCall)
-}
-
-func (fake *FakeManager) ListSpaceAuditorsCalls(stub func(string, *uaa.Users) (*user.RoleUsers, error)) {
-	fake.listSpaceAuditorsMutex.Lock()
-	defer fake.listSpaceAuditorsMutex.Unlock()
-	fake.ListSpaceAuditorsStub = stub
-}
-
-func (fake *FakeManager) ListSpaceAuditorsArgsForCall(i int) (string, *uaa.Users) {
-	fake.listSpaceAuditorsMutex.RLock()
-	defer fake.listSpaceAuditorsMutex.RUnlock()
-	argsForCall := fake.listSpaceAuditorsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeManager) ListSpaceAuditorsReturns(result1 *user.RoleUsers, result2 error) {
-	fake.listSpaceAuditorsMutex.Lock()
-	defer fake.listSpaceAuditorsMutex.Unlock()
-	fake.ListSpaceAuditorsStub = nil
-	fake.listSpaceAuditorsReturns = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListSpaceAuditorsReturnsOnCall(i int, result1 *user.RoleUsers, result2 error) {
-	fake.listSpaceAuditorsMutex.Lock()
-	defer fake.listSpaceAuditorsMutex.Unlock()
-	fake.ListSpaceAuditorsStub = nil
-	if fake.listSpaceAuditorsReturnsOnCall == nil {
-		fake.listSpaceAuditorsReturnsOnCall = make(map[int]struct {
-			result1 *user.RoleUsers
-			result2 error
-		})
-	}
-	fake.listSpaceAuditorsReturnsOnCall[i] = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListSpaceDevelopers(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
-	fake.listSpaceDevelopersMutex.Lock()
-	ret, specificReturn := fake.listSpaceDevelopersReturnsOnCall[len(fake.listSpaceDevelopersArgsForCall)]
-	fake.listSpaceDevelopersArgsForCall = append(fake.listSpaceDevelopersArgsForCall, struct {
-		arg1 string
-		arg2 *uaa.Users
-	}{arg1, arg2})
-	fake.recordInvocation("ListSpaceDevelopers", []interface{}{arg1, arg2})
-	fake.listSpaceDevelopersMutex.Unlock()
-	if fake.ListSpaceDevelopersStub != nil {
-		return fake.ListSpaceDevelopersStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listSpaceDevelopersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeManager) ListSpaceDevelopersCallCount() int {
-	fake.listSpaceDevelopersMutex.RLock()
-	defer fake.listSpaceDevelopersMutex.RUnlock()
-	return len(fake.listSpaceDevelopersArgsForCall)
-}
-
-func (fake *FakeManager) ListSpaceDevelopersCalls(stub func(string, *uaa.Users) (*user.RoleUsers, error)) {
-	fake.listSpaceDevelopersMutex.Lock()
-	defer fake.listSpaceDevelopersMutex.Unlock()
-	fake.ListSpaceDevelopersStub = stub
-}
-
-func (fake *FakeManager) ListSpaceDevelopersArgsForCall(i int) (string, *uaa.Users) {
-	fake.listSpaceDevelopersMutex.RLock()
-	defer fake.listSpaceDevelopersMutex.RUnlock()
-	argsForCall := fake.listSpaceDevelopersArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeManager) ListSpaceDevelopersReturns(result1 *user.RoleUsers, result2 error) {
-	fake.listSpaceDevelopersMutex.Lock()
-	defer fake.listSpaceDevelopersMutex.Unlock()
-	fake.ListSpaceDevelopersStub = nil
-	fake.listSpaceDevelopersReturns = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListSpaceDevelopersReturnsOnCall(i int, result1 *user.RoleUsers, result2 error) {
-	fake.listSpaceDevelopersMutex.Lock()
-	defer fake.listSpaceDevelopersMutex.Unlock()
-	fake.ListSpaceDevelopersStub = nil
-	if fake.listSpaceDevelopersReturnsOnCall == nil {
-		fake.listSpaceDevelopersReturnsOnCall = make(map[int]struct {
-			result1 *user.RoleUsers
-			result2 error
-		})
-	}
-	fake.listSpaceDevelopersReturnsOnCall[i] = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListSpaceManagers(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
-	fake.listSpaceManagersMutex.Lock()
-	ret, specificReturn := fake.listSpaceManagersReturnsOnCall[len(fake.listSpaceManagersArgsForCall)]
-	fake.listSpaceManagersArgsForCall = append(fake.listSpaceManagersArgsForCall, struct {
-		arg1 string
-		arg2 *uaa.Users
-	}{arg1, arg2})
-	fake.recordInvocation("ListSpaceManagers", []interface{}{arg1, arg2})
-	fake.listSpaceManagersMutex.Unlock()
-	if fake.ListSpaceManagersStub != nil {
-		return fake.ListSpaceManagersStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listSpaceManagersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeManager) ListSpaceManagersCallCount() int {
-	fake.listSpaceManagersMutex.RLock()
-	defer fake.listSpaceManagersMutex.RUnlock()
-	return len(fake.listSpaceManagersArgsForCall)
-}
-
-func (fake *FakeManager) ListSpaceManagersCalls(stub func(string, *uaa.Users) (*user.RoleUsers, error)) {
-	fake.listSpaceManagersMutex.Lock()
-	defer fake.listSpaceManagersMutex.Unlock()
-	fake.ListSpaceManagersStub = stub
-}
-
-func (fake *FakeManager) ListSpaceManagersArgsForCall(i int) (string, *uaa.Users) {
-	fake.listSpaceManagersMutex.RLock()
-	defer fake.listSpaceManagersMutex.RUnlock()
-	argsForCall := fake.listSpaceManagersArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeManager) ListSpaceManagersReturns(result1 *user.RoleUsers, result2 error) {
-	fake.listSpaceManagersMutex.Lock()
-	defer fake.listSpaceManagersMutex.Unlock()
-	fake.ListSpaceManagersStub = nil
-	fake.listSpaceManagersReturns = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListSpaceManagersReturnsOnCall(i int, result1 *user.RoleUsers, result2 error) {
-	fake.listSpaceManagersMutex.Lock()
-	defer fake.listSpaceManagersMutex.Unlock()
-	fake.ListSpaceManagersStub = nil
-	if fake.listSpaceManagersReturnsOnCall == nil {
-		fake.listSpaceManagersReturnsOnCall = make(map[int]struct {
-			result1 *user.RoleUsers
-			result2 error
-		})
-	}
-	fake.listSpaceManagersReturnsOnCall[i] = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListSpaceSupporters(arg1 string, arg2 *uaa.Users) (*user.RoleUsers, error) {
-	fake.listSpaceSupportersMutex.Lock()
-	ret, specificReturn := fake.listSpaceSupportersReturnsOnCall[len(fake.listSpaceSupportersArgsForCall)]
-	fake.listSpaceSupportersArgsForCall = append(fake.listSpaceSupportersArgsForCall, struct {
-		arg1 string
-		arg2 *uaa.Users
-	}{arg1, arg2})
-	fake.recordInvocation("ListSpaceSupporters", []interface{}{arg1, arg2})
-	fake.listSpaceSupportersMutex.Unlock()
-	if fake.ListSpaceSupportersStub != nil {
-		return fake.ListSpaceSupportersStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.listSpaceSupportersReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeManager) ListSpaceSupportersCallCount() int {
-	fake.listSpaceSupportersMutex.RLock()
-	defer fake.listSpaceSupportersMutex.RUnlock()
-	return len(fake.listSpaceSupportersArgsForCall)
-}
-
-func (fake *FakeManager) ListSpaceSupportersCalls(stub func(string, *uaa.Users) (*user.RoleUsers, error)) {
-	fake.listSpaceSupportersMutex.Lock()
-	defer fake.listSpaceSupportersMutex.Unlock()
-	fake.ListSpaceSupportersStub = stub
-}
-
-func (fake *FakeManager) ListSpaceSupportersArgsForCall(i int) (string, *uaa.Users) {
-	fake.listSpaceSupportersMutex.RLock()
-	defer fake.listSpaceSupportersMutex.RUnlock()
-	argsForCall := fake.listSpaceSupportersArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeManager) ListSpaceSupportersReturns(result1 *user.RoleUsers, result2 error) {
-	fake.listSpaceSupportersMutex.Lock()
-	defer fake.listSpaceSupportersMutex.Unlock()
-	fake.ListSpaceSupportersStub = nil
-	fake.listSpaceSupportersReturns = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) ListSpaceSupportersReturnsOnCall(i int, result1 *user.RoleUsers, result2 error) {
-	fake.listSpaceSupportersMutex.Lock()
-	defer fake.listSpaceSupportersMutex.Unlock()
-	fake.ListSpaceSupportersStub = nil
-	if fake.listSpaceSupportersReturnsOnCall == nil {
-		fake.listSpaceSupportersReturnsOnCall = make(map[int]struct {
-			result1 *user.RoleUsers
-			result2 error
-		})
-	}
-	fake.listSpaceSupportersReturnsOnCall[i] = struct {
-		result1 *user.RoleUsers
-		result2 error
-	}{result1, result2}
+		result2 *user.RoleUsers
+		result3 *user.RoleUsers
+		result4 *user.RoleUsers
+		result5 error
+	}{result1, result2, result3, result4, result5}
 }
 
 func (fake *FakeManager) UpdateOrgUsers() error {
@@ -969,22 +526,10 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.deinitializeLdapMutex.RUnlock()
 	fake.initializeLdapMutex.RLock()
 	defer fake.initializeLdapMutex.RUnlock()
-	fake.listOrgAuditorsMutex.RLock()
-	defer fake.listOrgAuditorsMutex.RUnlock()
-	fake.listOrgBillingManagersMutex.RLock()
-	defer fake.listOrgBillingManagersMutex.RUnlock()
-	fake.listOrgManagersMutex.RLock()
-	defer fake.listOrgManagersMutex.RUnlock()
-	fake.listOrgUsersMutex.RLock()
-	defer fake.listOrgUsersMutex.RUnlock()
-	fake.listSpaceAuditorsMutex.RLock()
-	defer fake.listSpaceAuditorsMutex.RUnlock()
-	fake.listSpaceDevelopersMutex.RLock()
-	defer fake.listSpaceDevelopersMutex.RUnlock()
-	fake.listSpaceManagersMutex.RLock()
-	defer fake.listSpaceManagersMutex.RUnlock()
-	fake.listSpaceSupportersMutex.RLock()
-	defer fake.listSpaceSupportersMutex.RUnlock()
+	fake.listOrgUsersByRoleMutex.RLock()
+	defer fake.listOrgUsersByRoleMutex.RUnlock()
+	fake.listSpaceUsersByRoleMutex.RLock()
+	defer fake.listSpaceUsersByRoleMutex.RUnlock()
 	fake.updateOrgUsersMutex.RLock()
 	defer fake.updateOrgUsersMutex.RUnlock()
 	fake.updateSpaceUsersMutex.RLock()

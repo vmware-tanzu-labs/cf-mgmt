@@ -116,6 +116,19 @@ type FakeCFClient struct {
 		result1 []cfclient.V3User
 		result2 error
 	}
+	ListV3UsersByQueryStub        func(url.Values) ([]cfclient.V3User, error)
+	listV3UsersByQueryMutex       sync.RWMutex
+	listV3UsersByQueryArgsForCall []struct {
+		arg1 url.Values
+	}
+	listV3UsersByQueryReturns struct {
+		result1 []cfclient.V3User
+		result2 error
+	}
+	listV3UsersByQueryReturnsOnCall map[int]struct {
+		result1 []cfclient.V3User
+		result2 error
+	}
 	SupportsSpaceSupporterRoleStub        func() (bool, error)
 	supportsSpaceSupporterRoleMutex       sync.RWMutex
 	supportsSpaceSupporterRoleArgsForCall []struct {
@@ -636,6 +649,69 @@ func (fake *FakeCFClient) ListV3SpaceRolesByGUIDAndTypeReturnsOnCall(i int, resu
 	}{result1, result2}
 }
 
+func (fake *FakeCFClient) ListV3UsersByQuery(arg1 url.Values) ([]cfclient.V3User, error) {
+	fake.listV3UsersByQueryMutex.Lock()
+	ret, specificReturn := fake.listV3UsersByQueryReturnsOnCall[len(fake.listV3UsersByQueryArgsForCall)]
+	fake.listV3UsersByQueryArgsForCall = append(fake.listV3UsersByQueryArgsForCall, struct {
+		arg1 url.Values
+	}{arg1})
+	fake.recordInvocation("ListV3UsersByQuery", []interface{}{arg1})
+	fake.listV3UsersByQueryMutex.Unlock()
+	if fake.ListV3UsersByQueryStub != nil {
+		return fake.ListV3UsersByQueryStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listV3UsersByQueryReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCFClient) ListV3UsersByQueryCallCount() int {
+	fake.listV3UsersByQueryMutex.RLock()
+	defer fake.listV3UsersByQueryMutex.RUnlock()
+	return len(fake.listV3UsersByQueryArgsForCall)
+}
+
+func (fake *FakeCFClient) ListV3UsersByQueryCalls(stub func(url.Values) ([]cfclient.V3User, error)) {
+	fake.listV3UsersByQueryMutex.Lock()
+	defer fake.listV3UsersByQueryMutex.Unlock()
+	fake.ListV3UsersByQueryStub = stub
+}
+
+func (fake *FakeCFClient) ListV3UsersByQueryArgsForCall(i int) url.Values {
+	fake.listV3UsersByQueryMutex.RLock()
+	defer fake.listV3UsersByQueryMutex.RUnlock()
+	argsForCall := fake.listV3UsersByQueryArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeCFClient) ListV3UsersByQueryReturns(result1 []cfclient.V3User, result2 error) {
+	fake.listV3UsersByQueryMutex.Lock()
+	defer fake.listV3UsersByQueryMutex.Unlock()
+	fake.ListV3UsersByQueryStub = nil
+	fake.listV3UsersByQueryReturns = struct {
+		result1 []cfclient.V3User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFClient) ListV3UsersByQueryReturnsOnCall(i int, result1 []cfclient.V3User, result2 error) {
+	fake.listV3UsersByQueryMutex.Lock()
+	defer fake.listV3UsersByQueryMutex.Unlock()
+	fake.ListV3UsersByQueryStub = nil
+	if fake.listV3UsersByQueryReturnsOnCall == nil {
+		fake.listV3UsersByQueryReturnsOnCall = make(map[int]struct {
+			result1 []cfclient.V3User
+			result2 error
+		})
+	}
+	fake.listV3UsersByQueryReturnsOnCall[i] = struct {
+		result1 []cfclient.V3User
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeCFClient) SupportsSpaceSupporterRole() (bool, error) {
 	fake.supportsSpaceSupporterRoleMutex.Lock()
 	ret, specificReturn := fake.supportsSpaceSupporterRoleReturnsOnCall[len(fake.supportsSpaceSupporterRoleArgsForCall)]
@@ -710,6 +786,8 @@ func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	defer fake.listV3RolesByQueryMutex.RUnlock()
 	fake.listV3SpaceRolesByGUIDAndTypeMutex.RLock()
 	defer fake.listV3SpaceRolesByGUIDAndTypeMutex.RUnlock()
+	fake.listV3UsersByQueryMutex.RLock()
+	defer fake.listV3UsersByQueryMutex.RUnlock()
 	fake.supportsSpaceSupporterRoleMutex.RLock()
 	defer fake.supportsSpaceSupporterRoleMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

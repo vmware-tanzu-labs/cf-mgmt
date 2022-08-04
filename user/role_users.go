@@ -2,11 +2,11 @@ package user
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
-	"github.com/xchapter7x/lo"
 )
 
 func NewRoleUsers(users []cfclient.V3User, uaaUsers *uaa.Users) (*RoleUsers, error) {
@@ -105,123 +105,13 @@ func (r *RoleUsers) Users() []RoleUser {
 	var result []RoleUser
 	if r.users != nil {
 		for _, originUsers := range r.users {
-			for _, user := range originUsers {
-				result = append(result, user)
-			}
+			result = append(result, originUsers...)
 		}
 	}
 	return result
 }
 
-func (m *DefaultManager) ListSpaceAuditors(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
-		return InitRoleUsers(), nil
-	}
-	users, err := m.Client.ListV3SpaceRolesByGUIDAndType(spaceGUID, SPACE_AUDITOR)
-	if err != nil {
-		return nil, err
-	}
-	return NewRoleUsers(users, uaaUsers)
-}
-func (m *DefaultManager) ListSpaceDevelopers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
-		return InitRoleUsers(), nil
-	}
-	users, err := m.Client.ListV3SpaceRolesByGUIDAndType(spaceGUID, SPACE_DEVELOPER)
-	if err != nil {
-		return nil, err
-	}
-	return NewRoleUsers(users, uaaUsers)
-}
-func (m *DefaultManager) ListSpaceManagers(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
-		return InitRoleUsers(), nil
-	}
-	users, err := m.Client.ListV3SpaceRolesByGUIDAndType(spaceGUID, SPACE_MANAGER)
-	if err != nil {
-		return nil, err
-	}
-	return NewRoleUsers(users, uaaUsers)
-}
-
-func (m *DefaultManager) ListSpaceSupporters(spaceGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
-		return InitRoleUsers(), nil
-	}
-
-	if !m.SupportsSpaceSupporter {
-		return InitRoleUsers(), nil
-	}
-	users, err := m.Client.ListV3SpaceRolesByGUIDAndType(spaceGUID, SPACE_SUPPORTER)
-	if err != nil {
-		return nil, err
-	}
-	return NewRoleUsers(users, uaaUsers)
-}
-
-func (m *DefaultManager) listSpaceAuditors(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	roleUsers, err := m.ListSpaceAuditors(input.SpaceGUID, uaaUsers)
-	if err == nil {
-		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-auditor", roleUsers)
-	}
-	return roleUsers, err
-}
-func (m *DefaultManager) listSpaceDevelopers(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	roleUsers, err := m.ListSpaceDevelopers(input.SpaceGUID, uaaUsers)
-	if err == nil {
-		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-developer", roleUsers)
-	}
-	return roleUsers, err
-}
-
-func (m *DefaultManager) listSpaceSupporters(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	roleUsers, err := m.ListSpaceSupporters(input.SpaceGUID, uaaUsers)
-	if err == nil {
-		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-supporter", roleUsers)
-	}
-	return roleUsers, err
-}
-func (m *DefaultManager) listSpaceManagers(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	roleUsers, err := m.ListSpaceManagers(input.SpaceGUID, uaaUsers)
-	if err == nil {
-		lo.G.Debugf("RoleUsers for Org %s, Space %s and role %s: %+v", input.OrgName, input.SpaceName, "space-manager", roleUsers)
-	}
-	return roleUsers, err
-}
-
-func (m *DefaultManager) ListOrgAuditors(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
-		return InitRoleUsers(), nil
-	}
-	users, err := m.Client.ListV3OrganizationRolesByGUIDAndType(orgGUID, ORG_AUDITOR)
-	if err != nil {
-		return nil, err
-	}
-	return NewRoleUsers(users, uaaUsers)
-}
-func (m *DefaultManager) ListOrgBillingManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
-		return InitRoleUsers(), nil
-	}
-	users, err := m.Client.ListV3OrganizationRolesByGUIDAndType(orgGUID, ORG_BILLING_MANAGER)
-	if err != nil {
-		return nil, err
-	}
-	return NewRoleUsers(users, uaaUsers)
-}
-
-func (m *DefaultManager) ListOrgManagers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
-		return InitRoleUsers(), nil
-	}
-	users, err := m.Client.ListV3OrganizationRolesByGUIDAndType(orgGUID, ORG_MANAGER)
-	if err != nil {
-		return nil, err
-	}
-	return NewRoleUsers(users, uaaUsers)
-}
-
-func (m *DefaultManager) ListOrgUsers(orgGUID string, uaaUsers *uaa.Users) (*RoleUsers, error) {
+func (m *DefaultManager) ListOrgUsers(orgGUID string) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
 		return InitRoleUsers(), nil
 	}
@@ -229,27 +119,114 @@ func (m *DefaultManager) ListOrgUsers(orgGUID string, uaaUsers *uaa.Users) (*Rol
 	if err != nil {
 		return nil, err
 	}
-	return NewRoleUsers(users, uaaUsers)
+	return NewRoleUsers(users, m.UAAUsers)
 }
 
-func (m *DefaultManager) listOrgAuditors(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	roleUsers, err := m.ListOrgAuditors(input.OrgGUID, uaaUsers)
-	if err == nil {
-		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-auditor", roleUsers)
+func (m *DefaultManager) ListOrgUsersByRole(orgGUID string) (*RoleUsers, *RoleUsers, *RoleUsers, *RoleUsers, error) {
+	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
+		return InitRoleUsers(), InitRoleUsers(), InitRoleUsers(), InitRoleUsers(), nil
 	}
-	return roleUsers, err
+	managers := []cfclient.V3User{}
+	billingManagers := []cfclient.V3User{}
+	auditors := []cfclient.V3User{}
+	orgUser := []cfclient.V3User{}
+	query := url.Values{}
+	query["organization_guids"] = []string{orgGUID}
+	roles, err := m.Client.ListV3RolesByQuery(query)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	for _, role := range roles {
+		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		if role.Type == ORG_MANAGER {
+			managers = append(managers, *user)
+		} else if role.Type == ORG_BILLING_MANAGER {
+			billingManagers = append(billingManagers, *user)
+		} else if role.Type == ORG_AUDITOR {
+			auditors = append(auditors, *user)
+		} else if role.Type == ORG_USER {
+			orgUser = append(orgUser, *user)
+		} else {
+			return nil, nil, nil, nil, fmt.Errorf("type of %s is unknown", role.Type)
+		}
+	}
+	orgUserRoles, err := NewRoleUsers(orgUser, m.UAAUsers)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	managerRoleUsers, err := NewRoleUsers(managers, m.UAAUsers)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	billingManagerRoleUsers, err := NewRoleUsers(billingManagers, m.UAAUsers)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	auditorRoleUsers, err := NewRoleUsers(auditors, m.UAAUsers)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	return orgUserRoles, managerRoleUsers, billingManagerRoleUsers, auditorRoleUsers, nil
 }
-func (m *DefaultManager) listOrgBillingManagers(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	roleUsers, err := m.ListOrgBillingManagers(input.OrgGUID, uaaUsers)
-	if err == nil {
-		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-billing-manager", roleUsers)
+
+func (m *DefaultManager) ListSpaceUsersByRole(spaceGUID string) (*RoleUsers, *RoleUsers, *RoleUsers, *RoleUsers, error) {
+	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
+		return InitRoleUsers(), InitRoleUsers(), InitRoleUsers(), InitRoleUsers(), nil
 	}
-	return roleUsers, err
+	managers := []cfclient.V3User{}
+	developers := []cfclient.V3User{}
+	auditors := []cfclient.V3User{}
+	supporters := []cfclient.V3User{}
+	query := url.Values{}
+	query["space_guids"] = []string{spaceGUID}
+	roles, err := m.Client.ListV3RolesByQuery(query)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	for _, role := range roles {
+		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		if role.Type == SPACE_MANAGER {
+			managers = append(managers, *user)
+		} else if role.Type == SPACE_DEVELOPER {
+			developers = append(developers, *user)
+		} else if role.Type == SPACE_AUDITOR {
+			auditors = append(auditors, *user)
+		} else if role.Type == SPACE_SUPPORTER {
+			supporters = append(supporters, *user)
+		} else {
+			return nil, nil, nil, nil, fmt.Errorf("type of %s is unknown", role.Type)
+		}
+	}
+	managerRoleUsers, err := NewRoleUsers(managers, m.UAAUsers)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	developerRoleUsers, err := NewRoleUsers(developers, m.UAAUsers)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	auditorRoleUsers, err := NewRoleUsers(auditors, m.UAAUsers)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	supporterRoleUsers, err := NewRoleUsers(supporters, m.UAAUsers)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	return managerRoleUsers, developerRoleUsers, auditorRoleUsers, supporterRoleUsers, nil
 }
-func (m *DefaultManager) listOrgManagers(input UsersInput, uaaUsers *uaa.Users) (*RoleUsers, error) {
-	roleUsers, err := m.ListOrgManagers(input.OrgGUID, uaaUsers)
-	if err == nil {
-		lo.G.Debugf("RoleUsers for Org %s and role %s: %+v", input.OrgName, "org-manager", roleUsers)
+
+func (m *DefaultManager) getUserForGUID(guid string) (*cfclient.V3User, error) {
+	if user, ok := m.CFUsers[guid]; ok {
+		return &user, nil
 	}
-	return roleUsers, err
+	return nil, fmt.Errorf("user not found for guid [%s]", guid)
 }
