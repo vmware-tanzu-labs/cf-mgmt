@@ -1,0 +1,6 @@
+---
+tas_versions:
+- {'version_slug': '2-13', 'pool_name': 'us_2_13'     , 'pivnet_ert_windows': '^2\.13\.\d+((-alpha|-beta|-rc)\.\d+)?$' }
+- {'version_slug': '2-12', 'pool_name': 'us_2_12'     , 'pivnet_ert_windows': '^2\.12\.\d+((-alpha|-beta|-rc)\.\d+)?$' }
+- {'version_slug': '2-11', 'pool_name': 'us_2_11_lts2', 'pivnet_ert_windows': '^2\.11\.\d+((-alpha|-beta|-rc)\.\d+)?$' }
+
