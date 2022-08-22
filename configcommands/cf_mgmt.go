@@ -20,6 +20,7 @@ type CfMgmtConfigCommand struct {
 	RenameSpaceConfigurationCommand     RenameSpaceConfigurationCommand     `command:"rename-space" description:"renames a space for a given org"`
 	OrgNamedQuotaConfigurationCommand   OrgNamedQuotaConfigurationCommand   `command:"named-org-quota" description:"creates/updates named org quota"`
 	SpaceNamedQuotaConfigurationCommand SpaceNamedQuotaConfigurationCommand `command:"named-space-quota" description:"creates/updates named space quota"`
+	ClearUsersCommand                   ClearUsersCommand                   `command:"clear-users" description:"updates all configuration but removes any user/group mapping"`
 }
 
 var CfMgmtConfig CfMgmtConfigCommand
