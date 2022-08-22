@@ -1,11 +1,10 @@
 ---
-#! to set pipeline run: fly set-pipeline -p cf-mgmt -c <(ytt -f ci/pipeline.yml)
+#!  WARNING: this pipeline is automatically set and manual changes will go away. 
+#!
+#!  To set pipeline manually run: 
+#!    fly set-pipeline -p cf-mgmt -c <(ytt -f ci/pipelines/cf-mgmt/pipeline.yml --data-values-file ci/pipelines/cf-mgmt/)
 
-#@ tas_versions = [
-#@   {"version": "2.13.*", "pool_without_location": "2_13"},
-#@   {"version": "2.12.*", "pool_without_location": "2_12"},
-#@   {"version": "2.11.*", "pool_without_location": "2_11_lts2"},
-#@ ]
+#@ load("@ytt:data", "data")
 
 groups:
 - name: pull-requests
@@ -13,10 +12,10 @@ groups:
   - claim-cf
   - test
   - unclaim-cf
-#@ for v in tas_versions:
-  - #@ 'claim-tas-' + v["pool_without_location"]
-  - #@ 'test-against-tas-' + v["pool_without_location"]
-  - #@ 'unclaim-tas-' + v["pool_without_location"]
+#@ for v in data.values.tas_versions:
+  - #@ 'claim-tas-' + v["version_slug"]
+  - #@ 'test-against-tas-' + v["version_slug"]
+  - #@ 'unclaim-tas-' + v["version_slug"]
 #@ end
   - merge
 - name: release
@@ -43,13 +42,13 @@ resource_types:
   type: registry-image
 
 resources:
-#@ for/end v in tas_versions:
+#@ for/end v in data.values.tas_versions:
 - icon: pool
-  name: #@ 'tas-' + v["pool_without_location"] + '-env'
+  name: #@ 'tas-' + v["version_slug"] + '-env'
   source:
     api_token: ((toolsmiths.api_token))
     hostname: environments.toolsmiths.cf-app.com
-    pool_name: #@ 'us_' + v["pool_without_location"]
+    pool_name: #@ v["pool_name"]
   type: pcf-pool
 
 - name: source
@@ -165,8 +164,8 @@ jobs:
     trigger: true
     passed:
     - unclaim-cf
-#@ for v in tas_versions:
-    - #@ 'unclaim-tas-' + v["pool_without_location"]
+#@ for v in data.values.tas_versions:
+    - #@ 'unclaim-tas-' + v["version_slug"]
 #@ end
   - put: pull-request
     params:
@@ -185,44 +184,44 @@ jobs:
       GH_TOKEN: ((github.token))
       PR_REF: ((.:pr-metadata.pr))
 
-#@ for v in tas_versions:
-- name: #@ 'claim-tas-' + v["pool_without_location"]
+#@ for v in data.values.tas_versions:
+- name: #@ 'claim-tas-' + v["version_slug"]
   plan:
   - get: pull-request
     trigger: true
-  - put: #@ 'tas-' + v["pool_without_location"] +'-env'
+  - put: #@ 'tas-' + v["version_slug"] +'-env'
     params:
       action: claim
 
-- name: #@ 'test-against-tas-' + v["pool_without_location"]
+- name: #@ 'test-against-tas-' + v["version_slug"]
   plan:
     - in_parallel:
       - get: source
         resource: pull-request
         passed:
-        - #@ 'claim-tas-' + v["pool_without_location"]
-      - get: #@ 'tas-' + v["pool_without_location"] +'-env'
+        - #@ 'claim-tas-' + v["version_slug"]
+      - get: #@ 'tas-' + v["version_slug"] +'-env'
         trigger: true
         passed:
-        - #@ 'claim-tas-' + v["pool_without_location"]
+        - #@ 'claim-tas-' + v["version_slug"]
     - task: integration-test
       file: source/ci/tasks/runIntegrationTestsAgainstTAS.yml
       input_mapping:
-        env: #@ 'tas-' + v["pool_without_location"] +'-env'
+        env: #@ 'tas-' + v["version_slug"] +'-env'
 
-- name: #@ 'unclaim-tas-' + v["pool_without_location"]
+- name: #@ 'unclaim-tas-' + v["version_slug"]
   plan:
   - get: pull-request
     passed:
-    - #@ 'test-against-tas-' + v["pool_without_location"]
-  - get: #@ 'tas-' + v["pool_without_location"] + '-env'
+    - #@ 'test-against-tas-' + v["version_slug"]
+  - get: #@ 'tas-' + v["version_slug"] + '-env'
     trigger: true
     passed:
-    - #@ 'test-against-tas-' + v["pool_without_location"]
-  - put: #@ 'tas-' + v["pool_without_location"] + '-env'
+    - #@ 'test-against-tas-' + v["version_slug"]
+  - put: #@ 'tas-' + v["version_slug"] + '-env'
     params:
       action: unclaim
-      env_file: #@ 'tas-' + v["pool_without_location"] + '-env/metadata'
+      env_file: #@ 'tas-' + v["version_slug"] + '-env/metadata'
 #@ end
 
 - name: release
