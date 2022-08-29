@@ -4,7 +4,6 @@ go 1.16
 
 require (
 	code.cloudfoundry.org/cfhttp/v2 v2.0.0 // indirect
-	code.cloudfoundry.org/gofileutils v0.0.0-20170111115228-4d0c80011a0f // indirect
 	code.cloudfoundry.org/routing-api v0.0.0-20210519201915-b3b118a368e6
 	code.cloudfoundry.org/trace-logger v0.0.0-20170119230301-107ef08a939d // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
@@ -17,7 +16,7 @@ require (
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.20.0
+	github.com/onsi/gomega v1.20.1
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/pkg/errors v0.9.1
@@ -28,7 +27,6 @@ require (
 	github.com/xchapter7x/lo v0.0.0-20160804235750-e33b245fc7a8
 	golang.org/x/net v0.0.0-20220802222814-0bcc04d9c69b // indirect
 	golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c // indirect
-	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0
