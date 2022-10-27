@@ -1,8 +1,6 @@
 # code.cloudfoundry.org/cfhttp/v2 v2.0.0
 ## explicit
 code.cloudfoundry.org/cfhttp/v2
-# code.cloudfoundry.org/gofileutils v0.0.0-20170111115228-4d0c80011a0f
-## explicit
 # code.cloudfoundry.org/routing-api v0.0.0-20210519201915-b3b118a368e6
 ## explicit
 code.cloudfoundry.org/routing-api
@@ -78,7 +76,7 @@ github.com/onsi/ginkgo/reporters/stenographer
 github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable
 github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
 github.com/onsi/ginkgo/types
-# github.com/onsi/gomega v1.20.0
+# github.com/onsi/gomega v1.22.1
 ## explicit
 github.com/onsi/gomega
 github.com/onsi/gomega/format
@@ -149,7 +147,6 @@ golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
 # google.golang.org/appengine v1.6.7
-## explicit
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/base
 google.golang.org/appengine/internal/datastore
