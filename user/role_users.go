@@ -7,6 +7,7 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
+	"github.com/xchapter7x/lo"
 )
 
 func NewRoleUsers(users []cfclient.V3User, uaaUsers *uaa.Users) (*RoleUsers, error) {
@@ -132,10 +133,14 @@ func (m *DefaultManager) ListOrgUsersByRole(orgGUID string) (*RoleUsers, *RoleUs
 	orgUser := []cfclient.V3User{}
 	query := url.Values{}
 	query["organization_guids"] = []string{orgGUID}
+	query["per_page"] = []string{"5000"}
+	lo.G.Debugf("Start list users for org guid %s", orgGUID)
 	roles, err := m.Client.ListV3RolesByQuery(query)
+	lo.G.Debugf("End list users for org guid %s", orgGUID)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
+	lo.G.Debugf("%d - roles found", len(roles))
 	for _, role := range roles {
 		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
 		if err != nil {
@@ -174,6 +179,7 @@ func (m *DefaultManager) ListOrgUsersByRole(orgGUID string) (*RoleUsers, *RoleUs
 }
 
 func (m *DefaultManager) ListSpaceUsersByRole(spaceGUID string) (*RoleUsers, *RoleUsers, *RoleUsers, *RoleUsers, error) {
+
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
 		return InitRoleUsers(), InitRoleUsers(), InitRoleUsers(), InitRoleUsers(), nil
 	}
@@ -183,10 +189,14 @@ func (m *DefaultManager) ListSpaceUsersByRole(spaceGUID string) (*RoleUsers, *Ro
 	supporters := []cfclient.V3User{}
 	query := url.Values{}
 	query["space_guids"] = []string{spaceGUID}
+	query["per_page"] = []string{"5000"}
+	lo.G.Debugf("Start list users for space guid %s", spaceGUID)
 	roles, err := m.Client.ListV3RolesByQuery(query)
+	lo.G.Debugf("End list users for space guid %s", spaceGUID)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
+	lo.G.Debugf("%d - roles found", len(roles))
 	for _, role := range roles {
 		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
 		if err != nil {
