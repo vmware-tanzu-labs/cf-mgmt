@@ -1,16 +1,18 @@
 package user
 
 import (
+	"context"
 	"fmt"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"net/url"
 	"strings"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	cfclient "github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
-func NewRoleUsers(users []cfclient.V3User, uaaUsers *uaa.Users) (*RoleUsers, error) {
+func NewRoleUsers(users []*resource.User, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers := InitRoleUsers()
 	for _, user := range users {
 		uaaUser := uaaUsers.GetByID(user.GUID)
@@ -116,7 +118,10 @@ func (m *DefaultManager) ListOrgUsers(orgGUID string) (*RoleUsers, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
 		return InitRoleUsers(), nil
 	}
-	users, err := m.Client.ListV3OrganizationRolesByGUIDAndType(orgGUID, ORG_USER)
+	opts := cfclient.NewRoleListOptions()
+	opts.OrganizationGUIDs.EqualTo(orgGUID)
+	opts.Types.EqualTo(resource.OrganizationRoleUser.String())
+	_, users, err := m.RoleClient.ListIncludeUsersAll(context.Background(), opts)
 	if err != nil {
 		return nil, err
 	}
@@ -127,32 +132,36 @@ func (m *DefaultManager) ListOrgUsersByRole(orgGUID string) (*RoleUsers, *RoleUs
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
 		return InitRoleUsers(), InitRoleUsers(), InitRoleUsers(), InitRoleUsers(), nil
 	}
-	managers := []cfclient.V3User{}
-	billingManagers := []cfclient.V3User{}
-	auditors := []cfclient.V3User{}
-	orgUser := []cfclient.V3User{}
+	managers := []*resource.User{}
+	billingManagers := []*resource.User{}
+	auditors := []*resource.User{}
+	orgUser := []*resource.User{}
 	query := url.Values{}
 	query["organization_guids"] = []string{orgGUID}
 	query["per_page"] = []string{"5000"}
 	lo.G.Debugf("Start list users for org guid %s", orgGUID)
-	roles, err := m.Client.ListV3RolesByQuery(query)
+
+	opts := cfclient.NewRoleListOptions()
+	opts.OrganizationGUIDs.EqualTo(orgGUID)
+	opts.PerPage = 5000
+	roles, err := m.RoleClient.ListAll(context.Background(), opts)
 	lo.G.Debugf("End list users for org guid %s", orgGUID)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
 	lo.G.Debugf("%d - roles found", len(roles))
 	for _, role := range roles {
-		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
+		user, err := m.getUserForGUID(role.Relationships.User.Data.GUID)
 		if err != nil {
 			return nil, nil, nil, nil, err
 		}
-		if role.Type == ORG_MANAGER {
+		if role.Type == resource.OrganizationRoleManager.String() {
 			managers = append(managers, *user)
-		} else if role.Type == ORG_BILLING_MANAGER {
+		} else if role.Type == resource.OrganizationRoleBillingManager.String() {
 			billingManagers = append(billingManagers, *user)
-		} else if role.Type == ORG_AUDITOR {
+		} else if role.Type == resource.OrganizationRoleAuditor.String() {
 			auditors = append(auditors, *user)
-		} else if role.Type == ORG_USER {
+		} else if role.Type == resource.OrganizationRoleUser.String() {
 			orgUser = append(orgUser, *user)
 		} else {
 			return nil, nil, nil, nil, fmt.Errorf("type of %s is unknown", role.Type)
@@ -183,32 +192,33 @@ func (m *DefaultManager) ListSpaceUsersByRole(spaceGUID string) (*RoleUsers, *Ro
 	if m.Peek && strings.Contains(spaceGUID, "dry-run-space-guid") {
 		return InitRoleUsers(), InitRoleUsers(), InitRoleUsers(), InitRoleUsers(), nil
 	}
-	managers := []cfclient.V3User{}
-	developers := []cfclient.V3User{}
-	auditors := []cfclient.V3User{}
-	supporters := []cfclient.V3User{}
-	query := url.Values{}
-	query["space_guids"] = []string{spaceGUID}
-	query["per_page"] = []string{"5000"}
+	managers := []*resource.User{}
+	developers := []*resource.User{}
+	auditors := []*resource.User{}
+	supporters := []*resource.User{}
+
 	lo.G.Debugf("Start list users for space guid %s", spaceGUID)
-	roles, err := m.Client.ListV3RolesByQuery(query)
+	opts := cfclient.NewRoleListOptions()
+	opts.SpaceGUIDs.EqualTo(spaceGUID)
+	opts.PerPage = 5000
+	roles, err := m.RoleClient.ListAll(context.Background(), opts)
 	lo.G.Debugf("End list users for space guid %s", spaceGUID)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
 	lo.G.Debugf("%d - roles found", len(roles))
 	for _, role := range roles {
-		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
+		user, err := m.getUserForGUID(role.Relationships.User.Data.GUID)
 		if err != nil {
 			return nil, nil, nil, nil, err
 		}
-		if role.Type == SPACE_MANAGER {
+		if role.Type == resource.SpaceRoleManager.String() {
 			managers = append(managers, *user)
-		} else if role.Type == SPACE_DEVELOPER {
+		} else if role.Type == resource.SpaceRoleDeveloper.String() {
 			developers = append(developers, *user)
-		} else if role.Type == SPACE_AUDITOR {
+		} else if role.Type == resource.SpaceRoleAuditor.String() {
 			auditors = append(auditors, *user)
-		} else if role.Type == SPACE_SUPPORTER {
+		} else if role.Type == resource.SpaceRoleSupporter.String() {
 			supporters = append(supporters, *user)
 		} else {
 			return nil, nil, nil, nil, fmt.Errorf("type of %s is unknown", role.Type)
@@ -234,7 +244,7 @@ func (m *DefaultManager) ListSpaceUsersByRole(spaceGUID string) (*RoleUsers, *Ro
 	return managerRoleUsers, developerRoleUsers, auditorRoleUsers, supporterRoleUsers, nil
 }
 
-func (m *DefaultManager) getUserForGUID(guid string) (*cfclient.V3User, error) {
+func (m *DefaultManager) getUserForGUID(guid string) (**resource.User, error) {
 	if user, ok := m.CFUsers[guid]; ok {
 		return &user, nil
 	}

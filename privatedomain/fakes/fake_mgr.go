@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/privatedomain"
 )
 
@@ -19,30 +19,30 @@ type FakeManager struct {
 	createPrivateDomainsReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ListOrgOwnedPrivateDomainsStub        func(string) (map[string]cfclient.Domain, error)
+	ListOrgOwnedPrivateDomainsStub        func(string) (map[string]*resource.Domain, error)
 	listOrgOwnedPrivateDomainsMutex       sync.RWMutex
 	listOrgOwnedPrivateDomainsArgsForCall []struct {
 		arg1 string
 	}
 	listOrgOwnedPrivateDomainsReturns struct {
-		result1 map[string]cfclient.Domain
+		result1 map[string]*resource.Domain
 		result2 error
 	}
 	listOrgOwnedPrivateDomainsReturnsOnCall map[int]struct {
-		result1 map[string]cfclient.Domain
+		result1 map[string]*resource.Domain
 		result2 error
 	}
-	ListOrgSharedPrivateDomainsStub        func(string) (map[string]cfclient.Domain, error)
+	ListOrgSharedPrivateDomainsStub        func(string) (map[string]*resource.Domain, error)
 	listOrgSharedPrivateDomainsMutex       sync.RWMutex
 	listOrgSharedPrivateDomainsArgsForCall []struct {
 		arg1 string
 	}
 	listOrgSharedPrivateDomainsReturns struct {
-		result1 map[string]cfclient.Domain
+		result1 map[string]*resource.Domain
 		result2 error
 	}
 	listOrgSharedPrivateDomainsReturnsOnCall map[int]struct {
-		result1 map[string]cfclient.Domain
+		result1 map[string]*resource.Domain
 		result2 error
 	}
 	SharePrivateDomainsStub        func() error
@@ -64,15 +64,16 @@ func (fake *FakeManager) CreatePrivateDomains() error {
 	ret, specificReturn := fake.createPrivateDomainsReturnsOnCall[len(fake.createPrivateDomainsArgsForCall)]
 	fake.createPrivateDomainsArgsForCall = append(fake.createPrivateDomainsArgsForCall, struct {
 	}{})
+	stub := fake.CreatePrivateDomainsStub
+	fakeReturns := fake.createPrivateDomainsReturns
 	fake.recordInvocation("CreatePrivateDomains", []interface{}{})
 	fake.createPrivateDomainsMutex.Unlock()
-	if fake.CreatePrivateDomainsStub != nil {
-		return fake.CreatePrivateDomainsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.createPrivateDomainsReturns
 	return fakeReturns.result1
 }
 
@@ -111,21 +112,22 @@ func (fake *FakeManager) CreatePrivateDomainsReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakeManager) ListOrgOwnedPrivateDomains(arg1 string) (map[string]cfclient.Domain, error) {
+func (fake *FakeManager) ListOrgOwnedPrivateDomains(arg1 string) (map[string]*resource.Domain, error) {
 	fake.listOrgOwnedPrivateDomainsMutex.Lock()
 	ret, specificReturn := fake.listOrgOwnedPrivateDomainsReturnsOnCall[len(fake.listOrgOwnedPrivateDomainsArgsForCall)]
 	fake.listOrgOwnedPrivateDomainsArgsForCall = append(fake.listOrgOwnedPrivateDomainsArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListOrgOwnedPrivateDomainsStub
+	fakeReturns := fake.listOrgOwnedPrivateDomainsReturns
 	fake.recordInvocation("ListOrgOwnedPrivateDomains", []interface{}{arg1})
 	fake.listOrgOwnedPrivateDomainsMutex.Unlock()
-	if fake.ListOrgOwnedPrivateDomainsStub != nil {
-		return fake.ListOrgOwnedPrivateDomainsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgOwnedPrivateDomainsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -135,7 +137,7 @@ func (fake *FakeManager) ListOrgOwnedPrivateDomainsCallCount() int {
 	return len(fake.listOrgOwnedPrivateDomainsArgsForCall)
 }
 
-func (fake *FakeManager) ListOrgOwnedPrivateDomainsCalls(stub func(string) (map[string]cfclient.Domain, error)) {
+func (fake *FakeManager) ListOrgOwnedPrivateDomainsCalls(stub func(string) (map[string]*resource.Domain, error)) {
 	fake.listOrgOwnedPrivateDomainsMutex.Lock()
 	defer fake.listOrgOwnedPrivateDomainsMutex.Unlock()
 	fake.ListOrgOwnedPrivateDomainsStub = stub
@@ -148,47 +150,48 @@ func (fake *FakeManager) ListOrgOwnedPrivateDomainsArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeManager) ListOrgOwnedPrivateDomainsReturns(result1 map[string]cfclient.Domain, result2 error) {
+func (fake *FakeManager) ListOrgOwnedPrivateDomainsReturns(result1 map[string]*resource.Domain, result2 error) {
 	fake.listOrgOwnedPrivateDomainsMutex.Lock()
 	defer fake.listOrgOwnedPrivateDomainsMutex.Unlock()
 	fake.ListOrgOwnedPrivateDomainsStub = nil
 	fake.listOrgOwnedPrivateDomainsReturns = struct {
-		result1 map[string]cfclient.Domain
+		result1 map[string]*resource.Domain
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListOrgOwnedPrivateDomainsReturnsOnCall(i int, result1 map[string]cfclient.Domain, result2 error) {
+func (fake *FakeManager) ListOrgOwnedPrivateDomainsReturnsOnCall(i int, result1 map[string]*resource.Domain, result2 error) {
 	fake.listOrgOwnedPrivateDomainsMutex.Lock()
 	defer fake.listOrgOwnedPrivateDomainsMutex.Unlock()
 	fake.ListOrgOwnedPrivateDomainsStub = nil
 	if fake.listOrgOwnedPrivateDomainsReturnsOnCall == nil {
 		fake.listOrgOwnedPrivateDomainsReturnsOnCall = make(map[int]struct {
-			result1 map[string]cfclient.Domain
+			result1 map[string]*resource.Domain
 			result2 error
 		})
 	}
 	fake.listOrgOwnedPrivateDomainsReturnsOnCall[i] = struct {
-		result1 map[string]cfclient.Domain
+		result1 map[string]*resource.Domain
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListOrgSharedPrivateDomains(arg1 string) (map[string]cfclient.Domain, error) {
+func (fake *FakeManager) ListOrgSharedPrivateDomains(arg1 string) (map[string]*resource.Domain, error) {
 	fake.listOrgSharedPrivateDomainsMutex.Lock()
 	ret, specificReturn := fake.listOrgSharedPrivateDomainsReturnsOnCall[len(fake.listOrgSharedPrivateDomainsArgsForCall)]
 	fake.listOrgSharedPrivateDomainsArgsForCall = append(fake.listOrgSharedPrivateDomainsArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListOrgSharedPrivateDomainsStub
+	fakeReturns := fake.listOrgSharedPrivateDomainsReturns
 	fake.recordInvocation("ListOrgSharedPrivateDomains", []interface{}{arg1})
 	fake.listOrgSharedPrivateDomainsMutex.Unlock()
-	if fake.ListOrgSharedPrivateDomainsStub != nil {
-		return fake.ListOrgSharedPrivateDomainsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgSharedPrivateDomainsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -198,7 +201,7 @@ func (fake *FakeManager) ListOrgSharedPrivateDomainsCallCount() int {
 	return len(fake.listOrgSharedPrivateDomainsArgsForCall)
 }
 
-func (fake *FakeManager) ListOrgSharedPrivateDomainsCalls(stub func(string) (map[string]cfclient.Domain, error)) {
+func (fake *FakeManager) ListOrgSharedPrivateDomainsCalls(stub func(string) (map[string]*resource.Domain, error)) {
 	fake.listOrgSharedPrivateDomainsMutex.Lock()
 	defer fake.listOrgSharedPrivateDomainsMutex.Unlock()
 	fake.ListOrgSharedPrivateDomainsStub = stub
@@ -211,28 +214,28 @@ func (fake *FakeManager) ListOrgSharedPrivateDomainsArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeManager) ListOrgSharedPrivateDomainsReturns(result1 map[string]cfclient.Domain, result2 error) {
+func (fake *FakeManager) ListOrgSharedPrivateDomainsReturns(result1 map[string]*resource.Domain, result2 error) {
 	fake.listOrgSharedPrivateDomainsMutex.Lock()
 	defer fake.listOrgSharedPrivateDomainsMutex.Unlock()
 	fake.ListOrgSharedPrivateDomainsStub = nil
 	fake.listOrgSharedPrivateDomainsReturns = struct {
-		result1 map[string]cfclient.Domain
+		result1 map[string]*resource.Domain
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListOrgSharedPrivateDomainsReturnsOnCall(i int, result1 map[string]cfclient.Domain, result2 error) {
+func (fake *FakeManager) ListOrgSharedPrivateDomainsReturnsOnCall(i int, result1 map[string]*resource.Domain, result2 error) {
 	fake.listOrgSharedPrivateDomainsMutex.Lock()
 	defer fake.listOrgSharedPrivateDomainsMutex.Unlock()
 	fake.ListOrgSharedPrivateDomainsStub = nil
 	if fake.listOrgSharedPrivateDomainsReturnsOnCall == nil {
 		fake.listOrgSharedPrivateDomainsReturnsOnCall = make(map[int]struct {
-			result1 map[string]cfclient.Domain
+			result1 map[string]*resource.Domain
 			result2 error
 		})
 	}
 	fake.listOrgSharedPrivateDomainsReturnsOnCall[i] = struct {
-		result1 map[string]cfclient.Domain
+		result1 map[string]*resource.Domain
 		result2 error
 	}{result1, result2}
 }
@@ -242,15 +245,16 @@ func (fake *FakeManager) SharePrivateDomains() error {
 	ret, specificReturn := fake.sharePrivateDomainsReturnsOnCall[len(fake.sharePrivateDomainsArgsForCall)]
 	fake.sharePrivateDomainsArgsForCall = append(fake.sharePrivateDomainsArgsForCall, struct {
 	}{})
+	stub := fake.SharePrivateDomainsStub
+	fakeReturns := fake.sharePrivateDomainsReturns
 	fake.recordInvocation("SharePrivateDomains", []interface{}{})
 	fake.sharePrivateDomainsMutex.Unlock()
-	if fake.SharePrivateDomainsStub != nil {
-		return fake.SharePrivateDomainsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.sharePrivateDomainsReturns
 	return fakeReturns.result1
 }
 

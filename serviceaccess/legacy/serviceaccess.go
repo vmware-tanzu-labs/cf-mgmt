@@ -1,31 +1,37 @@
 package legacy
 
 import (
-	"fmt"
-	"net/url"
-
+	"context"
+	"github.com/cloudfoundry-community/go-cfclient/v3/client"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/vmwarepivotallabs/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(client CFClient,
+func NewManager(servicePlanClient CFServicePlanClient,
+	servicePlanVisibilityClient CFServicePlanVisibilityClient,
+	serviceOfferingClient CFServiceOfferingClient,
 	orgReader organizationreader.Reader,
 	cfg config.Reader, peek bool) *Manager {
 	return &Manager{
-		Client:    client,
-		OrgReader: orgReader,
-		Cfg:       cfg,
-		Peek:      peek,
+		ServicePlanClient:           servicePlanClient,
+		ServicePlanVisibilityClient: servicePlanVisibilityClient,
+		ServiceOfferingClient:       serviceOfferingClient,
+		OrgReader:                   orgReader,
+		Cfg:                         cfg,
+		Peek:                        peek,
 	}
 }
 
 type Manager struct {
-	Client    CFClient
-	Cfg       config.Reader
-	OrgReader organizationreader.Reader
-	Peek      bool
+	ServicePlanClient           CFServicePlanClient
+	ServicePlanVisibilityClient CFServicePlanVisibilityClient
+	ServiceOfferingClient       CFServiceOfferingClient
+	Cfg                         config.Reader
+	OrgReader                   organizationreader.Reader
+	Peek                        bool
 }
 
 func (m *Manager) Apply() error {
@@ -66,24 +72,26 @@ func (m *Manager) Apply() error {
 		return err
 	}
 
-	err = m.RemoveUnknownVisibilites(serviceInfo)
+	err = m.RemoveUnknownVisibilities(serviceInfo)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-//RemoveUnknownVisibilites - will remove any service plan visiblities that are not known by cf-mgmt
-func (m *Manager) RemoveUnknownVisibilites(serviceInfo *ServiceInfo) error {
+// RemoveUnknownVisibilities - will remove any service plan visibilities that are not known by cf-mgmt
+func (m *Manager) RemoveUnknownVisibilities(serviceInfo *ServiceInfo) error {
 	for servicePlanName, servicePlan := range serviceInfo.AllPlans() {
 		for _, plan := range servicePlan {
-			for _, visibility := range plan.ListVisibilities() {
+			for _, orgVisibilityPair := range plan.ListVisibilitiesByOrg() {
 				if m.Peek {
-					lo.G.Infof("[dry-run]: removing plan %s for service %s to org with guid %s", plan.Name, servicePlanName, visibility.OrganizationGuid)
+					lo.G.Infof("[dry-run]: removing plan %s for service %s to org with guid %s",
+						plan.Name, servicePlanName, orgVisibilityPair.OrgGUID)
 					continue
 				}
-				lo.G.Infof("removing plan %s for service %s to org with guid %s", plan.Name, servicePlanName, visibility.OrganizationGuid)
-				err := m.Client.DeleteServicePlanVisibilityByPlanAndOrg(visibility.ServicePlanGuid, visibility.OrganizationGuid, false)
+				lo.G.Infof("removing plan %s for service %s to org with guid %s",
+					plan.Name, servicePlanName, orgVisibilityPair.OrgGUID)
+				err := m.ServicePlanVisibilityClient.Delete(context.Background(), plan.GUID, orgVisibilityPair.OrgGUID)
 				if err != nil {
 					return err
 				}
@@ -93,12 +101,14 @@ func (m *Manager) RemoveUnknownVisibilites(serviceInfo *ServiceInfo) error {
 	return nil
 }
 
-//DisablePublicServiceAccess - will ensure any public plan is made private
+// DisablePublicServiceAccess - will ensure any public plan is made private
 func (m *Manager) DisablePublicServiceAccess(serviceInfo *ServiceInfo) error {
 	for _, servicePlan := range serviceInfo.AllPlans() {
 		for _, plan := range servicePlan {
 			if plan.Public {
-				err := m.Client.MakeServicePlanPrivate(plan.GUID)
+				// make the plan private by setting the type to admin
+				r := resource.NewServicePlanVisibilityUpdate(resource.ServicePlanVisibilityAdmin)
+				_, err := m.ServicePlanVisibilityClient.Update(context.Background(), plan.GUID, r)
 				if err != nil {
 					return err
 				}
@@ -108,30 +118,28 @@ func (m *Manager) DisablePublicServiceAccess(serviceInfo *ServiceInfo) error {
 	return nil
 }
 
-//ListServiceInfo - returns services and their cooresponding plans
+// ListServiceInfo - returns services and their corresponding plans
 func (m *Manager) ListServiceInfo() (*ServiceInfo, error) {
 	serviceInfo := &ServiceInfo{}
-	services, err := m.Client.ListServices()
+	serviceOfferings, err := m.ServiceOfferingClient.ListAll(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
-	for _, service := range services {
-		plans, err := m.Client.ListServicePlansByQuery(url.Values{
-			"q": []string{fmt.Sprintf("%s:%s", "service_guid", service.Guid)},
-		})
+	for _, serviceOffering := range serviceOfferings {
+		opts := client.NewServicePlanListOptions()
+		opts.ServiceOfferingGUIDs.EqualTo(serviceOffering.GUID)
+		plans, err := m.ServicePlanClient.ListAll(context.Background(), opts)
 		if err != nil {
 			return nil, err
 		}
 		for _, plan := range plans {
-			servicePlanInfo := serviceInfo.AddPlan(service.Label, plan)
-			visibilities, err := m.Client.ListServicePlanVisibilitiesByQuery(url.Values{
-				"q": []string{fmt.Sprintf("%s:%s", "service_plan_guid", plan.Guid)},
-			})
+			servicePlanInfo := serviceInfo.AddPlan(serviceOffering.Name, plan)
+			planVisibility, err := m.ServicePlanVisibilityClient.Get(context.Background(), plan.GUID)
 			if err != nil {
 				return nil, err
 			}
-			for _, visibility := range visibilities {
-				servicePlanInfo.AddOrg(visibility.OrganizationGuid, visibility)
+			for _, orgVisibility := range planVisibility.Organizations {
+				servicePlanInfo.AddOrg(orgVisibility.GUID, planVisibility)
 			}
 		}
 	}
@@ -147,18 +155,27 @@ func (m *Manager) EnableProtectedOrgServiceAccess(serviceInfo *ServiceInfo, prot
 		if util.Matches(org.Name, protectedOrgs) {
 			for serviceName, plans := range serviceInfo.AllPlans() {
 				for _, servicePlan := range plans {
-					if !servicePlan.OrgHasAccess(org.Guid) {
+					if !servicePlan.OrgHasAccess(org.GUID) {
 						if m.Peek {
 							lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
 							continue
 						}
 						lo.G.Infof("adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
-						_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.Guid)
+						r := &resource.ServicePlanVisibility{
+							Type: resource.ServicePlanVisibilityOrganization.String(),
+							Organizations: []resource.ServicePlanVisibilityRelation{
+								{
+									GUID: org.GUID,
+								},
+							},
+						}
+						// TODO: This should be optimized to a single remote call for all orgs
+						_, err = m.ServicePlanVisibilityClient.Apply(context.Background(), servicePlan.GUID, r)
 						if err != nil {
 							return err
 						}
 					} else {
-						servicePlan.RemoveOrg(org.Guid)
+						servicePlan.RemoveOrg(org.GUID)
 					}
 				}
 			}
@@ -181,18 +198,27 @@ func (m *Manager) EnableOrgServiceAccess(serviceInfo *ServiceInfo, orgConfigs []
 					continue
 				}
 				for _, servicePlan := range servicePlans {
-					if !servicePlan.OrgHasAccess(org.Guid) {
+					if !servicePlan.OrgHasAccess(org.GUID) {
 						if m.Peek {
 							lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
 							continue
 						}
 						lo.G.Infof("adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
-						_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.Guid)
+						r := &resource.ServicePlanVisibility{
+							Type: resource.ServicePlanVisibilityOrganization.String(),
+							Organizations: []resource.ServicePlanVisibilityRelation{
+								{
+									GUID: org.GUID,
+								},
+							},
+						}
+						// TODO: This should be optimized to a single remote call for all orgs
+						_, err = m.ServicePlanVisibilityClient.Apply(context.Background(), servicePlan.GUID, r)
 						if err != nil {
 							return err
 						}
 					} else {
-						servicePlan.RemoveOrg(org.Guid)
+						servicePlan.RemoveOrg(org.GUID)
 					}
 				}
 			}

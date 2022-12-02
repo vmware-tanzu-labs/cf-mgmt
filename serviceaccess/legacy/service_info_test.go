@@ -1,7 +1,7 @@
 package legacy_test
 
 import (
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	. "github.com/vmwarepivotallabs/cf-mgmt/serviceaccess/legacy"
 
 	. "github.com/onsi/ginkgo"
@@ -12,8 +12,8 @@ var _ = Describe("ServiceInfo", func() {
 	Context("GetPlan", func() {
 		It("Should find service plan", func() {
 			info := &ServiceInfo{}
-			info.AddPlan("p-mysql", cfclient.ServicePlan{Name: "small"})
-			info.AddPlan("p-mysql", cfclient.ServicePlan{Name: "large"})
+			info.AddPlan("p-mysql", &resource.ServicePlan{Name: "small"})
+			info.AddPlan("p-mysql", &resource.ServicePlan{Name: "large"})
 			plans, err := info.GetPlans("p-mysql", []string{"small"})
 			Expect(err).To(Not(HaveOccurred()))
 			Expect(len(plans)).To(Equal(1))
@@ -22,8 +22,8 @@ var _ = Describe("ServiceInfo", func() {
 
 		It("Should return all service plans", func() {
 			info := &ServiceInfo{}
-			info.AddPlan("p-mysql", cfclient.ServicePlan{Name: "small"})
-			info.AddPlan("p-mysql", cfclient.ServicePlan{Name: "large"})
+			info.AddPlan("p-mysql", &resource.ServicePlan{Name: "small"})
+			info.AddPlan("p-mysql", &resource.ServicePlan{Name: "large"})
 			plans, err := info.GetPlans("p-mysql", []string{"*"})
 			Expect(err).To(Not(HaveOccurred()))
 			Expect(len(plans)).To(Equal(2))
@@ -31,8 +31,8 @@ var _ = Describe("ServiceInfo", func() {
 
 		It("Should return no service plans", func() {
 			info := &ServiceInfo{}
-			info.AddPlan("p-mysql", cfclient.ServicePlan{Name: "small"})
-			info.AddPlan("p-mysql", cfclient.ServicePlan{Name: "large"})
+			info.AddPlan("p-mysql", &resource.ServicePlan{Name: "small"})
+			info.AddPlan("p-mysql", &resource.ServicePlan{Name: "large"})
 			plans, err := info.GetPlans("p-mysql", []string{""})
 			Expect(err).To(HaveOccurred())
 			Expect(len(plans)).To(Equal(0))
@@ -40,8 +40,8 @@ var _ = Describe("ServiceInfo", func() {
 
 		It("Should error when plan doesn't exist", func() {
 			info := &ServiceInfo{}
-			info.AddPlan("p-mysql", cfclient.ServicePlan{Name: "small"})
-			info.AddPlan("p-mysql", cfclient.ServicePlan{Name: "large"})
+			info.AddPlan("p-mysql", &resource.ServicePlan{Name: "small"})
+			info.AddPlan("p-mysql", &resource.ServicePlan{Name: "large"})
 			_, err := info.GetPlans("p-mysql", []string{"blah"})
 			Expect(err).To(HaveOccurred())
 		})

@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/organization"
 )
 
@@ -41,18 +41,18 @@ type FakeManager struct {
 	renameOrgReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UpdateOrgStub        func(string, cfclient.OrgRequest) (cfclient.Org, error)
+	UpdateOrgStub        func(string, *resource.OrganizationUpdate) (*resource.Organization, error)
 	updateOrgMutex       sync.RWMutex
 	updateOrgArgsForCall []struct {
 		arg1 string
-		arg2 cfclient.OrgRequest
+		arg2 *resource.OrganizationUpdate
 	}
 	updateOrgReturns struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}
 	updateOrgReturnsOnCall map[int]struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}
 	UpdateOrgsMetadataStub        func() error
@@ -74,15 +74,16 @@ func (fake *FakeManager) CreateOrgs() error {
 	ret, specificReturn := fake.createOrgsReturnsOnCall[len(fake.createOrgsArgsForCall)]
 	fake.createOrgsArgsForCall = append(fake.createOrgsArgsForCall, struct {
 	}{})
+	stub := fake.CreateOrgsStub
+	fakeReturns := fake.createOrgsReturns
 	fake.recordInvocation("CreateOrgs", []interface{}{})
 	fake.createOrgsMutex.Unlock()
-	if fake.CreateOrgsStub != nil {
-		return fake.CreateOrgsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.createOrgsReturns
 	return fakeReturns.result1
 }
 
@@ -126,15 +127,16 @@ func (fake *FakeManager) DeleteOrgs() error {
 	ret, specificReturn := fake.deleteOrgsReturnsOnCall[len(fake.deleteOrgsArgsForCall)]
 	fake.deleteOrgsArgsForCall = append(fake.deleteOrgsArgsForCall, struct {
 	}{})
+	stub := fake.DeleteOrgsStub
+	fakeReturns := fake.deleteOrgsReturns
 	fake.recordInvocation("DeleteOrgs", []interface{}{})
 	fake.deleteOrgsMutex.Unlock()
-	if fake.DeleteOrgsStub != nil {
-		return fake.DeleteOrgsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteOrgsReturns
 	return fakeReturns.result1
 }
 
@@ -180,15 +182,16 @@ func (fake *FakeManager) RenameOrg(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RenameOrgStub
+	fakeReturns := fake.renameOrgReturns
 	fake.recordInvocation("RenameOrg", []interface{}{arg1, arg2})
 	fake.renameOrgMutex.Unlock()
-	if fake.RenameOrgStub != nil {
-		return fake.RenameOrgStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.renameOrgReturns
 	return fakeReturns.result1
 }
 
@@ -234,22 +237,23 @@ func (fake *FakeManager) RenameOrgReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateOrg(arg1 string, arg2 cfclient.OrgRequest) (cfclient.Org, error) {
+func (fake *FakeManager) UpdateOrg(arg1 string, arg2 *resource.OrganizationUpdate) (*resource.Organization, error) {
 	fake.updateOrgMutex.Lock()
 	ret, specificReturn := fake.updateOrgReturnsOnCall[len(fake.updateOrgArgsForCall)]
 	fake.updateOrgArgsForCall = append(fake.updateOrgArgsForCall, struct {
 		arg1 string
-		arg2 cfclient.OrgRequest
+		arg2 *resource.OrganizationUpdate
 	}{arg1, arg2})
+	stub := fake.UpdateOrgStub
+	fakeReturns := fake.updateOrgReturns
 	fake.recordInvocation("UpdateOrg", []interface{}{arg1, arg2})
 	fake.updateOrgMutex.Unlock()
-	if fake.UpdateOrgStub != nil {
-		return fake.UpdateOrgStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.updateOrgReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -259,41 +263,41 @@ func (fake *FakeManager) UpdateOrgCallCount() int {
 	return len(fake.updateOrgArgsForCall)
 }
 
-func (fake *FakeManager) UpdateOrgCalls(stub func(string, cfclient.OrgRequest) (cfclient.Org, error)) {
+func (fake *FakeManager) UpdateOrgCalls(stub func(string, *resource.OrganizationUpdate) (*resource.Organization, error)) {
 	fake.updateOrgMutex.Lock()
 	defer fake.updateOrgMutex.Unlock()
 	fake.UpdateOrgStub = stub
 }
 
-func (fake *FakeManager) UpdateOrgArgsForCall(i int) (string, cfclient.OrgRequest) {
+func (fake *FakeManager) UpdateOrgArgsForCall(i int) (string, *resource.OrganizationUpdate) {
 	fake.updateOrgMutex.RLock()
 	defer fake.updateOrgMutex.RUnlock()
 	argsForCall := fake.updateOrgArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeManager) UpdateOrgReturns(result1 cfclient.Org, result2 error) {
+func (fake *FakeManager) UpdateOrgReturns(result1 *resource.Organization, result2 error) {
 	fake.updateOrgMutex.Lock()
 	defer fake.updateOrgMutex.Unlock()
 	fake.UpdateOrgStub = nil
 	fake.updateOrgReturns = struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) UpdateOrgReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
+func (fake *FakeManager) UpdateOrgReturnsOnCall(i int, result1 *resource.Organization, result2 error) {
 	fake.updateOrgMutex.Lock()
 	defer fake.updateOrgMutex.Unlock()
 	fake.UpdateOrgStub = nil
 	if fake.updateOrgReturnsOnCall == nil {
 		fake.updateOrgReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Org
+			result1 *resource.Organization
 			result2 error
 		})
 	}
 	fake.updateOrgReturnsOnCall[i] = struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}{result1, result2}
 }
@@ -303,15 +307,16 @@ func (fake *FakeManager) UpdateOrgsMetadata() error {
 	ret, specificReturn := fake.updateOrgsMetadataReturnsOnCall[len(fake.updateOrgsMetadataArgsForCall)]
 	fake.updateOrgsMetadataArgsForCall = append(fake.updateOrgsMetadataArgsForCall, struct {
 	}{})
+	stub := fake.UpdateOrgsMetadataStub
+	fakeReturns := fake.updateOrgsMetadataReturns
 	fake.recordInvocation("UpdateOrgsMetadata", []interface{}{})
 	fake.updateOrgsMetadataMutex.Unlock()
-	if fake.UpdateOrgsMetadataStub != nil {
-		return fake.UpdateOrgsMetadataStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateOrgsMetadataReturns
 	return fakeReturns.result1
 }
 

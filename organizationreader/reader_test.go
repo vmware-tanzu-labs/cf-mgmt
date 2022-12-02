@@ -2,8 +2,8 @@ package organizationreader_test
 
 import (
 	"fmt"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
@@ -13,13 +13,13 @@ import (
 
 var _ = Describe("given OrgManager", func() {
 	var (
-		fakeClient *orgfakes.FakeCFClient
+		fakeClient *orgfakes.FakeCFOrganizationClient
 		orgReader  DefaultReader
 		fakeReader *configfakes.FakeReader
 	)
 
 	BeforeEach(func() {
-		fakeClient = new(orgfakes.FakeCFClient)
+		fakeClient = new(orgfakes.FakeCFOrganizationClient)
 		fakeReader = new(configfakes.FakeReader)
 		orgReader = DefaultReader{
 			Cfg:    fakeReader,
@@ -30,7 +30,7 @@ var _ = Describe("given OrgManager", func() {
 
 	Context("FindOrg()", func() {
 		It("should return an org", func() {
-			orgs := []cfclient.Org{
+			orgs := []*resource.Organization{
 				{
 					Name: "test",
 				},
@@ -38,34 +38,34 @@ var _ = Describe("given OrgManager", func() {
 					Name: "test2",
 				},
 			}
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeClient.ListAllReturns(orgs, nil)
 			org, err := orgReader.FindOrg("test")
 			Ω(err).Should(BeNil())
 			Ω(org).ShouldNot(BeNil())
 			Ω(org.Name).Should(Equal("test"))
 		})
 	})
-	It("should return an error for unfound org", func() {
-		orgs := []cfclient.Org{}
-		fakeClient.ListOrgsReturns(orgs, nil)
+	It("should return an error for not found org", func() {
+		var orgs []*resource.Organization
+		fakeClient.ListAllReturns(orgs, nil)
 		_, err := orgReader.FindOrg("test")
 		Ω(err).ShouldNot(BeNil())
 	})
 	It("should return an error", func() {
-		fakeClient.ListOrgsReturns(nil, fmt.Errorf("test"))
+		fakeClient.ListAllReturns(nil, fmt.Errorf("test"))
 		_, err := orgReader.FindOrg("test")
 		Ω(err).ShouldNot(BeNil())
 	})
 
 	Context("GetOrgGUID()", func() {
 		It("should return an GUID", func() {
-			orgs := []cfclient.Org{
+			orgs := []*resource.Organization{
 				{
 					Name: "test",
-					Guid: "theGUID",
+					GUID: "theGUID",
 				},
 			}
-			fakeClient.ListOrgsReturns(orgs, nil)
+			fakeClient.ListAllReturns(orgs, nil)
 			guid, err := orgReader.GetOrgGUID("test")
 			Ω(err).Should(BeNil())
 			Ω(guid).ShouldNot(BeNil())
@@ -74,7 +74,7 @@ var _ = Describe("given OrgManager", func() {
 	})
 
 	It("should return an error", func() {
-		fakeClient.ListOrgsReturns(nil, fmt.Errorf("test"))
+		fakeClient.ListAllReturns(nil, fmt.Errorf("test"))
 		guid, err := orgReader.GetOrgGUID("test")
 		Ω(err).ShouldNot(BeNil())
 		Ω(guid).Should(Equal(""))

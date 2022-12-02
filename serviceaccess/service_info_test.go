@@ -1,7 +1,7 @@
 package serviceaccess_test
 
 import (
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/serviceaccess"
@@ -10,50 +10,59 @@ import (
 
 var _ = Describe("ServiceInfo", func() {
 	Context("StandardBrokers", func() {
-		fakeClient := new(fakes.FakeCFClient)
+		fakeServicePlanClient := new(fakes.FakeCFServicePlanClient)
+		fakeServicePlanVisibilityClient := new(fakes.FakeCFServicePlanVisibilityClient)
+		fakeServiceOfferingClient := new(fakes.FakeCFServiceOfferingClient)
+		fakeServiceBrokerClient := new(fakes.FakeCFServiceBrokerClient)
 
 		It("returns standard brokers", func() {
-			standardBrokers := []cfclient.ServiceBroker{
-				cfclient.ServiceBroker{
-					Guid: "some-guid",
+			standardBrokers := []*resource.ServiceBroker{
+				{
+					GUID: "some-guid",
 					Name: "some-name",
 				},
-				cfclient.ServiceBroker{
-					Guid: "some-guid-2",
+				{
+					GUID: "some-guid-2",
 					Name: "some-name-2",
 				},
-				cfclient.ServiceBroker{
-					Guid: "some-guid-3",
+				{
+					GUID: "some-guid-3",
 					Name: "some-name-3",
 				},
 			}
-			var error error
-			fakeClient.ListServiceBrokersReturns(standardBrokers, error)
+			fakeServiceBrokerClient.ListAllReturns(standardBrokers, nil)
 
-			serviceInfo, _ := serviceaccess.GetServiceInfo(fakeClient)
+			serviceInfo, _ := serviceaccess.GetServiceInfo(
+				fakeServicePlanClient, fakeServicePlanVisibilityClient, fakeServiceOfferingClient, fakeServiceBrokerClient)
 			Expect(serviceInfo.StandardBrokers()).Should(HaveLen(3))
 		})
 
 		It("does not return space scoped brokers", func() {
-			brokers := []cfclient.ServiceBroker{
-				cfclient.ServiceBroker{
-					Guid: "some-guid",
+			brokers := []*resource.ServiceBroker{
+				{
+					GUID: "some-guid",
 					Name: "some-name",
 				},
-				cfclient.ServiceBroker{
-					Guid: "some-guid-2",
+				{
+					GUID: "some-guid-2",
 					Name: "some-name-2",
 				},
-				cfclient.ServiceBroker{
-					Guid:      "some-guid-3",
-					Name:      "some-space-broker-name",
-					SpaceGUID: "non-empty-guid",
+				{
+					GUID: "some-guid-3",
+					Name: "some-space-broker-name",
+					Relationships: resource.SpaceRelationship{
+						Space: resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "non-empty-guid",
+							},
+						},
+					},
 				},
 			}
-			var error error
-			fakeClient.ListServiceBrokersReturns(brokers, error)
+			fakeServiceBrokerClient.ListAllReturns(brokers, nil)
 
-			serviceInfo, _ := serviceaccess.GetServiceInfo(fakeClient)
+			serviceInfo, _ := serviceaccess.GetServiceInfo(
+				fakeServicePlanClient, fakeServicePlanVisibilityClient, fakeServiceOfferingClient, fakeServiceBrokerClient)
 			Expect(serviceInfo.StandardBrokers()).Should(HaveLen(2))
 		})
 	})

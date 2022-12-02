@@ -1,19 +1,20 @@
 package securitygroup
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"strings"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/xchapter7x/lo"
 )
 
-//NewManager -
-func NewManager(client CFClient, spaceMgr space.Manager, cfg config.Reader, peek bool) Manager {
+// NewManager -
+func NewManager(client CFSecurityGroupClient, spaceMgr space.Manager, cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
 		Cfg:          cfg,
 		Client:       client,
@@ -22,15 +23,15 @@ func NewManager(client CFClient, spaceMgr space.Manager, cfg config.Reader, peek
 	}
 }
 
-//DefaultSecurityGroupManager -
+// DefaultSecurityGroupManager -
 type DefaultManager struct {
 	Cfg          config.Reader
 	SpaceManager space.Manager
-	Client       CFClient
+	Client       CFSecurityGroupClient
 	Peek         bool
 }
 
-//CreateApplicationSecurityGroups -
+// CreateApplicationSecurityGroups -
 func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
@@ -46,7 +47,7 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 		if err != nil {
 			return errors.Wrapf(err, "Finding org/space %s/%s", input.Org, input.Space)
 		}
-		existingSpaceSecurityGroups, err := m.ListSpaceSecurityGroups(space.Guid)
+		existingSpaceSecurityGroups, err := m.ListSpaceSecurityGroups(space.GUID)
 		if err != nil {
 			return errors.Wrapf(err, "Unabled to list existing space security groups for org/space [%s/%s]", input.Org, input.Space)
 		}
@@ -70,7 +71,7 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 
 		spaceSecurityGroupName := fmt.Sprintf("%s-%s", input.Org, input.Space)
 		if input.EnableSecurityGroup {
-			var sgInfo cfclient.SecGroup
+			var sgInfo *resource.SecurityGroup
 			var ok bool
 			if sgInfo, ok = sgs[spaceSecurityGroupName]; ok {
 				changed, err := m.hasSecurityGroupChanged(sgInfo, input.GetSecurityGroupContents())
@@ -87,7 +88,7 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 				if err != nil {
 					return errors.Wrapf(err, "Creating security group %s for %s/%s security-group.json", spaceSecurityGroupName, input.Org, input.Space)
 				}
-				sgInfo = *securityGroup
+				sgInfo = securityGroup
 			}
 			if _, ok := existingSpaceSecurityGroups[spaceSecurityGroupName]; !ok {
 				err := m.AssignSecurityGroupToSpace(space, sgInfo)
@@ -116,9 +117,9 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 	return nil
 }
 
-func (m *DefaultManager) ListSecurityGroups() (map[string]cfclient.SecGroup, error) {
-	securityGroups := make(map[string]cfclient.SecGroup)
-	secGroups, err := m.Client.ListSecGroups()
+func (m *DefaultManager) ListSecurityGroups() (map[string]*resource.SecurityGroup, error) {
+	securityGroups := make(map[string]*resource.SecurityGroup)
+	secGroups, err := m.Client.ListAll(context.Background(), nil)
 	if err != nil {
 		return securityGroups, err
 	}
@@ -129,7 +130,7 @@ func (m *DefaultManager) ListSecurityGroups() (map[string]cfclient.SecGroup, err
 	return securityGroups, nil
 }
 
-//CreateGlobalSecurityGroups -
+// CreateGlobalSecurityGroups -
 func (m *DefaultManager) CreateGlobalSecurityGroups() error {
 	sgs, err := m.ListSecurityGroups()
 	if err != nil {
@@ -155,7 +156,7 @@ func (m *DefaultManager) CreateGlobalSecurityGroups() error {
 	return nil
 }
 
-//AssignDefaultSecurityGroups -
+// AssignDefaultSecurityGroups -
 func (m *DefaultManager) AssignDefaultSecurityGroups() error {
 	sgs, err := m.ListSecurityGroups()
 	if err != nil {
@@ -168,8 +169,8 @@ func (m *DefaultManager) AssignDefaultSecurityGroups() error {
 
 	for _, runningGroup := range globalConfig.RunningSecurityGroups {
 		if group, ok := sgs[runningGroup]; ok {
-			if !group.Running {
-				err = m.AssignRunningSecurityGroup(group)
+			if !group.GloballyEnabled.Running {
+				err = m.AssignSecurityGroupGlobalRunning(group)
 				if err != nil {
 					return err
 				}
@@ -185,8 +186,8 @@ func (m *DefaultManager) AssignDefaultSecurityGroups() error {
 
 	for _, stagingGroup := range globalConfig.StagingSecurityGroups {
 		if group, ok := sgs[stagingGroup]; ok {
-			if !group.Staging {
-				err = m.AssignStagingSecurityGroup(group)
+			if !group.GloballyEnabled.Staging {
+				err = m.AssignSecurityGroupGlobalStaging(group)
 				if err != nil {
 					return err
 				}
@@ -202,14 +203,14 @@ func (m *DefaultManager) AssignDefaultSecurityGroups() error {
 
 	if globalConfig.EnableUnassignSecurityGroups {
 		for groupName, group := range sgs {
-			if group.Running && !m.contains(globalConfig.RunningSecurityGroups, groupName) {
-				err = m.UnassignRunningSecurityGroup(group)
+			if group.GloballyEnabled.Running && !m.contains(globalConfig.RunningSecurityGroups, groupName) {
+				err = m.UnassignSecurityGroupGlobalRunning(group)
 				if err != nil {
 					return err
 				}
 			}
-			if group.Staging && !m.contains(globalConfig.StagingSecurityGroups, groupName) {
-				err = m.UnassignStagingSecurityGroup(group)
+			if group.GloballyEnabled.Staging && !m.contains(globalConfig.StagingSecurityGroups, groupName) {
+				err = m.UnassignSecurityGroupGlobalStaging(group)
 				if err != nil {
 					return err
 				}
@@ -230,7 +231,7 @@ func (m *DefaultManager) contains(list []string, groupName string) bool {
 	return false
 }
 
-func (m *DefaultManager) processSecurityGroups(securityGroupConfigs []config.ASGConfig, sgs map[string]cfclient.SecGroup) error {
+func (m *DefaultManager) processSecurityGroups(securityGroupConfigs []config.ASGConfig, sgs map[string]*resource.SecurityGroup) error {
 	for _, input := range securityGroupConfigs {
 		sgName := input.Name
 
@@ -256,12 +257,12 @@ func (m *DefaultManager) processSecurityGroups(securityGroupConfigs []config.ASG
 	return nil
 }
 
-func (m *DefaultManager) hasSecurityGroupChanged(sgInfo cfclient.SecGroup, rules string) (bool, error) {
+func (m *DefaultManager) hasSecurityGroupChanged(sgInfo *resource.SecurityGroup, rules string) (bool, error) {
 	jsonBytes, err := json.Marshal(sgInfo.Rules)
 	if err != nil {
 		return false, err
 	}
-	secRules := []cfclient.SecGroupRule{}
+	secRules := []*resource.SecurityGroupRule{}
 	err = json.Unmarshal([]byte(rules), &secRules)
 	if err != nil {
 		return false, err
@@ -277,15 +278,20 @@ func (m *DefaultManager) hasSecurityGroupChanged(sgInfo cfclient.SecGroup, rules
 	return !match, nil
 }
 
-func (m *DefaultManager) isSecurityGroupAssignedToSpace(space cfclient.Space, secGroup cfclient.SecGroup) bool {
-	for _, configuredSpace := range secGroup.SpacesData {
-		if configuredSpace.Entity.Guid == space.Guid {
+func (m *DefaultManager) isSecurityGroupAssignedToSpace(space *resource.Space, secGroup *resource.SecurityGroup) bool {
+	for _, spaceRelation := range secGroup.Relationships.RunningSpaces.Data {
+		if spaceRelation.GUID == space.GUID {
+			return true
+		}
+	}
+	for _, spaceRelation := range secGroup.Relationships.StagingSpaces.Data {
+		if spaceRelation.GUID == space.GUID {
 			return true
 		}
 	}
 	return false
 }
-func (m *DefaultManager) AssignSecurityGroupToSpace(space cfclient.Space, secGroup cfclient.SecGroup) error {
+func (m *DefaultManager) AssignSecurityGroupToSpace(space *resource.Space, secGroup *resource.SecurityGroup) error {
 	if m.isSecurityGroupAssignedToSpace(space, secGroup) {
 		lo.G.Debugf("Security group %s is already assigned to space %s, skipping", secGroup.Name, space.Name)
 		return nil
@@ -295,10 +301,11 @@ func (m *DefaultManager) AssignSecurityGroupToSpace(space cfclient.Space, secGro
 		return nil
 	}
 	lo.G.Infof("assigning security group %s to space %s", secGroup.Name, space.Name)
-	return m.Client.BindSecGroup(secGroup.Guid, space.Guid)
+	_, err := m.Client.BindRunningSecurityGroup(context.Background(), secGroup.GUID, []string{space.GUID})
+	return err
 }
 
-func (m *DefaultManager) UnassignSecurityGroupToSpace(space cfclient.Space, secGroup cfclient.SecGroup) error {
+func (m *DefaultManager) UnassignSecurityGroupToSpace(space *resource.Space, secGroup *resource.SecurityGroup) error {
 	if !m.isSecurityGroupAssignedToSpace(space, secGroup) {
 		lo.G.Debugf("Security group %s isn't assigned to space %s, skipping", secGroup.Name, space.Name)
 		return nil
@@ -308,13 +315,13 @@ func (m *DefaultManager) UnassignSecurityGroupToSpace(space cfclient.Space, secG
 		return nil
 	}
 	lo.G.Infof("unassigning security group %s to space %s", secGroup.Name, space.Name)
-	return m.Client.UnbindSecGroup(secGroup.Guid, space.Guid)
+	return m.Client.UnBindRunningSecurityGroup(context.Background(), secGroup.GUID, space.GUID)
 }
 
-func (m *DefaultManager) removeDestinationWhitespace(rules []cfclient.SecGroupRule) []cfclient.SecGroupRule {
-	rulesToReturn := []cfclient.SecGroupRule{}
+func (m *DefaultManager) removeDestinationWhitespace(rules []*resource.SecurityGroupRule) []*resource.SecurityGroupRule {
+	rulesToReturn := []*resource.SecurityGroupRule{}
 	for _, rule := range rules {
-		rulesToReturn = append(rulesToReturn, cfclient.SecGroupRule{
+		rulesToReturn = append(rulesToReturn, &resource.SecurityGroupRule{
 			Protocol:    rule.Protocol,
 			Ports:       rule.Ports,
 			Destination: strings.Replace(rule.Destination, " ", "", -1),
@@ -327,99 +334,145 @@ func (m *DefaultManager) removeDestinationWhitespace(rules []cfclient.SecGroupRu
 	return rulesToReturn
 }
 
-func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (*cfclient.SecGroup, error) {
+func (m *DefaultManager) CreateSecurityGroup(sgName, contents string) (*resource.SecurityGroup, error) {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: creating securityGroup %s with contents %s", sgName, contents)
-		return &cfclient.SecGroup{Name: "dry-run-name", Guid: "dry-run-guid"}, nil
+		return &resource.SecurityGroup{Name: "dry-run-name", GUID: "dry-run-guid"}, nil
 	}
-	securityGroupRules := []cfclient.SecGroupRule{}
+	securityGroupRules := []*resource.SecurityGroupRule{}
 	err := json.Unmarshal([]byte(contents), &securityGroupRules)
 	if err != nil {
 		return nil, err
 	}
 	rulesToUse := m.removeDestinationWhitespace(securityGroupRules)
 	lo.G.Infof("creating securityGroup %s with contents %+v", sgName, rulesToUse)
-	return m.Client.CreateSecGroup(sgName, rulesToUse, nil)
+
+	r := &resource.SecurityGroupCreate{
+		Name: sgName,
+		GloballyEnabled: &resource.SecurityGroupGloballyEnabled{
+			Running: false,
+			Staging: false,
+		},
+		Rules: rulesToUse,
+	}
+	return m.Client.Create(context.Background(), r)
 }
 
-func (m *DefaultManager) UpdateSecurityGroup(sg cfclient.SecGroup, contents string) error {
+func (m *DefaultManager) UpdateSecurityGroup(sg *resource.SecurityGroup, contents string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: updating securityGroup %s with contents %s", sg.Name, contents)
 		return nil
 	}
-	securityGroupRules := []cfclient.SecGroupRule{}
+	securityGroupRules := []*resource.SecurityGroupRule{}
 	err := json.Unmarshal([]byte(contents), &securityGroupRules)
 	if err != nil {
 		return err
 	}
 	rulesToUse := m.removeDestinationWhitespace(securityGroupRules)
 	lo.G.Infof("[dry-run]: updating securityGroup %s with contents %+v", sg.Name, rulesToUse)
-	_, err = m.Client.UpdateSecGroup(sg.Guid, sg.Name, rulesToUse, nil)
+
+	r := &resource.SecurityGroupUpdate{
+		Name:  sg.Name,
+		Rules: rulesToUse,
+	}
+	_, err = m.Client.Update(context.Background(), sg.GUID, r)
 	return err
 }
-func (m *DefaultManager) ListNonDefaultSecurityGroups() (map[string]cfclient.SecGroup, error) {
-	securityGroups := make(map[string]cfclient.SecGroup)
+
+func (m *DefaultManager) ListNonDefaultSecurityGroups() (map[string]*resource.SecurityGroup, error) {
+	securityGroups := make(map[string]*resource.SecurityGroup)
 	groupMap, err := m.ListSecurityGroups()
 	if err != nil {
 		return nil, err
 	}
 	for key, groupMap := range groupMap {
-		if groupMap.Running == false && groupMap.Staging == false {
+		if groupMap.GloballyEnabled.Running == false && groupMap.GloballyEnabled.Staging == false {
 			securityGroups[key] = groupMap
 		}
 	}
 	return securityGroups, nil
 }
 
-func (m *DefaultManager) ListDefaultSecurityGroups() (map[string]cfclient.SecGroup, error) {
-	securityGroups := make(map[string]cfclient.SecGroup)
+func (m *DefaultManager) ListDefaultSecurityGroups() (map[string]*resource.SecurityGroup, error) {
+	securityGroups := make(map[string]*resource.SecurityGroup)
 	groupMap, err := m.ListSecurityGroups()
 	if err != nil {
 		return nil, err
 	}
 	for key, groupMap := range groupMap {
-		if groupMap.Running == true || groupMap.Staging == true {
+		if groupMap.GloballyEnabled.Running == true || groupMap.GloballyEnabled.Staging == true {
 			securityGroups[key] = groupMap
 		}
 	}
 	return securityGroups, nil
 }
 
-func (m *DefaultManager) AssignRunningSecurityGroup(sg cfclient.SecGroup) error {
+func (m *DefaultManager) AssignSecurityGroupGlobalRunning(sg *resource.SecurityGroup) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: assigning sg %s as running security group", sg.Name)
 		return nil
 	}
 	lo.G.Infof("assigning sg %s as running security group", sg.Name)
-	return m.Client.BindRunningSecGroup(sg.Guid)
+	r := &resource.SecurityGroupUpdate{
+		GloballyEnabled: &resource.SecurityGroupGloballyEnabled{
+			Running: true,
+		},
+	}
+	sg.GloballyEnabled.Running = true
+	_, err := m.Client.Update(context.Background(), sg.GUID, r)
+	return err
 }
-func (m *DefaultManager) AssignStagingSecurityGroup(sg cfclient.SecGroup) error {
+
+func (m *DefaultManager) AssignSecurityGroupGlobalStaging(sg *resource.SecurityGroup) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: assigning sg %s as staging security group", sg.Name)
 		return nil
 	}
 	lo.G.Infof("assigning sg %s as staging security group", sg.Name)
-	return m.Client.BindStagingSecGroup(sg.Guid)
+	r := &resource.SecurityGroupUpdate{
+		GloballyEnabled: &resource.SecurityGroupGloballyEnabled{
+			Staging: true,
+		},
+	}
+	sg.GloballyEnabled.Staging = true
+	_, err := m.Client.Update(context.Background(), sg.GUID, r)
+	return err
 }
-func (m *DefaultManager) UnassignRunningSecurityGroup(sg cfclient.SecGroup) error {
+
+func (m *DefaultManager) UnassignSecurityGroupGlobalRunning(sg *resource.SecurityGroup) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: unassinging sg %s as running security group", sg.Name)
 		return nil
 	}
 	lo.G.Infof("unassinging sg %s as running security group", sg.Name)
-	return m.Client.UnbindRunningSecGroup(sg.Guid)
+	r := &resource.SecurityGroupUpdate{
+		GloballyEnabled: &resource.SecurityGroupGloballyEnabled{
+			Running: false,
+		},
+	}
+	sg.GloballyEnabled.Running = false
+	_, err := m.Client.Update(context.Background(), sg.GUID, r)
+	return err
 }
-func (m *DefaultManager) UnassignStagingSecurityGroup(sg cfclient.SecGroup) error {
+
+func (m *DefaultManager) UnassignSecurityGroupGlobalStaging(sg *resource.SecurityGroup) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: unassigning sg %s as staging security group", sg.Name)
 		return nil
 	}
 	lo.G.Infof("unassigning sg %s as staging security group", sg.Name)
-	return m.Client.UnbindStagingSecGroup(sg.Guid)
+	r := &resource.SecurityGroupUpdate{
+		GloballyEnabled: &resource.SecurityGroupGloballyEnabled{
+			Staging: false,
+		},
+	}
+	sg.GloballyEnabled.Staging = false
+	_, err := m.Client.Update(context.Background(), sg.GUID, r)
+	return err
 }
 
 func (m *DefaultManager) GetSecurityGroupRules(sgGUID string) ([]byte, error) {
-	secGroup, err := m.Client.GetSecGroup(sgGUID)
+	secGroup, err := m.Client.Get(context.Background(), sgGUID)
 	if err != nil {
 		return nil, err
 	}
@@ -431,14 +484,14 @@ func (m *DefaultManager) ListSpaceSecurityGroups(spaceGUID string) (map[string]s
 	if strings.Contains(spaceGUID, "dry-run-space-guid") {
 		return names, nil
 	}
-	secGroups, err := m.Client.ListSpaceSecGroups(spaceGUID)
+	secGroups, err := m.Client.ListRunningForSpaceAll(context.Background(), spaceGUID, nil)
 	if err != nil {
 		return nil, err
 	}
 	lo.G.Debug("Total security groups returned :", len(secGroups))
 	for _, sg := range secGroups {
-		if sg.Running == false && sg.Staging == false {
-			names[sg.Name] = sg.Guid
+		if sg.GloballyEnabled.Running == false && sg.GloballyEnabled.Staging == false {
+			names[sg.Name] = sg.GUID
 		}
 	}
 	return names, nil

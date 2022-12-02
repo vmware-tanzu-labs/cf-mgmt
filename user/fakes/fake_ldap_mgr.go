@@ -60,9 +60,10 @@ func (fake *FakeLdapManager) Close() {
 	fake.closeMutex.Lock()
 	fake.closeArgsForCall = append(fake.closeArgsForCall, struct {
 	}{})
+	stub := fake.CloseStub
 	fake.recordInvocation("Close", []interface{}{})
 	fake.closeMutex.Unlock()
-	if fake.CloseStub != nil {
+	if stub != nil {
 		fake.CloseStub()
 	}
 }
@@ -85,15 +86,16 @@ func (fake *FakeLdapManager) GetUserByDN(arg1 string) (*ldap.User, error) {
 	fake.getUserByDNArgsForCall = append(fake.getUserByDNArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetUserByDNStub
+	fakeReturns := fake.getUserByDNReturns
 	fake.recordInvocation("GetUserByDN", []interface{}{arg1})
 	fake.getUserByDNMutex.Unlock()
-	if fake.GetUserByDNStub != nil {
-		return fake.GetUserByDNStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getUserByDNReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -148,15 +150,16 @@ func (fake *FakeLdapManager) GetUserByID(arg1 string) (*ldap.User, error) {
 	fake.getUserByIDArgsForCall = append(fake.getUserByIDArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetUserByIDStub
+	fakeReturns := fake.getUserByIDReturns
 	fake.recordInvocation("GetUserByID", []interface{}{arg1})
 	fake.getUserByIDMutex.Unlock()
-	if fake.GetUserByIDStub != nil {
-		return fake.GetUserByIDStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getUserByIDReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -211,15 +214,16 @@ func (fake *FakeLdapManager) GetUserDNs(arg1 string) ([]string, error) {
 	fake.getUserDNsArgsForCall = append(fake.getUserDNsArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetUserDNsStub
+	fakeReturns := fake.getUserDNsReturns
 	fake.recordInvocation("GetUserDNs", []interface{}{arg1})
 	fake.getUserDNsMutex.Unlock()
-	if fake.GetUserDNsStub != nil {
-		return fake.GetUserDNsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getUserDNsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

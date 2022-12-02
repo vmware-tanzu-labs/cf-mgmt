@@ -2,8 +2,8 @@ package user_test
 
 import (
 	"errors"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
 	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
@@ -19,30 +19,39 @@ import (
 
 var _ = Describe("SamlUsers", func() {
 	var (
-		userManager *DefaultManager
-		client      *fakes.FakeCFClient
-		ldapFake    *fakes.FakeLdapManager
-		uaaFake     *uaafakes.FakeManager
-		fakeReader  *configfakes.FakeReader
-		spaceFake   *spacefakes.FakeManager
-		orgFake     *orgfakes.FakeReader
+		userManager     *DefaultManager
+		fakeRoleClient  *fakes.FakeCFRoleClient
+		fakeUserClient  *fakes.FakeCFUserClient
+		fakeSpaceClient *fakes.FakeCFSpaceClient
+		fakeJobClient   *fakes.FakeCFJobClient
+		ldapFake        *fakes.FakeLdapManager
+		uaaFake         *uaafakes.FakeManager
+		fakeReader      *configfakes.FakeReader
+		spaceFake       *spacefakes.FakeManager
+		orgFake         *orgfakes.FakeReader
 	)
 	BeforeEach(func() {
-		client = new(fakes.FakeCFClient)
+		fakeRoleClient = new(fakes.FakeCFRoleClient)
+		fakeUserClient = new(fakes.FakeCFUserClient)
+		fakeSpaceClient = new(fakes.FakeCFSpaceClient)
+		fakeJobClient = new(fakes.FakeCFJobClient)
 		ldapFake = new(fakes.FakeLdapManager)
 		uaaFake = new(uaafakes.FakeManager)
 		fakeReader = new(configfakes.FakeReader)
 		spaceFake = new(spacefakes.FakeManager)
 		orgFake = new(orgfakes.FakeReader)
 		userManager = &DefaultManager{
-			Client:     client,
-			Cfg:        fakeReader,
-			UAAMgr:     uaaFake,
-			LdapMgr:    ldapFake,
-			SpaceMgr:   spaceFake,
-			OrgReader:  orgFake,
-			Peek:       false,
-			LdapConfig: &config.LdapConfig{Origin: "saml_origin"}}
+			RoleClient:  fakeRoleClient,
+			UserClient:  fakeUserClient,
+			SpaceClient: fakeSpaceClient,
+			JobClient:   fakeJobClient,
+			Cfg:         fakeReader,
+			UAAMgr:      uaaFake,
+			LdapMgr:     ldapFake,
+			SpaceMgr:    spaceFake,
+			OrgReader:   orgFake,
+			Peek:        false,
+			LdapConfig:  &config.LdapConfig{Origin: "saml_origin"}}
 	})
 	Context("SyncSamlUsers", func() {
 		var roleUsers *RoleUsers
@@ -52,7 +61,7 @@ var _ = Describe("SamlUsers", func() {
 			uaaUsers.Add(uaa.User{Username: "test@test.com", Origin: "saml_origin", GUID: "test-id"})
 			uaaUsers.Add(uaa.User{Username: "test@test2.com", Origin: "saml_origin", GUID: "test2-id"})
 			roleUsers, _ = NewRoleUsers(
-				[]cfclient.V3User{
+				[]*resource.User{
 					{Username: "test@test.com", GUID: "test-id"},
 				},
 				uaaUsers,
@@ -71,16 +80,16 @@ var _ = Describe("SamlUsers", func() {
 			}
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
-			orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
+			Expect(fakeRoleClient.CreateOrganizationRoleCallCount()).Should(Equal(1))
+			_, orgGUID, userGUID, role := fakeRoleClient.CreateOrganizationRoleArgsForCall(0)
 			Expect(orgGUID).Should(Equal("org_guid"))
 			Expect(userGUID).Should(Equal("test2-id"))
-			Expect(role).To(Equal(ORG_USER))
+			Expect(role).To(Equal(resource.OrganizationRoleUser))
 
-			spaceGUID, userGUID, roleType := client.CreateV3SpaceRoleArgsForCall(0)
+			_, spaceGUID, userGUID, roleType := fakeRoleClient.CreateSpaceRoleArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("space_guid"))
 			Expect(userGUID).Should(Equal("test2-id"))
-			Expect(roleType).Should(Equal(SPACE_AUDITOR))
+			Expect(roleType).Should(Equal(resource.SpaceRoleAuditor))
 		})
 
 		It("Should not add existing saml user to role", func() {
@@ -95,8 +104,8 @@ var _ = Describe("SamlUsers", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(roleUsers.HasUser("test@test.com")).Should(BeFalse())
 			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(0))
-			Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(0))
-			Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
+			Expect(fakeRoleClient.CreateOrganizationRoleCallCount()).Should(Equal(0))
+			Expect(fakeRoleClient.CreateSpaceRoleCallCount()).Should(Equal(0))
 		})
 		It("Should create external user when user doesn't exist in uaa", func() {
 			updateUsersInput := UsersInput{
@@ -146,11 +155,11 @@ var _ = Describe("SamlUsers", func() {
 				RoleUsers: InitRoleUsers(),
 			}
 			userManager.UAAUsers = uaaUsers
-			client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
+			fakeRoleClient.CreateOrganizationRoleReturns(nil, errors.New("error"))
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).Should(HaveOccurred())
-			Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
-			Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
+			Expect(fakeRoleClient.CreateOrganizationRoleCallCount()).Should(Equal(1))
+			Expect(fakeRoleClient.CreateSpaceRoleCallCount()).Should(Equal(0))
 		})
 	})
 })

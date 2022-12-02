@@ -1,10 +1,10 @@
 package user
 
 import (
+	"context"
 	"fmt"
-	"net/url"
-
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	cfclient "github.com/cloudfoundry-community/go-cfclient/v3/client"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
@@ -12,10 +12,14 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func (m *DefaultManager) removeOrphanedUsers(orphanedUsers []string) error {
-	for _, orphanedUser := range orphanedUsers {
-		lo.G.Infof("Deleting orphaned CF user with guid %s", orphanedUser)
-		err := m.Client.DeleteUser(orphanedUser)
+func (m *DefaultManager) removeOrphanedUsers(orphanedUserGUIDs []string) error {
+	for _, orphanedUserGUID := range orphanedUserGUIDs {
+		lo.G.Infof("Deleting orphaned CF user with guid %s", orphanedUserGUID)
+		jobGUID, err := m.UserClient.Delete(context.Background(), orphanedUserGUID)
+		if err != nil {
+			return err
+		}
+		err = m.JobClient.PollComplete(context.Background(), jobGUID, nil)
 		if err != nil {
 			return err
 		}
@@ -24,7 +28,7 @@ func (m *DefaultManager) removeOrphanedUsers(orphanedUsers []string) error {
 	return nil
 }
 
-//CleanupOrgUsers -
+// CleanupOrgUsers -
 func (m *DefaultManager) CleanupOrgUsers() error {
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
@@ -52,12 +56,16 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 	if err != nil {
 		return err
 	}
-	orgUsers, err := m.Client.ListV3OrganizationRolesByGUIDAndType(org.Guid, ORG_USER)
+
+	opts := cfclient.NewRoleListOptions()
+	opts.OrganizationGUIDs.EqualTo(org.GUID)
+	opts.Types.EqualTo(resource.OrganizationRoleUser.String())
+	_, orgUsers, err := m.RoleClient.ListIncludeUsersAll(context.Background(), opts)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error listing org users for org %s", input.Org))
 	}
 
-	usersInRoles, err := m.usersInOrgRoles(org.Name, org.Guid)
+	usersInRoles, err := m.usersInOrgRoles(org.Name, org.GUID)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error usersInOrgRoles for org %s", input.Org))
 	}
@@ -84,11 +92,15 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 					continue
 				}
 				lo.G.Infof("Removing User %s from org %s", orgUser.Username, input.Org)
-				role, err := m.GetOrgRoleGUID(org.Guid, guid, ORG_USER)
+				role, err := m.GetOrgRoleGUID(org.GUID, guid, resource.OrganizationRoleUser)
 				if err != nil {
 					return err
 				}
-				err = m.Client.DeleteV3Role(role)
+				jobGUID, err := m.RoleClient.Delete(context.Background(), role)
+				if err != nil {
+					return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
+				}
+				err = m.JobClient.PollComplete(context.Background(), jobGUID, nil)
 				if err != nil {
 					return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
 				}
@@ -148,9 +160,9 @@ func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string) (*RoleUsers, e
 		return nil, errors.Wrap(err, fmt.Sprintf("Error listing spaces for org %s", orgName))
 	}
 	for _, space := range spaces {
-		userInput.SpaceGUID = space.Guid
+		userInput.SpaceGUID = space.GUID
 		userInput.SpaceName = space.Name
-		spaceManagers, spaceDevelopers, spaceAuditors, spaceSupporters, err := m.ListSpaceUsersByRole(space.Guid)
+		spaceManagers, spaceDevelopers, spaceAuditors, spaceSupporters, err := m.ListSpaceUsersByRole(space.GUID)
 		if err != nil {
 			return nil, err
 		}
@@ -188,10 +200,10 @@ func (m *DefaultManager) usersInOrgRoles(orgName, orgGUID string) (*RoleUsers, e
 	return roleUsers, nil
 }
 
-func (m *DefaultManager) listSpaces(orgGUID string) ([]cfclient.Space, error) {
-	spaces, err := m.Client.ListSpacesByQuery(url.Values{
-		"q": []string{fmt.Sprintf("%s:%s", "organization_guid", orgGUID)},
-	})
+func (m *DefaultManager) listSpaces(orgGUID string) ([]*resource.Space, error) {
+	opts := cfclient.NewSpaceListOptions()
+	opts.OrganizationGUIDs.EqualTo(orgGUID)
+	spaces, err := m.SpaceClient.ListAll(context.Background(), opts)
 	if err != nil {
 		return nil, err
 	}

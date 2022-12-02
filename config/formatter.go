@@ -21,6 +21,13 @@ var (
 	timePattern  = regexp.MustCompile(`(?i)^(-?\d+)([DHM])$`)
 )
 
+func IntPtrAsByteSize(bytes *int) string {
+	if bytes == nil {
+		return ByteSize(-1)
+	}
+	return ByteSize(*bytes)
+}
+
 func ByteSize(bytes int) string {
 	if bytes == -1 {
 		return "unlimited"
@@ -53,6 +60,13 @@ func StringToMegabytes(s string) (string, error) {
 		return "unlimited", nil
 	}
 	return ByteSize(i), nil
+}
+
+func IntPtrAsString(i *int) string {
+	if i == nil {
+		return AsString(-1)
+	}
+	return AsString(*i)
 }
 
 func AsString(i int) string {

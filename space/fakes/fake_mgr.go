@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 )
 
@@ -41,31 +41,44 @@ type FakeManager struct {
 	deleteSpacesForOrgReturnsOnCall map[int]struct {
 		result1 error
 	}
-	FindSpaceStub        func(string, string) (cfclient.Space, error)
+	FindSpaceStub        func(string, string) (*resource.Space, error)
 	findSpaceMutex       sync.RWMutex
 	findSpaceArgsForCall []struct {
 		arg1 string
 		arg2 string
 	}
 	findSpaceReturns struct {
-		result1 cfclient.Space
+		result1 *resource.Space
 		result2 error
 	}
 	findSpaceReturnsOnCall map[int]struct {
-		result1 cfclient.Space
+		result1 *resource.Space
 		result2 error
 	}
-	ListSpacesStub        func(string) ([]cfclient.Space, error)
+	IsSSHEnabledStub        func(string) (bool, error)
+	isSSHEnabledMutex       sync.RWMutex
+	isSSHEnabledArgsForCall []struct {
+		arg1 string
+	}
+	isSSHEnabledReturns struct {
+		result1 bool
+		result2 error
+	}
+	isSSHEnabledReturnsOnCall map[int]struct {
+		result1 bool
+		result2 error
+	}
+	ListSpacesStub        func(string) ([]*resource.Space, error)
 	listSpacesMutex       sync.RWMutex
 	listSpacesArgsForCall []struct {
 		arg1 string
 	}
 	listSpacesReturns struct {
-		result1 []cfclient.Space
+		result1 []*resource.Space
 		result2 error
 	}
 	listSpacesReturnsOnCall map[int]struct {
-		result1 []cfclient.Space
+		result1 []*resource.Space
 		result2 error
 	}
 	UpdateSpacesStub        func() error
@@ -97,15 +110,16 @@ func (fake *FakeManager) CreateSpaces() error {
 	ret, specificReturn := fake.createSpacesReturnsOnCall[len(fake.createSpacesArgsForCall)]
 	fake.createSpacesArgsForCall = append(fake.createSpacesArgsForCall, struct {
 	}{})
+	stub := fake.CreateSpacesStub
+	fakeReturns := fake.createSpacesReturns
 	fake.recordInvocation("CreateSpaces", []interface{}{})
 	fake.createSpacesMutex.Unlock()
-	if fake.CreateSpacesStub != nil {
-		return fake.CreateSpacesStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.createSpacesReturns
 	return fakeReturns.result1
 }
 
@@ -149,15 +163,16 @@ func (fake *FakeManager) DeleteSpaces() error {
 	ret, specificReturn := fake.deleteSpacesReturnsOnCall[len(fake.deleteSpacesArgsForCall)]
 	fake.deleteSpacesArgsForCall = append(fake.deleteSpacesArgsForCall, struct {
 	}{})
+	stub := fake.DeleteSpacesStub
+	fakeReturns := fake.deleteSpacesReturns
 	fake.recordInvocation("DeleteSpaces", []interface{}{})
 	fake.deleteSpacesMutex.Unlock()
-	if fake.DeleteSpacesStub != nil {
-		return fake.DeleteSpacesStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteSpacesReturns
 	return fakeReturns.result1
 }
 
@@ -203,15 +218,16 @@ func (fake *FakeManager) DeleteSpacesForOrg(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.DeleteSpacesForOrgStub
+	fakeReturns := fake.deleteSpacesForOrgReturns
 	fake.recordInvocation("DeleteSpacesForOrg", []interface{}{arg1, arg2})
 	fake.deleteSpacesForOrgMutex.Unlock()
-	if fake.DeleteSpacesForOrgStub != nil {
-		return fake.DeleteSpacesForOrgStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteSpacesForOrgReturns
 	return fakeReturns.result1
 }
 
@@ -257,22 +273,23 @@ func (fake *FakeManager) DeleteSpacesForOrgReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) FindSpace(arg1 string, arg2 string) (cfclient.Space, error) {
+func (fake *FakeManager) FindSpace(arg1 string, arg2 string) (*resource.Space, error) {
 	fake.findSpaceMutex.Lock()
 	ret, specificReturn := fake.findSpaceReturnsOnCall[len(fake.findSpaceArgsForCall)]
 	fake.findSpaceArgsForCall = append(fake.findSpaceArgsForCall, struct {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.FindSpaceStub
+	fakeReturns := fake.findSpaceReturns
 	fake.recordInvocation("FindSpace", []interface{}{arg1, arg2})
 	fake.findSpaceMutex.Unlock()
-	if fake.FindSpaceStub != nil {
-		return fake.FindSpaceStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.findSpaceReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -282,7 +299,7 @@ func (fake *FakeManager) FindSpaceCallCount() int {
 	return len(fake.findSpaceArgsForCall)
 }
 
-func (fake *FakeManager) FindSpaceCalls(stub func(string, string) (cfclient.Space, error)) {
+func (fake *FakeManager) FindSpaceCalls(stub func(string, string) (*resource.Space, error)) {
 	fake.findSpaceMutex.Lock()
 	defer fake.findSpaceMutex.Unlock()
 	fake.FindSpaceStub = stub
@@ -295,47 +312,112 @@ func (fake *FakeManager) FindSpaceArgsForCall(i int) (string, string) {
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeManager) FindSpaceReturns(result1 cfclient.Space, result2 error) {
+func (fake *FakeManager) FindSpaceReturns(result1 *resource.Space, result2 error) {
 	fake.findSpaceMutex.Lock()
 	defer fake.findSpaceMutex.Unlock()
 	fake.FindSpaceStub = nil
 	fake.findSpaceReturns = struct {
-		result1 cfclient.Space
+		result1 *resource.Space
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) FindSpaceReturnsOnCall(i int, result1 cfclient.Space, result2 error) {
+func (fake *FakeManager) FindSpaceReturnsOnCall(i int, result1 *resource.Space, result2 error) {
 	fake.findSpaceMutex.Lock()
 	defer fake.findSpaceMutex.Unlock()
 	fake.FindSpaceStub = nil
 	if fake.findSpaceReturnsOnCall == nil {
 		fake.findSpaceReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Space
+			result1 *resource.Space
 			result2 error
 		})
 	}
 	fake.findSpaceReturnsOnCall[i] = struct {
-		result1 cfclient.Space
+		result1 *resource.Space
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListSpaces(arg1 string) ([]cfclient.Space, error) {
+func (fake *FakeManager) IsSSHEnabled(arg1 string) (bool, error) {
+	fake.isSSHEnabledMutex.Lock()
+	ret, specificReturn := fake.isSSHEnabledReturnsOnCall[len(fake.isSSHEnabledArgsForCall)]
+	fake.isSSHEnabledArgsForCall = append(fake.isSSHEnabledArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.IsSSHEnabledStub
+	fakeReturns := fake.isSSHEnabledReturns
+	fake.recordInvocation("IsSSHEnabled", []interface{}{arg1})
+	fake.isSSHEnabledMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeManager) IsSSHEnabledCallCount() int {
+	fake.isSSHEnabledMutex.RLock()
+	defer fake.isSSHEnabledMutex.RUnlock()
+	return len(fake.isSSHEnabledArgsForCall)
+}
+
+func (fake *FakeManager) IsSSHEnabledCalls(stub func(string) (bool, error)) {
+	fake.isSSHEnabledMutex.Lock()
+	defer fake.isSSHEnabledMutex.Unlock()
+	fake.IsSSHEnabledStub = stub
+}
+
+func (fake *FakeManager) IsSSHEnabledArgsForCall(i int) string {
+	fake.isSSHEnabledMutex.RLock()
+	defer fake.isSSHEnabledMutex.RUnlock()
+	argsForCall := fake.isSSHEnabledArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeManager) IsSSHEnabledReturns(result1 bool, result2 error) {
+	fake.isSSHEnabledMutex.Lock()
+	defer fake.isSSHEnabledMutex.Unlock()
+	fake.IsSSHEnabledStub = nil
+	fake.isSSHEnabledReturns = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) IsSSHEnabledReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.isSSHEnabledMutex.Lock()
+	defer fake.isSSHEnabledMutex.Unlock()
+	fake.IsSSHEnabledStub = nil
+	if fake.isSSHEnabledReturnsOnCall == nil {
+		fake.isSSHEnabledReturnsOnCall = make(map[int]struct {
+			result1 bool
+			result2 error
+		})
+	}
+	fake.isSSHEnabledReturnsOnCall[i] = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) ListSpaces(arg1 string) ([]*resource.Space, error) {
 	fake.listSpacesMutex.Lock()
 	ret, specificReturn := fake.listSpacesReturnsOnCall[len(fake.listSpacesArgsForCall)]
 	fake.listSpacesArgsForCall = append(fake.listSpacesArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListSpacesStub
+	fakeReturns := fake.listSpacesReturns
 	fake.recordInvocation("ListSpaces", []interface{}{arg1})
 	fake.listSpacesMutex.Unlock()
-	if fake.ListSpacesStub != nil {
-		return fake.ListSpacesStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpacesReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -345,7 +427,7 @@ func (fake *FakeManager) ListSpacesCallCount() int {
 	return len(fake.listSpacesArgsForCall)
 }
 
-func (fake *FakeManager) ListSpacesCalls(stub func(string) ([]cfclient.Space, error)) {
+func (fake *FakeManager) ListSpacesCalls(stub func(string) ([]*resource.Space, error)) {
 	fake.listSpacesMutex.Lock()
 	defer fake.listSpacesMutex.Unlock()
 	fake.ListSpacesStub = stub
@@ -358,28 +440,28 @@ func (fake *FakeManager) ListSpacesArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeManager) ListSpacesReturns(result1 []cfclient.Space, result2 error) {
+func (fake *FakeManager) ListSpacesReturns(result1 []*resource.Space, result2 error) {
 	fake.listSpacesMutex.Lock()
 	defer fake.listSpacesMutex.Unlock()
 	fake.ListSpacesStub = nil
 	fake.listSpacesReturns = struct {
-		result1 []cfclient.Space
+		result1 []*resource.Space
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListSpacesReturnsOnCall(i int, result1 []cfclient.Space, result2 error) {
+func (fake *FakeManager) ListSpacesReturnsOnCall(i int, result1 []*resource.Space, result2 error) {
 	fake.listSpacesMutex.Lock()
 	defer fake.listSpacesMutex.Unlock()
 	fake.ListSpacesStub = nil
 	if fake.listSpacesReturnsOnCall == nil {
 		fake.listSpacesReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.Space
+			result1 []*resource.Space
 			result2 error
 		})
 	}
 	fake.listSpacesReturnsOnCall[i] = struct {
-		result1 []cfclient.Space
+		result1 []*resource.Space
 		result2 error
 	}{result1, result2}
 }
@@ -389,15 +471,16 @@ func (fake *FakeManager) UpdateSpaces() error {
 	ret, specificReturn := fake.updateSpacesReturnsOnCall[len(fake.updateSpacesArgsForCall)]
 	fake.updateSpacesArgsForCall = append(fake.updateSpacesArgsForCall, struct {
 	}{})
+	stub := fake.UpdateSpacesStub
+	fakeReturns := fake.updateSpacesReturns
 	fake.recordInvocation("UpdateSpaces", []interface{}{})
 	fake.updateSpacesMutex.Unlock()
-	if fake.UpdateSpacesStub != nil {
-		return fake.UpdateSpacesStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateSpacesReturns
 	return fakeReturns.result1
 }
 
@@ -441,15 +524,16 @@ func (fake *FakeManager) UpdateSpacesMetadata() error {
 	ret, specificReturn := fake.updateSpacesMetadataReturnsOnCall[len(fake.updateSpacesMetadataArgsForCall)]
 	fake.updateSpacesMetadataArgsForCall = append(fake.updateSpacesMetadataArgsForCall, struct {
 	}{})
+	stub := fake.UpdateSpacesMetadataStub
+	fakeReturns := fake.updateSpacesMetadataReturns
 	fake.recordInvocation("UpdateSpacesMetadata", []interface{}{})
 	fake.updateSpacesMetadataMutex.Unlock()
-	if fake.UpdateSpacesMetadataStub != nil {
-		return fake.UpdateSpacesMetadataStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateSpacesMetadataReturns
 	return fakeReturns.result1
 }
 
@@ -499,6 +583,8 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.deleteSpacesForOrgMutex.RUnlock()
 	fake.findSpaceMutex.RLock()
 	defer fake.findSpaceMutex.RUnlock()
+	fake.isSSHEnabledMutex.RLock()
+	defer fake.isSSHEnabledMutex.RUnlock()
 	fake.listSpacesMutex.RLock()
 	defer fake.listSpacesMutex.RUnlock()
 	fake.updateSpacesMutex.RLock()

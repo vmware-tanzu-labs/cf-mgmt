@@ -1,26 +1,34 @@
 package shareddomain
 
 import (
+	"context"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"strings"
 
 	"code.cloudfoundry.org/routing-api/models"
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	cfclient "github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/xchapter7x/lo"
 )
 
 type Manager struct {
-	CFClient      CFClient
+	DomainClient  CFDomainClient
+	JobClient     CFJobClient
 	RoutingClient RoutingClient
 	Cfg           config.Reader
 	Peek          bool
 }
 
-//go:generate counterfeiter -o fakes/fake_cf_client.go . CFClient
-type CFClient interface {
-	ListSharedDomains() ([]cfclient.SharedDomain, error)
-	DeleteSharedDomain(guid string, async bool) error
-	CreateSharedDomain(name string, internal bool, router_group_guid string) (*cfclient.SharedDomain, error)
+//go:generate counterfeiter -o fakes/fake_domain_client.go . CFDomainClient
+type CFDomainClient interface {
+	ListAll(ctx context.Context, opts *cfclient.DomainListOptions) ([]*resource.Domain, error)
+	Create(ctx context.Context, r *resource.DomainCreate) (*resource.Domain, error)
+	Delete(ctx context.Context, guid string) (string, error)
+}
+
+//go:generate counterfeiter -o fakes/fake_job_client.go . CFJobClient
+type CFJobClient interface {
+	PollComplete(ctx context.Context, jobGUID string, opts *cfclient.PollingOptions) error
 }
 
 //go:generate counterfeiter -o fakes/fake_routing_client.go . RoutingClient
@@ -29,9 +37,10 @@ type RoutingClient interface {
 	RouterGroups() ([]models.RouterGroup, error)
 }
 
-func NewManager(cfclient CFClient, routingClient RoutingClient, cfg config.Reader, peek bool) *Manager {
+func NewManager(cfclient CFDomainClient, jobClient CFJobClient, routingClient RoutingClient, cfg config.Reader, peek bool) *Manager {
 	return &Manager{
-		CFClient:      cfclient,
+		DomainClient:  cfclient,
+		JobClient:     jobClient,
 		RoutingClient: routingClient,
 		Cfg:           cfg,
 		Peek:          peek,
@@ -44,13 +53,13 @@ func (m *Manager) Apply() error {
 		return err
 	}
 
-	currentDomains, err := m.CFClient.ListSharedDomains()
+	currentDomains, err := m.DomainClient.ListAll(context.Background(), nil)
 	if err != nil {
 		return err
 	}
 	domainMap := make(map[string]string)
 	for _, domain := range currentDomains {
-		domainMap[strings.ToLower(domain.Name)] = domain.Guid
+		domainMap[strings.ToLower(domain.Name)] = domain.GUID
 	}
 	for expectedDomain, sharedDomainConfig := range global.SharedDomains {
 		if _, ok := domainMap[strings.ToLower(expectedDomain)]; !ok {
@@ -68,7 +77,12 @@ func (m *Manager) Apply() error {
 				routerGroupGUID = routingGroup.Guid
 			}
 			lo.G.Infof("create shared domain %s as internal [%t] for router group [%s]", expectedDomain, sharedDomainConfig.Internal, sharedDomainConfig.RouterGroup)
-			_, err := m.CFClient.CreateSharedDomain(expectedDomain, sharedDomainConfig.Internal, routerGroupGUID)
+			r := resource.NewDomainCreate(expectedDomain)
+			r.Internal = &sharedDomainConfig.Internal
+			r.RouterGroup = &resource.Relationship{
+				GUID: routerGroupGUID,
+			}
+			_, err := m.DomainClient.Create(context.Background(), r)
 			if err != nil {
 				return err
 			}
@@ -83,7 +97,11 @@ func (m *Manager) Apply() error {
 				continue
 			}
 			lo.G.Infof("deleting shared domain %s", domain)
-			err := m.CFClient.DeleteSharedDomain(domainGUID, false)
+			jobGUID, err := m.DomainClient.Delete(context.Background(), domainGUID)
+			if err != nil {
+				return err
+			}
+			err = m.JobClient.PollComplete(context.Background(), jobGUID, nil)
 			if err != nil {
 				return err
 			}

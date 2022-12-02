@@ -2,9 +2,9 @@ package shareddomain_test
 
 import (
 	"errors"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 
 	"code.cloudfoundry.org/routing-api/models"
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/vmwarepivotallabs/cf-mgmt/shareddomain"
 
 	. "github.com/onsi/ginkgo"
@@ -17,15 +17,17 @@ import (
 var _ = Describe("Manager", func() {
 	var (
 		manager           *Manager
-		fakeCFClient      *fakes.FakeCFClient
+		fakeDomainClient  *fakes.FakeCFDomainClient
+		fakeJobClient     *fakes.FakeCFJobClient
 		fakeRoutingClient *fakes.FakeRoutingClient
 		fakeCfg           *fakeconfig.FakeReader
 	)
 	BeforeEach(func() {
-		fakeCFClient = &fakes.FakeCFClient{}
+		fakeDomainClient = &fakes.FakeCFDomainClient{}
+		fakeJobClient = &fakes.FakeCFJobClient{}
 		fakeRoutingClient = &fakes.FakeRoutingClient{}
 		fakeCfg = &fakeconfig.FakeReader{}
-		manager = NewManager(fakeCFClient, fakeRoutingClient, fakeCfg, false)
+		manager = NewManager(fakeDomainClient, fakeJobClient, fakeRoutingClient, fakeCfg, false)
 		fakeCfg.GetGlobalConfigReturns(&config.GlobalConfig{
 			SharedDomains: map[string]config.SharedDomain{
 				"foo.bar":        config.SharedDomain{},
@@ -37,13 +39,13 @@ var _ = Describe("Manager", func() {
 		It("Should create 2 shared domains", func() {
 			err := manager.Apply()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateSharedDomainCallCount()).To(Equal(2))
-			Expect(fakeCFClient.DeleteSharedDomainCallCount()).To(Equal(0))
+			Expect(fakeDomainClient.CreateCallCount()).To(Equal(2))
+			Expect(fakeDomainClient.DeleteCallCount()).To(Equal(0))
 			for i := 0; i <= 1; i++ {
-				name, internal, routerGUID := fakeCFClient.CreateSharedDomainArgsForCall(i)
-				Expect(name).To(Not(BeEmpty()))
-				Expect(internal).To(BeFalse())
-				Expect(routerGUID).To(BeEmpty())
+				_, domainCreate := fakeDomainClient.CreateArgsForCall(i)
+				Expect(domainCreate.Name).NotTo(BeEmpty())
+				Expect(*domainCreate.Internal).To(BeFalse())
+				Expect(domainCreate.RouterGroup.GUID).To(BeEmpty())
 			}
 		})
 		It("Should create 1 shared domain with routing group guid", func() {
@@ -60,54 +62,58 @@ var _ = Describe("Manager", func() {
 			}, nil)
 			err := manager.Apply()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateSharedDomainCallCount()).To(Equal(1))
-			Expect(fakeCFClient.DeleteSharedDomainCallCount()).To(Equal(0))
-			name, internal, routerGUID := fakeCFClient.CreateSharedDomainArgsForCall(0)
-			Expect(name).To(Not(BeEmpty()))
-			Expect(internal).To(BeFalse())
-			Expect(routerGUID).To(Not(BeEmpty()))
+			Expect(fakeDomainClient.CreateCallCount()).To(Equal(1))
+			Expect(fakeDomainClient.DeleteCallCount()).To(Equal(0))
+			_, domainCreate := fakeDomainClient.CreateArgsForCall(0)
+			Expect(domainCreate.Name).NotTo(BeEmpty())
+			Expect(*domainCreate.Internal).To(BeFalse())
+			Expect(domainCreate.RouterGroup.GUID).NotTo(BeEmpty())
 
 		})
 		It("Should create no shared domains", func() {
-			fakeCFClient.ListSharedDomainsReturns([]cfclient.SharedDomain{
-				cfclient.SharedDomain{
+			fakeDomainClient.ListAllReturns([]*resource.Domain{
+				{
 					Name: "foo.bar",
-					Guid: "foo.bar.guid",
+					GUID: "foo.bar.guid",
 				},
-				cfclient.SharedDomain{
+				{
 					Name: "default.domain",
-					Guid: "default.domain.guid",
+					GUID: "default.domain.guid",
 				},
 			}, nil)
 			err := manager.Apply()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateSharedDomainCallCount()).To(Equal(0))
-			Expect(fakeCFClient.DeleteSharedDomainCallCount()).To(Equal(0))
+			Expect(fakeDomainClient.CreateCallCount()).To(Equal(0))
+			Expect(fakeDomainClient.DeleteCallCount()).To(Equal(0))
 		})
 
 		It("Should delete 2 shared domains", func() {
 			fakeCfg.GetGlobalConfigReturns(&config.GlobalConfig{
 				EnableDeleteSharedDomains: true,
 			}, nil)
-			fakeCFClient.ListSharedDomainsReturns([]cfclient.SharedDomain{
-				cfclient.SharedDomain{
+			fakeDomainClient.ListAllReturns([]*resource.Domain{
+				{
 					Name: "foo.bar",
-					Guid: "foo.bar.guid",
+					GUID: "foo.bar.guid",
 				},
-				cfclient.SharedDomain{
+				{
 					Name: "default.domain",
-					Guid: "default.domain.guid",
+					GUID: "default.domain.guid",
 				},
 			}, nil)
+			fakeDomainClient.DeleteReturns("job-guid", nil)
+			fakeJobClient.PollCompleteReturns(nil)
+
 			err := manager.Apply()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateSharedDomainCallCount()).To(Equal(0))
-			Expect(fakeCFClient.DeleteSharedDomainCallCount()).To(Equal(2))
+			Expect(fakeDomainClient.CreateCallCount()).To(Equal(0))
+			Expect(fakeDomainClient.DeleteCallCount()).To(Equal(2))
 			for i := 0; i <= 1; i++ {
-				guid, async := fakeCFClient.DeleteSharedDomainArgsForCall(i)
-				Expect(guid).To(ContainSubstring("guid"))
-				Expect(async).To(BeFalse())
+				_, domainGUID := fakeDomainClient.DeleteArgsForCall(i)
+				Expect(domainGUID).To(ContainSubstring("guid"))
 			}
+			_, jobGUID, _ := fakeJobClient.PollCompleteArgsForCall(0)
+			Expect(jobGUID).To(Equal("job-guid"))
 		})
 	})
 
@@ -119,12 +125,12 @@ var _ = Describe("Manager", func() {
 		})
 
 		It("should error listing domains", func() {
-			fakeCFClient.ListSharedDomainsReturns(nil, errors.New("error getting shared domains"))
+			fakeDomainClient.ListAllReturns(nil, errors.New("error getting shared domains"))
 			err := manager.Apply()
 			Expect(err).To(MatchError("error getting shared domains"))
 		})
 		It("should error creating domains", func() {
-			fakeCFClient.CreateSharedDomainReturns(nil, errors.New("error creating shared domain"))
+			fakeDomainClient.CreateReturns(nil, errors.New("error creating shared domain"))
 			err := manager.Apply()
 			Expect(err).To(MatchError("error creating shared domain"))
 		})
@@ -132,17 +138,17 @@ var _ = Describe("Manager", func() {
 			fakeCfg.GetGlobalConfigReturns(&config.GlobalConfig{
 				EnableDeleteSharedDomains: true,
 			}, nil)
-			fakeCFClient.ListSharedDomainsReturns([]cfclient.SharedDomain{
-				cfclient.SharedDomain{
+			fakeDomainClient.ListAllReturns([]*resource.Domain{
+				{
 					Name: "foo.bar",
-					Guid: "foo.bar.guid",
+					GUID: "foo.bar.guid",
 				},
-				cfclient.SharedDomain{
+				{
 					Name: "default.domain",
-					Guid: "default.domain.guid",
+					GUID: "default.domain.guid",
 				},
 			}, nil)
-			fakeCFClient.DeleteSharedDomainReturns(errors.New("error deleting shared domain"))
+			fakeDomainClient.DeleteReturns("", errors.New("error deleting shared domain"))
 			err := manager.Apply()
 			Expect(err).To(MatchError("error deleting shared domain"))
 		})
@@ -150,32 +156,32 @@ var _ = Describe("Manager", func() {
 
 	Context("peek", func() {
 		BeforeEach(func() {
-			manager = NewManager(fakeCFClient, fakeRoutingClient, fakeCfg, true)
+			manager = NewManager(fakeDomainClient, fakeJobClient, fakeRoutingClient, fakeCfg, true)
 		})
 		It("Should not create 2 shared domains", func() {
 			err := manager.Apply()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateSharedDomainCallCount()).To(Equal(0))
-			Expect(fakeCFClient.DeleteSharedDomainCallCount()).To(Equal(0))
+			Expect(fakeDomainClient.CreateCallCount()).To(Equal(0))
+			Expect(fakeDomainClient.DeleteCallCount()).To(Equal(0))
 		})
 		It("Should not delete 2 shared domains", func() {
 			fakeCfg.GetGlobalConfigReturns(&config.GlobalConfig{
 				EnableDeleteSharedDomains: true,
 			}, nil)
-			fakeCFClient.ListSharedDomainsReturns([]cfclient.SharedDomain{
-				cfclient.SharedDomain{
+			fakeDomainClient.ListAllReturns([]*resource.Domain{
+				{
 					Name: "foo.bar",
-					Guid: "foo.bar.guid",
+					GUID: "foo.bar.guid",
 				},
-				cfclient.SharedDomain{
+				{
 					Name: "default.domain",
-					Guid: "default.domain.guid",
+					GUID: "default.domain.guid",
 				},
 			}, nil)
 			err := manager.Apply()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeCFClient.CreateSharedDomainCallCount()).To(Equal(0))
-			Expect(fakeCFClient.DeleteSharedDomainCallCount()).To(Equal(0))
+			Expect(fakeDomainClient.CreateCallCount()).To(Equal(0))
+			Expect(fakeDomainClient.DeleteCallCount()).To(Equal(0))
 		})
 	})
 })

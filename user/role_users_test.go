@@ -1,7 +1,7 @@
 package user_test
 
 import (
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	. "github.com/vmwarepivotallabs/cf-mgmt/user"
@@ -18,32 +18,41 @@ import (
 
 var _ = Describe("RoleUsers", func() {
 	var (
-		userManager *DefaultManager
-		client      *fakes.FakeCFClient
-		ldapFake    *fakes.FakeLdapManager
-		uaaFake     *uaafakes.FakeManager
-		fakeReader  *configfakes.FakeReader
-		spaceFake   *spacefakes.FakeManager
-		orgFake     *orgfakes.FakeReader
+		userManager     *DefaultManager
+		fakeRoleClient  *fakes.FakeCFRoleClient
+		fakeUserClient  *fakes.FakeCFUserClient
+		fakeSpaceClient *fakes.FakeCFSpaceClient
+		fakeJobClient   *fakes.FakeCFJobClient
+		ldapFake        *fakes.FakeLdapManager
+		uaaFake         *uaafakes.FakeManager
+		fakeReader      *configfakes.FakeReader
+		spaceFake       *spacefakes.FakeManager
+		orgFake         *orgfakes.FakeReader
 	)
 	BeforeEach(func() {
-		client = new(fakes.FakeCFClient)
+		fakeRoleClient = new(fakes.FakeCFRoleClient)
+		fakeUserClient = new(fakes.FakeCFUserClient)
+		fakeSpaceClient = new(fakes.FakeCFSpaceClient)
+		fakeJobClient = new(fakes.FakeCFJobClient)
 		ldapFake = new(fakes.FakeLdapManager)
 		uaaFake = new(uaafakes.FakeManager)
 		fakeReader = new(configfakes.FakeReader)
 		spaceFake = new(spacefakes.FakeManager)
 		orgFake = new(orgfakes.FakeReader)
 		userManager = &DefaultManager{
-			Client:     client,
-			Cfg:        fakeReader,
-			UAAMgr:     uaaFake,
-			LdapMgr:    ldapFake,
-			SpaceMgr:   spaceFake,
-			OrgReader:  orgFake,
-			Peek:       false,
-			LdapConfig: &config.LdapConfig{Origin: "ldap"},
+			RoleClient:  fakeRoleClient,
+			UserClient:  fakeUserClient,
+			SpaceClient: fakeSpaceClient,
+			JobClient:   fakeJobClient,
+			Cfg:         fakeReader,
+			UAAMgr:      uaaFake,
+			LdapMgr:     ldapFake,
+			SpaceMgr:    spaceFake,
+			OrgReader:   orgFake,
+			Peek:        false,
+			LdapConfig:  &config.LdapConfig{Origin: "ldap"},
 		}
-		userList := []cfclient.V3User{
+		userList := []*resource.User{
 			{
 				Username: "hello",
 				GUID:     "world",
@@ -75,7 +84,7 @@ var _ = Describe("RoleUsers", func() {
 			GUID:     "world2",
 		})
 		userManager.UAAUsers = uaaUsers
-		userMap := make(map[string]cfclient.V3User)
+		userMap := make(map[string]*resource.User)
 		for _, user := range userList {
 			userMap[user.GUID] = user
 		}

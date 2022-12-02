@@ -1,55 +1,66 @@
 package serviceaccess
 
 import (
+	"context"
 	"fmt"
-	"net/url"
+	"github.com/cloudfoundry-community/go-cfclient/v3/client"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
 
-//GetServiceInfo - returns broker, it's services and their plans
-func GetServiceInfo(client CFClient) (*ServiceInfo, error) {
+// GetServiceInfo - returns broker, it's services and their plans
+func GetServiceInfo(
+	servicePlanClient CFServicePlanClient,
+	servicePlanVisibilityClient CFServicePlanVisibilityClient,
+	serviceOfferingClient CFServiceOfferingClient,
+	serviceBrokerClient CFServiceBrokerClient) (*ServiceInfo, error) {
+
 	serviceInfo := &ServiceInfo{}
-	brokers, err := client.ListServiceBrokers()
+	brokers, err := serviceBrokerClient.ListAll(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
 	for _, broker := range brokers {
+		spaceGUID := ""
+		if broker.Relationships.Space.Data != nil {
+			spaceGUID = broker.Relationships.Space.Data.GUID
+		}
 		serviceBroker := &ServiceBroker{
 			Name:      broker.Name,
-			SpaceGUID: broker.SpaceGUID,
+			SpaceGUID: spaceGUID,
 		}
-		services, err := client.ListServicesByQuery(url.Values{
-			"q": []string{fmt.Sprintf("%s:%s", "service_broker_guid", broker.Guid)},
-		})
+
+		serviceOfferingOpts := client.NewServiceOfferingListOptions()
+		serviceOfferingOpts.ServiceBrokerGUIDs.EqualTo(broker.GUID)
+		serviceOfferings, err := serviceOfferingClient.ListAll(context.Background(), serviceOfferingOpts)
 		if err != nil {
 			return nil, err
 		}
-		for _, svc := range services {
+		for _, serviceOffering := range serviceOfferings {
 			service := &Service{
-				Name: svc.Label,
+				Name: serviceOffering.Name,
 			}
-			plans, err := client.ListServicePlansByQuery(url.Values{
-				"q": []string{fmt.Sprintf("%s:%s", "service_guid", svc.Guid)},
-			})
+
+			servicePlanOpts := client.NewServicePlanListOptions()
+			servicePlanOpts.ServiceOfferingGUIDs.EqualTo(serviceOffering.GUID)
+			servicePlans, err := servicePlanClient.ListAll(context.Background(), servicePlanOpts)
 			if err != nil {
 				return nil, err
 			}
-			for _, plan := range plans {
+			for _, plan := range servicePlans {
 				servicePlan := &ServicePlanInfo{
 					Name:        plan.Name,
-					GUID:        plan.Guid,
+					GUID:        plan.GUID,
 					ServiceName: service.Name,
-					Public:      plan.Public,
+					Public:      plan.VisibilityType == resource.ServicePlanVisibilityPublic.String(),
 				}
-				visibilities, err := client.ListServicePlanVisibilitiesByQuery(url.Values{
-					"q": []string{fmt.Sprintf("%s:%s", "service_plan_guid", plan.Guid)},
-				})
+				planVisibility, err := servicePlanVisibilityClient.Get(context.Background(), servicePlan.GUID)
 				if err != nil {
 					return nil, err
 				}
-				for _, visibility := range visibilities {
+				for _, org := range planVisibility.Organizations {
 					orgVisibility := &Visibility{
-						OrgGUID:         visibility.OrganizationGuid,
-						ServicePlanGUID: visibility.ServicePlanGuid,
+						OrgGUID:         org.GUID,
+						ServicePlanGUID: servicePlan.GUID,
 					}
 					servicePlan.AddOrg(orgVisibility)
 				}

@@ -2,9 +2,8 @@ package legacy
 
 import (
 	"fmt"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"strings"
-
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
 type ServiceInfo struct {
@@ -15,21 +14,38 @@ type ServicePlanInfo struct {
 	GUID   string
 	Name   string
 	Public bool
-	m      map[string]*cfclient.ServicePlanVisibility
+	m      map[string]*resource.ServicePlanVisibility
 }
 
-func (s *ServicePlanInfo) ListVisibilities() []cfclient.ServicePlanVisibility {
-	var result []cfclient.ServicePlanVisibility
-	for _, visibility := range s.m {
-		result = append(result, *visibility)
+type OrgServicePlanVisibilityPair struct {
+	OrgGUID               string
+	ServicePlanVisibility *resource.ServicePlanVisibility
+}
+
+func (s *ServicePlanInfo) ListVisibilitiesByOrg() []OrgServicePlanVisibilityPair {
+	var result []OrgServicePlanVisibilityPair
+	for org, visibility := range s.m {
+		v := OrgServicePlanVisibilityPair{
+			OrgGUID:               org,
+			ServicePlanVisibility: visibility,
+		}
+		result = append(result, v)
 	}
 	return result
 }
-func (s *ServicePlanInfo) AddOrg(orgGUID string, visibility cfclient.ServicePlanVisibility) {
-	if s.m == nil {
-		s.m = make(map[string]*cfclient.ServicePlanVisibility)
+
+func (s *ServicePlanInfo) ListVisibilities() []*resource.ServicePlanVisibility {
+	var result []*resource.ServicePlanVisibility
+	for _, visibility := range s.m {
+		result = append(result, visibility)
 	}
-	s.m[orgGUID] = &visibility
+	return result
+}
+func (s *ServicePlanInfo) AddOrg(orgGUID string, visibility *resource.ServicePlanVisibility) {
+	if s.m == nil {
+		s.m = make(map[string]*resource.ServicePlanVisibility)
+	}
+	s.m[orgGUID] = visibility
 }
 
 func (s *ServicePlanInfo) RemoveOrg(orgGUID string) {
@@ -41,7 +57,7 @@ func (s *ServicePlanInfo) OrgHasAccess(orgGUID string) bool {
 	return ok
 }
 
-func (s *ServiceInfo) AddPlan(serviceName string, servicePlan cfclient.ServicePlan) *ServicePlanInfo {
+func (s *ServiceInfo) AddPlan(serviceName string, servicePlan *resource.ServicePlan) *ServicePlanInfo {
 	if s.m == nil {
 		s.m = make(map[string]map[string]*ServicePlanInfo)
 	}
@@ -50,7 +66,8 @@ func (s *ServiceInfo) AddPlan(serviceName string, servicePlan cfclient.ServicePl
 		plans = make(map[string]*ServicePlanInfo)
 		s.m[serviceName] = plans
 	}
-	servicePlanInfo := &ServicePlanInfo{GUID: servicePlan.Guid, Name: servicePlan.Name, Public: servicePlan.Public}
+	public := servicePlan.VisibilityType == resource.ServicePlanVisibilityPublic.String()
+	servicePlanInfo := &ServicePlanInfo{GUID: servicePlan.GUID, Name: servicePlan.Name, Public: public}
 	plans[servicePlan.Name] = servicePlanInfo
 	return servicePlanInfo
 }

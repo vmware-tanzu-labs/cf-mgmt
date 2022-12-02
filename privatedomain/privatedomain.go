@@ -1,33 +1,36 @@
 package privatedomain
 
 import (
+	"context"
 	"fmt"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"reflect"
 	"strings"
 
 	"github.com/pkg/errors"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(client CFClient, orgReader organizationreader.Reader, cfg config.Reader, peek bool) Manager {
+func NewManager(domainClient CFDomainClient, jobClient CFJobClient, orgReader organizationreader.Reader, cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
-		Cfg:       cfg,
-		OrgReader: orgReader,
-		Client:    client,
-		Peek:      peek,
+		Cfg:          cfg,
+		OrgReader:    orgReader,
+		DomainClient: domainClient,
+		JobClient:    jobClient,
+		Peek:         peek,
 	}
 }
 
-//DefaultManager -
+// DefaultManager -
 type DefaultManager struct {
-	Cfg       config.Reader
-	OrgReader organizationreader.Reader
-	Client    CFClient
-	Peek      bool
+	Cfg          config.Reader
+	OrgReader    organizationreader.Reader
+	DomainClient CFDomainClient
+	JobClient    CFJobClient
+	Peek         bool
 }
 
 func (m *DefaultManager) CreatePrivateDomains() error {
@@ -48,25 +51,26 @@ func (m *DefaultManager) CreatePrivateDomains() error {
 		privateDomainMap := make(map[string]string)
 		for _, privateDomain := range orgConfig.PrivateDomains {
 			if existingPrivateDomain, ok := allPrivateDomains[privateDomain]; ok {
-				if org.Guid != existingPrivateDomain.OwningOrganizationGuid {
-					existingOrg, err := m.OrgReader.FindOrgByGUID(existingPrivateDomain.OwningOrganizationGuid)
+				owningOrgGUID := existingPrivateDomain.Relationships.Organization.Data.GUID
+				if org.GUID != owningOrgGUID {
+					existingOrg, err := m.OrgReader.FindOrgByGUID(owningOrgGUID)
 					if err != nil {
 						return err
 					}
 					return fmt.Errorf("Private Domain %s already exists in org [%s]", privateDomain, existingOrg.Name)
 				}
 			} else {
-				privateDomain, err := m.CreatePrivateDomain(&org, privateDomain)
+				newPrivateDomain, err := m.CreatePrivateDomain(org, privateDomain)
 				if err != nil {
 					return err
 				}
-				allPrivateDomains[privateDomain.Name] = *privateDomain
+				allPrivateDomains[newPrivateDomain.Name] = newPrivateDomain
 			}
 			privateDomainMap[privateDomain] = privateDomain
 		}
 
 		if orgConfig.RemovePrivateDomains {
-			orgPrivateDomains, err := m.ListOrgOwnedPrivateDomains(org.Guid)
+			orgPrivateDomains, err := m.ListOrgOwnedPrivateDomains(org.GUID)
 			if err != nil {
 				return err
 			}
@@ -101,7 +105,7 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		if err != nil {
 			return err
 		}
-		orgSharedPrivateDomains, err := m.ListOrgSharedPrivateDomains(org.Guid)
+		orgSharedPrivateDomains, err := m.ListOrgSharedPrivateDomains(org.GUID)
 		if err != nil {
 			return err
 		}
@@ -111,7 +115,7 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		for _, privateDomainName := range orgConfig.SharedPrivateDomains {
 			if _, ok := orgSharedPrivateDomains[privateDomainName]; !ok {
 				if privateDomain, ok := privateDomains[privateDomainName]; ok {
-					err = m.SharePrivateDomain(&org, privateDomain)
+					err = m.SharePrivateDomain(org, privateDomain)
 					if err != nil {
 						return err
 					}
@@ -127,7 +131,7 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		if orgConfig.RemoveSharedPrivateDomains {
 			lo.G.Debugf("Org %s Shared Domains to be removed %+v", orgConfig.Org, reflect.ValueOf(orgSharedPrivateDomains).MapKeys())
 			for _, privateDomain := range orgSharedPrivateDomains {
-				err = m.RemoveSharedPrivateDomain(&org, privateDomain)
+				err = m.RemoveSharedPrivateDomain(org, privateDomain)
 				if err != nil {
 					return err
 				}
@@ -140,56 +144,73 @@ func (m *DefaultManager) SharePrivateDomains() error {
 	return nil
 }
 
-func (m *DefaultManager) ListAllPrivateDomains() (map[string]cfclient.Domain, error) {
-	domains, err := m.Client.ListDomains()
+func (m *DefaultManager) ListAllPrivateDomains() (map[string]*resource.Domain, error) {
+	domains, err := m.DomainClient.ListAll(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
 	lo.G.Debug("Total private domains returned :", len(domains))
-	privateDomainMap := make(map[string]cfclient.Domain)
+	privateDomainMap := make(map[string]*resource.Domain)
 	for _, privateDomain := range domains {
 		privateDomainMap[privateDomain.Name] = privateDomain
 	}
 	return privateDomainMap, nil
 }
 
-func (m *DefaultManager) CreatePrivateDomain(org *cfclient.Org, privateDomain string) (*cfclient.Domain, error) {
+func (m *DefaultManager) CreatePrivateDomain(org *resource.Organization, privateDomain string) (*resource.Domain, error) {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: create private domain %s for org %s", privateDomain, org.Name)
-		return &cfclient.Domain{Guid: "dry-run-guid", Name: privateDomain, OwningOrganizationGuid: org.Guid}, nil
+		return &resource.Domain{
+			GUID: "dry-run-guid",
+			Name: privateDomain,
+			Relationships: resource.DomainRelationships{
+				Organization: resource.ToOneRelationship{
+					Data: &resource.Relationship{
+						GUID: org.GUID,
+					},
+				},
+			},
+		}, nil
 	}
 	lo.G.Infof("Creating Private Domain %s for Org %s", privateDomain, org.Name)
-	return m.Client.CreateDomain(privateDomain, org.Guid)
+	r := resource.NewDomainCreate(privateDomain)
+	r.Organization = &resource.ToOneRelationship{
+		Data: &resource.Relationship{
+			GUID: org.GUID,
+		},
+	}
+	return m.DomainClient.Create(context.Background(), r)
 }
-func (m *DefaultManager) SharePrivateDomain(org *cfclient.Org, domain cfclient.Domain) error {
+
+func (m *DefaultManager) SharePrivateDomain(org *resource.Organization, domain *resource.Domain) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: Share private domain %s for org %s", domain.Name, org.Name)
 		return nil
 	}
 	lo.G.Infof("Share private domain %s for org %s", domain.Name, org.Name)
-	_, err := m.Client.ShareOrgPrivateDomain(org.Guid, domain.Guid)
+	_, err := m.DomainClient.Share(context.Background(), domain.GUID, org.GUID)
 	return err
 }
 
-func (m *DefaultManager) ListOrgSharedPrivateDomains(orgGUID string) (map[string]cfclient.Domain, error) {
-	orgSharedPrivateDomainMap := make(map[string]cfclient.Domain)
+func (m *DefaultManager) ListOrgSharedPrivateDomains(orgGUID string) (map[string]*resource.Domain, error) {
+	orgSharedPrivateDomainMap := make(map[string]*resource.Domain)
 	orgPrivateDomains, err := m.listOrgPrivateDomains(orgGUID)
 	if err != nil {
 		return nil, err
 	}
 	for _, privateDomain := range orgPrivateDomains {
-		if orgGUID != privateDomain.OwningOrganizationGuid {
+		if orgGUID != privateDomain.Relationships.Organization.Data.GUID {
 			orgSharedPrivateDomainMap[privateDomain.Name] = privateDomain
 		}
 	}
 	return orgSharedPrivateDomainMap, nil
 }
 
-func (m *DefaultManager) listOrgPrivateDomains(orgGUID string) ([]cfclient.Domain, error) {
+func (m *DefaultManager) listOrgPrivateDomains(orgGUID string) ([]*resource.Domain, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
 		return nil, nil
 	}
-	privateDomains, err := m.Client.ListOrgPrivateDomains(orgGUID)
+	privateDomains, err := m.DomainClient.ListForOrganizationAll(context.Background(), orgGUID, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "listOrgPrivateDomains")
 	}
@@ -198,34 +219,38 @@ func (m *DefaultManager) listOrgPrivateDomains(orgGUID string) ([]cfclient.Domai
 	return privateDomains, nil
 }
 
-func (m *DefaultManager) ListOrgOwnedPrivateDomains(orgGUID string) (map[string]cfclient.Domain, error) {
-	orgOwnedPrivateDomainMap := make(map[string]cfclient.Domain)
+func (m *DefaultManager) ListOrgOwnedPrivateDomains(orgGUID string) (map[string]*resource.Domain, error) {
+	orgOwnedPrivateDomainMap := make(map[string]*resource.Domain)
 	orgPrivateDomains, err := m.listOrgPrivateDomains(orgGUID)
 	if err != nil {
 		return nil, err
 	}
 	for _, privateDomain := range orgPrivateDomains {
-		if orgGUID == privateDomain.OwningOrganizationGuid {
+		if orgGUID == privateDomain.Relationships.Organization.Data.GUID {
 			orgOwnedPrivateDomainMap[privateDomain.Name] = privateDomain
 		}
 	}
 	return orgOwnedPrivateDomainMap, nil
 }
 
-func (m *DefaultManager) DeletePrivateDomain(domain cfclient.Domain) error {
+func (m *DefaultManager) DeletePrivateDomain(domain *resource.Domain) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: Delete private domain %s", domain.Name)
 		return nil
 	}
 	lo.G.Infof("Delete private domain %s", domain.Name)
-	return m.Client.DeleteDomain(domain.Guid)
+	jobGUID, err := m.DomainClient.Delete(context.Background(), domain.GUID)
+	if err != nil {
+		return err
+	}
+	return m.JobClient.PollComplete(context.Background(), jobGUID, nil)
 }
 
-func (m *DefaultManager) RemoveSharedPrivateDomain(org *cfclient.Org, domain cfclient.Domain) error {
+func (m *DefaultManager) RemoveSharedPrivateDomain(org *resource.Organization, domain *resource.Domain) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: Unshare private domain %s for org %s", domain.Name, org.Name)
 		return nil
 	}
 	lo.G.Infof("Unshare private domain %s for org %s", domain.Name, org.Name)
-	return m.Client.UnshareOrgPrivateDomain(org.Guid, domain.Guid)
+	return m.DomainClient.UnShare(context.Background(), domain.GUID, org.GUID)
 }

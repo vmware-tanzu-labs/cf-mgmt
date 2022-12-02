@@ -11,19 +11,29 @@ code.cloudfoundry.org/trace-logger
 # github.com/Azure/go-ntlmssp v0.0.0-20220621081337-cb9428e4ac1e
 ## explicit
 github.com/Azure/go-ntlmssp
-# github.com/Masterminds/semver v1.5.0
-## explicit
-github.com/Masterminds/semver
 # github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f
 ## explicit
 github.com/bmizerany/pat
-# github.com/cloudfoundry-community/go-cfclient v0.0.0-20220803221820-5e81c204bd31
-## explicit; go 1.15
-github.com/cloudfoundry-community/go-cfclient
+# github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.2
+## explicit; go 1.19
+github.com/cloudfoundry-community/go-cfclient/v3/client
+github.com/cloudfoundry-community/go-cfclient/v3/config
+github.com/cloudfoundry-community/go-cfclient/v3/internal/check
+github.com/cloudfoundry-community/go-cfclient/v3/internal/http
+github.com/cloudfoundry-community/go-cfclient/v3/internal/ios
+github.com/cloudfoundry-community/go-cfclient/v3/internal/path
+github.com/cloudfoundry-community/go-cfclient/v3/resource
+github.com/cloudfoundry-community/go-cfclient/v3/testutil
 # github.com/cloudfoundry-community/go-uaa v0.3.2-0.20191219133444-673d775e96b5
 ## explicit; go 1.12
 github.com/cloudfoundry-community/go-uaa
 github.com/cloudfoundry-community/go-uaa/passwordcredentials
+# github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0
+## explicit
+github.com/codegangsta/inject
+# github.com/davecgh/go-spew v1.1.1
+## explicit
+github.com/davecgh/go-spew/spew
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
@@ -33,6 +43,9 @@ github.com/go-asn1-ber/asn1-ber
 # github.com/go-ldap/ldap/v3 v3.4.4
 ## explicit; go 1.14
 github.com/go-ldap/ldap/v3
+# github.com/go-martini/martini v0.0.0-20170121215854-22fa46961aab
+## explicit
+github.com/go-martini/martini
 # github.com/golang/protobuf v1.5.2
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
@@ -43,13 +56,14 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/gopherjs/gopherjs v0.0.0-20210803090616-8f023c250c89
-## explicit; go 1.16
 # github.com/jessevdk/go-flags v1.5.0
 ## explicit; go 1.15
 github.com/jessevdk/go-flags
 # github.com/kr/pretty v0.3.0
 ## explicit; go 1.12
+# github.com/martini-contrib/render v0.0.0-20150707142108-ec18f8345a11
+## explicit
+github.com/martini-contrib/render
 # github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 ## explicit
 github.com/nu7hatch/gouuid
@@ -101,16 +115,20 @@ github.com/onsi/gomega/types
 github.com/op/go-logging
 # github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c
 ## explicit; go 1.12
+github.com/oxtoacart/bpool
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+## explicit
+github.com/pmezard/go-difflib/difflib
 # github.com/rogpeppe/go-internal v1.8.0
 ## explicit; go 1.11
-# github.com/smartystreets/assertions v1.2.0
+# github.com/stretchr/testify v1.8.0
 ## explicit; go 1.13
-# github.com/smartystreets/goconvey v1.6.4
-## explicit
-# github.com/tedsuo/rata v1.0.1-0.20170830210128-07d200713958
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/require
+# github.com/tedsuo/rata v1.0.0
 ## explicit
 github.com/tedsuo/rata
 # github.com/vito/go-sse v1.0.0

@@ -1,22 +1,24 @@
 package organizationreader
 
 import (
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"context"
+	cfclient "github.com/cloudfoundry-community/go-cfclient/v3/client"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
 
-//Reader -
+// Reader -
 type Reader interface {
-	ListOrgs() ([]cfclient.Org, error)
-	FindOrg(orgName string) (cfclient.Org, error)
-	FindOrgByGUID(orgGUID string) (cfclient.Org, error)
+	ListOrgs() ([]*resource.Organization, error)
+	FindOrg(orgName string) (*resource.Organization, error)
+	FindOrgByGUID(orgGUID string) (*resource.Organization, error)
 	GetOrgGUID(orgName string) (string, error)
-	GetOrgByGUID(orgGUID string) (cfclient.Org, error)
+	GetOrgByGUID(orgGUID string) (*resource.Organization, error)
 	ClearOrgList()
-	AddOrgToList(org cfclient.Org)
+	AddOrgToList(org *resource.Organization)
 }
 
-type CFClient interface {
-	ListOrgs() ([]cfclient.Org, error)
-	DeleteOrg(guid string, recursive, async bool) error
-	GetOrgByGuid(guid string) (cfclient.Org, error)
+type CFOrganizationClient interface {
+	ListAll(ctx context.Context, opts *cfclient.OrganizationListOptions) ([]*resource.Organization, error)
+	Delete(ctx context.Context, guid string) (string, error)
+	Get(ctx context.Context, guid string) (*resource.Organization, error)
 }

@@ -4,57 +4,57 @@ package fakes
 import (
 	"sync"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 )
 
 type FakeReader struct {
-	AddOrgToListStub        func(cfclient.Org)
+	AddOrgToListStub        func(*resource.Organization)
 	addOrgToListMutex       sync.RWMutex
 	addOrgToListArgsForCall []struct {
-		arg1 cfclient.Org
+		arg1 *resource.Organization
 	}
 	ClearOrgListStub        func()
 	clearOrgListMutex       sync.RWMutex
 	clearOrgListArgsForCall []struct {
 	}
-	FindOrgStub        func(string) (cfclient.Org, error)
+	FindOrgStub        func(string) (*resource.Organization, error)
 	findOrgMutex       sync.RWMutex
 	findOrgArgsForCall []struct {
 		arg1 string
 	}
 	findOrgReturns struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}
 	findOrgReturnsOnCall map[int]struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}
-	FindOrgByGUIDStub        func(string) (cfclient.Org, error)
+	FindOrgByGUIDStub        func(string) (*resource.Organization, error)
 	findOrgByGUIDMutex       sync.RWMutex
 	findOrgByGUIDArgsForCall []struct {
 		arg1 string
 	}
 	findOrgByGUIDReturns struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}
 	findOrgByGUIDReturnsOnCall map[int]struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}
-	GetOrgByGUIDStub        func(string) (cfclient.Org, error)
+	GetOrgByGUIDStub        func(string) (*resource.Organization, error)
 	getOrgByGUIDMutex       sync.RWMutex
 	getOrgByGUIDArgsForCall []struct {
 		arg1 string
 	}
 	getOrgByGUIDReturns struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}
 	getOrgByGUIDReturnsOnCall map[int]struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}
 	GetOrgGUIDStub        func(string) (string, error)
@@ -70,30 +70,31 @@ type FakeReader struct {
 		result1 string
 		result2 error
 	}
-	ListOrgsStub        func() ([]cfclient.Org, error)
+	ListOrgsStub        func() ([]*resource.Organization, error)
 	listOrgsMutex       sync.RWMutex
 	listOrgsArgsForCall []struct {
 	}
 	listOrgsReturns struct {
-		result1 []cfclient.Org
+		result1 []*resource.Organization
 		result2 error
 	}
 	listOrgsReturnsOnCall map[int]struct {
-		result1 []cfclient.Org
+		result1 []*resource.Organization
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeReader) AddOrgToList(arg1 cfclient.Org) {
+func (fake *FakeReader) AddOrgToList(arg1 *resource.Organization) {
 	fake.addOrgToListMutex.Lock()
 	fake.addOrgToListArgsForCall = append(fake.addOrgToListArgsForCall, struct {
-		arg1 cfclient.Org
+		arg1 *resource.Organization
 	}{arg1})
+	stub := fake.AddOrgToListStub
 	fake.recordInvocation("AddOrgToList", []interface{}{arg1})
 	fake.addOrgToListMutex.Unlock()
-	if fake.AddOrgToListStub != nil {
+	if stub != nil {
 		fake.AddOrgToListStub(arg1)
 	}
 }
@@ -104,13 +105,13 @@ func (fake *FakeReader) AddOrgToListCallCount() int {
 	return len(fake.addOrgToListArgsForCall)
 }
 
-func (fake *FakeReader) AddOrgToListCalls(stub func(cfclient.Org)) {
+func (fake *FakeReader) AddOrgToListCalls(stub func(*resource.Organization)) {
 	fake.addOrgToListMutex.Lock()
 	defer fake.addOrgToListMutex.Unlock()
 	fake.AddOrgToListStub = stub
 }
 
-func (fake *FakeReader) AddOrgToListArgsForCall(i int) cfclient.Org {
+func (fake *FakeReader) AddOrgToListArgsForCall(i int) *resource.Organization {
 	fake.addOrgToListMutex.RLock()
 	defer fake.addOrgToListMutex.RUnlock()
 	argsForCall := fake.addOrgToListArgsForCall[i]
@@ -121,9 +122,10 @@ func (fake *FakeReader) ClearOrgList() {
 	fake.clearOrgListMutex.Lock()
 	fake.clearOrgListArgsForCall = append(fake.clearOrgListArgsForCall, struct {
 	}{})
+	stub := fake.ClearOrgListStub
 	fake.recordInvocation("ClearOrgList", []interface{}{})
 	fake.clearOrgListMutex.Unlock()
-	if fake.ClearOrgListStub != nil {
+	if stub != nil {
 		fake.ClearOrgListStub()
 	}
 }
@@ -140,21 +142,22 @@ func (fake *FakeReader) ClearOrgListCalls(stub func()) {
 	fake.ClearOrgListStub = stub
 }
 
-func (fake *FakeReader) FindOrg(arg1 string) (cfclient.Org, error) {
+func (fake *FakeReader) FindOrg(arg1 string) (*resource.Organization, error) {
 	fake.findOrgMutex.Lock()
 	ret, specificReturn := fake.findOrgReturnsOnCall[len(fake.findOrgArgsForCall)]
 	fake.findOrgArgsForCall = append(fake.findOrgArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.FindOrgStub
+	fakeReturns := fake.findOrgReturns
 	fake.recordInvocation("FindOrg", []interface{}{arg1})
 	fake.findOrgMutex.Unlock()
-	if fake.FindOrgStub != nil {
-		return fake.FindOrgStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.findOrgReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -164,7 +167,7 @@ func (fake *FakeReader) FindOrgCallCount() int {
 	return len(fake.findOrgArgsForCall)
 }
 
-func (fake *FakeReader) FindOrgCalls(stub func(string) (cfclient.Org, error)) {
+func (fake *FakeReader) FindOrgCalls(stub func(string) (*resource.Organization, error)) {
 	fake.findOrgMutex.Lock()
 	defer fake.findOrgMutex.Unlock()
 	fake.FindOrgStub = stub
@@ -177,47 +180,48 @@ func (fake *FakeReader) FindOrgArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeReader) FindOrgReturns(result1 cfclient.Org, result2 error) {
+func (fake *FakeReader) FindOrgReturns(result1 *resource.Organization, result2 error) {
 	fake.findOrgMutex.Lock()
 	defer fake.findOrgMutex.Unlock()
 	fake.FindOrgStub = nil
 	fake.findOrgReturns = struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeReader) FindOrgReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
+func (fake *FakeReader) FindOrgReturnsOnCall(i int, result1 *resource.Organization, result2 error) {
 	fake.findOrgMutex.Lock()
 	defer fake.findOrgMutex.Unlock()
 	fake.FindOrgStub = nil
 	if fake.findOrgReturnsOnCall == nil {
 		fake.findOrgReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Org
+			result1 *resource.Organization
 			result2 error
 		})
 	}
 	fake.findOrgReturnsOnCall[i] = struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeReader) FindOrgByGUID(arg1 string) (cfclient.Org, error) {
+func (fake *FakeReader) FindOrgByGUID(arg1 string) (*resource.Organization, error) {
 	fake.findOrgByGUIDMutex.Lock()
 	ret, specificReturn := fake.findOrgByGUIDReturnsOnCall[len(fake.findOrgByGUIDArgsForCall)]
 	fake.findOrgByGUIDArgsForCall = append(fake.findOrgByGUIDArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.FindOrgByGUIDStub
+	fakeReturns := fake.findOrgByGUIDReturns
 	fake.recordInvocation("FindOrgByGUID", []interface{}{arg1})
 	fake.findOrgByGUIDMutex.Unlock()
-	if fake.FindOrgByGUIDStub != nil {
-		return fake.FindOrgByGUIDStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.findOrgByGUIDReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -227,7 +231,7 @@ func (fake *FakeReader) FindOrgByGUIDCallCount() int {
 	return len(fake.findOrgByGUIDArgsForCall)
 }
 
-func (fake *FakeReader) FindOrgByGUIDCalls(stub func(string) (cfclient.Org, error)) {
+func (fake *FakeReader) FindOrgByGUIDCalls(stub func(string) (*resource.Organization, error)) {
 	fake.findOrgByGUIDMutex.Lock()
 	defer fake.findOrgByGUIDMutex.Unlock()
 	fake.FindOrgByGUIDStub = stub
@@ -240,47 +244,48 @@ func (fake *FakeReader) FindOrgByGUIDArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeReader) FindOrgByGUIDReturns(result1 cfclient.Org, result2 error) {
+func (fake *FakeReader) FindOrgByGUIDReturns(result1 *resource.Organization, result2 error) {
 	fake.findOrgByGUIDMutex.Lock()
 	defer fake.findOrgByGUIDMutex.Unlock()
 	fake.FindOrgByGUIDStub = nil
 	fake.findOrgByGUIDReturns = struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeReader) FindOrgByGUIDReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
+func (fake *FakeReader) FindOrgByGUIDReturnsOnCall(i int, result1 *resource.Organization, result2 error) {
 	fake.findOrgByGUIDMutex.Lock()
 	defer fake.findOrgByGUIDMutex.Unlock()
 	fake.FindOrgByGUIDStub = nil
 	if fake.findOrgByGUIDReturnsOnCall == nil {
 		fake.findOrgByGUIDReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Org
+			result1 *resource.Organization
 			result2 error
 		})
 	}
 	fake.findOrgByGUIDReturnsOnCall[i] = struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeReader) GetOrgByGUID(arg1 string) (cfclient.Org, error) {
+func (fake *FakeReader) GetOrgByGUID(arg1 string) (*resource.Organization, error) {
 	fake.getOrgByGUIDMutex.Lock()
 	ret, specificReturn := fake.getOrgByGUIDReturnsOnCall[len(fake.getOrgByGUIDArgsForCall)]
 	fake.getOrgByGUIDArgsForCall = append(fake.getOrgByGUIDArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetOrgByGUIDStub
+	fakeReturns := fake.getOrgByGUIDReturns
 	fake.recordInvocation("GetOrgByGUID", []interface{}{arg1})
 	fake.getOrgByGUIDMutex.Unlock()
-	if fake.GetOrgByGUIDStub != nil {
-		return fake.GetOrgByGUIDStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getOrgByGUIDReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -290,7 +295,7 @@ func (fake *FakeReader) GetOrgByGUIDCallCount() int {
 	return len(fake.getOrgByGUIDArgsForCall)
 }
 
-func (fake *FakeReader) GetOrgByGUIDCalls(stub func(string) (cfclient.Org, error)) {
+func (fake *FakeReader) GetOrgByGUIDCalls(stub func(string) (*resource.Organization, error)) {
 	fake.getOrgByGUIDMutex.Lock()
 	defer fake.getOrgByGUIDMutex.Unlock()
 	fake.GetOrgByGUIDStub = stub
@@ -303,28 +308,28 @@ func (fake *FakeReader) GetOrgByGUIDArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeReader) GetOrgByGUIDReturns(result1 cfclient.Org, result2 error) {
+func (fake *FakeReader) GetOrgByGUIDReturns(result1 *resource.Organization, result2 error) {
 	fake.getOrgByGUIDMutex.Lock()
 	defer fake.getOrgByGUIDMutex.Unlock()
 	fake.GetOrgByGUIDStub = nil
 	fake.getOrgByGUIDReturns = struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeReader) GetOrgByGUIDReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
+func (fake *FakeReader) GetOrgByGUIDReturnsOnCall(i int, result1 *resource.Organization, result2 error) {
 	fake.getOrgByGUIDMutex.Lock()
 	defer fake.getOrgByGUIDMutex.Unlock()
 	fake.GetOrgByGUIDStub = nil
 	if fake.getOrgByGUIDReturnsOnCall == nil {
 		fake.getOrgByGUIDReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Org
+			result1 *resource.Organization
 			result2 error
 		})
 	}
 	fake.getOrgByGUIDReturnsOnCall[i] = struct {
-		result1 cfclient.Org
+		result1 *resource.Organization
 		result2 error
 	}{result1, result2}
 }
@@ -335,15 +340,16 @@ func (fake *FakeReader) GetOrgGUID(arg1 string) (string, error) {
 	fake.getOrgGUIDArgsForCall = append(fake.getOrgGUIDArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetOrgGUIDStub
+	fakeReturns := fake.getOrgGUIDReturns
 	fake.recordInvocation("GetOrgGUID", []interface{}{arg1})
 	fake.getOrgGUIDMutex.Unlock()
-	if fake.GetOrgGUIDStub != nil {
-		return fake.GetOrgGUIDStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getOrgGUIDReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -392,20 +398,21 @@ func (fake *FakeReader) GetOrgGUIDReturnsOnCall(i int, result1 string, result2 e
 	}{result1, result2}
 }
 
-func (fake *FakeReader) ListOrgs() ([]cfclient.Org, error) {
+func (fake *FakeReader) ListOrgs() ([]*resource.Organization, error) {
 	fake.listOrgsMutex.Lock()
 	ret, specificReturn := fake.listOrgsReturnsOnCall[len(fake.listOrgsArgsForCall)]
 	fake.listOrgsArgsForCall = append(fake.listOrgsArgsForCall, struct {
 	}{})
+	stub := fake.ListOrgsStub
+	fakeReturns := fake.listOrgsReturns
 	fake.recordInvocation("ListOrgs", []interface{}{})
 	fake.listOrgsMutex.Unlock()
-	if fake.ListOrgsStub != nil {
-		return fake.ListOrgsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -415,34 +422,34 @@ func (fake *FakeReader) ListOrgsCallCount() int {
 	return len(fake.listOrgsArgsForCall)
 }
 
-func (fake *FakeReader) ListOrgsCalls(stub func() ([]cfclient.Org, error)) {
+func (fake *FakeReader) ListOrgsCalls(stub func() ([]*resource.Organization, error)) {
 	fake.listOrgsMutex.Lock()
 	defer fake.listOrgsMutex.Unlock()
 	fake.ListOrgsStub = stub
 }
 
-func (fake *FakeReader) ListOrgsReturns(result1 []cfclient.Org, result2 error) {
+func (fake *FakeReader) ListOrgsReturns(result1 []*resource.Organization, result2 error) {
 	fake.listOrgsMutex.Lock()
 	defer fake.listOrgsMutex.Unlock()
 	fake.ListOrgsStub = nil
 	fake.listOrgsReturns = struct {
-		result1 []cfclient.Org
+		result1 []*resource.Organization
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeReader) ListOrgsReturnsOnCall(i int, result1 []cfclient.Org, result2 error) {
+func (fake *FakeReader) ListOrgsReturnsOnCall(i int, result1 []*resource.Organization, result2 error) {
 	fake.listOrgsMutex.Lock()
 	defer fake.listOrgsMutex.Unlock()
 	fake.ListOrgsStub = nil
 	if fake.listOrgsReturnsOnCall == nil {
 		fake.listOrgsReturnsOnCall = make(map[int]struct {
-			result1 []cfclient.Org
+			result1 []*resource.Organization
 			result2 error
 		})
 	}
 	fake.listOrgsReturnsOnCall[i] = struct {
-		result1 []cfclient.Org
+		result1 []*resource.Organization
 		result2 error
 	}{result1, result2}
 }

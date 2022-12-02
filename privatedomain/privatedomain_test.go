@@ -2,8 +2,8 @@ package privatedomain_test
 
 import (
 	"errors"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -16,75 +16,82 @@ import (
 var _ = Describe("given UserSpaces", func() {
 	var (
 		manager    *DefaultManager
-		client     *fakes.FakeCFClient
+		client     *fakes.FakeCFDomainClient
+		jobClient  *fakes.FakeCFJobClient
 		fakeReader *configfakes.FakeReader
 		orgFake    *orgfakes.FakeReader
 	)
 	BeforeEach(func() {
-		client = new(fakes.FakeCFClient)
+		client = new(fakes.FakeCFDomainClient)
+		jobClient = new(fakes.FakeCFJobClient)
 		fakeReader = new(configfakes.FakeReader)
 		orgFake = new(orgfakes.FakeReader)
 	})
 	Context("Manager()", func() {
 		BeforeEach(func() {
 			manager = &DefaultManager{
-				Client:    client,
-				Cfg:       fakeReader,
-				OrgReader: orgFake,
-				Peek:      false}
+				DomainClient: client,
+				JobClient:    jobClient,
+				Cfg:          fakeReader,
+				OrgReader:    orgFake,
+				Peek:         false}
 		})
 
 		Context("CreatePrivateDomains", func() {
 			BeforeEach(func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org:            "test",
 						PrivateDomains: []string{"test.com"},
 					},
 				}, nil)
-				orgFake.FindOrgReturns(cfclient.Org{
+				orgFake.FindOrgReturns(&resource.Organization{
 					Name: "test",
-					Guid: "test-guid",
+					GUID: "test-guid",
 				}, nil)
 			})
 			It("should succeed when no private domain doesn't exist", func() {
-				client.CreateDomainReturns(&cfclient.Domain{Name: "test.com", Guid: "test.com-guid"}, nil)
+				client.CreateReturns(&resource.Domain{Name: "test.com", GUID: "test.com-guid"}, nil)
 				err := manager.CreatePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(1))
-				domain, orgGUID := client.CreateDomainArgsForCall(0)
-				Expect(domain).Should(Equal("test.com"))
-				Expect(orgGUID).Should(Equal("test-guid"))
+				Expect(client.CreateCallCount()).Should(Equal(1))
+				_, domainCreate := client.CreateArgsForCall(0)
+				Expect(domainCreate.Name).Should(Equal("test.com"))
+				Expect(domainCreate.Organization.Data.GUID).Should(Equal("test-guid"))
 			})
 
 			It("should error when no private domain doesn't exist", func() {
-				client.CreateDomainReturns(nil, errors.New("error"))
+				client.CreateReturns(nil, errors.New("error"))
 				err := manager.CreatePrivateDomains()
 				Expect(err).Should(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(1))
-				domain, orgGUID := client.CreateDomainArgsForCall(0)
-				Expect(domain).Should(Equal("test.com"))
-				Expect(orgGUID).Should(Equal("test-guid"))
+				Expect(client.CreateCallCount()).Should(Equal(1))
+				_, domainCreate := client.CreateArgsForCall(0)
+				Expect(domainCreate.Name).Should(Equal("test.com"))
+				Expect(domainCreate.Organization.Data.GUID).Should(Equal("test-guid"))
 			})
 
 			It("should succeed and not create already existing private domain", func() {
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", OwningOrganizationGuid: "test-guid"},
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("", "test.com", "test-guid"),
 				}, nil)
-				client.CreateDomainReturns(&cfclient.Domain{Name: "test.com", Guid: "test.com-guid"}, nil)
+				client.CreateReturns(&resource.Domain{Name: "test.com", GUID: "test.com-guid"}, nil)
 				err := manager.CreatePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(0))
+				Expect(client.CreateCallCount()).Should(Equal(0))
 			})
 
 			It("should error when private domain is owned by different org", func() {
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", OwningOrganizationGuid: "foo-guid"},
+				otherOrg := &resource.Organization{
+					Name: "foo",
+					GUID: "foo-guid",
+				}
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("", "test.com", otherOrg.GUID),
 				}, nil)
-				client.CreateDomainReturns(&cfclient.Domain{Name: "test.com", Guid: "test.com-guid"}, nil)
+				orgFake.FindOrgByGUIDReturns(otherOrg, nil)
 				err := manager.CreatePrivateDomains()
 				Expect(err).Should(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(0))
+				Expect(client.CreateCallCount()).Should(Equal(0))
 			})
 
 			It("should try to remove shared domain", func() {
@@ -95,17 +102,17 @@ var _ = Describe("given UserSpaces", func() {
 						RemovePrivateDomains: true,
 					},
 				}, nil)
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListForOrganizationAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
 				err := manager.CreatePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(0))
-				Expect(client.DeleteDomainCallCount()).Should(Equal(1))
-				guid := client.DeleteDomainArgsForCall(0)
+				Expect(client.CreateCallCount()).Should(Equal(0))
+				Expect(client.DeleteCallCount()).Should(Equal(1))
+				_, guid := client.DeleteArgsForCall(0)
 				Expect(guid).Should(Equal("test.com-guid"))
 			})
 
@@ -117,18 +124,19 @@ var _ = Describe("given UserSpaces", func() {
 						RemovePrivateDomains: true,
 					},
 				}, nil)
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListForOrganizationAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.DeleteDomainReturns(errors.New("error"))
+				client.DeleteReturns("job-guid", errors.New("error"))
+
 				err := manager.CreatePrivateDomains()
 				Expect(err).Should(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(0))
-				Expect(client.DeleteDomainCallCount()).Should(Equal(1))
-				guid := client.DeleteDomainArgsForCall(0)
+				Expect(client.CreateCallCount()).Should(Equal(0))
+				Expect(client.DeleteCallCount()).Should(Equal(1))
+				_, guid := client.DeleteArgsForCall(0)
 				Expect(guid).Should(Equal("test.com-guid"))
 			})
 
@@ -136,28 +144,28 @@ var _ = Describe("given UserSpaces", func() {
 				fakeReader.GetOrgConfigsReturns(nil, errors.New("error"))
 				err := manager.CreatePrivateDomains()
 				Expect(err).Should(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(0))
+				Expect(client.CreateCallCount()).Should(Equal(0))
 			})
 
 			It("should error listing orgs", func() {
-				orgFake.FindOrgReturns(cfclient.Org{}, errors.New("org test does not exist"))
+				orgFake.FindOrgReturns(&resource.Organization{}, errors.New("org test does not exist"))
 				err := manager.CreatePrivateDomains()
 				Expect(err).Should(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(0))
+				Expect(client.CreateCallCount()).Should(Equal(0))
 			})
 
 			It("should error listing domains", func() {
-				client.ListDomainsReturns(nil, errors.New("error"))
+				client.ListAllReturns(nil, errors.New("error"))
 				err := manager.CreatePrivateDomains()
 				Expect(err).Should(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(0))
+				Expect(client.CreateCallCount()).Should(Equal(0))
 			})
 
 			It("should error when org doesn't exist", func() {
-				orgFake.FindOrgReturns(cfclient.Org{}, errors.New("org test does not exist"))
+				orgFake.FindOrgReturns(&resource.Organization{}, errors.New("org test does not exist"))
 				err := manager.CreatePrivateDomains()
 				Expect(err).Should(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(0))
+				Expect(client.CreateCallCount()).Should(Equal(0))
 				Expect(err.Error()).Should(Equal("org test does not exist"))
 			})
 
@@ -169,17 +177,17 @@ var _ = Describe("given UserSpaces", func() {
 						RemovePrivateDomains: true,
 					},
 				}, nil)
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListForOrganizationAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.ListOrgPrivateDomainsReturns(nil, errors.New("error"))
+				client.ListForOrganizationAllReturns(nil, errors.New("error"))
 				err := manager.CreatePrivateDomains()
 				Expect(err).Should(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(0))
-				Expect(client.DeleteDomainCallCount()).Should(Equal(0))
+				Expect(client.CreateCallCount()).Should(Equal(0))
+				Expect(client.DeleteCallCount()).Should(Equal(0))
 			})
 		})
 
@@ -192,43 +200,43 @@ var _ = Describe("given UserSpaces", func() {
 					},
 				}, nil)
 				orgFake.FindOrgReturns(
-					cfclient.Org{
+					&resource.Organization{
 						Name: "test2",
-						Guid: "test2-guid",
+						GUID: "test2-guid",
 					}, nil)
 			})
 			It("should succeed when private domain exists in other org", func() {
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.ListOrgPrivateDomainsReturns(nil, nil)
+				client.ListForOrganizationAllReturns(nil, nil)
 				err := manager.SharePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.ShareOrgPrivateDomainCallCount()).Should(Equal(1))
-				orgGUID, domainGUID := client.ShareOrgPrivateDomainArgsForCall(0)
+				Expect(client.ShareCallCount()).Should(Equal(1))
+				_, domainGUID, orgGUID := client.ShareArgsForCall(0)
 				Expect(orgGUID).Should(Equal("test2-guid"))
 				Expect(domainGUID).Should(Equal("test.com-guid"))
 			})
 
 			It("should error when private domain doesn't already exist", func() {
-				client.ListDomainsReturns(nil, nil)
-				client.ListOrgPrivateDomainsReturns(nil, nil)
+				client.ListAllReturns(nil, nil)
+				client.ListForOrganizationAllReturns(nil, nil)
 				err := manager.SharePrivateDomains()
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).Should(Equal("Private Domain [test.com] is not defined"))
-				Expect(client.ShareOrgPrivateDomainCallCount()).Should(Equal(0))
+				Expect(client.ShareCallCount()).Should(Equal(0))
 			})
 
 			It("should error trying to share private domain exists in other org", func() {
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.ListOrgPrivateDomainsReturns(nil, nil)
-				client.ShareOrgPrivateDomainReturns(nil, errors.New("error"))
+				client.ListForOrganizationAllReturns(nil, nil)
+				client.ShareReturns(nil, errors.New("error"))
 				err := manager.SharePrivateDomains()
 				Expect(err).Should(HaveOccurred())
-				Expect(client.ShareOrgPrivateDomainCallCount()).Should(Equal(1))
-				orgGUID, domainGUID := client.ShareOrgPrivateDomainArgsForCall(0)
+				Expect(client.ShareCallCount()).Should(Equal(1))
+				_, domainGUID, orgGUID := client.ShareArgsForCall(0)
 				Expect(orgGUID).Should(Equal("test2-guid"))
 				Expect(domainGUID).Should(Equal("test.com-guid"))
 			})
@@ -241,16 +249,16 @@ var _ = Describe("given UserSpaces", func() {
 						RemoveSharedPrivateDomains: true,
 					},
 				}, nil)
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListForOrganizationAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
 				err := manager.SharePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.UnshareOrgPrivateDomainCallCount()).Should(Equal(1))
-				orgGUID, domainGUID := client.UnshareOrgPrivateDomainArgsForCall(0)
+				Expect(client.UnShareCallCount()).Should(Equal(1))
+				_, domainGUID, orgGUID := client.UnShareArgsForCall(0)
 				Expect(orgGUID).Should(Equal("test2-guid"))
 				Expect(domainGUID).Should(Equal("test.com-guid"))
 			})
@@ -263,15 +271,15 @@ var _ = Describe("given UserSpaces", func() {
 						RemoveSharedPrivateDomains: true,
 					},
 				}, nil)
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListForOrganizationAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
 				err := manager.SharePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.UnshareOrgPrivateDomainCallCount()).Should(Equal(0))
+				Expect(client.UnShareCallCount()).Should(Equal(0))
 
 			})
 
@@ -283,22 +291,22 @@ var _ = Describe("given UserSpaces", func() {
 						RemoveSharedPrivateDomains: true,
 					},
 				}, nil)
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
-					cfclient.Domain{Name: "test2.com", Guid: "test2.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
+					newCFDomain("test2.com-guid", "test2.com", "test-guid"),
 				}, nil)
-				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListForOrganizationAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
 				err := manager.SharePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.ShareOrgPrivateDomainCallCount()).Should(Equal(1))
-				orgGUID, domainGUID := client.ShareOrgPrivateDomainArgsForCall(0)
+				Expect(client.ShareCallCount()).Should(Equal(1))
+				_, domainGUID, orgGUID := client.ShareArgsForCall(0)
 				Expect(orgGUID).Should(Equal("test2-guid"))
 				Expect(domainGUID).Should(Equal("test2.com-guid"))
 
-				Expect(client.UnshareOrgPrivateDomainCallCount()).Should(Equal(1))
-				orgGUID, domainGUID = client.UnshareOrgPrivateDomainArgsForCall(0)
+				Expect(client.UnShareCallCount()).Should(Equal(1))
+				_, domainGUID, orgGUID = client.UnShareArgsForCall(0)
 				Expect(orgGUID).Should(Equal("test2-guid"))
 				Expect(domainGUID).Should(Equal("test.com-guid"))
 			})
@@ -311,17 +319,17 @@ var _ = Describe("given UserSpaces", func() {
 						RemoveSharedPrivateDomains: true,
 					},
 				}, nil)
-				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+				client.ListForOrganizationAllReturns([]*resource.Domain{
+					newCFDomain("test.com-guid", "test.com", "test-guid"),
 				}, nil)
-				client.UnshareOrgPrivateDomainReturns(errors.New("error"))
+				client.UnShareReturns(errors.New("error"))
 				err := manager.SharePrivateDomains()
 				Expect(err).Should(HaveOccurred())
-				Expect(client.UnshareOrgPrivateDomainCallCount()).Should(Equal(1))
-				orgGUID, domainGUID := client.UnshareOrgPrivateDomainArgsForCall(0)
+				Expect(client.UnShareCallCount()).Should(Equal(1))
+				_, domainGUID, orgGUID := client.UnShareArgsForCall(0)
 				Expect(orgGUID).Should(Equal("test2-guid"))
 				Expect(domainGUID).Should(Equal("test.com-guid"))
 			})
@@ -339,20 +347,20 @@ var _ = Describe("given UserSpaces", func() {
 			})
 
 			It("should error listing domains", func() {
-				client.ListDomainsReturns(nil, errors.New("error"))
+				client.ListAllReturns(nil, errors.New("error"))
 				err := manager.SharePrivateDomains()
 				Expect(err).Should(HaveOccurred())
 			})
 
 			It("should error when org doesn't exist", func() {
-				orgFake.FindOrgReturns(cfclient.Org{}, errors.New("org test2 does not exist"))
+				orgFake.FindOrgReturns(&resource.Organization{}, errors.New("org test2 does not exist"))
 				err := manager.SharePrivateDomains()
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).Should(Equal("org test2 does not exist"))
 			})
 
 			It("should error listing org private domains", func() {
-				client.ListOrgPrivateDomainsReturns(nil, errors.New("error"))
+				client.ListForOrganizationAllReturns(nil, errors.New("error"))
 				err := manager.SharePrivateDomains()
 				Expect(err).Should(HaveOccurred())
 			})
@@ -361,76 +369,90 @@ var _ = Describe("given UserSpaces", func() {
 		Context("CreatePrivateDomain", func() {
 			It("should succeed", func() {
 
-				_, err := manager.CreatePrivateDomain(&cfclient.Org{Name: "test", Guid: "test-guid"}, "test.com")
+				_, err := manager.CreatePrivateDomain(&resource.Organization{Name: "test", GUID: "test-guid"}, "test.com")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(1))
-				domain, orgGUID := client.CreateDomainArgsForCall(0)
-				Expect(domain).Should(Equal("test.com"))
-				Expect(orgGUID).Should(Equal("test-guid"))
+				Expect(client.CreateCallCount()).Should(Equal(1))
+				_, domainCreate := client.CreateArgsForCall(0)
+				Expect(domainCreate.Name).Should(Equal("test.com"))
+				Expect(domainCreate.Organization.Data.GUID).Should(Equal("test-guid"))
 			})
 
 			It("should peek", func() {
 				manager.Peek = true
-				_, err := manager.CreatePrivateDomain(&cfclient.Org{Name: "test", Guid: "test-guid"}, "test.com")
+				_, err := manager.CreatePrivateDomain(&resource.Organization{Name: "test", GUID: "test-guid"}, "test.com")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.CreateDomainCallCount()).Should(Equal(0))
+				Expect(client.CreateCallCount()).Should(Equal(0))
 			})
 		})
 
 		Context("SharePrivateDomain", func() {
 			It("should succeed", func() {
 
-				err := manager.SharePrivateDomain(&cfclient.Org{Name: "test", Guid: "test-guid"}, cfclient.Domain{Name: "test.com", Guid: "test.com-guid"})
+				err := manager.SharePrivateDomain(&resource.Organization{Name: "test", GUID: "test-guid"}, &resource.Domain{Name: "test.com", GUID: "test.com-guid"})
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.ShareOrgPrivateDomainCallCount()).Should(Equal(1))
-				orgGUID, domainGUID := client.ShareOrgPrivateDomainArgsForCall(0)
+				Expect(client.ShareCallCount()).Should(Equal(1))
+				_, domainGUID, orgGUID := client.ShareArgsForCall(0)
 				Expect(domainGUID).Should(Equal("test.com-guid"))
 				Expect(orgGUID).Should(Equal("test-guid"))
 			})
 
 			It("should peek", func() {
 				manager.Peek = true
-				err := manager.SharePrivateDomain(&cfclient.Org{Name: "test", Guid: "test-guid"}, cfclient.Domain{Name: "test.com", Guid: "test.com-guid"})
+				err := manager.SharePrivateDomain(&resource.Organization{Name: "test", GUID: "test-guid"}, &resource.Domain{Name: "test.com", GUID: "test.com-guid"})
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.ShareOrgPrivateDomainCallCount()).Should(Equal(0))
+				Expect(client.ShareCallCount()).Should(Equal(0))
 			})
 		})
 
 		Context("DeletePrivateDomain", func() {
 			It("should succeed", func() {
 
-				err := manager.DeletePrivateDomain(cfclient.Domain{Name: "test.com", Guid: "test.com-guid"})
+				err := manager.DeletePrivateDomain(&resource.Domain{Name: "test.com", GUID: "test.com-guid"})
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.DeleteDomainCallCount()).Should(Equal(1))
-				domainGUID := client.DeleteDomainArgsForCall(0)
+				Expect(client.DeleteCallCount()).Should(Equal(1))
+				_, domainGUID := client.DeleteArgsForCall(0)
 				Expect(domainGUID).Should(Equal("test.com-guid"))
 			})
 
 			It("should peek", func() {
 				manager.Peek = true
-				err := manager.DeletePrivateDomain(cfclient.Domain{Name: "test.com", Guid: "test.com-guid"})
+				err := manager.DeletePrivateDomain(&resource.Domain{Name: "test.com", GUID: "test.com-guid"})
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.DeleteDomainCallCount()).Should(Equal(0))
+				Expect(client.DeleteCallCount()).Should(Equal(0))
 			})
 		})
 
 		Context("RemoveSharedPrivateDomain", func() {
 			It("should succeed", func() {
 
-				err := manager.RemoveSharedPrivateDomain(&cfclient.Org{Name: "test", Guid: "test-guid"}, cfclient.Domain{Name: "test.com", Guid: "test.com-guid"})
+				err := manager.RemoveSharedPrivateDomain(&resource.Organization{Name: "test", GUID: "test-guid"}, &resource.Domain{Name: "test.com", GUID: "test.com-guid"})
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.UnshareOrgPrivateDomainCallCount()).Should(Equal(1))
-				orgGUID, domainGUID := client.UnshareOrgPrivateDomainArgsForCall(0)
+				Expect(client.UnShareCallCount()).Should(Equal(1))
+				_, domainGUID, orgGUID := client.UnShareArgsForCall(0)
 				Expect(domainGUID).Should(Equal("test.com-guid"))
 				Expect(orgGUID).Should(Equal("test-guid"))
 			})
 
 			It("should peek", func() {
 				manager.Peek = true
-				err := manager.RemoveSharedPrivateDomain(&cfclient.Org{Name: "test", Guid: "test-guid"}, cfclient.Domain{Name: "test.com", Guid: "test.com-guid"})
+				err := manager.RemoveSharedPrivateDomain(&resource.Organization{Name: "test", GUID: "test-guid"}, &resource.Domain{Name: "test.com", GUID: "test.com-guid"})
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(client.UnshareOrgPrivateDomainCallCount()).Should(Equal(0))
+				Expect(client.UnShareCallCount()).Should(Equal(0))
 			})
 		})
 	})
 })
+
+func newCFDomain(guid, name, orgGUID string) *resource.Domain {
+	return &resource.Domain{
+		GUID: guid,
+		Name: name,
+		Relationships: resource.DomainRelationships{
+			Organization: resource.ToOneRelationship{
+				Data: &resource.Relationship{
+					GUID: orgGUID,
+				},
+			},
+		},
+	}
+}

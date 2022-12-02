@@ -1,6 +1,8 @@
 package serviceaccess
 
 import (
+	"context"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"strings"
 
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -10,24 +12,33 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(client CFClient,
+func NewManager(servicePlanClient CFServicePlanClient,
+	servicePlanVisibilityClient CFServicePlanVisibilityClient,
+	serviceOfferingClient CFServiceOfferingClient,
+	serviceBrokerClient CFServiceBrokerClient,
 	orgReader organizationreader.Reader,
 	cfg config.Reader, peek bool) *Manager {
 	return &Manager{
-		Client:    client,
-		OrgReader: orgReader,
-		Cfg:       cfg,
-		Peek:      peek,
-		LegacyMgr: legacy.NewManager(client, orgReader, cfg, peek),
+		ServicePlanClient:           servicePlanClient,
+		ServicePlanVisibilityClient: servicePlanVisibilityClient,
+		ServiceOfferingClient:       serviceOfferingClient,
+		ServiceBrokerClient:         serviceBrokerClient,
+		OrgReader:                   orgReader,
+		Cfg:                         cfg,
+		Peek:                        peek,
+		LegacyMgr:                   legacy.NewManager(servicePlanClient, servicePlanVisibilityClient, serviceOfferingClient, orgReader, cfg, peek),
 	}
 }
 
 type Manager struct {
-	Client    CFClient
-	Cfg       config.Reader
-	OrgReader organizationreader.Reader
-	Peek      bool
-	LegacyMgr *legacy.Manager
+	ServicePlanClient           CFServicePlanClient
+	ServicePlanVisibilityClient CFServicePlanVisibilityClient
+	ServiceOfferingClient       CFServiceOfferingClient
+	ServiceBrokerClient         CFServiceBrokerClient
+	Cfg                         config.Reader
+	OrgReader                   organizationreader.Reader
+	Peek                        bool
+	LegacyMgr                   *legacy.Manager
 }
 
 func (m *Manager) Apply() error {
@@ -176,19 +187,27 @@ func (m *Manager) CreatePlanVisibility(servicePlan *ServicePlanInfo, orgName str
 	if err != nil {
 		return err
 	}
-	if !servicePlan.OrgHasAccess(org.Guid) {
+	if !servicePlan.OrgHasAccess(org.GUID) {
 		if m.Peek {
 			lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", servicePlan.Name, servicePlan.ServiceName, orgName)
 			return nil
 		}
 		lo.G.Infof("adding plan %s for service %s to org %s", servicePlan.Name, servicePlan.ServiceName, orgName)
-		_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.Guid)
+		r := &resource.ServicePlanVisibility{
+			Type: resource.ServicePlanVisibilityOrganization.String(),
+			Organizations: []resource.ServicePlanVisibilityRelation{
+				{
+					GUID: org.GUID,
+				},
+			},
+		}
+		_, err = m.ServicePlanVisibilityClient.Apply(context.Background(), servicePlan.GUID, r)
 		if err != nil {
 			return err
 		}
 	} else {
 		lo.G.Debugf("plan %s for service %s already visible to org %s", servicePlan.Name, servicePlan.ServiceName, orgName)
-		servicePlan.RemoveOrg(org.Guid)
+		servicePlan.RemoveOrg(org.GUID)
 	}
 	return nil
 }
@@ -200,7 +219,8 @@ func (m *Manager) MakePublic(servicePlan *ServicePlanInfo) error {
 			return nil
 		}
 		lo.G.Infof("Making plan %s for service %s public", servicePlan.Name, servicePlan.ServiceName)
-		err := m.Client.MakeServicePlanPublic(servicePlan.GUID)
+		r := resource.NewServicePlanVisibilityUpdate(resource.ServicePlanVisibilityPublic)
+		_, err := m.ServicePlanVisibilityClient.Update(context.Background(), servicePlan.GUID, r)
 		if err != nil {
 			return err
 		}
@@ -215,7 +235,8 @@ func (m *Manager) MakePrivate(servicePlan *ServicePlanInfo) error {
 			return nil
 		}
 		lo.G.Infof("Making plan %s for service %s private", servicePlan.Name, servicePlan.ServiceName)
-		err := m.Client.MakeServicePlanPrivate(servicePlan.GUID)
+		r := resource.NewServicePlanVisibilityUpdate(resource.ServicePlanVisibilityAdmin)
+		_, err := m.ServicePlanVisibilityClient.Update(context.Background(), servicePlan.GUID, r)
 		if err != nil {
 			return err
 		}
@@ -234,7 +255,7 @@ func (m *Manager) RemoveVisibilities(servicePlan *ServicePlanInfo) error {
 			continue
 		}
 		lo.G.Infof("removing plan %s for service %s from org %s", servicePlan.Name, servicePlan.ServiceName, org.Name)
-		err = m.Client.DeleteServicePlanVisibilityByPlanAndOrg(visibility.ServicePlanGUID, visibility.OrgGUID, false)
+		err = m.ServicePlanVisibilityClient.Delete(context.Background(), visibility.ServicePlanGUID, visibility.OrgGUID)
 		if err != nil {
 			return err
 		}
@@ -243,5 +264,9 @@ func (m *Manager) RemoveVisibilities(servicePlan *ServicePlanInfo) error {
 }
 
 func (m *Manager) ListServiceInfo() (*ServiceInfo, error) {
-	return GetServiceInfo(m.Client)
+	return GetServiceInfo(
+		m.ServicePlanClient,
+		m.ServicePlanVisibilityClient,
+		m.ServiceOfferingClient,
+		m.ServiceBrokerClient)
 }
