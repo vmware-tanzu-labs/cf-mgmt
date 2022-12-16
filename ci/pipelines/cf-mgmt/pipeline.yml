@@ -2,7 +2,7 @@
 #!  WARNING: this pipeline is automatically set and manual changes will go away. 
 #!
 #!  To set pipeline manually run: 
-#!    fly set-pipeline -p cf-mgmt -c <(ytt -f ci/pipelines/cf-mgmt/pipeline.yml --data-values-file ci/pipelines/cf-mgmt/)
+#!    fly set-pipeline -p cf-mgmt -c <(ytt -f ci/pipelines/cf-mgmt/pipeline.yml --data-values-file ci/pipelines/cf-mgmt/values.yml)
 
 #@ load("@ytt:data", "data")
 
@@ -180,7 +180,6 @@ jobs:
       source-repo: pull-request
     params:
       DELETE: TRUE
-      AUTHOR: dependabot
       GH_TOKEN: ((github.token))
       PR_REF: ((.:pr-metadata.pr))
 
