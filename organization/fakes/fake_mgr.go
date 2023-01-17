@@ -74,15 +74,16 @@ func (fake *FakeManager) CreateOrgs() error {
 	ret, specificReturn := fake.createOrgsReturnsOnCall[len(fake.createOrgsArgsForCall)]
 	fake.createOrgsArgsForCall = append(fake.createOrgsArgsForCall, struct {
 	}{})
+	stub := fake.CreateOrgsStub
+	fakeReturns := fake.createOrgsReturns
 	fake.recordInvocation("CreateOrgs", []interface{}{})
 	fake.createOrgsMutex.Unlock()
-	if fake.CreateOrgsStub != nil {
-		return fake.CreateOrgsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.createOrgsReturns
 	return fakeReturns.result1
 }
 
@@ -126,15 +127,16 @@ func (fake *FakeManager) DeleteOrgs() error {
 	ret, specificReturn := fake.deleteOrgsReturnsOnCall[len(fake.deleteOrgsArgsForCall)]
 	fake.deleteOrgsArgsForCall = append(fake.deleteOrgsArgsForCall, struct {
 	}{})
+	stub := fake.DeleteOrgsStub
+	fakeReturns := fake.deleteOrgsReturns
 	fake.recordInvocation("DeleteOrgs", []interface{}{})
 	fake.deleteOrgsMutex.Unlock()
-	if fake.DeleteOrgsStub != nil {
-		return fake.DeleteOrgsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteOrgsReturns
 	return fakeReturns.result1
 }
 
@@ -180,15 +182,16 @@ func (fake *FakeManager) RenameOrg(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.RenameOrgStub
+	fakeReturns := fake.renameOrgReturns
 	fake.recordInvocation("RenameOrg", []interface{}{arg1, arg2})
 	fake.renameOrgMutex.Unlock()
-	if fake.RenameOrgStub != nil {
-		return fake.RenameOrgStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.renameOrgReturns
 	return fakeReturns.result1
 }
 
@@ -241,15 +244,16 @@ func (fake *FakeManager) UpdateOrg(arg1 string, arg2 cfclient.OrgRequest) (cfcli
 		arg1 string
 		arg2 cfclient.OrgRequest
 	}{arg1, arg2})
+	stub := fake.UpdateOrgStub
+	fakeReturns := fake.updateOrgReturns
 	fake.recordInvocation("UpdateOrg", []interface{}{arg1, arg2})
 	fake.updateOrgMutex.Unlock()
-	if fake.UpdateOrgStub != nil {
-		return fake.UpdateOrgStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.updateOrgReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -303,15 +307,16 @@ func (fake *FakeManager) UpdateOrgsMetadata() error {
 	ret, specificReturn := fake.updateOrgsMetadataReturnsOnCall[len(fake.updateOrgsMetadataArgsForCall)]
 	fake.updateOrgsMetadataArgsForCall = append(fake.updateOrgsMetadataArgsForCall, struct {
 	}{})
+	stub := fake.UpdateOrgsMetadataStub
+	fakeReturns := fake.updateOrgsMetadataReturns
 	fake.recordInvocation("UpdateOrgsMetadata", []interface{}{})
 	fake.updateOrgsMetadataMutex.Unlock()
-	if fake.UpdateOrgsMetadataStub != nil {
-		return fake.UpdateOrgsMetadataStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateOrgsMetadataReturns
 	return fakeReturns.result1
 }
 

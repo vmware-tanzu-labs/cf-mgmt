@@ -556,6 +556,39 @@ func (m *yamlManager) LdapConfig(ldapBindUser, ldapBindPassword, ldapServer stri
 	return config, nil
 }
 
+func (m *yamlManager) AzureADConfig(tennantId, clientId, secret, origin string) (*AzureADConfig, error) {
+	lo.G.Debug("Getting AzureADConfig")
+	config := &AzureADConfig{}
+	err := LoadFile(path.Join(m.ConfigDir, "azureAD.yml"), config)
+	if err != nil {
+		config.Enabled = false
+		config.UserOrigin = "Disabled"
+		return config, err
+	}
+
+	if tennantId != "" {
+		lo.G.Infof("Using environment provided Azure AD tennantID %s instead of %s", tennantId, config.TennantID)
+		config.TennantID = tennantId
+	}
+
+	if secret != "" {
+		config.Secret = secret
+	} else {
+		lo.G.Warning("Azure AD secret should be removed from azure-ad.yml as this is insecure.  Use AAD_SECRET environment variable or --aad-secret flag instead.")
+	}
+
+	if clientId != "" {
+		lo.G.Infof("Using environment Azure AD ClientID %s instead of %s", clientId, config.ClientId)
+		config.ClientId = clientId
+	}
+
+	if origin != "" {
+		lo.G.Infof("Using environment provided Azure AD Origin %s instead of %s", origin, config.UserOrigin)
+		config.UserOrigin = origin
+	}
+	return config, nil
+}
+
 func (m *yamlManager) GetOrgQuotas() ([]OrgQuota, error) {
 	filePath := path.Join(m.ConfigDir, "org_quotas")
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {

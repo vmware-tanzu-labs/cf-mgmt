@@ -156,15 +156,16 @@ func (fake *FakeCFClient) BindRunningSecGroup(arg1 string) error {
 	fake.bindRunningSecGroupArgsForCall = append(fake.bindRunningSecGroupArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.BindRunningSecGroupStub
+	fakeReturns := fake.bindRunningSecGroupReturns
 	fake.recordInvocation("BindRunningSecGroup", []interface{}{arg1})
 	fake.bindRunningSecGroupMutex.Unlock()
-	if fake.BindRunningSecGroupStub != nil {
-		return fake.BindRunningSecGroupStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.bindRunningSecGroupReturns
 	return fakeReturns.result1
 }
 
@@ -217,15 +218,16 @@ func (fake *FakeCFClient) BindSecGroup(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.BindSecGroupStub
+	fakeReturns := fake.bindSecGroupReturns
 	fake.recordInvocation("BindSecGroup", []interface{}{arg1, arg2})
 	fake.bindSecGroupMutex.Unlock()
-	if fake.BindSecGroupStub != nil {
-		return fake.BindSecGroupStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.bindSecGroupReturns
 	return fakeReturns.result1
 }
 
@@ -277,15 +279,16 @@ func (fake *FakeCFClient) BindStagingSecGroup(arg1 string) error {
 	fake.bindStagingSecGroupArgsForCall = append(fake.bindStagingSecGroupArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.BindStagingSecGroupStub
+	fakeReturns := fake.bindStagingSecGroupReturns
 	fake.recordInvocation("BindStagingSecGroup", []interface{}{arg1})
 	fake.bindStagingSecGroupMutex.Unlock()
-	if fake.BindStagingSecGroupStub != nil {
-		return fake.BindStagingSecGroupStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.bindStagingSecGroupReturns
 	return fakeReturns.result1
 }
 
@@ -349,15 +352,16 @@ func (fake *FakeCFClient) CreateSecGroup(arg1 string, arg2 []cfclient.SecGroupRu
 		arg2 []cfclient.SecGroupRule
 		arg3 []string
 	}{arg1, arg2Copy, arg3Copy})
+	stub := fake.CreateSecGroupStub
+	fakeReturns := fake.createSecGroupReturns
 	fake.recordInvocation("CreateSecGroup", []interface{}{arg1, arg2Copy, arg3Copy})
 	fake.createSecGroupMutex.Unlock()
-	if fake.CreateSecGroupStub != nil {
-		return fake.CreateSecGroupStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createSecGroupReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -412,15 +416,16 @@ func (fake *FakeCFClient) GetSecGroup(arg1 string) (*cfclient.SecGroup, error) {
 	fake.getSecGroupArgsForCall = append(fake.getSecGroupArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetSecGroupStub
+	fakeReturns := fake.getSecGroupReturns
 	fake.recordInvocation("GetSecGroup", []interface{}{arg1})
 	fake.getSecGroupMutex.Unlock()
-	if fake.GetSecGroupStub != nil {
-		return fake.GetSecGroupStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getSecGroupReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -474,15 +479,16 @@ func (fake *FakeCFClient) ListSecGroups() ([]cfclient.SecGroup, error) {
 	ret, specificReturn := fake.listSecGroupsReturnsOnCall[len(fake.listSecGroupsArgsForCall)]
 	fake.listSecGroupsArgsForCall = append(fake.listSecGroupsArgsForCall, struct {
 	}{})
+	stub := fake.ListSecGroupsStub
+	fakeReturns := fake.listSecGroupsReturns
 	fake.recordInvocation("ListSecGroups", []interface{}{})
 	fake.listSecGroupsMutex.Unlock()
-	if fake.ListSecGroupsStub != nil {
-		return fake.ListSecGroupsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSecGroupsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -530,15 +536,16 @@ func (fake *FakeCFClient) ListSpaceSecGroups(arg1 string) ([]cfclient.SecGroup, 
 	fake.listSpaceSecGroupsArgsForCall = append(fake.listSpaceSecGroupsArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListSpaceSecGroupsStub
+	fakeReturns := fake.listSpaceSecGroupsReturns
 	fake.recordInvocation("ListSpaceSecGroups", []interface{}{arg1})
 	fake.listSpaceSecGroupsMutex.Unlock()
-	if fake.ListSpaceSecGroupsStub != nil {
-		return fake.ListSpaceSecGroupsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpaceSecGroupsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -593,15 +600,16 @@ func (fake *FakeCFClient) UnbindRunningSecGroup(arg1 string) error {
 	fake.unbindRunningSecGroupArgsForCall = append(fake.unbindRunningSecGroupArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.UnbindRunningSecGroupStub
+	fakeReturns := fake.unbindRunningSecGroupReturns
 	fake.recordInvocation("UnbindRunningSecGroup", []interface{}{arg1})
 	fake.unbindRunningSecGroupMutex.Unlock()
-	if fake.UnbindRunningSecGroupStub != nil {
-		return fake.UnbindRunningSecGroupStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.unbindRunningSecGroupReturns
 	return fakeReturns.result1
 }
 
@@ -654,15 +662,16 @@ func (fake *FakeCFClient) UnbindSecGroup(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.UnbindSecGroupStub
+	fakeReturns := fake.unbindSecGroupReturns
 	fake.recordInvocation("UnbindSecGroup", []interface{}{arg1, arg2})
 	fake.unbindSecGroupMutex.Unlock()
-	if fake.UnbindSecGroupStub != nil {
-		return fake.UnbindSecGroupStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.unbindSecGroupReturns
 	return fakeReturns.result1
 }
 
@@ -714,15 +723,16 @@ func (fake *FakeCFClient) UnbindStagingSecGroup(arg1 string) error {
 	fake.unbindStagingSecGroupArgsForCall = append(fake.unbindStagingSecGroupArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.UnbindStagingSecGroupStub
+	fakeReturns := fake.unbindStagingSecGroupReturns
 	fake.recordInvocation("UnbindStagingSecGroup", []interface{}{arg1})
 	fake.unbindStagingSecGroupMutex.Unlock()
-	if fake.UnbindStagingSecGroupStub != nil {
-		return fake.UnbindStagingSecGroupStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.unbindStagingSecGroupReturns
 	return fakeReturns.result1
 }
 
@@ -787,15 +797,16 @@ func (fake *FakeCFClient) UpdateSecGroup(arg1 string, arg2 string, arg3 []cfclie
 		arg3 []cfclient.SecGroupRule
 		arg4 []string
 	}{arg1, arg2, arg3Copy, arg4Copy})
+	stub := fake.UpdateSecGroupStub
+	fakeReturns := fake.updateSecGroupReturns
 	fake.recordInvocation("UpdateSecGroup", []interface{}{arg1, arg2, arg3Copy, arg4Copy})
 	fake.updateSecGroupMutex.Unlock()
-	if fake.UpdateSecGroupStub != nil {
-		return fake.UpdateSecGroupStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.updateSecGroupReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

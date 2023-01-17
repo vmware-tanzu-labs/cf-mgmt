@@ -153,15 +153,16 @@ func (fake *FakeCFClient) CreateV3OrganizationRole(arg1 string, arg2 string, arg
 		arg2 string
 		arg3 string
 	}{arg1, arg2, arg3})
+	stub := fake.CreateV3OrganizationRoleStub
+	fakeReturns := fake.createV3OrganizationRoleReturns
 	fake.recordInvocation("CreateV3OrganizationRole", []interface{}{arg1, arg2, arg3})
 	fake.createV3OrganizationRoleMutex.Unlock()
-	if fake.CreateV3OrganizationRoleStub != nil {
-		return fake.CreateV3OrganizationRoleStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createV3OrganizationRoleReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -218,15 +219,16 @@ func (fake *FakeCFClient) CreateV3SpaceRole(arg1 string, arg2 string, arg3 strin
 		arg2 string
 		arg3 string
 	}{arg1, arg2, arg3})
+	stub := fake.CreateV3SpaceRoleStub
+	fakeReturns := fake.createV3SpaceRoleReturns
 	fake.recordInvocation("CreateV3SpaceRole", []interface{}{arg1, arg2, arg3})
 	fake.createV3SpaceRoleMutex.Unlock()
-	if fake.CreateV3SpaceRoleStub != nil {
-		return fake.CreateV3SpaceRoleStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createV3SpaceRoleReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -281,15 +283,16 @@ func (fake *FakeCFClient) DeleteUser(arg1 string) error {
 	fake.deleteUserArgsForCall = append(fake.deleteUserArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.DeleteUserStub
+	fakeReturns := fake.deleteUserReturns
 	fake.recordInvocation("DeleteUser", []interface{}{arg1})
 	fake.deleteUserMutex.Unlock()
-	if fake.DeleteUserStub != nil {
-		return fake.DeleteUserStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteUserReturns
 	return fakeReturns.result1
 }
 
@@ -341,15 +344,16 @@ func (fake *FakeCFClient) DeleteV3Role(arg1 string) error {
 	fake.deleteV3RoleArgsForCall = append(fake.deleteV3RoleArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.DeleteV3RoleStub
+	fakeReturns := fake.deleteV3RoleReturns
 	fake.recordInvocation("DeleteV3Role", []interface{}{arg1})
 	fake.deleteV3RoleMutex.Unlock()
-	if fake.DeleteV3RoleStub != nil {
-		return fake.DeleteV3RoleStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteV3RoleReturns
 	return fakeReturns.result1
 }
 
@@ -401,15 +405,16 @@ func (fake *FakeCFClient) ListSpacesByQuery(arg1 url.Values) ([]cfclient.Space, 
 	fake.listSpacesByQueryArgsForCall = append(fake.listSpacesByQueryArgsForCall, struct {
 		arg1 url.Values
 	}{arg1})
+	stub := fake.ListSpacesByQueryStub
+	fakeReturns := fake.listSpacesByQueryReturns
 	fake.recordInvocation("ListSpacesByQuery", []interface{}{arg1})
 	fake.listSpacesByQueryMutex.Unlock()
-	if fake.ListSpacesByQueryStub != nil {
-		return fake.ListSpacesByQueryStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpacesByQueryReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -465,15 +470,16 @@ func (fake *FakeCFClient) ListV3OrganizationRolesByGUIDAndType(arg1 string, arg2
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.ListV3OrganizationRolesByGUIDAndTypeStub
+	fakeReturns := fake.listV3OrganizationRolesByGUIDAndTypeReturns
 	fake.recordInvocation("ListV3OrganizationRolesByGUIDAndType", []interface{}{arg1, arg2})
 	fake.listV3OrganizationRolesByGUIDAndTypeMutex.Unlock()
-	if fake.ListV3OrganizationRolesByGUIDAndTypeStub != nil {
-		return fake.ListV3OrganizationRolesByGUIDAndTypeStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listV3OrganizationRolesByGUIDAndTypeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -528,15 +534,16 @@ func (fake *FakeCFClient) ListV3RolesByQuery(arg1 url.Values) ([]cfclient.V3Role
 	fake.listV3RolesByQueryArgsForCall = append(fake.listV3RolesByQueryArgsForCall, struct {
 		arg1 url.Values
 	}{arg1})
+	stub := fake.ListV3RolesByQueryStub
+	fakeReturns := fake.listV3RolesByQueryReturns
 	fake.recordInvocation("ListV3RolesByQuery", []interface{}{arg1})
 	fake.listV3RolesByQueryMutex.Unlock()
-	if fake.ListV3RolesByQueryStub != nil {
-		return fake.ListV3RolesByQueryStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listV3RolesByQueryReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -592,15 +599,16 @@ func (fake *FakeCFClient) ListV3SpaceRolesByGUIDAndType(arg1 string, arg2 string
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.ListV3SpaceRolesByGUIDAndTypeStub
+	fakeReturns := fake.listV3SpaceRolesByGUIDAndTypeReturns
 	fake.recordInvocation("ListV3SpaceRolesByGUIDAndType", []interface{}{arg1, arg2})
 	fake.listV3SpaceRolesByGUIDAndTypeMutex.Unlock()
-	if fake.ListV3SpaceRolesByGUIDAndTypeStub != nil {
-		return fake.ListV3SpaceRolesByGUIDAndTypeStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listV3SpaceRolesByGUIDAndTypeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -655,15 +663,16 @@ func (fake *FakeCFClient) ListV3UsersByQuery(arg1 url.Values) ([]cfclient.V3User
 	fake.listV3UsersByQueryArgsForCall = append(fake.listV3UsersByQueryArgsForCall, struct {
 		arg1 url.Values
 	}{arg1})
+	stub := fake.ListV3UsersByQueryStub
+	fakeReturns := fake.listV3UsersByQueryReturns
 	fake.recordInvocation("ListV3UsersByQuery", []interface{}{arg1})
 	fake.listV3UsersByQueryMutex.Unlock()
-	if fake.ListV3UsersByQueryStub != nil {
-		return fake.ListV3UsersByQueryStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listV3UsersByQueryReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -717,15 +726,16 @@ func (fake *FakeCFClient) SupportsSpaceSupporterRole() (bool, error) {
 	ret, specificReturn := fake.supportsSpaceSupporterRoleReturnsOnCall[len(fake.supportsSpaceSupporterRoleArgsForCall)]
 	fake.supportsSpaceSupporterRoleArgsForCall = append(fake.supportsSpaceSupporterRoleArgsForCall, struct {
 	}{})
+	stub := fake.SupportsSpaceSupporterRoleStub
+	fakeReturns := fake.supportsSpaceSupporterRoleReturns
 	fake.recordInvocation("SupportsSpaceSupporterRole", []interface{}{})
 	fake.supportsSpaceSupporterRoleMutex.Unlock()
-	if fake.SupportsSpaceSupporterRoleStub != nil {
-		return fake.SupportsSpaceSupporterRoleStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.supportsSpaceSupporterRoleReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

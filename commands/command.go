@@ -18,6 +18,14 @@ type BaseLDAPCommand struct {
 	LdapUser     string `long:"ldap-user" env:"LDAP_USER"  description:"LDAP user for binding"`
 }
 
+//BaseAzureADCommand - base command that has Azure AD info
+type BaseAzureADCommand struct {
+	AadTennantId	string `long:"aad-tennantid" env:"AAD_TENNANT_ID"  description:"Azure AD Tennant id"`
+	AadClientId		string `long:"aad-clientid" env:"AAD_CLIENT_ID"  description:"Azure AD Client Id"`
+	AadSecret		string `long:"aad-secret" env:"AAD_SECRET"  description:"Azure AD Client secret"`
+	AADUserOrigin	string `long:"aad-origin" env:"AAD_ORIGIN"  description:"Azure AD Origin"`
+}
+
 //BasePeekCommand - base command for non read-only operations
 type BasePeekCommand struct {
 	Peek bool `long:"peek" env:"PEEK"  description:"Preview entities to change without modifying"`
