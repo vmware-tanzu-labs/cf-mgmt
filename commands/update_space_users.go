@@ -3,6 +3,7 @@ package commands
 type UpdateSpaceUsersCommand struct {
 	BaseCFConfigCommand
 	BaseLDAPCommand
+	BaseAzureADCommand
 	BasePeekCommand
 }
 
@@ -13,6 +14,10 @@ func (c *UpdateSpaceUsersCommand) Execute([]string) error {
 			return err
 		}
 		defer cfMgmt.UserManager.DeinitializeLdap()
+		
+		if err := cfMgmt.UserManager.InitializeAzureAD(c.AadTennantId, c.AadClientId, c.AadSecret, c.AADUserOrigin); err != nil {
+			return err
+		}
 		return cfMgmt.UserManager.UpdateSpaceUsers()
 	}
 	return nil

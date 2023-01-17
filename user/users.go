@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/ldap"
+	"github.com/vmwarepivotallabs/cf-mgmt/azureAD"
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
@@ -72,6 +73,8 @@ type DefaultManager struct {
 	Peek                   bool
 	LdapMgr                LdapManager
 	LdapConfig             *config.LdapConfig
+	AzureADMgr			   AzureADManager
+	AzureADConfig 		   *config.AzureADConfig
 	SupportsSpaceSupporter bool
 	UAAUsers               *uaa.Users
 	CFUsers                map[string]cfclient.V3User
@@ -499,6 +502,13 @@ func (m *DefaultManager) SyncUsers(usersInput UsersInput) error {
 		lo.G.Debugf("Users after LDAP sync %+v", roleUsers.Users())
 	}
 
+	if err := m.SyncAzureADUsers(roleUsers, usersInput); err != nil {
+		return errors.Wrap(err, "adding Azure AD users")
+	}
+	if len(roleUsers.Users()) > 0 {
+		lo.G.Debugf("Users after AzureAD sync %+v", roleUsers.Users())
+	}
+
 	if err := m.SyncInternalUsers(roleUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding internal users")
 	}
@@ -593,6 +603,25 @@ func (m *DefaultManager) DeinitializeLdap() error {
 	}
 	return nil
 }
+
+func (m *DefaultManager) InitializeAzureAD(tennantId, clientId, secret, origin string) error {
+	aadConfig, err := m.Cfg.AzureADConfig(tennantId, clientId, secret, origin)
+	if err != nil {
+		return err
+	}
+	m.AzureADConfig = aadConfig
+	if m.AzureADConfig.Enabled {
+		azureAdMgr, err := azureAD.NewManager(aadConfig)
+		if err != nil {
+			return err
+		}
+		m.AzureADMgr = azureAdMgr
+		lo.G.Debugf("Azure AD is Enabled, with TennantId: %s, ClientID: %s, Origin: %s", aadConfig.TennantID, aadConfig.ClientId, aadConfig.UserOrigin)
+
+	}
+	return nil
+}
+
 
 func (m *DefaultManager) GetOrgRoleGUID(orgGUID, userGUID, role string) (string, error) {
 	roles, err := m.Client.ListV3RolesByQuery(url.Values{

@@ -21,6 +21,7 @@ var _ = Describe("given UserSpaces", func() {
 		userManager *DefaultManager
 		client      *fakes.FakeCFClient
 		ldapFake    *fakes.FakeLdapManager
+		azureADFake *fakes.FakeAzureADManager
 		uaaFake     *uaafakes.FakeManager
 		fakeReader  *configfakes.FakeReader
 		spaceFake   *spacefakes.FakeManager
@@ -29,6 +30,7 @@ var _ = Describe("given UserSpaces", func() {
 	BeforeEach(func() {
 		client = new(fakes.FakeCFClient)
 		ldapFake = new(fakes.FakeLdapManager)
+		azureADFake = new(fakes.FakeAzureADManager)
 		uaaFake = new(uaafakes.FakeManager)
 		fakeReader = new(configfakes.FakeReader)
 		spaceFake = new(spacefakes.FakeManager)
@@ -41,10 +43,13 @@ var _ = Describe("given UserSpaces", func() {
 				Cfg:        fakeReader,
 				UAAMgr:     uaaFake,
 				LdapMgr:    ldapFake,
+				AzureADMgr: azureADFake,
 				SpaceMgr:   spaceFake,
 				OrgReader:  orgFake,
 				Peek:       false,
-				LdapConfig: &config.LdapConfig{Origin: "ldap"}}
+				LdapConfig: &config.LdapConfig{Origin: "ldap"},
+				AzureADConfig: &config.AzureADConfig{},
+			}
 
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{}, nil)
 		})

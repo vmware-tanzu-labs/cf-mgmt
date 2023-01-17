@@ -96,15 +96,16 @@ func (fake *FakeCFClient) CreateDomain(arg1 string, arg2 string) (*cfclient.Doma
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.CreateDomainStub
+	fakeReturns := fake.createDomainReturns
 	fake.recordInvocation("CreateDomain", []interface{}{arg1, arg2})
 	fake.createDomainMutex.Unlock()
-	if fake.CreateDomainStub != nil {
-		return fake.CreateDomainStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createDomainReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -159,15 +160,16 @@ func (fake *FakeCFClient) DeleteDomain(arg1 string) error {
 	fake.deleteDomainArgsForCall = append(fake.deleteDomainArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.DeleteDomainStub
+	fakeReturns := fake.deleteDomainReturns
 	fake.recordInvocation("DeleteDomain", []interface{}{arg1})
 	fake.deleteDomainMutex.Unlock()
-	if fake.DeleteDomainStub != nil {
-		return fake.DeleteDomainStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteDomainReturns
 	return fakeReturns.result1
 }
 
@@ -218,15 +220,16 @@ func (fake *FakeCFClient) ListDomains() ([]cfclient.Domain, error) {
 	ret, specificReturn := fake.listDomainsReturnsOnCall[len(fake.listDomainsArgsForCall)]
 	fake.listDomainsArgsForCall = append(fake.listDomainsArgsForCall, struct {
 	}{})
+	stub := fake.ListDomainsStub
+	fakeReturns := fake.listDomainsReturns
 	fake.recordInvocation("ListDomains", []interface{}{})
 	fake.listDomainsMutex.Unlock()
-	if fake.ListDomainsStub != nil {
-		return fake.ListDomainsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listDomainsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -274,15 +277,16 @@ func (fake *FakeCFClient) ListOrgPrivateDomains(arg1 string) ([]cfclient.Domain,
 	fake.listOrgPrivateDomainsArgsForCall = append(fake.listOrgPrivateDomainsArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.ListOrgPrivateDomainsStub
+	fakeReturns := fake.listOrgPrivateDomainsReturns
 	fake.recordInvocation("ListOrgPrivateDomains", []interface{}{arg1})
 	fake.listOrgPrivateDomainsMutex.Unlock()
-	if fake.ListOrgPrivateDomainsStub != nil {
-		return fake.ListOrgPrivateDomainsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgPrivateDomainsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -338,15 +342,16 @@ func (fake *FakeCFClient) ShareOrgPrivateDomain(arg1 string, arg2 string) (*cfcl
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.ShareOrgPrivateDomainStub
+	fakeReturns := fake.shareOrgPrivateDomainReturns
 	fake.recordInvocation("ShareOrgPrivateDomain", []interface{}{arg1, arg2})
 	fake.shareOrgPrivateDomainMutex.Unlock()
-	if fake.ShareOrgPrivateDomainStub != nil {
-		return fake.ShareOrgPrivateDomainStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.shareOrgPrivateDomainReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -402,15 +407,16 @@ func (fake *FakeCFClient) UnshareOrgPrivateDomain(arg1 string, arg2 string) erro
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.UnshareOrgPrivateDomainStub
+	fakeReturns := fake.unshareOrgPrivateDomainReturns
 	fake.recordInvocation("UnshareOrgPrivateDomain", []interface{}{arg1, arg2})
 	fake.unshareOrgPrivateDomainMutex.Unlock()
-	if fake.UnshareOrgPrivateDomainStub != nil {
-		return fake.UnshareOrgPrivateDomainStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.unshareOrgPrivateDomainReturns
 	return fakeReturns.result1
 }
 

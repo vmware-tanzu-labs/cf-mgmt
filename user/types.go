@@ -28,6 +28,7 @@ type RoleUser struct {
 type Manager interface {
 	InitializeLdap(ldapBindUser, ldapBindPassword, ldapServer string) error
 	DeinitializeLdap() error
+	InitializeAzureAD(tennantId, clientId, secret, origin string) error
 	UpdateSpaceUsers() error
 	UpdateOrgUsers() error
 	CleanupOrgUsers() error
@@ -53,4 +54,9 @@ type LdapManager interface {
 	GetUserByDN(userDN string) (*ldap.User, error)
 	GetUserByID(userID string) (*ldap.User, error)
 	Close()
+}
+
+type AzureADManager interface {
+	GetADToken() (token string)
+	GraphGetGroupMembers (token, groupName string) ([]string, error)
 }
