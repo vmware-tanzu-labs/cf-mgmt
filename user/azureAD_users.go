@@ -61,12 +61,12 @@ func (m *DefaultManager) GetAzureADUsers(usersInput UsersInput) ([]azureAD.UserT
 	// TODO Base of LDAP groups for now, later change to separate group entry for AAD
 	for _, groupName := range usersInput.UniqueLdapGroupNames() {
 
-		userUPNList, err := m.AzureADMgr.GraphGetGroupMembers(m.AzureADMgr.GetADToken(),groupName) 
+		userUPNList, err := m.AzureADMgr.GraphGetGroupMembers(m.AzureADMgr.GetADToken(), groupName)
 		if err != nil {
 			return nil, err
 		}
 		for _, userUPN := range userUPNList {
-			lo.G.Debugf("AAD Checking for userDN %s", userUPN)
+			lo.G.Debugf("AAD Checking for userUPN %s", userUPN)
 			azureADUsers = append(azureADUsers, azureAD.UserType{
 				Upn: userUPN,
 			})
@@ -96,13 +96,12 @@ func (m *DefaultManager) GetAzureADUsers(usersInput UsersInput) ([]azureAD.UserT
 	uniqueADUsers := make(map[string]azureAD.UserType)
 	for _, azureADUser := range azureADUsers {
 		uniqueADUsers[strings.ToUpper(azureADUser.Upn)] = azureADUser
-	}	
+	}
 	for _, uniqueADUser := range uniqueADUsers {
 		ADUsersToReturn = append(ADUsersToReturn, uniqueADUser)
 	}
 	return ADUsersToReturn, nil
 }
-
 
 func (m *DefaultManager) UpdateADUserInfo(user azureAD.UserType) azureAD.UserType {
 	upnToLower := strings.ToLower(user.Upn)
