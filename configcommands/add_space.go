@@ -28,7 +28,7 @@ type AddSpaceToConfigurationCommand struct {
 	Auditor                     UserRoleAdd `group:"auditor" namespace:"auditor"`
 }
 
-//Execute - adds a named space to the configuration
+// Execute - adds a named space to the configuration
 func (c *AddSpaceToConfigurationCommand) Execute([]string) error {
 	lo.G.Warning("*** Deprecated *** - Use `space` command instead for adding/updating space configurations")
 	c.initConfig()
@@ -96,9 +96,9 @@ func (c *AddSpaceToConfigurationCommand) sshConfig(spaceConfig *config.SpaceConf
 }
 
 func (c *AddSpaceToConfigurationCommand) updateUsers(spaceConfig *config.SpaceConfig, errorString *string) {
-	addUsersBasedOnRole(&spaceConfig.Developer, spaceConfig.GetDeveloperGroups(), &c.Developer, errorString)
-	addUsersBasedOnRole(&spaceConfig.Auditor, spaceConfig.GetAuditorGroups(), &c.Auditor, errorString)
-	addUsersBasedOnRole(&spaceConfig.Manager, spaceConfig.GetManagerGroups(), &c.Manager, errorString)
+	addUsersBasedOnRole(&spaceConfig.Developer, spaceConfig.GetDeveloperGroups(), spaceConfig.GetDeveloperGroups(), &c.Developer, errorString)
+	addUsersBasedOnRole(&spaceConfig.Auditor, spaceConfig.GetAuditorGroups(), spaceConfig.GetAuditorGroups(), &c.Auditor, errorString)
+	addUsersBasedOnRole(&spaceConfig.Manager, spaceConfig.GetManagerGroups(), spaceConfig.GetManagerGroups(), &c.Manager, errorString)
 
 	spaceConfig.DeveloperGroup = ""
 	spaceConfig.ManagerGroup = ""
