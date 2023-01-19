@@ -27,7 +27,7 @@ type AddOrgToConfigurationCommand struct {
 	EnableRemoveSpaces string `long:"enable-remove-spaces" description:"Enable removing spaces" choice:"true" choice:"false"`
 }
 
-//Execute - adds a named org to the configuration
+// Execute - adds a named org to the configuration
 func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 	lo.G.Warning("*** Deprecated *** - Use `org` command instead for adding/updating org configurations")
 	orgConfig := &config.OrgConfig{
@@ -90,9 +90,9 @@ func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 }
 
 func (c *AddOrgToConfigurationCommand) updateUsers(orgConfig *config.OrgConfig, errorString *string) {
-	addUsersBasedOnRole(&orgConfig.BillingManager, orgConfig.GetBillingManagerGroups(), &c.BillingManager, errorString)
-	addUsersBasedOnRole(&orgConfig.Auditor, orgConfig.GetAuditorGroups(), &c.Auditor, errorString)
-	addUsersBasedOnRole(&orgConfig.Manager, orgConfig.GetManagerGroups(), &c.Manager, errorString)
+	addUsersBasedOnRole(&orgConfig.BillingManager, orgConfig.GetBillingManagerGroups(), orgConfig.GetBillingManagerGroups(), &c.BillingManager, errorString)
+	addUsersBasedOnRole(&orgConfig.Auditor, orgConfig.GetAuditorGroups(), orgConfig.GetAuditorGroups(), &c.Auditor, errorString)
+	addUsersBasedOnRole(&orgConfig.Manager, orgConfig.GetManagerGroups(), orgConfig.GetManagerGroups(), &c.Manager, errorString)
 
 	orgConfig.BillingManagerGroup = ""
 	orgConfig.ManagerGroup = ""

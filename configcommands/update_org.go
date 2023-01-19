@@ -31,7 +31,7 @@ type UpdateOrgConfigurationCommand struct {
 	ServiceAccess                    ServiceAccess `group:"service-access"`
 }
 
-//Execute - updates org configuration`
+// Execute - updates org configuration`
 func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 	lo.G.Warning("*** Deprecated *** - Use `org` command instead for adding/updating org configurations")
 	c.initConfig()
@@ -116,9 +116,9 @@ func (c *UpdateOrgConfigurationCommand) Execute(args []string) error {
 }
 
 func (c *UpdateOrgConfigurationCommand) updateUsers(orgConfig *config.OrgConfig, errorString *string) {
-	updateUsersBasedOnRole(&orgConfig.BillingManager, orgConfig.GetBillingManagerGroups(), &c.BillingManager, errorString)
-	updateUsersBasedOnRole(&orgConfig.Auditor, orgConfig.GetAuditorGroups(), &c.Auditor, errorString)
-	updateUsersBasedOnRole(&orgConfig.Manager, orgConfig.GetManagerGroups(), &c.Manager, errorString)
+	updateUsersBasedOnRole(&orgConfig.BillingManager, orgConfig.GetBillingManagerGroups(), orgConfig.GetBillingManagerGroups(), &c.BillingManager, errorString)
+	updateUsersBasedOnRole(&orgConfig.Auditor, orgConfig.GetAuditorGroups(), orgConfig.GetAuditorGroups(), &c.Auditor, errorString)
+	updateUsersBasedOnRole(&orgConfig.Manager, orgConfig.GetManagerGroups(), orgConfig.GetManagerGroups(), &c.Manager, errorString)
 
 	orgConfig.BillingManagerGroup = ""
 	orgConfig.ManagerGroup = ""

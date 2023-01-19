@@ -33,7 +33,7 @@ type SpaceConfigurationCommand struct {
 	Metadata                    Metadata   `group:"metadata"`
 }
 
-//Execute - updates space configuration`
+// Execute - updates space configuration`
 func (c *SpaceConfigurationCommand) Execute(args []string) error {
 	c.initConfig()
 	var spaceConfig *config.SpaceConfig
@@ -161,10 +161,10 @@ func (c *SpaceConfigurationCommand) sshConfig(spaceConfig *config.SpaceConfig, e
 }
 
 func (c *SpaceConfigurationCommand) updateUsers(spaceConfig *config.SpaceConfig, errorString *string) {
-	updateUsersBasedOnRole(&spaceConfig.Developer, spaceConfig.GetDeveloperGroups(), &c.Developer, errorString)
-	updateUsersBasedOnRole(&spaceConfig.Auditor, spaceConfig.GetAuditorGroups(), &c.Auditor, errorString)
-	updateUsersBasedOnRole(&spaceConfig.Manager, spaceConfig.GetManagerGroups(), &c.Manager, errorString)
-	updateUsersBasedOnRole(&spaceConfig.Supporter, spaceConfig.GetSupporterGroups(), &c.Supporter, errorString)
+	updateUsersBasedOnRole(&spaceConfig.Developer, spaceConfig.GetDeveloperGroups(), spaceConfig.GetDeveloperGroups(), &c.Developer, errorString)
+	updateUsersBasedOnRole(&spaceConfig.Auditor, spaceConfig.GetAuditorGroups(), spaceConfig.GetAuditorGroups(), &c.Auditor, errorString)
+	updateUsersBasedOnRole(&spaceConfig.Manager, spaceConfig.GetManagerGroups(), spaceConfig.GetManagerGroups(), &c.Manager, errorString)
+	updateUsersBasedOnRole(&spaceConfig.Supporter, spaceConfig.GetSupporterGroups(), spaceConfig.GetSupporterGroups(), &c.Supporter, errorString)
 
 	spaceConfig.DeveloperGroup = ""
 	spaceConfig.ManagerGroup = ""
