@@ -497,7 +497,9 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	if err := WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &LdapConfig{TLS: false, Origin: uaaOrigin}); err != nil {
 		return err
 	}
-
+	if err := WriteFile(fmt.Sprintf("%s/azureAD.yml", m.ConfigDir), &AzureADConfig{Enabled: false}); err != nil {
+		return err
+	}
 	if err := WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &Orgs{
 		EnableDeleteOrgs: false,
 		ProtectedOrgs:    DefaultProtectedOrgs,
