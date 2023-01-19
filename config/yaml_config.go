@@ -191,6 +191,10 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		result[i].Auditor.LDAPGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
 		result[i].Manager.LDAPGroups = append(result[i].GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
 
+		result[i].Developer.AADGroups = append(result[i].GetDeveloperGroups(), spaceDefaults.GetDeveloperGroups()...)
+		result[i].Auditor.AADGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
+		result[i].Manager.AADGroups = append(result[i].GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
+
 		if result[i].EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
 			lo.G.Debug("Loading security group contents", securityGroupFile)
@@ -405,7 +409,7 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	return nil
 }
 
-//AddSecurityGroupToSpace - adds security group json to org/space location
+// AddSecurityGroupToSpace - adds security group json to org/space location
 func (m *yamlManager) AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error {
 	securityGroupFilePath := fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName)
 	if !FileOrDirectoryExists(securityGroupFilePath) {
@@ -417,13 +421,13 @@ func (m *yamlManager) AddSecurityGroupToSpace(orgName, spaceName string, securit
 	return nil
 }
 
-//AddSecurityGroup - adds security group json to org/space location
+// AddSecurityGroup - adds security group json to org/space location
 func (m *yamlManager) AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error {
 	lo.G.Infof("Writing out bytes for security group %s", securityGroupName)
 	return WriteFileBytes(fmt.Sprintf("%s/asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)
 }
 
-//AddDefaultSecurityGroup - adds security group json to org/space location
+// AddDefaultSecurityGroup - adds security group json to org/space location
 func (m *yamlManager) AddDefaultSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error {
 	lo.G.Infof("Writing out bytes for security group %s", securityGroupName)
 	return WriteFileBytes(fmt.Sprintf("%s/default_asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)
@@ -561,9 +565,11 @@ func (m *yamlManager) AzureADConfig(tennantId, clientId, secret, origin string) 
 	config := &AzureADConfig{}
 	err := LoadFile(path.Join(m.ConfigDir, "azureAD.yml"), config)
 	if err != nil {
+		lo.G.Debug("File azureAD.yml not loaded. Maybe it does not exits")
+
 		config.Enabled = false
 		config.UserOrigin = "Disabled"
-		return config, err
+		return config, nil
 	}
 
 	if tennantId != "" {

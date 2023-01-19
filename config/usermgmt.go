@@ -7,6 +7,8 @@ type UserMgmt struct {
 	SamlUsers  []string `yaml:"saml_users"`
 	LDAPGroup  string   `yaml:"ldap_group,omitempty"`
 	LDAPGroups []string `yaml:"ldap_groups"`
+	AADGroup   string   `yaml:"aad_group,omitempty"`
+	AADGroups  []string `yaml:"aad_groups"`
 }
 
 // UserOrigin is an enum type encoding from what source a user originated.
@@ -30,8 +32,14 @@ func (u *UserMgmt) groups(groupName string) []string {
 	for _, group := range u.LDAPGroups {
 		groupMap[group] = group
 	}
+	for _, group := range u.AADGroups {
+		groupMap[group] = group
+	}
 	if u.LDAPGroup != "" {
 		groupMap[u.LDAPGroup] = u.LDAPGroup
+	}
+	if u.AADGroup != "" {
+		groupMap[u.AADGroup] = u.AADGroup
 	}
 	if groupName != "" {
 		groupMap[groupName] = groupName
