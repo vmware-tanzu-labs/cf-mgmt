@@ -7,9 +7,9 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/pkg/errors"
+	"github.com/vmwarepivotallabs/cf-mgmt/azureAD"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/ldap"
-	"github.com/vmwarepivotallabs/cf-mgmt/azureAD"
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
@@ -73,8 +73,8 @@ type DefaultManager struct {
 	Peek                   bool
 	LdapMgr                LdapManager
 	LdapConfig             *config.LdapConfig
-	AzureADMgr			   AzureADManager
-	AzureADConfig 		   *config.AzureADConfig
+	AzureADMgr             AzureADManager
+	AzureADConfig          *config.AzureADConfig
 	SupportsSpaceSupporter bool
 	UAAUsers               *uaa.Users
 	CFUsers                map[string]cfclient.V3User
@@ -297,7 +297,7 @@ func (m *DefaultManager) AssociateOrgManager(input UsersInput, userName, userGUI
 	return err
 }
 
-//UpdateSpaceUsers -
+// UpdateSpaceUsers -
 func (m *DefaultManager) UpdateSpaceUsers() error {
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
@@ -406,7 +406,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 	return nil
 }
 
-//UpdateOrgUsers -
+// UpdateOrgUsers -
 func (m *DefaultManager) UpdateOrgUsers() error {
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
@@ -486,7 +486,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 	return nil
 }
 
-//SyncUsers
+// SyncUsers
 func (m *DefaultManager) SyncUsers(usersInput UsersInput) error {
 	// roleUsers, err := usersInput.ListUsers(usersInput, uaaUsers)
 	// if err != nil {
@@ -588,6 +588,10 @@ func (m *DefaultManager) InitializeLdap(ldapBindUser, ldapBindPassword, ldapServ
 	}
 	m.LdapConfig = ldapConfig
 	if m.LdapConfig.Enabled {
+		tmpAadConfig, err := m.Cfg.AzureADConfig("", "", "", "") // Just to see if both ldap and AAD are configured, which is not supported (yet)
+		if tmpAadConfig.Enabled {
+			return errors.New("Both LDAP and Azure AD groups are enabled. This is not supported yet")
+		}
 		ldapMgr, err := ldap.NewManager(ldapConfig)
 		if err != nil {
 			return err
@@ -621,7 +625,6 @@ func (m *DefaultManager) InitializeAzureAD(tennantId, clientId, secret, origin s
 	}
 	return nil
 }
-
 
 func (m *DefaultManager) GetOrgRoleGUID(orgGUID, userGUID, role string) (string, error) {
 	roles, err := m.Client.ListV3RolesByQuery(url.Values{
