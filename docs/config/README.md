@@ -127,6 +127,13 @@ org-billingmanager:
   ldap_groups:
     - test_billing_managers_2
 
+  # Added in this Rabobank version of cf-mgmt
+  aad_group: test_billing_managers
+
+  # Added in this Rabobank version of cf-mgmt
+  aad_groups:
+    - test_billing_managers_2
+
   # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
   saml_users:
     - cwashburn@testdomain.com
@@ -149,6 +156,13 @@ org-manager:
   ldap_groups:
     - test_org_managers_2
 
+  # Added in this Rabobank version of cf-mgmt
+  aad_group: test_org_managers
+
+  # Added in this Rabobank version of cf-mgmt
+  aad_groups:
+    - test_org_managers_2
+
   # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
   saml_users:
     - cwashburn@testdomain.com
@@ -169,6 +183,13 @@ org-auditor:
 
   # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
   ldap_groups:
+    - test_org_auditors_2
+
+  # Added in this Rabobank version of cf-mgmt
+  aad_group: test_org_auditors
+
+  # Added in this Rabobank version of cf-mgmt
+  aad_groups:
     - test_org_auditors_2
 
   # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
@@ -249,6 +270,13 @@ space-manager:
   ldap_groups:
     - test_space1_managers_2
 
+  # Added in this Rabobank version of cf-mgmt
+  aad_group: test_space1_managers
+
+  # Added in this Rabobank version of cf-mgmt
+  aad_groups:
+    - test_space1_managers_2
+
   # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
   saml_users:
     - cwashburn@testdomain.com
@@ -269,6 +297,13 @@ space-auditor:
 
   # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
   ldap_groups:
+    - test_space1_auditors_2
+
+  # Added in this Rabobank version of cf-mgmt
+  aad_group: test_space1_auditors
+
+  # Added in this Rabobank version of cf-mgmt
+  aad_groups:
     - test_space1_auditors_2
 
   # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
@@ -292,6 +327,13 @@ space-developer:
 
   # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
   ldap_groups:
+    - test_space1_developers_2
+
+  # Added in this Rabobank version of cf-mgmt
+  aad_group: test_space1_developers
+
+  # Added in this Rabobank version of cf-mgmt
+  aad_groups:
     - test_space1_developers_2
 
   # added in 0.0.66+ which will allow configuration of a list of saml user email addresses
@@ -409,6 +451,28 @@ useIDForSAMLUser: false
 # optional added in 1.0.47+ if omitted 1.0 is min, 1.3 is max.  Valid values 1.0, 1.1, 1.2, 1.3 or blank
 minTLSVersion: 1.0
 maxTLSVersion: 1.3
+```
+
+### SAML Configuration with Azure Active Directory group lookups
+
+Azure AD configuration file ```azureAD.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA you can choose between ldap and azure Active Directory groups. To enable Azure AD, create a file ```azureAD.yml``` in the ```config``` directory and set ```enabled: true```
+In orgConfig.yml and spaceConfig.yml leverage `aad_group(s)`
+Note: 
+
+```yml
+enabled: true
+
+# Your Azure Active Directory Tennant ID
+tennant-id:
+# The client id of your Active Directory Enterprise application or App registration
+# NOTE: the enterprise app / app regisatration needs the following API permissions: 
+# Microsoft Graph   Permission            permission-type
+# Microsoft Graph   Group.Read.All        Application
+# Microsoft Graph   User.Read.All         Application
+# Microsoft Graph   GroupMember.Read.All  Application
+client-id:
+# User the same origin as for your SAML users
+origin: 
 ```
 
 ### SAML Configuration

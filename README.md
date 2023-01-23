@@ -6,6 +6,19 @@ TAS version | Compatible?
 2.10 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_10/badge)
 2.7 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_7_lts/badge)
 
+# Note for Rabobank version of cf-mgmt
+This version of cf-mgmt is a fork of the cf-mgmt tool created by vmware/tanzu. The original tool can be found here: https://github.com/vmware-tanzu-labs/cf-mgmt
+
+This Rabobank version adds support for groups maintained in Azure Active Directory (Azure AD), instead of in AD (LDAP). 
+
+Documentation is only amended for as far as the Azure AD support. You may find inconsistencies with the original documentation. 
+
+In short: 
+* ```The cf-mgmt update-org-users``` and ```cf-mgmt update-space-users``` commands have extra parameters to specify the required information for accessing Azure AD.
+* A new yaml file ```azureAD.yml``` can optionally be added to specify the Azure AD config parameters
+* the files ```orgConfig.yml``` and ```spaceConfig.yml``` can now have entries for ```aad_group``` and ```aad_groups``` (comparable to the corresponding ldap entries)
+* the ```cf-mgmt-config``` command also generates the ```azureAD.yml``` file and ```aad_group``` and ```aad_groups``` entries 
+
 # Cloud Foundry Management (cf-mgmt)
 
 Go automation for managing orgs, spaces, users (from ldap groups or internal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
@@ -109,6 +122,7 @@ Navigate into a directory in which will become your git repository for cf-mgmt c
 
    - [LDAP only config](docs/config/README.md#ldap-configuration)
    - [SAML with LDAP groups](docs/config/README.md#saml-configuration-with-ldap-group-lookups)
+   - [SAML with Azure AD groups](docs/config/README.md#saml-configuration-with-azure-active-directory-group-lookups)
    - [SAML only](docs/config/README.md#saml-configuration)
 
 4. [Generate the concourse pipeline](docs/config/generate-concourse-pipeline/README.md) using `cf-mgmt-config`
@@ -233,4 +247,4 @@ PRs are always welcome or open issues if you are experiencing an issue and will 
 
 - See [here](docs/README.md) for documentation on all the available commands for running cf-mgmt
 - See [here](docs/config/README.md) for documentation on all the configuration documentation and commands
-aapjes
+

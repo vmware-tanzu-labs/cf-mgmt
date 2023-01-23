@@ -27,5 +27,9 @@ Help Options:
   --client-secret= secret for user account that has sufficient privileges to create/update/delete users,
                    orgs and spaces] [$CLIENT_SECRET]
   --ldap-password= LDAP password for binding [$LDAP_PASSWORD]
+  --aad-tennantid= Azure AD Tennant id [$AAD_TENNANT_ID]
+  --aad-clientid=  Azure AD Client Id [$AAD_CLIENT_ID]
+  --aad-secret=    Azure AD Client secret [$AAD_SECRET]
+  --aad-origin=    Azure AD Origin [$AAD_ORIGIN]
   --peek           Preview entities to change without modifying. [$PEEK]
 ```
