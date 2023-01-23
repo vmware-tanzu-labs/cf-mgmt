@@ -574,25 +574,30 @@ func (m *yamlManager) AzureADConfig(tennantId, clientId, secret, origin string) 
 		return config, nil
 	}
 
-	if tennantId != "" {
-		lo.G.Infof("Using environment provided Azure AD tennantID %s instead of %s", tennantId, config.TennantID)
-		config.TennantID = tennantId
-	}
+	if config.Enabled {
+		if tennantId != "" {
+			lo.G.Infof("Using environment provided Azure AD tennantID %s instead of %s", tennantId, config.TennantID)
+			config.TennantID = tennantId
+		}
 
-	if secret != "" {
-		config.Secret = secret
+		if secret != "" {
+			config.Secret = secret
+		} else {
+			lo.G.Error("Azure AD secret missing. Use AAD_SECRET environment variable or --aad-secret flag instead.")
+			return config, errors.New("Azure AD secret missing. Use AAD_SECRET environment variable or --aad-secret flag instead.")
+		}
+
+		if clientId != "" {
+			lo.G.Infof("Using environment Azure AD ClientID %s instead of %s", clientId, config.ClientId)
+			config.ClientId = clientId
+		}
+
+		if origin != "" {
+			lo.G.Infof("Using environment provided Azure AD Origin %s instead of %s", origin, config.UserOrigin)
+			config.UserOrigin = origin
+		}
 	} else {
-		lo.G.Warning("Azure AD secret should be removed from azure-ad.yml as this is insecure.  Use AAD_SECRET environment variable or --aad-secret flag instead.")
-	}
-
-	if clientId != "" {
-		lo.G.Infof("Using environment Azure AD ClientID %s instead of %s", clientId, config.ClientId)
-		config.ClientId = clientId
-	}
-
-	if origin != "" {
-		lo.G.Infof("Using environment provided Azure AD Origin %s instead of %s", origin, config.UserOrigin)
-		config.UserOrigin = origin
+		config.UserOrigin = "Disabled" // Needed way down in the code path. Should at that point not be empty
 	}
 	return config, nil
 }
