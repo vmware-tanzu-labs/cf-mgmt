@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -eu -o pipefail
-
 OUTPUT_DIR=$PWD/dist
 mkdir -p ${OUTPUT_DIR}
 
