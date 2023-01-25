@@ -63,7 +63,7 @@ type Reader interface {
 	GetOrgConfig(orgName string) (*OrgConfig, error)
 	GetSpaceConfig(orgName, spaceName string) (*SpaceConfig, error)
 	LdapConfig(bindUser, bindPassword, ldapServer string) (*LdapConfig, error)
-	AzureADConfig(tennantId, clientId, secret, origin string) (*AzureADConfig, error)
+	AzureADConfig(tenantId, clientId, secret, origin string) (*AzureADConfig, error)
 	GetOrgQuotas() ([]OrgQuota, error)
 	GetSpaceQuotas(org string) ([]SpaceQuota, error)
 	GetOrgQuota(name string) (*OrgQuota, error)

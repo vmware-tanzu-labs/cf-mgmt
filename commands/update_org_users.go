@@ -15,7 +15,7 @@ func (c *UpdateOrgUsersCommand) Execute([]string) error {
 		}
 		defer cfMgmt.UserManager.DeinitializeLdap()
 
-		if err := cfMgmt.UserManager.InitializeAzureAD(c.AadTennantId, c.AadClientId, c.AadSecret, c.AADUserOrigin); err != nil {
+		if err := cfMgmt.UserManager.InitializeAzureAD(c.AadTenantId, c.AadClientId, c.AadSecret, c.AADUserOrigin); err != nil {
 			return err
 		}
 

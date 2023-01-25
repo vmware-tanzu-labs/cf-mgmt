@@ -16,3 +16,4 @@ config_tests
 cf-mgmt-*
 .idea/
 /cf-mgmt
+dist/

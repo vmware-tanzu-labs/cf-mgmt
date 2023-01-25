@@ -58,7 +58,7 @@ service-access:
   - service: p.mysql
     all_access_plans: # db-small plan is available to all orgs
     - db-small
-    limited_access_plans:# db-medium is only available to cfdev-org as well as any org that is in `protected` orgs list
+    # limited_access_plans:# db-medium is only available to cfdev-org as well as any org that is in `protected` orgs list
     - plan: db-medium
       orgs:
       - cfdev-org
@@ -462,8 +462,8 @@ Note:
 ```yml
 enabled: true
 
-# Your Azure Active Directory Tennant ID
-tennant-id:
+# Your Azure Active Directory Tenant ID
+tenant-id:
 # The client id of your Active Directory Enterprise application or App registration
 # NOTE: the enterprise app / app regisatration needs the following API permissions: 
 # Microsoft Graph   Permission            permission-type

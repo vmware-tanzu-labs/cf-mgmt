@@ -562,7 +562,7 @@ func (m *yamlManager) LdapConfig(ldapBindUser, ldapBindPassword, ldapServer stri
 	return config, nil
 }
 
-func (m *yamlManager) AzureADConfig(tennantId, clientId, secret, origin string) (*AzureADConfig, error) {
+func (m *yamlManager) AzureADConfig(tenantId, clientId, secret, origin string) (*AzureADConfig, error) {
 	lo.G.Debug("Getting AzureADConfig")
 	config := &AzureADConfig{}
 	err := LoadFile(path.Join(m.ConfigDir, "azureAD.yml"), config)
@@ -575,9 +575,9 @@ func (m *yamlManager) AzureADConfig(tennantId, clientId, secret, origin string) 
 	}
 
 	if config.Enabled {
-		if tennantId != "" {
-			lo.G.Infof("Using environment provided Azure AD tennantID %s instead of %s", tennantId, config.TennantID)
-			config.TennantID = tennantId
+		if tenantId != "" {
+			lo.G.Infof("Using environment provided Azure AD tenantID %s instead of %s", tenantId, config.TenantID)
+			config.TenantID = tenantId
 		}
 
 		if secret != "" {

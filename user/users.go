@@ -608,8 +608,8 @@ func (m *DefaultManager) DeinitializeLdap() error {
 	return nil
 }
 
-func (m *DefaultManager) InitializeAzureAD(tennantId, clientId, secret, origin string) error {
-	aadConfig, err := m.Cfg.AzureADConfig(tennantId, clientId, secret, origin)
+func (m *DefaultManager) InitializeAzureAD(tenantId, clientId, secret, origin string) error {
+	aadConfig, err := m.Cfg.AzureADConfig(tenantId, clientId, secret, origin)
 	if err != nil {
 		return err
 	}
@@ -620,7 +620,7 @@ func (m *DefaultManager) InitializeAzureAD(tennantId, clientId, secret, origin s
 			return err
 		}
 		m.AzureADMgr = azureAdMgr
-		lo.G.Debugf("Azure AD is Enabled, with TennantId: %s, ClientID: %s, Origin: %s", aadConfig.TennantID, aadConfig.ClientId, aadConfig.UserOrigin)
+		lo.G.Debugf("Azure AD is Enabled, with TenantId: %s, ClientID: %s, Origin: %s", aadConfig.TenantID, aadConfig.ClientId, aadConfig.UserOrigin)
 
 	}
 	return nil
