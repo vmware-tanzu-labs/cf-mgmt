@@ -1,0 +1,77 @@
+name: Test, Build and Release
+run-name: Test, Build and Release
+
+on:
+  push:
+    branches:
+      - test-actions
+
+jobs:
+  test-job:
+    name: Test all components
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: 'go.mod'
+      - run: go test ./...
+
+  build-job:
+    name: Build cf-mgmt and cf-mgmt-config tools
+    runs-on: ubuntu-latest
+    needs: test-job
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Go version
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: 'go.mod'
+      - name: Install versioning tool
+        run: go install github.com/xchapter7x/versioning@latest
+      - name: Determine Version
+        id: determine_version
+        run: |
+          echo VERSION=$(~/go/bin/versioning bump_patch) >> ${GITHUB_ENV}
+      - name: Build cf-mgmt tool
+        env:
+          COMMIT: ${{ github.sha }}
+        run: rabo-ci/build.sh
+      - name: upload cf-mgmt
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/
+
+  release_job:
+    name: Release cf-mgmt and cf-mgmt-config tools
+    runs-on: ubuntu-latest
+    needs: build-job
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install versioning tool
+        run: go install github.com/xchapter7x/versioning@latest
+      - name: Determine Version
+        id: determine_version
+        run: |
+          echo VERSION=$(~/go/bin/versioning bump_patch) >> ${GITHUB_ENV}
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist
+      - name: Create Release using hub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          asset_file_list=()
+          for f in dist/*
+          do
+            asset_file_list+=("-a" "${f}")
+          done
+          tag_name=${VERSION}
+          hub release create "${asset_file_list[@]}" -m "Release $tag_name" "$tag_name"
+          
+
