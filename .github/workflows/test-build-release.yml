@@ -4,7 +4,7 @@ run-name: Test, Build and Release
 on:
   push:
     branches:
-      - test-actions
+      - main
 
 jobs:
   test-job:
