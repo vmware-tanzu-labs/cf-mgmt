@@ -11,10 +11,8 @@ import (
 )
 
 type Token struct {
-	Token_type     string `json:"token_type"`
-	Expires_in     int32  `json:"expires_in"`
-	Ext_expires_in int32  `json:"ext_expires_in"`
-	Access_token   string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	AccessToken string `json:"access_token"`
 }
 
 func getAccessToken(config *config.AzureADConfig) (Token, error) {
@@ -45,12 +43,11 @@ func getAccessToken(config *config.AzureADConfig) (Token, error) {
 	// Result processing
 	body, _ := io.ReadAll(response.Body)
 
-	err = json.Unmarshal(body, &token)
-	if err != nil {
+	if err = json.Unmarshal(body, &token); err != nil {
 		lo.G.Debugf("Reading body into Token struct failed: %s", err)
 		return token, nil
 	}
 
-	lo.G.Debugf("Result Token: %s", token.Access_token)
+	lo.G.Debugf("Result Token: %s", token.AccessToken)
 	return token, nil
 }
