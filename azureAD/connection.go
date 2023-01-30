@@ -2,6 +2,8 @@ package azureAD
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/xchapter7x/lo"
 	"io"
@@ -39,8 +41,13 @@ func getAccessToken(config *config.AzureADConfig) (Token, error) {
 
 	defer response.Body.Close()
 
-	// Result processing
 	body, _ := io.ReadAll(response.Body)
+
+	if response.StatusCode != http.StatusOK {
+		return token, errors.New(fmt.Sprintf("response %d form call to %s: %s", response.StatusCode, tokenUrl, body))
+	}
+
+	// Result processing
 
 	if err = json.Unmarshal(body, &token); err != nil {
 		lo.G.Debugf("Reading body into Token struct failed: %s", err)

@@ -128,9 +128,6 @@ org-billingmanager:
     - test_billing_managers_2
 
   # Added in this Rabobank version of cf-mgmt
-  aad_group: test_billing_managers
-
-  # Added in this Rabobank version of cf-mgmt
   aad_groups:
     - test_billing_managers_2
 
@@ -157,9 +154,6 @@ org-manager:
     - test_org_managers_2
 
   # Added in this Rabobank version of cf-mgmt
-  aad_group: test_org_managers
-
-  # Added in this Rabobank version of cf-mgmt
   aad_groups:
     - test_org_managers_2
 
@@ -184,9 +178,6 @@ org-auditor:
   # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
   ldap_groups:
     - test_org_auditors_2
-
-  # Added in this Rabobank version of cf-mgmt
-  aad_group: test_org_auditors
 
   # Added in this Rabobank version of cf-mgmt
   aad_groups:
@@ -271,9 +262,6 @@ space-manager:
     - test_space1_managers_2
 
   # Added in this Rabobank version of cf-mgmt
-  aad_group: test_space1_managers
-
-  # Added in this Rabobank version of cf-mgmt
   aad_groups:
     - test_space1_managers_2
 
@@ -298,9 +286,6 @@ space-auditor:
   # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
   ldap_groups:
     - test_space1_auditors_2
-
-  # Added in this Rabobank version of cf-mgmt
-  aad_group: test_space1_auditors
 
   # Added in this Rabobank version of cf-mgmt
   aad_groups:
@@ -328,9 +313,6 @@ space-developer:
   # added in 0.0.62+ which will allow configuration of a list of groups works with ldap_group
   ldap_groups:
     - test_space1_developers_2
-
-  # Added in this Rabobank version of cf-mgmt
-  aad_group: test_space1_developers
 
   # Added in this Rabobank version of cf-mgmt
   aad_groups:
@@ -456,7 +438,7 @@ maxTLSVersion: 1.3
 ### SAML Configuration with Azure Active Directory group lookups
 
 Azure AD configuration file ```azureAD.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA you can choose between ldap and azure Active Directory groups. To enable Azure AD, create a file ```azureAD.yml``` in the ```config``` directory and set ```enabled: true```
-In orgConfig.yml and spaceConfig.yml leverage `aad_group(s)`
+In orgConfig.yml and spaceConfig.yml leverage `aad_groups`
 Note: 
 
 ```yml

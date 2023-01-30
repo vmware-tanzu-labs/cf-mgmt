@@ -1,16 +1,16 @@
 package user
 
-//UsersInput
+// UsersInput
 type UsersInput struct {
-	SpaceGUID                                   string
-	OrgGUID                                     string
-	LdapUsers, Users, LdapGroupNames, SamlUsers []string
-	SpaceName                                   string
-	OrgName                                     string
-	RemoveUsers                                 bool
-	RoleUsers                                   *RoleUsers
-	AddUser                                     func(updateUserInput UsersInput, userName, userGUID string) error
-	RemoveUser                                  func(updateUserInput UsersInput, userName, userGUID string) error
+	SpaceGUID                               string
+	OrgGUID                                 string
+	LdapUsers, Users, GroupNames, SamlUsers []string
+	SpaceName                               string
+	OrgName                                 string
+	RemoveUsers                             bool
+	RoleUsers                               *RoleUsers
+	AddUser                                 func(updateUserInput UsersInput, userName, userGUID string) error
+	RemoveUser                              func(updateUserInput UsersInput, userName, userGUID string) error
 }
 
 func (u *UsersInput) UniqueUsers() []string {
@@ -25,8 +25,8 @@ func (u *UsersInput) UniqueLdapUsers() []string {
 	return uniqueSlice(u.LdapUsers)
 }
 
-func (u *UsersInput) UniqueLdapGroupNames() []string {
-	return uniqueSlice(u.LdapGroupNames)
+func (u *UsersInput) UniqueGroupNames() []string {
+	return uniqueSlice(u.GroupNames)
 }
 
 func uniqueSlice(input []string) []string {

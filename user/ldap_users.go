@@ -58,7 +58,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, usersInput UsersInp
 
 func (m *DefaultManager) GetLDAPUsers(usersInput UsersInput) ([]ldap.User, error) {
 	var ldapUsers []ldap.User
-	for _, groupName := range usersInput.UniqueLdapGroupNames() {
+	for _, groupName := range usersInput.UniqueGroupNames() {
 		userDNList, err := m.LdapMgr.GetUserDNs(groupName)
 		if err != nil {
 			return nil, err

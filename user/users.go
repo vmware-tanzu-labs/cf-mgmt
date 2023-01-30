@@ -330,70 +330,70 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 	}
 
 	if err = m.SyncUsers(UsersInput{
-		SpaceName:      space.Name,
-		SpaceGUID:      space.Guid,
-		OrgName:        input.Org,
-		OrgGUID:        space.OrganizationGuid,
-		LdapGroupNames: input.GetDeveloperGroups(),
-		LdapUsers:      input.Developer.LDAPUsers,
-		Users:          input.Developer.Users,
-		SamlUsers:      input.Developer.SamlUsers,
-		RemoveUsers:    input.RemoveUsers,
-		RoleUsers:      developers,
-		RemoveUser:     m.RemoveSpaceDeveloper,
-		AddUser:        m.AssociateSpaceDeveloper,
+		SpaceName:   space.Name,
+		SpaceGUID:   space.Guid,
+		OrgName:     input.Org,
+		OrgGUID:     space.OrganizationGuid,
+		GroupNames:  input.GetDeveloperGroups(),
+		LdapUsers:   input.Developer.LDAPUsers,
+		Users:       input.Developer.Users,
+		SamlUsers:   input.Developer.SamlUsers,
+		RemoveUsers: input.RemoveUsers,
+		RoleUsers:   developers,
+		RemoveUser:  m.RemoveSpaceDeveloper,
+		AddUser:     m.AssociateSpaceDeveloper,
 	}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "developer"))
 	}
 
 	if err = m.SyncUsers(
 		UsersInput{
-			SpaceName:      space.Name,
-			SpaceGUID:      space.Guid,
-			OrgGUID:        space.OrganizationGuid,
-			OrgName:        input.Org,
-			LdapGroupNames: input.GetManagerGroups(),
-			LdapUsers:      input.Manager.LDAPUsers,
-			Users:          input.Manager.Users,
-			SamlUsers:      input.Manager.SamlUsers,
-			RemoveUsers:    input.RemoveUsers,
-			RoleUsers:      managers,
-			RemoveUser:     m.RemoveSpaceManager,
-			AddUser:        m.AssociateSpaceManager,
+			SpaceName:   space.Name,
+			SpaceGUID:   space.Guid,
+			OrgGUID:     space.OrganizationGuid,
+			OrgName:     input.Org,
+			GroupNames:  input.GetManagerGroups(),
+			LdapUsers:   input.Manager.LDAPUsers,
+			Users:       input.Manager.Users,
+			SamlUsers:   input.Manager.SamlUsers,
+			RemoveUsers: input.RemoveUsers,
+			RoleUsers:   managers,
+			RemoveUser:  m.RemoveSpaceManager,
+			AddUser:     m.AssociateSpaceManager,
 		}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "manager"))
 	}
 	if err = m.SyncUsers(
 		UsersInput{
-			SpaceName:      space.Name,
-			SpaceGUID:      space.Guid,
-			OrgGUID:        space.OrganizationGuid,
-			OrgName:        input.Org,
-			LdapGroupNames: input.GetAuditorGroups(),
-			LdapUsers:      input.Auditor.LDAPUsers,
-			Users:          input.Auditor.Users,
-			SamlUsers:      input.Auditor.SamlUsers,
-			RemoveUsers:    input.RemoveUsers,
-			RoleUsers:      auditors,
-			RemoveUser:     m.RemoveSpaceAuditor,
-			AddUser:        m.AssociateSpaceAuditor,
+			SpaceName:   space.Name,
+			SpaceGUID:   space.Guid,
+			OrgGUID:     space.OrganizationGuid,
+			OrgName:     input.Org,
+			GroupNames:  input.GetAuditorGroups(),
+			LdapUsers:   input.Auditor.LDAPUsers,
+			Users:       input.Auditor.Users,
+			SamlUsers:   input.Auditor.SamlUsers,
+			RemoveUsers: input.RemoveUsers,
+			RoleUsers:   auditors,
+			RemoveUser:  m.RemoveSpaceAuditor,
+			AddUser:     m.AssociateSpaceAuditor,
 		}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "auditor"))
 	}
 
 	if err = m.SyncUsers(UsersInput{
-		SpaceName:      space.Name,
-		SpaceGUID:      space.Guid,
-		OrgName:        input.Org,
-		OrgGUID:        space.OrganizationGuid,
-		LdapGroupNames: input.GetSupporterGroups(),
-		LdapUsers:      input.Supporter.LDAPUsers,
-		Users:          input.Supporter.Users,
-		SamlUsers:      input.Supporter.SamlUsers,
-		RemoveUsers:    input.RemoveUsers,
-		RoleUsers:      supporters,
-		RemoveUser:     m.RemoveSpaceSupporter,
-		AddUser:        m.AssociateSpaceSupporter,
+		SpaceName:   space.Name,
+		SpaceGUID:   space.Guid,
+		OrgName:     input.Org,
+		OrgGUID:     space.OrganizationGuid,
+		GroupNames:  input.GetSupporterGroups(),
+		LdapUsers:   input.Supporter.LDAPUsers,
+		Users:       input.Supporter.Users,
+		SamlUsers:   input.Supporter.SamlUsers,
+		RemoveUsers: input.RemoveUsers,
+		RoleUsers:   supporters,
+		RemoveUser:  m.RemoveSpaceSupporter,
+		AddUser:     m.AssociateSpaceSupporter,
 	}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s, space %s, role %s", input.Org, input.Space, "developer"))
 	}
@@ -435,48 +435,48 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 	}
 	err = m.SyncUsers(
 		UsersInput{
-			OrgName:        org.Name,
-			OrgGUID:        org.Guid,
-			LdapGroupNames: input.GetBillingManagerGroups(),
-			LdapUsers:      input.BillingManager.LDAPUsers,
-			Users:          input.BillingManager.Users,
-			SamlUsers:      input.BillingManager.SamlUsers,
-			RemoveUsers:    input.RemoveUsers,
-			RoleUsers:      billingManagers,
-			RemoveUser:     m.RemoveOrgBillingManager,
-			AddUser:        m.AssociateOrgBillingManager,
+			OrgName:     org.Name,
+			OrgGUID:     org.Guid,
+			GroupNames:  input.GetBillingManagerGroups(),
+			LdapUsers:   input.BillingManager.LDAPUsers,
+			Users:       input.BillingManager.Users,
+			SamlUsers:   input.BillingManager.SamlUsers,
+			RemoveUsers: input.RemoveUsers,
+			RoleUsers:   billingManagers,
+			RemoveUser:  m.RemoveOrgBillingManager,
+			AddUser:     m.AssociateOrgBillingManager,
 		})
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s role %s", input.Org, "billing_managers"))
 	}
 
 	err = m.SyncUsers(UsersInput{
-		OrgName:        org.Name,
-		OrgGUID:        org.Guid,
-		LdapGroupNames: input.GetAuditorGroups(),
-		LdapUsers:      input.Auditor.LDAPUsers,
-		Users:          input.Auditor.Users,
-		SamlUsers:      input.Auditor.SamlUsers,
-		RemoveUsers:    input.RemoveUsers,
-		RoleUsers:      auditors,
-		RemoveUser:     m.RemoveOrgAuditor,
-		AddUser:        m.AssociateOrgAuditor,
+		OrgName:     org.Name,
+		OrgGUID:     org.Guid,
+		GroupNames:  input.GetAuditorGroups(),
+		LdapUsers:   input.Auditor.LDAPUsers,
+		Users:       input.Auditor.Users,
+		SamlUsers:   input.Auditor.SamlUsers,
+		RemoveUsers: input.RemoveUsers,
+		RoleUsers:   auditors,
+		RemoveUser:  m.RemoveOrgAuditor,
+		AddUser:     m.AssociateOrgAuditor,
 	})
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error syncing users for org %s role %s", input.Org, "org-auditors"))
 	}
 
 	err = m.SyncUsers(UsersInput{
-		OrgName:        org.Name,
-		OrgGUID:        org.Guid,
-		LdapGroupNames: input.GetManagerGroups(),
-		LdapUsers:      input.Manager.LDAPUsers,
-		Users:          input.Manager.Users,
-		SamlUsers:      input.Manager.SamlUsers,
-		RemoveUsers:    input.RemoveUsers,
-		RoleUsers:      managers,
-		RemoveUser:     m.RemoveOrgManager,
-		AddUser:        m.AssociateOrgManager,
+		OrgName:     org.Name,
+		OrgGUID:     org.Guid,
+		GroupNames:  input.GetManagerGroups(),
+		LdapUsers:   input.Manager.LDAPUsers,
+		Users:       input.Manager.Users,
+		SamlUsers:   input.Manager.SamlUsers,
+		RemoveUsers: input.RemoveUsers,
+		RoleUsers:   managers,
+		RemoveUser:  m.RemoveOrgManager,
+		AddUser:     m.AssociateOrgManager,
 	})
 
 	if err != nil {

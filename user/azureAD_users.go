@@ -59,7 +59,7 @@ func (m *DefaultManager) SyncAzureADUsers(roleUsers *RoleUsers, usersInput Users
 func (m *DefaultManager) GetAzureADUsers(usersInput UsersInput) ([]azureAD.UserType, error) {
 	var azureADUsers []azureAD.UserType
 	// TODO Base of LDAP groups for now, later change to separate group entry for AAD
-	for _, groupName := range usersInput.UniqueLdapGroupNames() {
+	for _, groupName := range usersInput.UniqueGroupNames() {
 
 		userUPNList, err := m.AzureADMgr.GraphGetGroupMembers(m.AzureADMgr.GetADToken(), groupName)
 		if err != nil {

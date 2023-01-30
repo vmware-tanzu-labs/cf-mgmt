@@ -107,7 +107,6 @@ func updateUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []strin
 	userMgmt.SamlUsers = removeFromSlice(addToSlice(userMgmt.SamlUsers, userRole.SamlUsers, errorString), userRole.SamlUsersToRemove)
 	userMgmt.LDAPUsers = removeFromSlice(addToSlice(userMgmt.LDAPUsers, userRole.LDAPUsers, errorString), userRole.LDAPUsersToRemove)
 	userMgmt.LDAPGroup = ""
-	userMgmt.AADGroup = ""
 }
 
 func addUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, currentAADGroups []string, userRole *UserRoleAdd, errorString *string) {
@@ -117,7 +116,6 @@ func addUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, 
 	userMgmt.SamlUsers = addToSlice(userMgmt.SamlUsers, userRole.SamlUsers, errorString)
 	userMgmt.LDAPUsers = addToSlice(userMgmt.LDAPUsers, userRole.LDAPUsers, errorString)
 	userMgmt.LDAPGroup = ""
-	userMgmt.AADGroup = ""
 }
 
 func convertToInt(parameterName string, currentValue *int, proposedValue string, errorString *string) {

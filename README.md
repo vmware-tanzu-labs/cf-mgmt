@@ -16,8 +16,8 @@ Documentation is only amended for as far as the Azure AD support. You may find i
 In short: 
 * ```The cf-mgmt update-org-users``` and ```cf-mgmt update-space-users``` commands have extra parameters to specify the required information for accessing Azure AD.
 * A new yaml file ```azureAD.yml``` can optionally be added to specify the Azure AD config parameters
-* the files ```orgConfig.yml``` and ```spaceConfig.yml``` can now have entries for ```aad_group``` and ```aad_groups``` (comparable to the corresponding ldap entries)
-* the ```cf-mgmt-config``` command also generates the ```azureAD.yml``` file and ```aad_group``` and ```aad_groups``` entries 
+* the files ```orgConfig.yml``` and ```spaceConfig.yml``` can now have entries for ```aad_groups``` (comparable to the corresponding ldap entrie. aad_group is not supported)
+* the ```cf-mgmt-config``` command also generates the ```azureAD.yml``` file and ```aad_groups``` entries 
 
 # Cloud Foundry Management (cf-mgmt)
 

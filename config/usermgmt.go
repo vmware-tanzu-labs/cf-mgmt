@@ -7,7 +7,6 @@ type UserMgmt struct {
 	SamlUsers  []string `yaml:"saml_users"`
 	LDAPGroup  string   `yaml:"ldap_group,omitempty"`
 	LDAPGroups []string `yaml:"ldap_groups"`
-	AADGroup   string   `yaml:"aad_group,omitempty"`
 	AADGroups  []string `yaml:"aad_groups"`
 }
 
@@ -37,9 +36,6 @@ func (u *UserMgmt) groups(groupName string) []string {
 	}
 	if u.LDAPGroup != "" {
 		groupMap[u.LDAPGroup] = u.LDAPGroup
-	}
-	if u.AADGroup != "" {
-		groupMap[u.AADGroup] = u.AADGroup
 	}
 	if groupName != "" {
 		groupMap[groupName] = groupName

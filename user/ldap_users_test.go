@@ -65,12 +65,12 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("Should add ldap user to role", func() {
 				updateUsersInput := UsersInput{
-					LdapUsers:      []string{"test_ldap2"},
-					LdapGroupNames: []string{},
-					SpaceGUID:      "space_guid",
-					OrgGUID:        "org_guid",
-					AddUser:        userManager.AssociateSpaceAuditor,
-					RoleUsers:      InitRoleUsers(),
+					LdapUsers:  []string{"test_ldap2"},
+					GroupNames: []string{},
+					SpaceGUID:  "space_guid",
+					OrgGUID:    "org_guid",
+					AddUser:    userManager.AssociateSpaceAuditor,
+					RoleUsers:  InitRoleUsers(),
 				}
 
 				ldapFake.GetUserByIDReturns(
@@ -111,12 +111,12 @@ var _ = Describe("given UserSpaces", func() {
 
 				userManager.UAAUsers = uaaUsers
 				updateUsersInput := UsersInput{
-					LdapUsers:      []string{"test_ldap2"},
-					LdapGroupNames: []string{},
-					SpaceGUID:      "space_guid",
-					OrgGUID:        "org_guid",
-					AddUser:        userManager.AssociateSpaceAuditor,
-					RoleUsers:      InitRoleUsers(),
+					LdapUsers:  []string{"test_ldap2"},
+					GroupNames: []string{},
+					SpaceGUID:  "space_guid",
+					OrgGUID:    "org_guid",
+					AddUser:    userManager.AssociateSpaceAuditor,
+					RoleUsers:  InitRoleUsers(),
 				}
 
 				ldapFake.GetUserByIDReturns(
@@ -144,12 +144,12 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("Should add ldap group member to role", func() {
 				updateUsersInput := UsersInput{
-					LdapUsers:      []string{},
-					LdapGroupNames: []string{"test_group"},
-					SpaceGUID:      "space_guid",
-					OrgGUID:        "org_guid",
-					AddUser:        userManager.AssociateSpaceAuditor,
-					RoleUsers:      InitRoleUsers(),
+					LdapUsers:  []string{},
+					GroupNames: []string{"test_group"},
+					SpaceGUID:  "space_guid",
+					OrgGUID:    "org_guid",
+					AddUser:    userManager.AssociateSpaceAuditor,
+					RoleUsers:  InitRoleUsers(),
 				}
 
 				ldapFake.GetUserDNsReturns([]string{"cn=ldap_test_dn"}, nil)
@@ -285,11 +285,11 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should not query ldap if user exists in UAA", func() {
 
 				updateUsersInput := UsersInput{
-					LdapGroupNames: []string{"test_group"},
-					SpaceGUID:      "space_guid",
-					OrgGUID:        "org_guid",
-					AddUser:        userManager.AssociateSpaceAuditor,
-					RoleUsers:      InitRoleUsers(),
+					GroupNames: []string{"test_group"},
+					SpaceGUID:  "space_guid",
+					OrgGUID:    "org_guid",
+					AddUser:    userManager.AssociateSpaceAuditor,
+					RoleUsers:  InitRoleUsers(),
 				}
 				ldapFake.GetUserDNsReturns([]string{"cn=test_ldap2"}, nil)
 				err := userManager.SyncLdapUsers(roleUsers, updateUsersInput)
