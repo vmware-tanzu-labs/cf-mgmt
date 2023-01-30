@@ -1,10 +1,10 @@
-TAS version | Compatible?
---- | ---
-2.13 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_13/badge)
-2.12 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_12/badge)
-2.11 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_11_lts2/badge)
-2.10 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_10/badge)
-2.7 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_7_lts/badge)
+| TAS version | Compatible?                                                                                                    |
+|-------------|----------------------------------------------------------------------------------------------------------------|
+| 2.13        | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_13/badge)      |
+| 2.12        | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_12/badge)      |
+| 2.11        | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_11_lts2/badge) |
+| 2.10        | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_10/badge)      |
+| 2.7         | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_7_lts/badge)   |
 
 # Note for Rabobank version of cf-mgmt
 This version of cf-mgmt is a fork of the cf-mgmt tool created by vmware/tanzu. The original tool can be found here: https://github.com/vmware-tanzu-labs/cf-mgmt
@@ -143,9 +143,9 @@ fly -t <targetname> login -c <concourse_instance>
 fly -t <targetname> set-pipeline -p <pipeline_name> \
    -c pipeline.yml \
    -l vars.yml \
-   —-var "ldap_password=<ldap_password>" \
+   --var "ldap_password=<ldap_password>" \
    --var "client_secret=<client_secret>" \
-   —-var "password=<org/space_admin_password>"
+   --var "password=<org/space_admin_password>"
 ```
 
 >Check the [Concourse docs](https://concourse-ci.org/fly.html) if not familiar with the `fly` CLI
@@ -173,7 +173,7 @@ When opening an issue please provide debug level output (scrubbed for any custom
 ```yml
 params:
   LOG_LEVEL: debug
-  ... existing params
+   ... existing params
 ```
 
 ## Development
