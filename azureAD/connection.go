@@ -47,7 +47,5 @@ func getAccessToken(config *config.AzureADConfig) (Token, error) {
 		lo.G.Debugf("Reading body into Token struct failed: %s", err)
 		return token, nil
 	}
-
-	lo.G.Debugf("Result Token: %s", token.AccessToken)
 	return token, nil
 }
