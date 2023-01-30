@@ -47,7 +47,6 @@ func (m *Manager) GetADToken() string {
 }
 
 func (m *Manager) GraphGetGroupMembers(token, groupName string) ([]string, error) {
-
 	if m.isGroupInCache(groupName) {
 		lo.G.Debugf("Group %s found in cache", groupName)
 		return m.groupMap[groupName], nil
@@ -59,7 +58,7 @@ func (m *Manager) GraphGetGroupMembers(token, groupName string) ([]string, error
 		return nil, err
 	}
 
-	requestURL := GRAPH_URL + "groups/" + groupId + "/members"
+	requestURL := GraphURL + "groups/" + groupId + "/members"
 
 	headers := make(map[string]string)
 	headers["Authorization"] = "Bearer " + token
@@ -82,12 +81,11 @@ func (m *Manager) GraphGetGroupMembers(token, groupName string) ([]string, error
 }
 
 func graphGetIdFromName(token, name string) (string, error) {
-
 	// Some magic because the filter uses spaces and single quotes.
 	// Spaces MUST be encode to %20 (not +, as is the default for go)
 	spaceEncodedString := "$select=id&$filter=displayName eq '" + name + "'"
 	t := &url.URL{Path: spaceEncodedString}
-	requestURL := GRAPH_URL + "groups?" + t.String()
+	requestURL := GraphURL + "groups?" + t.String()
 
 	headers := make(map[string]string)
 	headers["Authorization"] = "Bearer " + token
@@ -108,11 +106,9 @@ func graphGetIdFromName(token, name string) (string, error) {
 	}
 
 	return result.Value[0].Id, nil
-
 }
 
 func doHttpCall(requestUrl string, Headers map[string]string) ([]byte, error) {
-
 	req, err := http.NewRequest(http.MethodGet, requestUrl, nil)
 	lo.G.Debugf("Request URI: %v", requestUrl)
 	if err != nil {
@@ -132,8 +128,6 @@ func doHttpCall(requestUrl string, Headers map[string]string) ([]byte, error) {
 	}
 
 	defer response.Body.Close()
-
 	body, _ := io.ReadAll(response.Body)
-
 	return body, nil
 }
