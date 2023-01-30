@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
@@ -147,6 +148,11 @@ func (m *DefaultManager) AssociateSpaceAuditor(input UsersInput, userName, userG
 
 	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "auditor", input.OrgName, input.SpaceName)
 	_, err = m.Client.CreateV3SpaceRole(input.SpaceGUID, userGUID, SPACE_AUDITOR)
+	r, _ := regexp.Compile("User '.+' already has '.+_auditor' role in space")
+	if r.MatchString(err.Error()) {
+		lo.G.Debug("User already exists with correct Role")
+		return nil
+	}
 	return err
 }
 func (m *DefaultManager) AssociateSpaceDeveloper(input UsersInput, userName, userGUID string) error {
@@ -160,6 +166,11 @@ func (m *DefaultManager) AssociateSpaceDeveloper(input UsersInput, userName, use
 	}
 	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "developer", input.OrgName, input.SpaceName)
 	_, err = m.Client.CreateV3SpaceRole(input.SpaceGUID, userGUID, SPACE_DEVELOPER)
+	r, _ := regexp.Compile("User '.+' already has '.+_developer' role in space")
+	if r.MatchString(err.Error()) {
+		lo.G.Debug("User already exists with correct Role")
+		return nil
+	}
 	return err
 }
 func (m *DefaultManager) AssociateSpaceManager(input UsersInput, userName, userGUID string) error {
@@ -174,6 +185,11 @@ func (m *DefaultManager) AssociateSpaceManager(input UsersInput, userName, userG
 
 	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "manager", input.OrgName, input.SpaceName)
 	_, err = m.Client.CreateV3SpaceRole(input.SpaceGUID, userGUID, SPACE_MANAGER)
+	r, _ := regexp.Compile("User '.+' already has '.+_manager' role in space")
+	if r.MatchString(err.Error()) {
+		lo.G.Debug("User already exists with correct Role")
+		return nil
+	}
 	return err
 }
 
@@ -194,6 +210,11 @@ func (m *DefaultManager) AssociateSpaceSupporter(input UsersInput, userName, use
 
 	lo.G.Infof("adding %s to role %s for org/space %s/%s", userName, "supporter", input.OrgName, input.SpaceName)
 	_, err = m.Client.CreateV3SpaceRole(input.SpaceGUID, userGUID, SPACE_SUPPORTER)
+	r, _ := regexp.Compile("User '.+' already has '.+_supporter' role in space")
+	if r.MatchString(err.Error()) {
+		lo.G.Debug("User already exists with correct Role")
+		return nil
+	}
 	return err
 }
 
