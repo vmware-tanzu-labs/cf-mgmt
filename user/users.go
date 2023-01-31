@@ -502,13 +502,6 @@ func (m *DefaultManager) SyncUsers(usersInput UsersInput) error {
 		lo.G.Debugf("Users after LDAP sync %+v", roleUsers.Users())
 	}
 
-	if err := m.SyncAzureADUsers(roleUsers, usersInput); err != nil {
-		return errors.Wrap(err, "adding Azure AD users")
-	}
-	if len(roleUsers.Users()) > 0 {
-		lo.G.Debugf("Users after AzureAD sync %+v", roleUsers.Users())
-	}
-
 	if err := m.SyncInternalUsers(roleUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding internal users")
 	}
@@ -521,6 +514,14 @@ func (m *DefaultManager) SyncUsers(usersInput UsersInput) error {
 	}
 	if len(roleUsers.Users()) > 0 {
 		lo.G.Debugf("Users after SAML sync %+v", roleUsers.Users())
+	}
+
+	// Sync AAD users after SAML users. Do the uniqueness check in this function, so we don;t have to touch the SAML users function too much
+	if err := m.SyncAzureADUsers(roleUsers, usersInput); err != nil {
+		return errors.Wrap(err, "adding Azure AD users")
+	}
+	if len(roleUsers.Users()) > 0 {
+		lo.G.Debugf("Users after AzureAD sync %+v", roleUsers.Users())
 	}
 
 	if err := m.RemoveUsers(roleUsers, usersInput); err != nil {
