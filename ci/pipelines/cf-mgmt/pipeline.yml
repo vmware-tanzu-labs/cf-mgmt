@@ -64,7 +64,7 @@ resources:
   source:
     owner: vmware-tanzu-labs
     repository: cf-mgmt
-    access_token: ((github.token))
+    access_token: ((github.access_token))
     drafts: true
 
 - name: releases
@@ -72,7 +72,7 @@ resources:
   source:
     owner: vmware-tanzu-labs
     repository: cf-mgmt
-    access_token: ((github.token))
+    access_token: ((github.access_token))
 
 - name: docker-registry
   type: docker-image
@@ -97,7 +97,7 @@ resources:
   source:
     repository: vmwarepivotallabs/cf-mgmt
     disable_forks: true
-    access_token: ((github.token))
+    access_token: ((github.access_token))
     base_branch: main
 
 - name: cryogenics-concourse-tasks
@@ -180,7 +180,7 @@ jobs:
       source-repo: pull-request
     params:
       DELETE: TRUE
-      GH_TOKEN: ((github.token))
+      GH_TOKEN: ((github.access_token))
       PR_REF: ((.:pr-metadata.pr))
 
 #@ for v in data.values.tas_versions:
