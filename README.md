@@ -7,6 +7,8 @@
 | 2.7         | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_7_lts/badge)   |
 
 # Note for Rabobank version of cf-mgmt
+[![Test, Build and Release](https://github.com/rabobank/cf-mgmt/actions/workflows/test-build-release.yml/badge.svg)](https://github.com/rabobank/cf-mgmt/actions/workflows/test-build-release.yml)
+
 This version of cf-mgmt is a fork of the cf-mgmt tool created by vmware/tanzu. The original tool can be found here: https://github.com/vmware-tanzu-labs/cf-mgmt
 
 This Rabobank version adds support for groups maintained in Azure Active Directory (Azure AD), instead of in AD (LDAP). 
