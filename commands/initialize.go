@@ -94,6 +94,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	// }
 	client, err := cfclient.NewClient(c)
 	if err != nil {
+		lo.G.Errorf("Error obtaining a New CF Client: %s", err)
 		return nil, err
 	}
 	cfMgmt.OrgReader = organizationreader.NewReader(client, cfg, peek)
