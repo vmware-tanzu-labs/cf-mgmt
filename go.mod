@@ -1,6 +1,6 @@
 module github.com/vmwarepivotallabs/cf-mgmt
 
-go 1.19
+go 1.20
 
 require (
 	code.cloudfoundry.org/routing-api v0.0.0-20210519201915-b3b118a368e6
