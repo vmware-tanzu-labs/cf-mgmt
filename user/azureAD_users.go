@@ -72,7 +72,7 @@ func (m *DefaultManager) GetAzureADUsers(usersInput UsersInput) ([]azureAD.UserT
 			// NOTE: The SAML User List we get here is the list for the Role we are adding the user to (through the AddUser function, whcih maps to AssociateXXXXXXXXRole
 			alreadyMember := false
 			for _, u := range usersInput.SamlUsers {
-				if u == userUPN {
+				if strings.EqualFold(u, userUPN) {
 					lo.G.Debugf("Group member %s is already defined as SAML user, skipping", userUPN)
 					alreadyMember = true
 					continue
