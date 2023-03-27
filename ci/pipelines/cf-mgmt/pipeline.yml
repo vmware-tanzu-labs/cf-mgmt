@@ -7,7 +7,7 @@
 #@ load("@ytt:data", "data")
 
 groups:
-- name: pull-requests
+- name: test
   jobs:
   - claim-cf
   - test
