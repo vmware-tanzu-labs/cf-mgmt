@@ -159,7 +159,6 @@ jobs:
 
 - name: merge
   plan:
-  - get: cryogenics-concourse-tasks
   - get: pull-request
     trigger: true
     passed:
@@ -169,19 +168,8 @@ jobs:
 #@ end
   - put: pull-request
     params:
-      merge: false
+      merge: true
       status: success
-  - load_var: pr-metadata
-    file: pull-request/.git/resource/version.json
-    format: json
-  - task: merge-pr
-    file: cryogenics-concourse-tasks/github-automation/merge-pr/task.yml
-    input_mapping:
-      source-repo: pull-request
-    params:
-      DELETE: TRUE
-      GH_TOKEN: ((github.access_token))
-      PR_REF: ((.:pr-metadata.pr))
 
 #@ for v in data.values.tas_versions:
 - name: #@ 'claim-tas-' + v["version_slug"]
