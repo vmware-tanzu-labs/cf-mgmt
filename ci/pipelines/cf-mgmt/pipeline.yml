@@ -24,6 +24,11 @@ groups:
   - publish
 
 resource_types:
+- name: slack-notification
+  type: registry-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+
 - name: pr-queue-resource
   type: docker-image
   source:
@@ -42,6 +47,17 @@ resource_types:
   type: registry-image
 
 resources:
+- name: slack-cryo-notification
+  type: slack-notification
+  icon: bell-ring
+  source:
+    url: ((slack.webhook))
+
+- name: every-week
+  type: time
+  source: 
+    interval: 168h #! 24h*7days
+
 #@ for/end v in data.values.tas_versions:
 - icon: pool
   name: #@ 'tas-' + v["version_slug"] + '-env'
@@ -59,20 +75,13 @@ resources:
     private_key: ((github.ssh_key))
     ignore_paths: ["README.md","docs/*"]
 
-- name: draft-cfmgmt-resource
-  type: github-release
-  source:
-    owner: vmware-tanzu-labs
-    repository: cf-mgmt
-    access_token: ((github.access_token))
-    drafts: true
-
 - name: releases
   type: github-release
   source:
     owner: vmware-tanzu-labs
     repository: cf-mgmt
     access_token: ((github.access_token))
+    drafts: false
 
 - name: docker-registry
   type: docker-image
@@ -213,14 +222,32 @@ jobs:
 
 - name: release
   plan:
-    - get: source
-      trigger: true
-      resource: source
+    - in_parallel:
+      - get: every-week
+        trigger: true
+      - get: cryogenics-concourse-tasks
+      - get: source
     - task: build
       file: source/ci/tasks/build.yml
-    - put: draft-cfmgmt-resource
+      params:
+        DRAFT: false
+    - do:
+      - task: create-release-notes
+        file: cryogenics-concourse-tasks/release-automation/release-notes/task.yml
+        input_mapping:
+          git-repo: source
+        params:
+          USE_LATEST_PUBLISHED_TAG: true
+      - task: format-release-notes
+        file: cryogenics-concourse-tasks/release-automation/format-release-notes/task.yml
+        input_mapping:
+          template-folder: cryogenics-concourse-tasks
+        params:
+          TEMPLATE_PATH: release-automation/release-notes-templates/release-notes-auto.md.erb
+    - put: releases
       params:
         name: compiled-output/name
+        body: release-notes/release-notes.md
         tag: compiled-output/tag
         globs:
         - compiled-output/cf-mgmt-linux
@@ -229,15 +256,27 @@ jobs:
         - compiled-output/cf-mgmt-config-linux
         - compiled-output/cf-mgmt-config-osx
         - compiled-output/cf-mgmt-config.exe
+    - load_var: github-release-url
+      file: releases/url
+    - load_var: version-number
+      file: compiled-output/tag
+    - put: slack-cryo-notification
+      params:
+        text: |
+          *cf-mgmt*: version `((.:version-number))` has been released 🎉
+          Next steps (cc <!subteam^S028XABEHAP>):
+            1. Review the release notes <((.:github-release-url))|here>.
 
 - name: publish
   plan:
     - in_parallel:
       - get: source
         passed:
-          - release
+         - release
       - get: releases
         trigger: true
+        passed:
+          - release
     - task: prepare
       file: source/ci/tasks/prepare.yml
     - put: docker-registry
