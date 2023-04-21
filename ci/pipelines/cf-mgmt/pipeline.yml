@@ -7,6 +7,9 @@
 #@ load("@ytt:data", "data")
 
 groups:
+- name: bump
+  jobs:
+  - bump-ci-tasks
 - name: test
   jobs:
   - claim-cf
@@ -47,6 +50,11 @@ resource_types:
   type: registry-image
 
 resources:
+- name: cryogenics-essentials
+  type: registry-image
+  source:
+    repository: cryogenics/essentials
+
 - name: slack-cryo-notification
   type: slack-notification
   icon: bell-ring
@@ -74,6 +82,12 @@ resources:
     branch: main
     private_key: ((github.ssh_key))
     ignore_paths: ["README.md","docs/*"]
+
+- name: cf-mgmt-bump-ci-tasks
+  type: git
+  source:
+    uri: git@github.com:vmwarepivotallabs/cf-mgmt.git
+    private_key: ((github.ssh_key))
 
 - name: releases
   type: github-release
@@ -284,3 +298,42 @@ jobs:
         build: prepare-output
         tag_as_latest: true
         tag: prepare-output/version
+
+- name: bump-ci-tasks
+  plan:
+    - in_parallel:
+      - get: cryogenics-essentials
+        trigger: true
+      - get: cryogenics-concourse-tasks
+      - get: source
+
+    - in_parallel:
+      - load_var: cryogenics-essentials-version
+        file: cryogenics-essentials/tag
+      - task: bump-tasks
+        image: cryogenics-essentials
+        file: cryogenics-concourse-tasks/deps-automation/bump-concourse-tasks/task.yml
+        input_mapping:
+          repo: source
+          image: cryogenics-essentials
+        output_mapping:
+          repo: source
+    - put: cf-mgmt-bump-ci-tasks
+      params:
+        repository: source
+        branch: &bump-ci-task-branch bump-cryogenics-essentials-to-v((.:cryogenics-essentials-version))
+        force: true
+    - task: create-pull-request
+      file: cryogenics-concourse-tasks/github-automation/create-pr/task.yml
+      params:
+        BASE: main
+        BRANCH: *bump-ci-task-branch
+        LABELS: dependencies
+        TITLE: Bump cryogenics/essentials to v((.:cryogenics-essentials-version))
+        MESSAGE: |
+          This is an automatically generated Pull Request from the Cryogenics CI Bot.
+          I have detected a new version of [cryogenics/essentials](https://hub.docker.com/r/cryogenics/essentials/tags) and automatically bumped
+          this package to benefit from the latest changes.
+          If this does not look right, please reach out to the [#mapbu-cryogenics](https://vmware.slack.com/archives/C01DXEYRKRU) team.
+      input_mapping:
+        source-repo: cf-mgmt-bump-ci-tasks
