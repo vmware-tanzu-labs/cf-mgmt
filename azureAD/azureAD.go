@@ -82,8 +82,8 @@ func (m *Manager) GraphGetGroupMembers(token, groupName string) ([]string, error
 
 func graphGetIdFromName(token, name string) (string, error) {
 	// Some magic because the filter uses spaces and single quotes.
-	// Spaces MUST be encode to %20 (not +, as is the default for go)
-	spaceEncodedString := "$select=id&$filter=displayName eq '" + name + "'"
+	// Spaces MUST be encoded as %20 (not +, as is the default for go)
+	spaceEncodedString := "$select=id&$filter=displayName eq '" + url.QueryEscape(name) + "'"
 	t := &url.URL{Path: spaceEncodedString}
 	requestURL := GraphURL + "groups?" + t.String()
 
