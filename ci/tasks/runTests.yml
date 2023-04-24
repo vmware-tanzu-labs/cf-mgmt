@@ -2,9 +2,9 @@ platform: linux
 image_resource:
   source:
     repository: cryogenics/essentials
-    tag: latest
+    tag: 0.1.37
   type: registry-image
 run:
   path: source/ci/tasks/runTests.sh
 inputs:
-- name: source
+  - name: source

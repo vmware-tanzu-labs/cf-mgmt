@@ -1,15 +1,11 @@
 platform: linux
-
 image_resource:
   type: registry-image
   source:
     repository: cryogenics/essentials
-    tag: latest
-
+    tag: 0.1.37
 inputs:
-- name: source
-- name: env
-
+  - name: source
+  - name: env
 run:
   path: source/ci/tasks/runIntegrationTestsAgainstTAS.sh
-
