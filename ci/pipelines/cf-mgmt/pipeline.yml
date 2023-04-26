@@ -78,7 +78,7 @@ resources:
 - name: source
   type: git
   source:
-    uri: git@github.com:vmwarepivotallabs/cf-mgmt.git
+    uri: git@github.com:vmware-tanzu-labs/cf-mgmt.git
     branch: main
     private_key: ((github.ssh_key))
     ignore_paths: ["README.md","docs/*"]
@@ -86,7 +86,7 @@ resources:
 - name: cf-mgmt-bump-ci-tasks
   type: git
   source:
-    uri: git@github.com:vmwarepivotallabs/cf-mgmt.git
+    uri: git@github.com:vmware-tanzu-labs/cf-mgmt.git
     private_key: ((github.ssh_key))
 
 - name: releases
@@ -118,7 +118,7 @@ resources:
   check_every: 1h
   icon: source-pull
   source:
-    repository: vmwarepivotallabs/cf-mgmt
+    repository: vmware-tanzu-labs/cf-mgmt
     disable_forks: true
     access_token: ((github.access_token))
     base_branch: main
@@ -306,7 +306,6 @@ jobs:
         trigger: true
       - get: cryogenics-concourse-tasks
       - get: source
-
     - in_parallel:
       - load_var: cryogenics-essentials-version
         file: cryogenics-essentials/tag
@@ -329,7 +328,7 @@ jobs:
         BASE: main
         BRANCH: *bump-ci-task-branch
         LABELS: dependencies
-        TITLE: Bump cryogenics/essentials to v((.:cryogenics-essentials-version))
+        TITLE: "[ci] Bump cryogenics/essentials to v((.:cryogenics-essentials-version))"
         MESSAGE: |
           This is an automatically generated Pull Request from the Cryogenics CI Bot.
           I have detected a new version of [cryogenics/essentials](https://hub.docker.com/r/cryogenics/essentials/tags) and automatically bumped
