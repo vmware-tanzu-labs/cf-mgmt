@@ -14,7 +14,7 @@ func (u *Users) Add(user User) {
 	if u.userMap == nil {
 		u.userMap = make(map[string][]User)
 	}
-	key := strings.ToLower(user.Username)
+	key := strings.Trim(strings.ToLower(user.Username), " ")
 	existingUsers := u.userMap[key]
 	existingUsers = append(existingUsers, user)
 	u.userMap[key] = existingUsers
