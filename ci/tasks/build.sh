@@ -9,6 +9,9 @@ SOURCE_DIR=$PWD/source
 
 go install github.com/xchapter7x/versioning@latest
 
+export GOPATH="$HOME/go"
+export PATH="$GOPATH/bin:$PATH"
+
 pushd ${SOURCE_DIR} > /dev/null
  if [ -d ".git" ]; then
     if ${DEV}; then
