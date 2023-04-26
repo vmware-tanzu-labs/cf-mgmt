@@ -7,9 +7,6 @@
 #@ load("@ytt:data", "data")
 
 groups:
-- name: bump
-  jobs:
-  - bump-ci-tasks
 - name: test
   jobs:
   - claim-cf
@@ -21,8 +18,12 @@ groups:
   - #@ 'unclaim-tas-' + v["version_slug"]
 #@ end
   - merge
+- name: bump
+  jobs:
+  - bump-ci-tasks
 - name: release
   jobs:
+  - check-for-changes
   - release
   - publish
 
@@ -82,6 +83,20 @@ resources:
     branch: main
     private_key: ((github.ssh_key))
     ignore_paths: ["README.md","docs/*"]
+
+- name: source-production-files-only
+  type: git
+  source:
+    uri: git@github.com:vmware-tanzu-labs/cf-mgmt.git
+    branch: main
+    private_key: ((github.ssh_key))
+    ignore_paths:
+    - README.md
+    - 'docs/*'
+    - ci/
+    - .github
+    - run-tests.sh
+    - '**/*_test.go'
 
 - name: cf-mgmt-bump-ci-tasks
   type: git
@@ -234,13 +249,25 @@ jobs:
       env_file: #@ 'tas-' + v["version_slug"] + '-env/metadata'
 #@ end
 
-- name: release
+- name: check-for-changes
   plan:
     - in_parallel:
       - get: every-week
         trigger: true
+      - get: source
+      - get: source-production-files-only
+
+- name: release
+  plan:
+    - in_parallel:
+      - get: source-production-files-only
+        trigger: true
+        passed:
+        - check-for-changes
       - get: cryogenics-concourse-tasks
       - get: source
+        passed:
+        - check-for-changes
     - task: build
       file: source/ci/tasks/build.yml
       params:
