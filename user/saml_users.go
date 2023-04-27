@@ -36,6 +36,7 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, usersInput UsersInp
 				return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", user.Username, user.Origin))
 			}
 		} else {
+			lo.G.Debugf("User %s already exists", userEmail)
 			roleUsers.RemoveUserForOrigin(userEmail, user.Origin)
 		}
 	}

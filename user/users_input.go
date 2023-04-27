@@ -1,6 +1,8 @@
 package user
 
-//UsersInput
+import "strings"
+
+// UsersInput
 type UsersInput struct {
 	SpaceGUID                                   string
 	OrgGUID                                     string
@@ -33,8 +35,9 @@ func uniqueSlice(input []string) []string {
 	unique := make(map[string]string)
 	output := []string{}
 	for _, value := range input {
-		if _, ok := unique[value]; !ok {
-			unique[value] = value
+		v := strings.Trim(strings.ToLower(value), " ")
+		if _, ok := unique[v]; !ok {
+			unique[v] = v
 		}
 	}
 	for key := range unique {

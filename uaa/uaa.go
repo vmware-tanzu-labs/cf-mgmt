@@ -2,6 +2,7 @@ package uaa
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/xchapter7x/lo"
 
@@ -14,14 +15,14 @@ type uaa interface {
 	ListAllUsers(filter string, sortBy string, attributes string, sortOrder uaaclient.SortOrder) ([]uaaclient.User, error)
 }
 
-//Manager -
+// Manager -
 type Manager interface {
 	//Returns a map keyed and valued by user id. User id is converted to lowercase
 	ListUsers() (*Users, error)
 	CreateExternalUser(userName, userEmail, externalID, origin string) (GUID string, err error)
 }
 
-//DefaultUAAManager -
+// DefaultUAAManager -
 type DefaultUAAManager struct {
 	Peek   bool
 	Client uaa
@@ -35,7 +36,7 @@ type User struct {
 	GUID       string
 }
 
-//NewDefaultUAAManager -
+// NewDefaultUAAManager -
 func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, peek bool) (Manager, error) {
 	target := fmt.Sprintf("https://uaa.%s", sysDomain)
 	client, err := uaaclient.New(
@@ -54,7 +55,7 @@ func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, p
 	}, nil
 }
 
-//CreateExternalUser -
+// CreateExternalUser -
 func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, origin string) (string, error) {
 	if userName == "" || userEmail == "" || externalID == "" {
 		return "", fmt.Errorf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID)
@@ -81,7 +82,7 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 	return createdUser.ID, nil
 }
 
-//ListUsers - returns uaa.Users
+// ListUsers - returns uaa.Users
 func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 	users := &Users{}
 	lo.G.Debug("Getting users from Cloud Foundry")
@@ -92,9 +93,10 @@ func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 
 	lo.G.Debugf("Found %d users in the CF instance", len(userList))
 	for _, user := range userList {
-		lo.G.Debugf("Adding to users userID [%s], externalID [%s], origin [%s], email [%s], GUID [%s]", user.Username, user.ExternalID, user.Origin, Email(user), user.ID)
+		userName := strings.Trim(user.Username, " ")
+		lo.G.Debugf("Adding to users userID [%s], externalID [%s], origin [%s], email [%s], GUID [%s]", userName, user.ExternalID, user.Origin, Email(user), user.ID)
 		users.Add(User{
-			Username:   user.Username,
+			Username:   userName,
 			ExternalID: user.ExternalID,
 			Email:      Email(user),
 			Origin:     user.Origin,
