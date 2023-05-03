@@ -3,7 +3,7 @@ image_resource:
   type: registry-image
   source:
     repository: cryogenics/essentials
-    tag: 0.1.45
+    tag: 0.1.46
 inputs:
   - name: source
   - name: env
