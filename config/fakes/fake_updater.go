@@ -289,15 +289,16 @@ func (fake *FakeUpdater) AddDefaultSecurityGroup(arg1 string, arg2 []byte) error
 		arg1 string
 		arg2 []byte
 	}{arg1, arg2Copy})
+	stub := fake.AddDefaultSecurityGroupStub
+	fakeReturns := fake.addDefaultSecurityGroupReturns
 	fake.recordInvocation("AddDefaultSecurityGroup", []interface{}{arg1, arg2Copy})
 	fake.addDefaultSecurityGroupMutex.Unlock()
-	if fake.AddDefaultSecurityGroupStub != nil {
-		return fake.AddDefaultSecurityGroupStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addDefaultSecurityGroupReturns
 	return fakeReturns.result1
 }
 
@@ -349,15 +350,16 @@ func (fake *FakeUpdater) AddOrgQuota(arg1 config.OrgQuota) error {
 	fake.addOrgQuotaArgsForCall = append(fake.addOrgQuotaArgsForCall, struct {
 		arg1 config.OrgQuota
 	}{arg1})
+	stub := fake.AddOrgQuotaStub
+	fakeReturns := fake.addOrgQuotaReturns
 	fake.recordInvocation("AddOrgQuota", []interface{}{arg1})
 	fake.addOrgQuotaMutex.Unlock()
-	if fake.AddOrgQuotaStub != nil {
-		return fake.AddOrgQuotaStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addOrgQuotaReturns
 	return fakeReturns.result1
 }
 
@@ -409,15 +411,16 @@ func (fake *FakeUpdater) AddOrgToConfig(arg1 *config.OrgConfig) error {
 	fake.addOrgToConfigArgsForCall = append(fake.addOrgToConfigArgsForCall, struct {
 		arg1 *config.OrgConfig
 	}{arg1})
+	stub := fake.AddOrgToConfigStub
+	fakeReturns := fake.addOrgToConfigReturns
 	fake.recordInvocation("AddOrgToConfig", []interface{}{arg1})
 	fake.addOrgToConfigMutex.Unlock()
-	if fake.AddOrgToConfigStub != nil {
-		return fake.AddOrgToConfigStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addOrgToConfigReturns
 	return fakeReturns.result1
 }
 
@@ -475,15 +478,16 @@ func (fake *FakeUpdater) AddSecurityGroup(arg1 string, arg2 []byte) error {
 		arg1 string
 		arg2 []byte
 	}{arg1, arg2Copy})
+	stub := fake.AddSecurityGroupStub
+	fakeReturns := fake.addSecurityGroupReturns
 	fake.recordInvocation("AddSecurityGroup", []interface{}{arg1, arg2Copy})
 	fake.addSecurityGroupMutex.Unlock()
-	if fake.AddSecurityGroupStub != nil {
-		return fake.AddSecurityGroupStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addSecurityGroupReturns
 	return fakeReturns.result1
 }
 
@@ -542,15 +546,16 @@ func (fake *FakeUpdater) AddSecurityGroupToSpace(arg1 string, arg2 string, arg3 
 		arg2 string
 		arg3 []byte
 	}{arg1, arg2, arg3Copy})
+	stub := fake.AddSecurityGroupToSpaceStub
+	fakeReturns := fake.addSecurityGroupToSpaceReturns
 	fake.recordInvocation("AddSecurityGroupToSpace", []interface{}{arg1, arg2, arg3Copy})
 	fake.addSecurityGroupToSpaceMutex.Unlock()
-	if fake.AddSecurityGroupToSpaceStub != nil {
-		return fake.AddSecurityGroupToSpaceStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addSecurityGroupToSpaceReturns
 	return fakeReturns.result1
 }
 
@@ -602,15 +607,16 @@ func (fake *FakeUpdater) AddSpaceQuota(arg1 config.SpaceQuota) error {
 	fake.addSpaceQuotaArgsForCall = append(fake.addSpaceQuotaArgsForCall, struct {
 		arg1 config.SpaceQuota
 	}{arg1})
+	stub := fake.AddSpaceQuotaStub
+	fakeReturns := fake.addSpaceQuotaReturns
 	fake.recordInvocation("AddSpaceQuota", []interface{}{arg1})
 	fake.addSpaceQuotaMutex.Unlock()
-	if fake.AddSpaceQuotaStub != nil {
-		return fake.AddSpaceQuotaStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addSpaceQuotaReturns
 	return fakeReturns.result1
 }
 
@@ -662,15 +668,16 @@ func (fake *FakeUpdater) AddSpaceToConfig(arg1 *config.SpaceConfig) error {
 	fake.addSpaceToConfigArgsForCall = append(fake.addSpaceToConfigArgsForCall, struct {
 		arg1 *config.SpaceConfig
 	}{arg1})
+	stub := fake.AddSpaceToConfigStub
+	fakeReturns := fake.addSpaceToConfigReturns
 	fake.recordInvocation("AddSpaceToConfig", []interface{}{arg1})
 	fake.addSpaceToConfigMutex.Unlock()
-	if fake.AddSpaceToConfigStub != nil {
-		return fake.AddSpaceToConfigStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addSpaceToConfigReturns
 	return fakeReturns.result1
 }
 
@@ -724,15 +731,16 @@ func (fake *FakeUpdater) AssociateOrgAuditor(arg1 config.UserOrigin, arg2 string
 		arg2 string
 		arg3 string
 	}{arg1, arg2, arg3})
+	stub := fake.AssociateOrgAuditorStub
+	fakeReturns := fake.associateOrgAuditorReturns
 	fake.recordInvocation("AssociateOrgAuditor", []interface{}{arg1, arg2, arg3})
 	fake.associateOrgAuditorMutex.Unlock()
-	if fake.AssociateOrgAuditorStub != nil {
-		return fake.AssociateOrgAuditorStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.associateOrgAuditorReturns
 	return fakeReturns.result1
 }
 
@@ -787,15 +795,16 @@ func (fake *FakeUpdater) AssociateSpaceAuditor(arg1 config.UserOrigin, arg2 stri
 		arg3 string
 		arg4 string
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.AssociateSpaceAuditorStub
+	fakeReturns := fake.associateSpaceAuditorReturns
 	fake.recordInvocation("AssociateSpaceAuditor", []interface{}{arg1, arg2, arg3, arg4})
 	fake.associateSpaceAuditorMutex.Unlock()
-	if fake.AssociateSpaceAuditorStub != nil {
-		return fake.AssociateSpaceAuditorStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.associateSpaceAuditorReturns
 	return fakeReturns.result1
 }
 
@@ -850,15 +859,16 @@ func (fake *FakeUpdater) AssociateSpaceDeveloper(arg1 config.UserOrigin, arg2 st
 		arg3 string
 		arg4 string
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.AssociateSpaceDeveloperStub
+	fakeReturns := fake.associateSpaceDeveloperReturns
 	fake.recordInvocation("AssociateSpaceDeveloper", []interface{}{arg1, arg2, arg3, arg4})
 	fake.associateSpaceDeveloperMutex.Unlock()
-	if fake.AssociateSpaceDeveloperStub != nil {
-		return fake.AssociateSpaceDeveloperStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.associateSpaceDeveloperReturns
 	return fakeReturns.result1
 }
 
@@ -910,15 +920,16 @@ func (fake *FakeUpdater) CreateConfigIfNotExists(arg1 string) error {
 	fake.createConfigIfNotExistsArgsForCall = append(fake.createConfigIfNotExistsArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.CreateConfigIfNotExistsStub
+	fakeReturns := fake.createConfigIfNotExistsReturns
 	fake.recordInvocation("CreateConfigIfNotExists", []interface{}{arg1})
 	fake.createConfigIfNotExistsMutex.Unlock()
-	if fake.CreateConfigIfNotExistsStub != nil {
-		return fake.CreateConfigIfNotExistsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.createConfigIfNotExistsReturns
 	return fakeReturns.result1
 }
 
@@ -969,15 +980,16 @@ func (fake *FakeUpdater) DeleteConfigIfExists() error {
 	ret, specificReturn := fake.deleteConfigIfExistsReturnsOnCall[len(fake.deleteConfigIfExistsArgsForCall)]
 	fake.deleteConfigIfExistsArgsForCall = append(fake.deleteConfigIfExistsArgsForCall, struct {
 	}{})
+	stub := fake.DeleteConfigIfExistsStub
+	fakeReturns := fake.deleteConfigIfExistsReturns
 	fake.recordInvocation("DeleteConfigIfExists", []interface{}{})
 	fake.deleteConfigIfExistsMutex.Unlock()
-	if fake.DeleteConfigIfExistsStub != nil {
-		return fake.DeleteConfigIfExistsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteConfigIfExistsReturns
 	return fakeReturns.result1
 }
 
@@ -1022,15 +1034,16 @@ func (fake *FakeUpdater) DeleteOrgConfig(arg1 string) error {
 	fake.deleteOrgConfigArgsForCall = append(fake.deleteOrgConfigArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.DeleteOrgConfigStub
+	fakeReturns := fake.deleteOrgConfigReturns
 	fake.recordInvocation("DeleteOrgConfig", []interface{}{arg1})
 	fake.deleteOrgConfigMutex.Unlock()
-	if fake.DeleteOrgConfigStub != nil {
-		return fake.DeleteOrgConfigStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteOrgConfigReturns
 	return fakeReturns.result1
 }
 
@@ -1083,15 +1096,16 @@ func (fake *FakeUpdater) DeleteSpaceConfig(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.DeleteSpaceConfigStub
+	fakeReturns := fake.deleteSpaceConfigReturns
 	fake.recordInvocation("DeleteSpaceConfig", []interface{}{arg1, arg2})
 	fake.deleteSpaceConfigMutex.Unlock()
-	if fake.DeleteSpaceConfigStub != nil {
-		return fake.DeleteSpaceConfigStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteSpaceConfigReturns
 	return fakeReturns.result1
 }
 
@@ -1143,15 +1157,16 @@ func (fake *FakeUpdater) RenameOrgConfig(arg1 *config.OrgConfig) error {
 	fake.renameOrgConfigArgsForCall = append(fake.renameOrgConfigArgsForCall, struct {
 		arg1 *config.OrgConfig
 	}{arg1})
+	stub := fake.RenameOrgConfigStub
+	fakeReturns := fake.renameOrgConfigReturns
 	fake.recordInvocation("RenameOrgConfig", []interface{}{arg1})
 	fake.renameOrgConfigMutex.Unlock()
-	if fake.RenameOrgConfigStub != nil {
-		return fake.RenameOrgConfigStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.renameOrgConfigReturns
 	return fakeReturns.result1
 }
 
@@ -1203,15 +1218,16 @@ func (fake *FakeUpdater) RenameSpaceConfig(arg1 *config.SpaceConfig) error {
 	fake.renameSpaceConfigArgsForCall = append(fake.renameSpaceConfigArgsForCall, struct {
 		arg1 *config.SpaceConfig
 	}{arg1})
+	stub := fake.RenameSpaceConfigStub
+	fakeReturns := fake.renameSpaceConfigReturns
 	fake.recordInvocation("RenameSpaceConfig", []interface{}{arg1})
 	fake.renameSpaceConfigMutex.Unlock()
-	if fake.RenameSpaceConfigStub != nil {
-		return fake.RenameSpaceConfigStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.renameSpaceConfigReturns
 	return fakeReturns.result1
 }
 
@@ -1263,15 +1279,16 @@ func (fake *FakeUpdater) SaveGlobalConfig(arg1 *config.GlobalConfig) error {
 	fake.saveGlobalConfigArgsForCall = append(fake.saveGlobalConfigArgsForCall, struct {
 		arg1 *config.GlobalConfig
 	}{arg1})
+	stub := fake.SaveGlobalConfigStub
+	fakeReturns := fake.saveGlobalConfigReturns
 	fake.recordInvocation("SaveGlobalConfig", []interface{}{arg1})
 	fake.saveGlobalConfigMutex.Unlock()
-	if fake.SaveGlobalConfigStub != nil {
-		return fake.SaveGlobalConfigStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.saveGlobalConfigReturns
 	return fakeReturns.result1
 }
 
@@ -1323,15 +1340,16 @@ func (fake *FakeUpdater) SaveOrgConfig(arg1 *config.OrgConfig) error {
 	fake.saveOrgConfigArgsForCall = append(fake.saveOrgConfigArgsForCall, struct {
 		arg1 *config.OrgConfig
 	}{arg1})
+	stub := fake.SaveOrgConfigStub
+	fakeReturns := fake.saveOrgConfigReturns
 	fake.recordInvocation("SaveOrgConfig", []interface{}{arg1})
 	fake.saveOrgConfigMutex.Unlock()
-	if fake.SaveOrgConfigStub != nil {
-		return fake.SaveOrgConfigStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.saveOrgConfigReturns
 	return fakeReturns.result1
 }
 
@@ -1383,15 +1401,16 @@ func (fake *FakeUpdater) SaveOrgQuota(arg1 *config.OrgQuota) error {
 	fake.saveOrgQuotaArgsForCall = append(fake.saveOrgQuotaArgsForCall, struct {
 		arg1 *config.OrgQuota
 	}{arg1})
+	stub := fake.SaveOrgQuotaStub
+	fakeReturns := fake.saveOrgQuotaReturns
 	fake.recordInvocation("SaveOrgQuota", []interface{}{arg1})
 	fake.saveOrgQuotaMutex.Unlock()
-	if fake.SaveOrgQuotaStub != nil {
-		return fake.SaveOrgQuotaStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.saveOrgQuotaReturns
 	return fakeReturns.result1
 }
 
@@ -1443,15 +1462,16 @@ func (fake *FakeUpdater) SaveOrgSpaces(arg1 *config.Spaces) error {
 	fake.saveOrgSpacesArgsForCall = append(fake.saveOrgSpacesArgsForCall, struct {
 		arg1 *config.Spaces
 	}{arg1})
+	stub := fake.SaveOrgSpacesStub
+	fakeReturns := fake.saveOrgSpacesReturns
 	fake.recordInvocation("SaveOrgSpaces", []interface{}{arg1})
 	fake.saveOrgSpacesMutex.Unlock()
-	if fake.SaveOrgSpacesStub != nil {
-		return fake.SaveOrgSpacesStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.saveOrgSpacesReturns
 	return fakeReturns.result1
 }
 
@@ -1503,15 +1523,16 @@ func (fake *FakeUpdater) SaveOrgs(arg1 *config.Orgs) error {
 	fake.saveOrgsArgsForCall = append(fake.saveOrgsArgsForCall, struct {
 		arg1 *config.Orgs
 	}{arg1})
+	stub := fake.SaveOrgsStub
+	fakeReturns := fake.saveOrgsReturns
 	fake.recordInvocation("SaveOrgs", []interface{}{arg1})
 	fake.saveOrgsMutex.Unlock()
-	if fake.SaveOrgsStub != nil {
-		return fake.SaveOrgsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.saveOrgsReturns
 	return fakeReturns.result1
 }
 
@@ -1563,15 +1584,16 @@ func (fake *FakeUpdater) SaveSpaceConfig(arg1 *config.SpaceConfig) error {
 	fake.saveSpaceConfigArgsForCall = append(fake.saveSpaceConfigArgsForCall, struct {
 		arg1 *config.SpaceConfig
 	}{arg1})
+	stub := fake.SaveSpaceConfigStub
+	fakeReturns := fake.saveSpaceConfigReturns
 	fake.recordInvocation("SaveSpaceConfig", []interface{}{arg1})
 	fake.saveSpaceConfigMutex.Unlock()
-	if fake.SaveSpaceConfigStub != nil {
-		return fake.SaveSpaceConfigStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.saveSpaceConfigReturns
 	return fakeReturns.result1
 }
 
@@ -1623,15 +1645,16 @@ func (fake *FakeUpdater) SaveSpaceQuota(arg1 *config.SpaceQuota) error {
 	fake.saveSpaceQuotaArgsForCall = append(fake.saveSpaceQuotaArgsForCall, struct {
 		arg1 *config.SpaceQuota
 	}{arg1})
+	stub := fake.SaveSpaceQuotaStub
+	fakeReturns := fake.saveSpaceQuotaReturns
 	fake.recordInvocation("SaveSpaceQuota", []interface{}{arg1})
 	fake.saveSpaceQuotaMutex.Unlock()
-	if fake.SaveSpaceQuotaStub != nil {
-		return fake.SaveSpaceQuotaStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.saveSpaceQuotaReturns
 	return fakeReturns.result1
 }
 

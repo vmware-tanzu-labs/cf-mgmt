@@ -144,15 +144,16 @@ func (fake *FakeCFClient) CreateSpace(arg1 cfclient.SpaceRequest) (cfclient.Spac
 	fake.createSpaceArgsForCall = append(fake.createSpaceArgsForCall, struct {
 		arg1 cfclient.SpaceRequest
 	}{arg1})
+	stub := fake.CreateSpaceStub
+	fakeReturns := fake.createSpaceReturns
 	fake.recordInvocation("CreateSpace", []interface{}{arg1})
 	fake.createSpaceMutex.Unlock()
-	if fake.CreateSpaceStub != nil {
-		return fake.CreateSpaceStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createSpaceReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -209,15 +210,16 @@ func (fake *FakeCFClient) DeleteSpace(arg1 string, arg2 bool, arg3 bool) error {
 		arg2 bool
 		arg3 bool
 	}{arg1, arg2, arg3})
+	stub := fake.DeleteSpaceStub
+	fakeReturns := fake.deleteSpaceReturns
 	fake.recordInvocation("DeleteSpace", []interface{}{arg1, arg2, arg3})
 	fake.deleteSpaceMutex.Unlock()
-	if fake.DeleteSpaceStub != nil {
-		return fake.DeleteSpaceStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteSpaceReturns
 	return fakeReturns.result1
 }
 
@@ -269,15 +271,16 @@ func (fake *FakeCFClient) GetSpaceByGuid(arg1 string) (cfclient.Space, error) {
 	fake.getSpaceByGuidArgsForCall = append(fake.getSpaceByGuidArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetSpaceByGuidStub
+	fakeReturns := fake.getSpaceByGuidReturns
 	fake.recordInvocation("GetSpaceByGuid", []interface{}{arg1})
 	fake.getSpaceByGuidMutex.Unlock()
-	if fake.GetSpaceByGuidStub != nil {
-		return fake.GetSpaceByGuidStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getSpaceByGuidReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -331,15 +334,16 @@ func (fake *FakeCFClient) ListOrgs() ([]cfclient.Org, error) {
 	ret, specificReturn := fake.listOrgsReturnsOnCall[len(fake.listOrgsArgsForCall)]
 	fake.listOrgsArgsForCall = append(fake.listOrgsArgsForCall, struct {
 	}{})
+	stub := fake.ListOrgsStub
+	fakeReturns := fake.listOrgsReturns
 	fake.recordInvocation("ListOrgs", []interface{}{})
 	fake.listOrgsMutex.Unlock()
-	if fake.ListOrgsStub != nil {
-		return fake.ListOrgsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -386,15 +390,16 @@ func (fake *FakeCFClient) ListSpaces() ([]cfclient.Space, error) {
 	ret, specificReturn := fake.listSpacesReturnsOnCall[len(fake.listSpacesArgsForCall)]
 	fake.listSpacesArgsForCall = append(fake.listSpacesArgsForCall, struct {
 	}{})
+	stub := fake.ListSpacesStub
+	fakeReturns := fake.listSpacesReturns
 	fake.recordInvocation("ListSpaces", []interface{}{})
 	fake.listSpacesMutex.Unlock()
-	if fake.ListSpacesStub != nil {
-		return fake.ListSpacesStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSpacesReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -442,15 +447,16 @@ func (fake *FakeCFClient) RemoveSpaceMetadata(arg1 string) error {
 	fake.removeSpaceMetadataArgsForCall = append(fake.removeSpaceMetadataArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.RemoveSpaceMetadataStub
+	fakeReturns := fake.removeSpaceMetadataReturns
 	fake.recordInvocation("RemoveSpaceMetadata", []interface{}{arg1})
 	fake.removeSpaceMetadataMutex.Unlock()
-	if fake.RemoveSpaceMetadataStub != nil {
-		return fake.RemoveSpaceMetadataStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.removeSpaceMetadataReturns
 	return fakeReturns.result1
 }
 
@@ -502,15 +508,16 @@ func (fake *FakeCFClient) SpaceMetadata(arg1 string) (*cfclient.Metadata, error)
 	fake.spaceMetadataArgsForCall = append(fake.spaceMetadataArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.SpaceMetadataStub
+	fakeReturns := fake.spaceMetadataReturns
 	fake.recordInvocation("SpaceMetadata", []interface{}{arg1})
 	fake.spaceMetadataMutex.Unlock()
-	if fake.SpaceMetadataStub != nil {
-		return fake.SpaceMetadataStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.spaceMetadataReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -564,15 +571,16 @@ func (fake *FakeCFClient) SupportsMetadataAPI() (bool, error) {
 	ret, specificReturn := fake.supportsMetadataAPIReturnsOnCall[len(fake.supportsMetadataAPIArgsForCall)]
 	fake.supportsMetadataAPIArgsForCall = append(fake.supportsMetadataAPIArgsForCall, struct {
 	}{})
+	stub := fake.SupportsMetadataAPIStub
+	fakeReturns := fake.supportsMetadataAPIReturns
 	fake.recordInvocation("SupportsMetadataAPI", []interface{}{})
 	fake.supportsMetadataAPIMutex.Unlock()
-	if fake.SupportsMetadataAPIStub != nil {
-		return fake.SupportsMetadataAPIStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.supportsMetadataAPIReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -621,15 +629,16 @@ func (fake *FakeCFClient) UpdateSpace(arg1 string, arg2 cfclient.SpaceRequest) (
 		arg1 string
 		arg2 cfclient.SpaceRequest
 	}{arg1, arg2})
+	stub := fake.UpdateSpaceStub
+	fakeReturns := fake.updateSpaceReturns
 	fake.recordInvocation("UpdateSpace", []interface{}{arg1, arg2})
 	fake.updateSpaceMutex.Unlock()
-	if fake.UpdateSpaceStub != nil {
-		return fake.UpdateSpaceStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.updateSpaceReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -685,15 +694,16 @@ func (fake *FakeCFClient) UpdateSpaceMetadata(arg1 string, arg2 cfclient.Metadat
 		arg1 string
 		arg2 cfclient.Metadata
 	}{arg1, arg2})
+	stub := fake.UpdateSpaceMetadataStub
+	fakeReturns := fake.updateSpaceMetadataReturns
 	fake.recordInvocation("UpdateSpaceMetadata", []interface{}{arg1, arg2})
 	fake.updateSpaceMetadataMutex.Unlock()
-	if fake.UpdateSpaceMetadataStub != nil {
-		return fake.UpdateSpaceMetadataStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateSpaceMetadataReturns
 	return fakeReturns.result1
 }
 

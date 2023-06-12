@@ -16,14 +16,15 @@ type Manager struct {
 	Peek          bool
 }
 
-//go:generate counterfeiter -o fakes/fake_cf_client.go . CFClient
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate -o fakes/fake_cf_client.go . CFClient
 type CFClient interface {
 	ListSharedDomains() ([]cfclient.SharedDomain, error)
 	DeleteSharedDomain(guid string, async bool) error
 	CreateSharedDomain(name string, internal bool, router_group_guid string) (*cfclient.SharedDomain, error)
 }
 
-//go:generate counterfeiter -o fakes/fake_routing_client.go . RoutingClient
+//counterfeiter:generate -o fakes/fake_routing_client.go . RoutingClient
 type RoutingClient interface {
 	RouterGroupWithName(string) (models.RouterGroup, error)
 	RouterGroups() ([]models.RouterGroup, error)
