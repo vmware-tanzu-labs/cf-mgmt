@@ -17,7 +17,7 @@ type AddASGToConfigurationCommand struct {
 	ASGType  string `long:"type" description:"Space asg or default asg" choice:"space" choice:"default" default:"space"`
 }
 
-//Execute - adds a named asg to the configuration
+// Execute - adds a named asg to the configuration
 func (c *AddASGToConfigurationCommand) Execute([]string) error {
 	lo.G.Warning("*** Deprecated *** - Use `asg` command instead for adding/updating asg configurations")
 	c.initConfig()

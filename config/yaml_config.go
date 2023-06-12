@@ -404,7 +404,7 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 	return nil
 }
 
-//AddSecurityGroupToSpace - adds security group json to org/space location
+// AddSecurityGroupToSpace - adds security group json to org/space location
 func (m *yamlManager) AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error {
 	securityGroupFilePath := fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName)
 	if !FileOrDirectoryExists(securityGroupFilePath) {
@@ -416,13 +416,13 @@ func (m *yamlManager) AddSecurityGroupToSpace(orgName, spaceName string, securit
 	return nil
 }
 
-//AddSecurityGroup - adds security group json to org/space location
+// AddSecurityGroup - adds security group json to org/space location
 func (m *yamlManager) AddSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error {
 	lo.G.Infof("Writing out bytes for security group %s", securityGroupName)
 	return WriteFileBytes(fmt.Sprintf("%s/asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)
 }
 
-//AddDefaultSecurityGroup - adds security group json to org/space location
+// AddDefaultSecurityGroup - adds security group json to org/space location
 func (m *yamlManager) AddDefaultSecurityGroup(securityGroupName string, securityGroupDefinition []byte) error {
 	lo.G.Infof("Writing out bytes for security group %s", securityGroupName)
 	return WriteFileBytes(fmt.Sprintf("%s/default_asgs/%s.json", m.ConfigDir, securityGroupName), securityGroupDefinition)

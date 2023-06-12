@@ -27,7 +27,7 @@ type AddOrgToConfigurationCommand struct {
 	EnableRemoveSpaces string `long:"enable-remove-spaces" description:"Enable removing spaces" choice:"true" choice:"false"`
 }
 
-//Execute - adds a named org to the configuration
+// Execute - adds a named org to the configuration
 func (c *AddOrgToConfigurationCommand) Execute([]string) error {
 	lo.G.Warning("*** Deprecated *** - Use `org` command instead for adding/updating org configurations")
 	orgConfig := &config.OrgConfig{

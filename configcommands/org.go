@@ -32,7 +32,7 @@ type OrgConfigurationCommand struct {
 	Metadata                         Metadata      `group:"metadata"`
 }
 
-//Execute - updates org configuration`
+// Execute - updates org configuration`
 func (c *OrgConfigurationCommand) Execute(args []string) error {
 	c.initConfig()
 	var orgConfig *config.OrgConfig

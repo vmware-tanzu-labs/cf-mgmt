@@ -44,7 +44,7 @@ var _ = Describe("given SpaceManager", func() {
 	Context("FindSpace()", func() {
 		It("should return an space", func() {
 			spaces := []cfclient.Space{
-				cfclient.Space{
+				{
 					Name:             "testSpace",
 					OrganizationGuid: "testOrgGUID",
 				},
@@ -84,10 +84,10 @@ var _ = Describe("given SpaceManager", func() {
 	Context("CreateSpaces()", func() {
 		BeforeEach(func() {
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space: "space1",
 				},
-				config.SpaceConfig{
+				{
 					Space: "space2",
 				},
 			}, nil)
@@ -133,7 +133,7 @@ var _ = Describe("given SpaceManager", func() {
 
 		It("should rename a space", func() {
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space:         "new-space1",
 					OriginalSpace: "space1",
 				},
@@ -159,7 +159,7 @@ var _ = Describe("given SpaceManager", func() {
 	Context("UpdateSpaces()", func() {
 		BeforeEach(func() {
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space:    "space1",
 					AllowSSH: true,
 				},
@@ -210,7 +210,7 @@ var _ = Describe("given SpaceManager", func() {
 		It("should turn on ssh temporarily", func() {
 			future := time.Now().Add(time.Minute * 10)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space:         "space1",
 					AllowSSH:      false,
 					AllowSSHUntil: future.Format(time.RFC3339),
@@ -238,7 +238,7 @@ var _ = Describe("given SpaceManager", func() {
 		It("should turn off temporarily granted ssh", func() {
 			past := time.Now().Add(time.Minute * -10)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space:         "space1",
 					AllowSSH:      false,
 					AllowSSHUntil: past.Format(time.RFC3339),
@@ -304,7 +304,7 @@ var _ = Describe("given SpaceManager", func() {
 	Context("DeleteSpaces()", func() {
 		BeforeEach(func() {
 			fakeReader.SpacesReturns([]config.Spaces{
-				config.Spaces{
+				{
 					Spaces:             []string{"space1", "space2"},
 					EnableDeleteSpaces: true,
 				},
@@ -313,15 +313,15 @@ var _ = Describe("given SpaceManager", func() {
 		})
 		It("should delete 1", func() {
 			spaces := []cfclient.Space{
-				cfclient.Space{
+				{
 					Name: "space1",
 					Guid: "space1-guid",
 				},
-				cfclient.Space{
+				{
 					Name: "space2",
 					Guid: "space2-guid",
 				},
-				cfclient.Space{
+				{
 					Name:             "space3",
 					Guid:             "space3-guid",
 					OrganizationGuid: "test2-org-guid",
@@ -343,15 +343,15 @@ var _ = Describe("given SpaceManager", func() {
 
 		It("should error", func() {
 			spaces := []cfclient.Space{
-				cfclient.Space{
+				{
 					Name: "space1",
 					Guid: "space1-guid",
 				},
-				cfclient.Space{
+				{
 					Name: "space2",
 					Guid: "space2-guid",
 				},
-				cfclient.Space{
+				{
 					Name:             "space3",
 					Guid:             "space3-guid",
 					OrganizationGuid: "test2-org-guid",
@@ -374,15 +374,15 @@ var _ = Describe("given SpaceManager", func() {
 		It("should peek", func() {
 			spaceManager.Peek = true
 			spaces := []cfclient.Space{
-				cfclient.Space{
+				{
 					Name: "space1",
 					Guid: "space1-guid",
 				},
-				cfclient.Space{
+				{
 					Name: "space2",
 					Guid: "space2-guid",
 				},
-				cfclient.Space{
+				{
 					Name: "space3",
 					Guid: "space3-guid",
 				},

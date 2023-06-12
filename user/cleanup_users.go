@@ -24,7 +24,7 @@ func (m *DefaultManager) removeOrphanedUsers(orphanedUsers []string) error {
 	return nil
 }
 
-//CleanupOrgUsers -
+// CleanupOrgUsers -
 func (m *DefaultManager) CleanupOrgUsers() error {
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {

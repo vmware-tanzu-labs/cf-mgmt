@@ -27,7 +27,7 @@ type GlobalConfigurationCommand struct {
 	ServiceAccess                  GlobalServiceAccess `group:"service-access"`
 }
 
-//Execute - adds/updates a named asg to the configuration
+// Execute - adds/updates a named asg to the configuration
 func (c *GlobalConfigurationCommand) Execute([]string) error {
 	c.initConfig()
 

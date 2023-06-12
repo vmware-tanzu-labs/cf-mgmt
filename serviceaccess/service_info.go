@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-//GetServiceInfo - returns broker, it's services and their plans
+// GetServiceInfo - returns broker, it's services and their plans
 func GetServiceInfo(client CFClient) (*ServiceInfo, error) {
 	serviceInfo := &ServiceInfo{}
 	brokers, err := client.ListServiceBrokers()

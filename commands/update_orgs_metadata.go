@@ -5,7 +5,7 @@ type UpdateOrgsMetadataCommand struct {
 	BasePeekCommand
 }
 
-//Execute - updates organizations metadata
+// Execute - updates organizations metadata
 func (c *UpdateOrgsMetadataCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

@@ -10,7 +10,7 @@ type ApplyCommand struct {
 	BaseLDAPCommand
 }
 
-//Execute - applies all the config in order
+// Execute - applies all the config in order
 func (c *ApplyCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

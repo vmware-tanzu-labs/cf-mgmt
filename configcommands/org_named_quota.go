@@ -13,7 +13,7 @@ type OrgNamedQuotaConfigurationCommand struct {
 	Quota NamedOrgQuota `group:"quota"`
 }
 
-//Execute - updates named quota
+// Execute - updates named quota
 func (c *OrgNamedQuotaConfigurationCommand) Execute(args []string) error {
 	c.initConfig()
 	orgQuota, err := c.ConfigManager.GetOrgQuota(c.Name)

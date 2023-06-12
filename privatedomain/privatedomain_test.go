@@ -37,7 +37,7 @@ var _ = Describe("given UserSpaces", func() {
 		Context("CreatePrivateDomains", func() {
 			BeforeEach(func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org:            "test",
 						PrivateDomains: []string{"test.com"},
 					},
@@ -69,7 +69,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("should succeed and not create already existing private domain", func() {
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.CreateDomainReturns(&cfclient.Domain{Name: "test.com", Guid: "test.com-guid"}, nil)
 				err := manager.CreatePrivateDomains()
@@ -79,7 +79,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("should error when private domain is owned by different org", func() {
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", OwningOrganizationGuid: "foo-guid"},
+					{Name: "test.com", OwningOrganizationGuid: "foo-guid"},
 				}, nil)
 				client.CreateDomainReturns(&cfclient.Domain{Name: "test.com", Guid: "test.com-guid"}, nil)
 				err := manager.CreatePrivateDomains()
@@ -89,17 +89,17 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("should try to remove shared domain", func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org:                  "test",
 						PrivateDomains:       []string{},
 						RemovePrivateDomains: true,
 					},
 				}, nil)
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				err := manager.CreatePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
@@ -111,17 +111,17 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("should error trying to remove shared domain", func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org:                  "test",
 						PrivateDomains:       []string{},
 						RemovePrivateDomains: true,
 					},
 				}, nil)
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.DeleteDomainReturns(errors.New("error"))
 				err := manager.CreatePrivateDomains()
@@ -163,17 +163,17 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("should error listing org shared domains", func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org:                  "test",
 						PrivateDomains:       []string{},
 						RemovePrivateDomains: true,
 					},
 				}, nil)
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.ListOrgPrivateDomainsReturns(nil, errors.New("error"))
 				err := manager.CreatePrivateDomains()
@@ -186,7 +186,7 @@ var _ = Describe("given UserSpaces", func() {
 		Context("SharePrivateDomains", func() {
 			BeforeEach(func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org:                  "test2",
 						SharedPrivateDomains: []string{"test.com"},
 					},
@@ -199,7 +199,7 @@ var _ = Describe("given UserSpaces", func() {
 			})
 			It("should succeed when private domain exists in other org", func() {
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.ListOrgPrivateDomainsReturns(nil, nil)
 				err := manager.SharePrivateDomains()
@@ -221,7 +221,7 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("should error trying to share private domain exists in other org", func() {
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.ListOrgPrivateDomainsReturns(nil, nil)
 				client.ShareOrgPrivateDomainReturns(nil, errors.New("error"))
@@ -235,17 +235,17 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("should succeed unsharing private domain", func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org:                        "test2",
 						SharedPrivateDomains:       nil,
 						RemoveSharedPrivateDomains: true,
 					},
 				}, nil)
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				err := manager.SharePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
@@ -257,17 +257,17 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("should do nothing when no new shared private domains", func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org:                        "test2",
 						SharedPrivateDomains:       []string{"test.com"},
 						RemoveSharedPrivateDomains: true,
 					},
 				}, nil)
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				err := manager.SharePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
@@ -277,18 +277,18 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("should succeed unsharing private domain and sharing a private domain", func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org:                        "test2",
 						SharedPrivateDomains:       []string{"test2.com"},
 						RemoveSharedPrivateDomains: true,
 					},
 				}, nil)
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
-					cfclient.Domain{Name: "test2.com", Guid: "test2.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test2.com", Guid: "test2.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				err := manager.SharePrivateDomains()
 				Expect(err).ShouldNot(HaveOccurred())
@@ -305,17 +305,17 @@ var _ = Describe("given UserSpaces", func() {
 
 			It("should error unsharing private domain", func() {
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-					config.OrgConfig{
+					{
 						Org:                        "test2",
 						SharedPrivateDomains:       nil,
 						RemoveSharedPrivateDomains: true,
 					},
 				}, nil)
 				client.ListDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.ListOrgPrivateDomainsReturns([]cfclient.Domain{
-					cfclient.Domain{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
+					{Name: "test.com", Guid: "test.com-guid", OwningOrganizationGuid: "test-guid"},
 				}, nil)
 				client.UnshareOrgPrivateDomainReturns(errors.New("error"))
 				err := manager.SharePrivateDomains()

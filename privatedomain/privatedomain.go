@@ -22,7 +22,7 @@ func NewManager(client CFClient, orgReader organizationreader.Reader, cfg config
 	}
 }
 
-//DefaultManager -
+// DefaultManager -
 type DefaultManager struct {
 	Cfg       config.Reader
 	OrgReader organizationreader.Reader

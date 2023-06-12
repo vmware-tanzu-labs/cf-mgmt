@@ -12,7 +12,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-//NewManager -
+// NewManager -
 func NewManager(client CFClient, spaceMgr space.Manager, cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
 		Cfg:          cfg,
@@ -22,7 +22,7 @@ func NewManager(client CFClient, spaceMgr space.Manager, cfg config.Reader, peek
 	}
 }
 
-//DefaultSecurityGroupManager -
+// DefaultSecurityGroupManager -
 type DefaultManager struct {
 	Cfg          config.Reader
 	SpaceManager space.Manager
@@ -30,7 +30,7 @@ type DefaultManager struct {
 	Peek         bool
 }
 
-//CreateApplicationSecurityGroups -
+// CreateApplicationSecurityGroups -
 func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
@@ -101,7 +101,7 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 
 		if input.EnableUnassignSecurityGroup {
 			lo.G.Debugf("Existing space security groups after %+v", existingSpaceSecurityGroups)
-			for sgName, _ := range existingSpaceSecurityGroups {
+			for sgName := range existingSpaceSecurityGroups {
 				if sgInfo, ok := sgs[sgName]; ok {
 					err := m.UnassignSecurityGroupToSpace(space, sgInfo)
 					if err != nil {
@@ -129,7 +129,7 @@ func (m *DefaultManager) ListSecurityGroups() (map[string]cfclient.SecGroup, err
 	return securityGroups, nil
 }
 
-//CreateGlobalSecurityGroups -
+// CreateGlobalSecurityGroups -
 func (m *DefaultManager) CreateGlobalSecurityGroups() error {
 	sgs, err := m.ListSecurityGroups()
 	if err != nil {
@@ -155,7 +155,7 @@ func (m *DefaultManager) CreateGlobalSecurityGroups() error {
 	return nil
 }
 
-//AssignDefaultSecurityGroups -
+// AssignDefaultSecurityGroups -
 func (m *DefaultManager) AssignDefaultSecurityGroups() error {
 	sgs, err := m.ListSecurityGroups()
 	if err != nil {

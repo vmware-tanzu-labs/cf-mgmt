@@ -5,7 +5,7 @@ type IsolationSegmentsCommand struct {
 	BasePeekCommand
 }
 
-//Execute - updates spaces
+// Execute - updates spaces
 func (c *IsolationSegmentsCommand) Execute([]string) error {
 	cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek)
 	if err != nil {

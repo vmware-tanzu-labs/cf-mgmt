@@ -28,8 +28,8 @@ var _ = Describe("Manager", func() {
 		manager = NewManager(fakeCFClient, fakeRoutingClient, fakeCfg, false)
 		fakeCfg.GetGlobalConfigReturns(&config.GlobalConfig{
 			SharedDomains: map[string]config.SharedDomain{
-				"foo.bar":        config.SharedDomain{},
-				"default.domain": config.SharedDomain{},
+				"foo.bar":        {},
+				"default.domain": {},
 			},
 		}, nil)
 	})
@@ -49,7 +49,7 @@ var _ = Describe("Manager", func() {
 		It("Should create 1 shared domain with routing group guid", func() {
 			fakeCfg.GetGlobalConfigReturns(&config.GlobalConfig{
 				SharedDomains: map[string]config.SharedDomain{
-					"foo.bar": config.SharedDomain{
+					"foo.bar": {
 						Internal:    false,
 						RouterGroup: "default-tcp",
 					},
@@ -70,11 +70,11 @@ var _ = Describe("Manager", func() {
 		})
 		It("Should create no shared domains", func() {
 			fakeCFClient.ListSharedDomainsReturns([]cfclient.SharedDomain{
-				cfclient.SharedDomain{
+				{
 					Name: "foo.bar",
 					Guid: "foo.bar.guid",
 				},
-				cfclient.SharedDomain{
+				{
 					Name: "default.domain",
 					Guid: "default.domain.guid",
 				},
@@ -90,11 +90,11 @@ var _ = Describe("Manager", func() {
 				EnableDeleteSharedDomains: true,
 			}, nil)
 			fakeCFClient.ListSharedDomainsReturns([]cfclient.SharedDomain{
-				cfclient.SharedDomain{
+				{
 					Name: "foo.bar",
 					Guid: "foo.bar.guid",
 				},
-				cfclient.SharedDomain{
+				{
 					Name: "default.domain",
 					Guid: "default.domain.guid",
 				},
@@ -133,11 +133,11 @@ var _ = Describe("Manager", func() {
 				EnableDeleteSharedDomains: true,
 			}, nil)
 			fakeCFClient.ListSharedDomainsReturns([]cfclient.SharedDomain{
-				cfclient.SharedDomain{
+				{
 					Name: "foo.bar",
 					Guid: "foo.bar.guid",
 				},
-				cfclient.SharedDomain{
+				{
 					Name: "default.domain",
 					Guid: "default.domain.guid",
 				},
@@ -163,11 +163,11 @@ var _ = Describe("Manager", func() {
 				EnableDeleteSharedDomains: true,
 			}, nil)
 			fakeCFClient.ListSharedDomainsReturns([]cfclient.SharedDomain{
-				cfclient.SharedDomain{
+				{
 					Name: "foo.bar",
 					Guid: "foo.bar.guid",
 				},
-				cfclient.SharedDomain{
+				{
 					Name: "default.domain",
 					Guid: "default.domain.guid",
 				},

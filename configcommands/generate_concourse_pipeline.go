@@ -2,13 +2,13 @@ package configcommands
 
 import (
 	"fmt"
-	"github.com/vmwarepivotallabs/cf-mgmt/embedded"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/vmwarepivotallabs/cf-mgmt/embedded"
 	"github.com/xchapter7x/lo"
 )
 

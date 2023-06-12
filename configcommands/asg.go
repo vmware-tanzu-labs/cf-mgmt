@@ -16,7 +16,7 @@ type ASGToConfigurationCommand struct {
 	ASGType  string `long:"type" description:"Space asg or default asg" choice:"space" choice:"default" default:"space"`
 }
 
-//Execute - adds/updates a named asg to the configuration
+// Execute - adds/updates a named asg to the configuration
 func (c *ASGToConfigurationCommand) Execute([]string) error {
 	c.initConfig()
 

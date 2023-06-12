@@ -28,7 +28,7 @@ type AddSpaceToConfigurationCommand struct {
 	Auditor                     UserRoleAdd `group:"auditor" namespace:"auditor"`
 }
 
-//Execute - adds a named space to the configuration
+// Execute - adds a named space to the configuration
 func (c *AddSpaceToConfigurationCommand) Execute([]string) error {
 	lo.G.Warning("*** Deprecated *** - Use `space` command instead for adding/updating space configurations")
 	c.initConfig()

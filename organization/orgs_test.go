@@ -43,8 +43,8 @@ var _ = Describe("given OrgManager", func() {
 				Orgs: []string{"test", "test2"},
 			}, nil)
 			fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-				config.OrgConfig{Org: "test"},
-				config.OrgConfig{Org: "test2"},
+				{Org: "test"},
+				{Org: "test2"},
 			}, nil)
 		})
 		It("should create 2", func() {
@@ -98,8 +98,8 @@ var _ = Describe("given OrgManager", func() {
 				Orgs: []string{"test", "new-org"},
 			}, nil)
 			fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-				config.OrgConfig{Org: "test"},
-				config.OrgConfig{Org: "new-org", OriginalOrg: "test2"},
+				{Org: "test"},
+				{Org: "new-org", OriginalOrg: "test2"},
 			}, nil)
 			orgs := []cfclient.Org{
 				{
@@ -183,35 +183,35 @@ var _ = Describe("given OrgManager", func() {
 
 			fakeReader.GetOrgConfigReturns(&config.OrgConfig{}, nil)
 			orgs := []cfclient.Org{
-				cfclient.Org{
+				{
 					Name: "system",
 					Guid: "system-guid",
 				},
-				cfclient.Org{
+				{
 					Name: "some-other-system-org",
 					Guid: "some-other-system-guid",
 				},
-				cfclient.Org{
+				{
 					Name: "test",
 					Guid: "test-guid",
 				},
-				cfclient.Org{
+				{
 					Name: "test2",
 					Guid: "test2-guid",
 				},
-				cfclient.Org{
+				{
 					Name: "redis-test-ORG-1-2017_10_04-20h06m33.481s",
 					Guid: "redis-guid",
 				},
-				cfclient.Org{
+				{
 					Name: "mop-bucket",
 					Guid: "some-org-that-matches-p-",
 				},
-				cfclient.Org{
+				{
 					Name: "p-some-tile",
 					Guid: "p-tile-guid",
 				},
-				cfclient.Org{
+				{
 					Name: "papaya-org",
 					Guid: "papaya-guid",
 				},
@@ -238,19 +238,19 @@ var _ = Describe("given OrgManager", func() {
 
 		BeforeEach(func() {
 			orgs = []cfclient.Org{
-				cfclient.Org{
+				{
 					Name: "system",
 					Guid: "system-guid",
 				},
-				cfclient.Org{
+				{
 					Name: "test",
 					Guid: "test-guid",
 				},
-				cfclient.Org{
+				{
 					Name: "test2",
 					Guid: "test2-guid",
 				},
-				cfclient.Org{
+				{
 					Name: "redis-test-ORG-1-2017_10_04-20h06m33.481s",
 					Guid: "redis-guid",
 				},
