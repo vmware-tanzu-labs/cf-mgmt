@@ -9,9 +9,15 @@ import (
 )
 
 type FakeConnection struct {
-	CloseStub        func()
+	CloseStub        func() error
 	closeMutex       sync.RWMutex
 	closeArgsForCall []struct {
+	}
+	closeReturns struct {
+		result1 error
+	}
+	closeReturnsOnCall map[int]struct {
+		result1 error
 	}
 	IsClosingStub        func() bool
 	isClosingMutex       sync.RWMutex
@@ -40,16 +46,22 @@ type FakeConnection struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeConnection) Close() {
+func (fake *FakeConnection) Close() error {
 	fake.closeMutex.Lock()
+	ret, specificReturn := fake.closeReturnsOnCall[len(fake.closeArgsForCall)]
 	fake.closeArgsForCall = append(fake.closeArgsForCall, struct {
 	}{})
 	stub := fake.CloseStub
+	fakeReturns := fake.closeReturns
 	fake.recordInvocation("Close", []interface{}{})
 	fake.closeMutex.Unlock()
 	if stub != nil {
-		fake.CloseStub()
+		return stub()
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
 }
 
 func (fake *FakeConnection) CloseCallCount() int {
@@ -58,10 +70,33 @@ func (fake *FakeConnection) CloseCallCount() int {
 	return len(fake.closeArgsForCall)
 }
 
-func (fake *FakeConnection) CloseCalls(stub func()) {
+func (fake *FakeConnection) CloseCalls(stub func() error) {
 	fake.closeMutex.Lock()
 	defer fake.closeMutex.Unlock()
 	fake.CloseStub = stub
+}
+
+func (fake *FakeConnection) CloseReturns(result1 error) {
+	fake.closeMutex.Lock()
+	defer fake.closeMutex.Unlock()
+	fake.CloseStub = nil
+	fake.closeReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeConnection) CloseReturnsOnCall(i int, result1 error) {
+	fake.closeMutex.Lock()
+	defer fake.closeMutex.Unlock()
+	fake.CloseStub = nil
+	if fake.closeReturnsOnCall == nil {
+		fake.closeReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.closeReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeConnection) IsClosing() bool {

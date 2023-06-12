@@ -14,7 +14,7 @@ import (
 )
 
 type Connection interface {
-	Close()
+	Close() error
 	Search(*l.SearchRequest) (*l.SearchResult, error)
 	IsClosing() bool
 }
