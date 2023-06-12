@@ -2,6 +2,7 @@ package configcommands
 
 import (
 	"fmt"
+	"github.com/vmwarepivotallabs/cf-mgmt/embedded"
 	"io/ioutil"
 	"os"
 	"path"
@@ -9,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/vmwarepivotallabs/cf-mgmt/generated"
 	"github.com/xchapter7x/lo"
 )
 
@@ -18,7 +18,7 @@ type GenerateConcoursePipelineCommand struct {
 	TargetDirectory string `long:"target-dir" default:"." description:"Name of the target directory to generate into"`
 }
 
-//Execute - generates concourse pipeline and tasks
+// Execute - generates concourse pipeline and tasks
 func (c *GenerateConcoursePipelineCommand) Execute([]string) error {
 	const varsFileName = "vars.yml"
 	const pipelineFileName = "pipeline.yml"
@@ -66,7 +66,7 @@ func (c *GenerateConcoursePipelineCommand) Execute([]string) error {
 }
 
 func (c *GenerateConcoursePipelineCommand) createFile(assetName, fileName string) error {
-	bytes, err := generated.Asset(fmt.Sprintf("files/%s", assetName))
+	bytes, err := embedded.Files.ReadFile(fmt.Sprintf("files/%s", assetName))
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (c *GenerateConcoursePipelineCommand) createFile(assetName, fileName string
 
 func (c *GenerateConcoursePipelineCommand) createTaskYml() error {
 	version := GetVersion()
-	bytes, err := generated.Asset("files/cf-mgmt.yml")
+	bytes, err := embedded.Files.ReadFile("files/cf-mgmt.yml")
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (c *GenerateConcoursePipelineCommand) createTaskYml() error {
 }
 
 func (c *GenerateConcoursePipelineCommand) createVarsYml() error {
-	bytes, err := generated.Asset("files/vars-template.yml")
+	bytes, err := embedded.Files.ReadFile("files/vars-template.yml")
 	if err != nil {
 		return err
 	}
