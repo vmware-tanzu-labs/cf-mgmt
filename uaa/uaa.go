@@ -71,7 +71,7 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 		ExternalID: externalID,
 		Origin:     origin,
 		Emails: []uaaclient.Email{
-			uaaclient.Email{
+			{
 				Value: userEmail,
 			},
 		},

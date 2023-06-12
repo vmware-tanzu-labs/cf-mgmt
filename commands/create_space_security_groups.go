@@ -5,7 +5,7 @@ type CreateSpaceSecurityGroupsCommand struct {
 	BasePeekCommand
 }
 
-//Execute - creates space specific security groups
+// Execute - creates space specific security groups
 func (c *CreateSpaceSecurityGroupsCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

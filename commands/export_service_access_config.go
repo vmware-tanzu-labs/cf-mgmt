@@ -8,7 +8,7 @@ type ExportServiceAccessCommand struct {
 	BaseCFConfigCommand
 }
 
-//ExportServiceAccessCommand - updates commands to reverse engineer service access into cf-mgmt.yml and remove from orgConfig.yml if present
+// ExportServiceAccessCommand - updates commands to reverse engineer service access into cf-mgmt.yml and remove from orgConfig.yml if present
 func (c *ExportServiceAccessCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

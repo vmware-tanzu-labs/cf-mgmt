@@ -12,7 +12,7 @@ type DeleteOrgConfigurationCommand struct {
 	ConfirmDeletion bool   `long:"confirm-deletion" description:"Confirm Deletion" required:"true"`
 }
 
-//Execute - deletes org from config
+// Execute - deletes org from config
 func (c *DeleteOrgConfigurationCommand) Execute([]string) error {
 	if err := config.NewManager(c.ConfigDirectory).DeleteOrgConfig(c.OrgName); err != nil {
 		return err

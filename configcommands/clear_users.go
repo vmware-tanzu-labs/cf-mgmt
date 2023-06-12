@@ -9,7 +9,7 @@ type ClearUsersCommand struct {
 	BaseConfigCommand
 }
 
-//Execute - updates org configuration`
+// Execute - updates org configuration`
 func (c *ClearUsersCommand) Execute(args []string) error {
 	c.initConfig()
 	orgs, err := c.ConfigManager.GetOrgConfigs()

@@ -9,7 +9,7 @@ type InitConfigurationCommand struct {
 	BaseConfigCommand
 }
 
-//Execute - initializes cf-mgmt configuration
+// Execute - initializes cf-mgmt configuration
 func (c *InitConfigurationCommand) Execute([]string) error {
 	lo.G.Infof("Initializing config in directory %s", c.ConfigDirectory)
 	configManager := config.NewManager(c.ConfigDirectory)

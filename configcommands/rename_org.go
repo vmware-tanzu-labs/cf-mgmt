@@ -13,7 +13,7 @@ type RenameOrgConfigurationCommand struct {
 	NewOrgName string `long:"new-org" description:"Org name to rename to" required:"true"`
 }
 
-//Execute - updates org configuration`
+// Execute - updates org configuration`
 func (c *RenameOrgConfigurationCommand) Execute(args []string) error {
 	c.initConfig()
 	orgs, err := c.ConfigManager.Orgs()

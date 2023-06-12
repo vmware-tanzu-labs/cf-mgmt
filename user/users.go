@@ -294,7 +294,7 @@ func (m *DefaultManager) AssociateOrgManager(input UsersInput, userName, userGUI
 	return err
 }
 
-//UpdateSpaceUsers -
+// UpdateSpaceUsers -
 func (m *DefaultManager) UpdateSpaceUsers() error {
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
@@ -403,7 +403,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 	return nil
 }
 
-//UpdateOrgUsers -
+// UpdateOrgUsers -
 func (m *DefaultManager) UpdateOrgUsers() error {
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
@@ -483,7 +483,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 	return nil
 }
 
-//SyncUsers
+// SyncUsers
 func (m *DefaultManager) SyncUsers(usersInput UsersInput) error {
 	// roleUsers, err := usersInput.ListUsers(usersInput, uaaUsers)
 	// if err != nil {

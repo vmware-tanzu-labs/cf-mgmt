@@ -44,11 +44,11 @@ var _ = Describe("given QuotaManager", func() {
 	Context("ListAllSpaceQuotasForOrg()", func() {
 		It("should return 2 quotas", func() {
 			fakeClient.ListOrgSpaceQuotasReturns([]cfclient.SpaceQuota{
-				cfclient.SpaceQuota{
+				{
 					Name: "quota-1",
 					Guid: "quota-1-guid",
 				},
-				cfclient.SpaceQuota{
+				{
 					Name: "quota-2",
 					Guid: "quota-2-guid",
 				},
@@ -74,12 +74,12 @@ var _ = Describe("given QuotaManager", func() {
 
 		BeforeEach(func() {
 			spaceConfigs := []config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					EnableSpaceQuota: true,
 					Space:            "space1",
 					Org:              "org1",
 				},
-				config.SpaceConfig{
+				{
 					EnableSpaceQuota: false,
 					Space:            "space2",
 					Org:              "org1",
@@ -107,7 +107,7 @@ var _ = Describe("given QuotaManager", func() {
 
 		It("should create a quota that has unlimited memory specified and assign it", func() {
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					EnableSpaceQuota: true,
 					Space:            "space1",
 					Org:              "org1",
@@ -119,11 +119,11 @@ var _ = Describe("given QuotaManager", func() {
 				QuotaDefinitionGuid: "org1-quota-guid",
 			}, nil)
 			fakeClient.ListOrgQuotasReturns([]cfclient.OrgQuota{
-				cfclient.OrgQuota{
+				{
 					Guid:        "org1-quota-guid",
 					MemoryLimit: 1000,
 				},
-				cfclient.OrgQuota{
+				{
 					Guid:        "org2-quota-guid",
 					MemoryLimit: 100,
 				},
@@ -151,7 +151,7 @@ var _ = Describe("given QuotaManager", func() {
 
 		It("should update a quota and assign it", func() {
 			fakeClient.ListOrgSpaceQuotasReturns([]cfclient.SpaceQuota{
-				cfclient.SpaceQuota{
+				{
 					Name: "space1",
 					Guid: "space-quota-guid",
 				},
@@ -177,7 +177,7 @@ var _ = Describe("given QuotaManager", func() {
 				QuotaDefinitionGuid: "space-quota-guid",
 			}, nil)
 			fakeClient.ListOrgSpaceQuotasReturns([]cfclient.SpaceQuota{
-				cfclient.SpaceQuota{
+				{
 					Name: "space1",
 					Guid: "space-quota-guid",
 				},
@@ -200,7 +200,7 @@ var _ = Describe("given QuotaManager", func() {
 				QuotaDefinitionGuid: "space-quota-guid",
 			}, nil)
 			fakeClient.ListOrgSpaceQuotasReturns([]cfclient.SpaceQuota{
-				cfclient.SpaceQuota{
+				{
 					Name:             "space1",
 					Guid:             "space-quota-guid",
 					OrganizationGuid: "org1-guid",
@@ -214,7 +214,7 @@ var _ = Describe("given QuotaManager", func() {
 
 		It("should error updating a quota", func() {
 			fakeClient.ListOrgSpaceQuotasReturns([]cfclient.SpaceQuota{
-				cfclient.SpaceQuota{
+				{
 					Name: "space1",
 					Guid: "space-quota-guid",
 				},
@@ -272,11 +272,11 @@ var _ = Describe("given QuotaManager", func() {
 
 		BeforeEach(func() {
 			orgConfigs := []config.OrgConfig{
-				config.OrgConfig{
+				{
 					EnableOrgQuota: true,
 					Org:            "org1",
 				},
-				config.OrgConfig{
+				{
 					EnableOrgQuota: false,
 					Org:            "org2",
 				},
@@ -308,7 +308,7 @@ var _ = Describe("given QuotaManager", func() {
 
 		It("should update a quota and assign it", func() {
 			fakeClient.ListOrgQuotasReturns([]cfclient.OrgQuota{
-				cfclient.OrgQuota{
+				{
 					Name:        "org1",
 					Guid:        "org-quota-guid",
 					TotalRoutes: 100,
@@ -330,7 +330,7 @@ var _ = Describe("given QuotaManager", func() {
 		It("should update a quota and not assign it", func() {
 			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org-guid", QuotaDefinitionGuid: "org-quota-guid"}, nil)
 			fakeClient.ListOrgQuotasReturns([]cfclient.OrgQuota{
-				cfclient.OrgQuota{
+				{
 					Name:        "org1",
 					Guid:        "org-quota-guid",
 					TotalRoutes: 100,
@@ -349,7 +349,7 @@ var _ = Describe("given QuotaManager", func() {
 		It("should not update a quota or assign it", func() {
 			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org-guid", QuotaDefinitionGuid: "org-quota-guid"}, nil)
 			fakeClient.ListOrgQuotasReturns([]cfclient.OrgQuota{
-				cfclient.OrgQuota{
+				{
 					Name: "org1",
 					Guid: "org-quota-guid",
 				},
@@ -364,7 +364,7 @@ var _ = Describe("given QuotaManager", func() {
 		It("should error updating quota", func() {
 			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org-guid", QuotaDefinitionGuid: "org-quota-guid"}, nil)
 			fakeClient.ListOrgQuotasReturns([]cfclient.OrgQuota{
-				cfclient.OrgQuota{
+				{
 					Name:        "org1",
 					Guid:        "org-quota-guid",
 					TotalRoutes: 10,
@@ -380,7 +380,7 @@ var _ = Describe("given QuotaManager", func() {
 		It("should error assigning quota", func() {
 			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org-guid", QuotaDefinitionGuid: "org-quota-guid"}, nil)
 			fakeClient.ListOrgQuotasReturns([]cfclient.OrgQuota{
-				cfclient.OrgQuota{
+				{
 					Name:        "org1",
 					Guid:        "org-quota-guid2",
 					TotalRoutes: 100,
@@ -472,12 +472,12 @@ var _ = Describe("given QuotaManager", func() {
 	Context("CreateNamedOrgQuotas()", func() {
 		It("Should create a named quota and assign it to org", func() {
 			fakeReader.GetOrgQuotasReturns([]config.OrgQuota{
-				config.OrgQuota{
+				{
 					Name: "my-named-quota",
 				},
 			}, nil)
 			fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
-				config.OrgConfig{
+				{
 					Org:        "test",
 					NamedQuota: "my-named-quota",
 				},
@@ -495,12 +495,12 @@ var _ = Describe("given QuotaManager", func() {
 	Context("CreateSpaceQuotas()", func() {
 		It("Should create a named quota and assign it to space", func() {
 			fakeReader.GetSpaceQuotasReturns([]config.SpaceQuota{
-				config.SpaceQuota{
+				{
 					Name: "my-named-quota",
 				},
 			}, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Org:              "test",
 					Space:            "test-space",
 					NamedQuota:       "my-named-quota",
@@ -519,7 +519,7 @@ var _ = Describe("given QuotaManager", func() {
 		It("Should create a space specfic quota", func() {
 			fakeReader.GetSpaceQuotasReturns(nil, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Org:              "test",
 					Space:            "test-space",
 					NamedQuota:       "",
@@ -539,12 +539,12 @@ var _ = Describe("given QuotaManager", func() {
 
 		It("should optimize calls if named quota is empty and enable space quotas if false", func() {
 			fakeReader.GetSpaceQuotasReturns([]config.SpaceQuota{
-				config.SpaceQuota{
+				{
 					Name: "my-named-quota",
 				},
 			}, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Org:              "test",
 					Space:            "test-space",
 					NamedQuota:       "",

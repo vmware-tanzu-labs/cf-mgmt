@@ -21,7 +21,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-//NewExportManager Creates a new instance of the ImportConfig manager
+// NewExportManager Creates a new instance of the ImportConfig manager
 func NewExportManager(
 	configDir string,
 	uaaMgr uaa.Manager,
@@ -104,8 +104,8 @@ func (im *Manager) ExportServiceAccess() error {
 	return err
 }
 
-//ExportConfig Imports org and space configuration from an existing CF instance
-//Entries part of excludedOrgs and excludedSpaces are not included in the import
+// ExportConfig Imports org and space configuration from an existing CF instance
+// Entries part of excludedOrgs and excludedSpaces are not included in the import
 func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, skipSpaces bool) error {
 	//Get all the users from the foundation
 	uaaUsers, err := im.UAAMgr.ListUsers()

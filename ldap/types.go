@@ -4,7 +4,7 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 )
 
-//Manager -
+// Manager -
 type Manager struct {
 	Config     *config.LdapConfig
 	Connection Connection
@@ -12,7 +12,7 @@ type Manager struct {
 	userMap    map[string]*User
 }
 
-//User -
+// User -
 type User struct {
 	UserDN string
 	UserID string

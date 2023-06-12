@@ -28,15 +28,15 @@ var _ = Describe("given uaa manager", func() {
 
 		It("should return list of users", func() {
 			fakeuaa.ListAllUsersReturns([]uaaclient.User{
-				uaaclient.User{Username: "foo4", ID: "foo4-id"},
-				uaaclient.User{Username: "admin", ID: "admin-id"},
-				uaaclient.User{Username: "user", ID: "user-id"},
-				uaaclient.User{Username: "cwashburn", ID: "cwashburn-id"},
-				uaaclient.User{Username: "foo", ID: "foo-id"},
-				uaaclient.User{Username: "foo1", ID: "foo1-id"},
-				uaaclient.User{Username: "foo2", ID: "foo2-id"},
-				uaaclient.User{Username: "foo3", ID: "foo3-id"},
-				uaaclient.User{Username: "cn=admin", ID: "cn=admin-id"},
+				{Username: "foo4", ID: "foo4-id"},
+				{Username: "admin", ID: "admin-id"},
+				{Username: "user", ID: "user-id"},
+				{Username: "cwashburn", ID: "cwashburn-id"},
+				{Username: "foo", ID: "foo-id"},
+				{Username: "foo1", ID: "foo1-id"},
+				{Username: "foo2", ID: "foo2-id"},
+				{Username: "foo3", ID: "foo3-id"},
+				{Username: "cn=admin", ID: "cn=admin-id"},
 			}, nil)
 			users, err := manager.ListUsers()
 			Ω(err).ShouldNot(HaveOccurred())
@@ -65,7 +65,7 @@ var _ = Describe("given uaa manager", func() {
 					Username:   userName,
 					ExternalID: externalID,
 					Emails: []uaaclient.Email{
-						uaaclient.Email{Value: userEmail},
+						{Value: userEmail},
 					}},
 				nil,
 			)
@@ -82,7 +82,7 @@ var _ = Describe("given uaa manager", func() {
 					Username:   userName,
 					ExternalID: externalID,
 					Emails: []uaaclient.Email{
-						uaaclient.Email{Value: userEmail},
+						{Value: userEmail},
 					}},
 				nil,
 			)
@@ -118,7 +118,7 @@ var _ = Describe("given uaa manager", func() {
 					ExternalID: externalID,
 					Origin:     origin,
 					Emails: []uaaclient.Email{
-						uaaclient.Email{Value: userEmail},
+						{Value: userEmail},
 					}},
 				nil,
 			)

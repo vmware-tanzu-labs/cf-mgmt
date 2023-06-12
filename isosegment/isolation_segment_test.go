@@ -47,7 +47,7 @@ var _ = Describe("Isolation Segments", func() {
 
 		Context("when no segments exist", func() {
 			BeforeEach(func() {
-				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{cfclient.IsolationSegment{Name: "shared"}}, nil)
+				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{{Name: "shared"}}, nil)
 			})
 
 			It("creates isolation segments", func() {

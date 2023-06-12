@@ -4,7 +4,7 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
-//Manager -
+// Manager -
 type Manager interface {
 	CreatePrivateDomains() error
 	SharePrivateDomains() error

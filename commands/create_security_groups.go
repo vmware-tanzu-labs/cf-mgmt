@@ -5,7 +5,7 @@ type CreateSecurityGroupsCommand struct {
 	BasePeekCommand
 }
 
-//Execute - creates security groups
+// Execute - creates security groups
 func (c *CreateSecurityGroupsCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

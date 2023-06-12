@@ -15,7 +15,7 @@ type UpdateOrgsConfigurationCommand struct {
 	ProtectedOrgsToRemove []string `long:"protected-org-to-remove" description:"Remove org(s) from protected org list, specify multiple times"`
 }
 
-//Execute - updates org configuration`
+// Execute - updates org configuration`
 func (c *UpdateOrgsConfigurationCommand) Execute(args []string) error {
 	c.initConfig()
 	orgs, err := c.ConfigManager.Orgs()

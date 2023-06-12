@@ -5,7 +5,7 @@ type CreateSpacesCommand struct {
 	BasePeekCommand
 }
 
-//Execute - creates spaces
+// Execute - creates spaces
 func (c *CreateSpacesCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

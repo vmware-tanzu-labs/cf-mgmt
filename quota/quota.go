@@ -13,7 +13,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-//NewManager -
+// NewManager -
 func NewManager(client CFClient,
 	spaceMgr space.Manager,
 	orgReader organizationreader.Reader,
@@ -29,7 +29,7 @@ func NewManager(client CFClient,
 	}
 }
 
-//Manager -
+// Manager -
 type Manager struct {
 	Cfg       config.Reader
 	Client    CFClient
@@ -39,7 +39,7 @@ type Manager struct {
 	Peek      bool
 }
 
-//CreateSpaceQuotas -
+// CreateSpaceQuotas -
 func (m *Manager) CreateSpaceQuotas() error {
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
@@ -253,7 +253,7 @@ func (m *Manager) SpaceQuotaByName(name string) (cfclient.SpaceQuota, error) {
 	return m.Client.GetSpaceQuotaByName(name)
 }
 
-//CreateOrgQuotas -
+// CreateOrgQuotas -
 func (m *Manager) CreateOrgQuotas() error {
 	quotas, err := m.ListAllOrgQuotas()
 	if err != nil {

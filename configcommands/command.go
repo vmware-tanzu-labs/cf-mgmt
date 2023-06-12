@@ -7,7 +7,7 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 )
 
-//BaseConfigCommand - commmand that specifies config-dir
+// BaseConfigCommand - commmand that specifies config-dir
 type BaseConfigCommand struct {
 	ConfigDirectory string `long:"config-dir" env:"CONFIG_DIR" default:"config" description:"Name of the config directory"`
 }

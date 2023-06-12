@@ -5,7 +5,7 @@ type DeleteSpacesCommand struct {
 	BasePeekCommand
 }
 
-//Execute - deletes spaces
+// Execute - deletes spaces
 func (c *DeleteSpacesCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
