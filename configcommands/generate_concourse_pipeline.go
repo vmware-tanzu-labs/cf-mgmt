@@ -3,7 +3,6 @@ package configcommands
 import (
 	"fmt"
 	"github.com/vmwarepivotallabs/cf-mgmt/embedded"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -74,7 +73,7 @@ func (c *GenerateConcoursePipelineCommand) createFile(assetName, fileName string
 	if strings.HasSuffix(fileName, ".sh") {
 		perm = 0755
 	}
-	return ioutil.WriteFile(path.Join(c.TargetDirectory, fileName), bytes, perm)
+	return os.WriteFile(path.Join(c.TargetDirectory, fileName), bytes, perm)
 }
 
 func (c *GenerateConcoursePipelineCommand) createTaskYml() error {
@@ -85,7 +84,7 @@ func (c *GenerateConcoursePipelineCommand) createTaskYml() error {
 	}
 	perm := os.FileMode(0666)
 	versioned := strings.Replace(string(bytes), "~VERSION~", version, -1)
-	return ioutil.WriteFile(filepath.Join(c.TargetDirectory, "ci", "tasks", "cf-mgmt.yml"), []byte(versioned), perm)
+	return os.WriteFile(filepath.Join(c.TargetDirectory, "ci", "tasks", "cf-mgmt.yml"), []byte(versioned), perm)
 }
 
 func (c *GenerateConcoursePipelineCommand) createVarsYml() error {
@@ -95,5 +94,5 @@ func (c *GenerateConcoursePipelineCommand) createVarsYml() error {
 	}
 	perm := os.FileMode(0666)
 	processedBytes := strings.Replace(string(bytes), "~CONFIGDIR~", c.ConfigDirectory, -1)
-	return ioutil.WriteFile(filepath.Join(c.ConfigDirectory, "vars.yml"), []byte(processedBytes), perm)
+	return os.WriteFile(filepath.Join(c.ConfigDirectory, "vars.yml"), []byte(processedBytes), perm)
 }
