@@ -47,15 +47,16 @@ func (fake *FakeUaa) CreateUser(arg1 uaaa.User) (*uaaa.User, error) {
 	fake.createUserArgsForCall = append(fake.createUserArgsForCall, struct {
 		arg1 uaaa.User
 	}{arg1})
+	stub := fake.CreateUserStub
+	fakeReturns := fake.createUserReturns
 	fake.recordInvocation("CreateUser", []interface{}{arg1})
 	fake.createUserMutex.Unlock()
-	if fake.CreateUserStub != nil {
-		return fake.CreateUserStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createUserReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -113,15 +114,16 @@ func (fake *FakeUaa) ListAllUsers(arg1 string, arg2 string, arg3 string, arg4 ua
 		arg3 string
 		arg4 uaaa.SortOrder
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.ListAllUsersStub
+	fakeReturns := fake.listAllUsersReturns
 	fake.recordInvocation("ListAllUsers", []interface{}{arg1, arg2, arg3, arg4})
 	fake.listAllUsersMutex.Unlock()
-	if fake.ListAllUsersStub != nil {
-		return fake.ListAllUsersStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listAllUsersReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
