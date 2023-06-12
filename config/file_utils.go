@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -37,7 +36,7 @@ func FileOrDirectoryExists(path string) bool {
 
 //LoadFileBytes - Load a file and return the bytes
 func LoadFileBytes(path string) ([]byte, error) {
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error reading file %s", path)
 	}
@@ -47,7 +46,7 @@ func LoadFileBytes(path string) ([]byte, error) {
 //LoadFile -
 func LoadFile(configFile string, dataType interface{}) error {
 	var data []byte
-	data, err := ioutil.ReadFile(configFile)
+	data, err := os.ReadFile(configFile)
 	if err != nil {
 		return errors.Wrapf(err, "Error reading file %s", configFile)
 	}
@@ -60,7 +59,7 @@ func LoadFile(configFile string, dataType interface{}) error {
 
 //WriteFileBytes -
 func WriteFileBytes(configFile string, data []byte) error {
-	return ioutil.WriteFile(configFile, data, 0755)
+	return os.WriteFile(configFile, data, 0755)
 }
 
 //WriteFile -

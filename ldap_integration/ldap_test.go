@@ -1,7 +1,6 @@
 package ldap_integration_test
 
 import (
-	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -146,7 +145,7 @@ var _ = Describe("Ldap", func() {
 
 			Context("GetLdapUser()", func() {
 				It("then it should return 1 user", func() {
-					data, _ := ioutil.ReadFile("./fixtures/user1.txt")
+					data, _ := os.ReadFile("./fixtures/user1.txt")
 					user, err := ldapManager.GetUserByDN(string(data))
 					Expect(err).Should(BeNil())
 					Expect(user).ShouldNot(BeNil())

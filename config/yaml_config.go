@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -44,7 +43,7 @@ func (m *yamlManager) GetDefaultASGConfigs() ([]ASGConfig, error) {
 	var result []ASGConfig
 	for _, securityGroupFile := range files {
 		lo.G.Debug("Loading security group contents", securityGroupFile)
-		bytes, err := ioutil.ReadFile(securityGroupFile)
+		bytes, err := os.ReadFile(securityGroupFile)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error reading file %s", securityGroupFile)
 		}
@@ -71,7 +70,7 @@ func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 	var result []ASGConfig
 	for _, securityGroupFile := range files {
 		lo.G.Debug("Loading security group contents", securityGroupFile)
-		bytes, err := ioutil.ReadFile(securityGroupFile)
+		bytes, err := os.ReadFile(securityGroupFile)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error reading file %s", securityGroupFile)
 		}
@@ -194,7 +193,7 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		if result[i].EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
 			lo.G.Debug("Loading security group contents", securityGroupFile)
-			bytes, err := ioutil.ReadFile(securityGroupFile)
+			bytes, err := os.ReadFile(securityGroupFile)
 			if err != nil {
 				return nil, err
 			}
