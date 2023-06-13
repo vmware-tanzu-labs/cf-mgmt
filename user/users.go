@@ -167,7 +167,7 @@ func (m *DefaultManager) initializeOrgUserRolesMap() error {
 	orgV3UsersRolesMap := make(map[string]map[string][]cfclient.V3User)
 	query := url.Values{}
 	query["per_page"] = []string{"5000"}
-	query["types"] = []string{ORG_AUDITOR + "," + ORG_BILLING_MANAGER + "," + ORG_MANAGER + "," + ORG_MANAGER}
+	query["types"] = []string{ORG_AUDITOR + "," + ORG_BILLING_MANAGER + "," + ORG_MANAGER + "," + ORG_USER}
 	roles, err := m.Client.ListV3RolesByQuery(query)
 	if err != nil {
 		return err
@@ -205,7 +205,9 @@ func (m *DefaultManager) initializeOrgUserRolesMap() error {
 			roleMap[role] = roleUsers
 		}
 	}
+
 	m.OrgRoles = orgUsersRoleMap
+
 	return nil
 }
 
