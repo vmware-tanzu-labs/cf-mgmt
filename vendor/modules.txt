@@ -110,6 +110,8 @@ github.com/pkg/errors
 ## explicit; go 1.13
 # github.com/smartystreets/goconvey v1.6.4
 ## explicit
+# github.com/stretchr/testify v1.8.3
+## explicit; go 1.20
 # github.com/tedsuo/rata v1.0.1-0.20170830210128-07d200713958
 ## explicit
 github.com/tedsuo/rata
@@ -125,11 +127,10 @@ golang.org/x/crypto/md4
 # golang.org/x/net v0.10.0
 ## explicit; go 1.17
 golang.org/x/net/context
-golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
-# golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c
+# golang.org/x/oauth2 v0.6.0
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
@@ -165,7 +166,7 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/protobuf v1.28.1
+# google.golang.org/protobuf v1.30.0
 ## explicit; go 1.11
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire

@@ -89,13 +89,11 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 			UserAgent:         userAgent,
 		}
 	}
-	// if strings.EqualFold(os.Getenv("LOG_LEVEL"), "debug") {
-	// 	c.Debug = true
-	// }
 	client, err := cfclient.NewClient(c)
 	if err != nil {
 		return nil, err
 	}
+
 	cfMgmt.OrgReader = organizationreader.NewReader(client, cfg, peek)
 	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgReader, cfg, peek)
 	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.OrgReader, cfMgmt.SpaceManager, cfg, peek)

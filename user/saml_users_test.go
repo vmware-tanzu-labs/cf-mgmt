@@ -42,7 +42,8 @@ var _ = Describe("SamlUsers", func() {
 			SpaceMgr:   spaceFake,
 			OrgReader:  orgFake,
 			Peek:       false,
-			LdapConfig: &config.LdapConfig{Origin: "saml_origin"}}
+			LdapConfig: &config.LdapConfig{Origin: "saml_origin"},
+		}
 	})
 	Context("SyncSamlUsers", func() {
 		var roleUsers *RoleUsers

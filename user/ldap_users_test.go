@@ -45,7 +45,8 @@ var _ = Describe("given UserSpaces", func() {
 				SpaceMgr:   spaceFake,
 				OrgReader:  orgFake,
 				Peek:       false,
-				LdapConfig: &config.LdapConfig{Origin: "ldap"}}
+				LdapConfig: &config.LdapConfig{Origin: "ldap"},
+			}
 		})
 		Context("SyncLdapUsers", func() {
 			var roleUsers *RoleUsers
