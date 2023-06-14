@@ -126,7 +126,8 @@ func (m *DefaultManager) initializeSpaceUserRolesMap() error {
 	if err != nil {
 		return err
 	}
-	lo.G.Debugf("%d - roles found", len(roles))
+	lo.G.Debugf("%d - org roles found", len(roles))
+	lo.G.Debugf("OrgRoles response %+v", roles)
 	for _, role := range roles {
 		spaceGUID := role.Relationships["space"].Data.GUID
 		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
@@ -159,6 +160,7 @@ func (m *DefaultManager) initializeSpaceUserRolesMap() error {
 			roleMap[role] = roleUsers
 		}
 	}
+	lo.G.Debugf("SpaceRolesMap: %+v", spaceUsersRoleMap)
 	m.SpaceRoles = spaceUsersRoleMap
 	return nil
 }
@@ -172,7 +174,8 @@ func (m *DefaultManager) initializeOrgUserRolesMap() error {
 	if err != nil {
 		return err
 	}
-	lo.G.Debugf("%d - roles found", len(roles))
+	lo.G.Debugf("%d - org roles found", len(roles))
+	lo.G.Debugf("OrgRoles response %+v", roles)
 	for _, role := range roles {
 		orgGUID := role.Relationships["organization"].Data.GUID
 		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
@@ -205,7 +208,7 @@ func (m *DefaultManager) initializeOrgUserRolesMap() error {
 			roleMap[role] = roleUsers
 		}
 	}
-
+	lo.G.Debugf("OrgRolesMap: %+v", orgUsersRoleMap)
 	m.OrgRoles = orgUsersRoleMap
 
 	return nil
@@ -339,6 +342,7 @@ func (m *DefaultManager) AddUserToOrg(orgGUID string, userName, userGUID string)
 	if !orgUsers.HasUserForGUID(userName, userGUID) {
 		_, err := m.Client.CreateV3OrganizationRole(orgGUID, userGUID, ORG_USER)
 		if err != nil {
+			lo.G.Debugf("Error adding user [%s] to org with guid [%s] but should have succeeded missing from org roles %+v, message: [%s]", userName, userGUID, orgUsers, err.Error())
 			return err
 		}
 		orgUsers.addUser(RoleUser{UserName: userName, GUID: userGUID})
