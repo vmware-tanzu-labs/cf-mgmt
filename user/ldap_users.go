@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, usersInput UsersInp
 		if err != nil {
 			return err
 		}
-		lo.G.Debugf("LdapUsers: %+v", ldapUsers)
+		m.dumpLdapUsers(fmt.Sprintf("LdapUsers for %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), ldapUsers)
 		for _, inputUser := range ldapUsers {
 			userToUse := m.UpdateUserInfo(inputUser)
 			userID := userToUse.UserID
@@ -42,7 +43,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, usersInput UsersInp
 				}
 			}
 			if !roleUsers.HasUserForOrigin(userID, origin) {
-				lo.G.Debugf("Role Users %+v", roleUsers.users)
+				m.dumpRoleUsers(fmt.Sprintf("Role Users %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
 				user := uaaUsers.GetByNameAndOrigin(userID, origin)
 				if user == nil {
 					return fmt.Errorf("Unable to find user %s for origin %s", userID, origin)
@@ -123,7 +124,8 @@ func (m *DefaultManager) GetLDAPUsers(usersInput UsersInput) ([]ldap.User, error
 			}
 		}
 	}
-	lo.G.Debugf("LdapUsers before unique check: %+v", ldapUsers)
+
+	m.dumpLdapUsers(fmt.Sprintf("LdapUsers before unique check for %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), ldapUsers)
 	ldapUsersToReturn := []ldap.User{}
 	uniqueLDAPUsers := make(map[string]ldap.User)
 	for _, ldapUser := range ldapUsers {
@@ -138,6 +140,18 @@ func (m *DefaultManager) GetLDAPUsers(usersInput UsersInput) ([]ldap.User, error
 		ldapUsersToReturn = append(ldapUsersToReturn, uniqueLDAPUser)
 	}
 	return ldapUsersToReturn, nil
+}
+
+func (m *DefaultManager) dumpLdapUsers(message string, users []ldap.User) {
+	level, logging := os.LookupEnv("LOG_LEVEL")
+	if logging && strings.EqualFold(level, "DEBUG") {
+		lo.G.Debugf("Start %s", message)
+		for _, ldapUser := range users {
+			lo.G.Debugf("%+v", ldapUser)
+		}
+		lo.G.Debugf("End %s", message)
+	}
+
 }
 
 func (m *DefaultManager) UpdateUserInfo(user ldap.User) ldap.User {

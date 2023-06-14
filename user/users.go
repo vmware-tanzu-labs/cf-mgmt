@@ -117,6 +117,18 @@ func (m *DefaultManager) AddUAAUser(user uaa.User) {
 	m.UAAUsers.Add(user)
 }
 
+func (m *DefaultManager) dumpRolesUsers(entityType string, entityRoles map[string]map[string]*RoleUsers) {
+	level, logging := os.LookupEnv("LOG_LEVEL")
+	if logging && strings.EqualFold(level, "DEBUG") {
+		for guid, roles := range entityRoles {
+			for roleType, role := range roles {
+				for _, user := range role.Users() {
+					lo.G.Debugf("User %s with origin %s in role %s for entity type %s with guid %s", user.UserName, user.Origin, roleType, entityType, guid)
+				}
+			}
+		}
+	}
+}
 func (m *DefaultManager) initializeSpaceUserRolesMap() error {
 	spaceV3UsersRolesMap := make(map[string]map[string][]cfclient.V3User)
 	query := url.Values{}
@@ -126,8 +138,7 @@ func (m *DefaultManager) initializeSpaceUserRolesMap() error {
 	if err != nil {
 		return err
 	}
-	lo.G.Debugf("%d - org roles found", len(roles))
-	lo.G.Debugf("OrgRoles response %+v", roles)
+	lo.G.Debugf("%d - space roles found", len(roles))
 	for _, role := range roles {
 		spaceGUID := role.Relationships["space"].Data.GUID
 		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
@@ -160,7 +171,7 @@ func (m *DefaultManager) initializeSpaceUserRolesMap() error {
 			roleMap[role] = roleUsers
 		}
 	}
-	lo.G.Debugf("SpaceRolesMap: %+v", spaceUsersRoleMap)
+	m.dumpRolesUsers("spaces", spaceUsersRoleMap)
 	m.SpaceRoles = spaceUsersRoleMap
 	return nil
 }
@@ -175,7 +186,6 @@ func (m *DefaultManager) initializeOrgUserRolesMap() error {
 		return err
 	}
 	lo.G.Debugf("%d - org roles found", len(roles))
-	lo.G.Debugf("OrgRoles response %+v", roles)
 	for _, role := range roles {
 		orgGUID := role.Relationships["organization"].Data.GUID
 		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
@@ -208,7 +218,7 @@ func (m *DefaultManager) initializeOrgUserRolesMap() error {
 			roleMap[role] = roleUsers
 		}
 	}
-	lo.G.Debugf("OrgRolesMap: %+v", orgUsersRoleMap)
+	m.dumpRolesUsers("organizations", orgUsersRoleMap)
 	m.OrgRoles = orgUsersRoleMap
 
 	return nil
@@ -640,30 +650,41 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 	return nil
 }
 
+func (m *DefaultManager) dumpRoleUsers(message string, users []RoleUser) {
+	level, logging := os.LookupEnv("LOG_LEVEL")
+	if logging && strings.EqualFold(level, "DEBUG") {
+		lo.G.Debugf("Being %s", message)
+		for _, roleUser := range users {
+			lo.G.Debugf("%+v", roleUser)
+		}
+		lo.G.Debugf("End %s", message)
+	}
+}
+
 // SyncUsers
 func (m *DefaultManager) SyncUsers(usersInput UsersInput) error {
 	roleUsers := usersInput.RoleUsers
-	lo.G.Debugf("Current Users In Role [%s] - %+v", usersInput.Role, roleUsers.Users())
+	m.dumpRoleUsers(fmt.Sprintf("Current Users for %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
 
 	if err := m.SyncLdapUsers(roleUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding ldap users")
 	}
 	if len(roleUsers.Users()) > 0 {
-		lo.G.Debugf("Users after LDAP sync %+v", roleUsers.Users())
+		m.dumpRoleUsers(fmt.Sprintf("Users after LDAP sync for %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
 	}
 
 	if err := m.SyncInternalUsers(roleUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding internal users")
 	}
 	if len(roleUsers.Users()) > 0 {
-		lo.G.Debugf("Users after Internal sync %+v", roleUsers.Users())
+		m.dumpRoleUsers(fmt.Sprintf("Users after Internal sync for %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
 	}
 
 	if err := m.SyncSamlUsers(roleUsers, usersInput); err != nil {
 		return errors.Wrap(err, "adding saml users")
 	}
 	if len(roleUsers.Users()) > 0 {
-		lo.G.Debugf("Users after SAML sync %+v", roleUsers.Users())
+		m.dumpRoleUsers(fmt.Sprintf("Users after SAML sync for %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
 	}
 
 	if err := m.RemoveUsers(roleUsers, usersInput); err != nil {
@@ -685,7 +706,7 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, usersInput User
 			return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
 		}
 		if !roleUsers.HasUser(lowerUserID) {
-			lo.G.Debugf("Role Users %+v", roleUsers.users)
+			m.dumpRoleUsers(fmt.Sprintf("Org Role Users for %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
 			user := uaaUsers.GetByNameAndOrigin(lowerUserID, origin)
 			if user == nil {
 				return fmt.Errorf("Unable to find user %s for origin %s", lowerUserID, origin)
@@ -709,7 +730,7 @@ func (m *DefaultManager) RemoveUsers(roleUsers *RoleUsers, usersInput UsersInput
 		protectedUsers := cfg.ProtectedUsers
 
 		if len(roleUsers.Users()) > 0 {
-			lo.G.Debugf("The following users are being removed %+v", roleUsers.Users())
+			m.dumpRoleUsers(fmt.Sprintf("The following users are being removed for %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
 		}
 		for _, roleUser := range roleUsers.Users() {
 			if !util.Matches(roleUser.UserName, protectedUsers) {
