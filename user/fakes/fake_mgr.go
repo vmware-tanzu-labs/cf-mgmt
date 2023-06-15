@@ -8,15 +8,15 @@ import (
 )
 
 type FakeManager struct {
-	CleanupOrgUsersStub        func() error
+	CleanupOrgUsersStub        func() []error
 	cleanupOrgUsersMutex       sync.RWMutex
 	cleanupOrgUsersArgsForCall []struct {
 	}
 	cleanupOrgUsersReturns struct {
-		result1 error
+		result1 []error
 	}
 	cleanupOrgUsersReturnsOnCall map[int]struct {
-		result1 error
+		result1 []error
 	}
 	DeinitializeLdapStub        func() error
 	deinitializeLdapMutex       sync.RWMutex
@@ -79,31 +79,31 @@ type FakeManager struct {
 		result4 *user.RoleUsers
 		result5 error
 	}
-	UpdateOrgUsersStub        func() error
+	UpdateOrgUsersStub        func() []error
 	updateOrgUsersMutex       sync.RWMutex
 	updateOrgUsersArgsForCall []struct {
 	}
 	updateOrgUsersReturns struct {
-		result1 error
+		result1 []error
 	}
 	updateOrgUsersReturnsOnCall map[int]struct {
-		result1 error
+		result1 []error
 	}
-	UpdateSpaceUsersStub        func() error
+	UpdateSpaceUsersStub        func() []error
 	updateSpaceUsersMutex       sync.RWMutex
 	updateSpaceUsersArgsForCall []struct {
 	}
 	updateSpaceUsersReturns struct {
-		result1 error
+		result1 []error
 	}
 	updateSpaceUsersReturnsOnCall map[int]struct {
-		result1 error
+		result1 []error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeManager) CleanupOrgUsers() error {
+func (fake *FakeManager) CleanupOrgUsers() []error {
 	fake.cleanupOrgUsersMutex.Lock()
 	ret, specificReturn := fake.cleanupOrgUsersReturnsOnCall[len(fake.cleanupOrgUsersArgsForCall)]
 	fake.cleanupOrgUsersArgsForCall = append(fake.cleanupOrgUsersArgsForCall, struct {
@@ -127,32 +127,32 @@ func (fake *FakeManager) CleanupOrgUsersCallCount() int {
 	return len(fake.cleanupOrgUsersArgsForCall)
 }
 
-func (fake *FakeManager) CleanupOrgUsersCalls(stub func() error) {
+func (fake *FakeManager) CleanupOrgUsersCalls(stub func() []error) {
 	fake.cleanupOrgUsersMutex.Lock()
 	defer fake.cleanupOrgUsersMutex.Unlock()
 	fake.CleanupOrgUsersStub = stub
 }
 
-func (fake *FakeManager) CleanupOrgUsersReturns(result1 error) {
+func (fake *FakeManager) CleanupOrgUsersReturns(result1 []error) {
 	fake.cleanupOrgUsersMutex.Lock()
 	defer fake.cleanupOrgUsersMutex.Unlock()
 	fake.CleanupOrgUsersStub = nil
 	fake.cleanupOrgUsersReturns = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
-func (fake *FakeManager) CleanupOrgUsersReturnsOnCall(i int, result1 error) {
+func (fake *FakeManager) CleanupOrgUsersReturnsOnCall(i int, result1 []error) {
 	fake.cleanupOrgUsersMutex.Lock()
 	defer fake.cleanupOrgUsersMutex.Unlock()
 	fake.CleanupOrgUsersStub = nil
 	if fake.cleanupOrgUsersReturnsOnCall == nil {
 		fake.cleanupOrgUsersReturnsOnCall = make(map[int]struct {
-			result1 error
+			result1 []error
 		})
 	}
 	fake.cleanupOrgUsersReturnsOnCall[i] = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
@@ -418,7 +418,7 @@ func (fake *FakeManager) ListSpaceUsersByRoleReturnsOnCall(i int, result1 *user.
 	}{result1, result2, result3, result4, result5}
 }
 
-func (fake *FakeManager) UpdateOrgUsers() error {
+func (fake *FakeManager) UpdateOrgUsers() []error {
 	fake.updateOrgUsersMutex.Lock()
 	ret, specificReturn := fake.updateOrgUsersReturnsOnCall[len(fake.updateOrgUsersArgsForCall)]
 	fake.updateOrgUsersArgsForCall = append(fake.updateOrgUsersArgsForCall, struct {
@@ -442,36 +442,36 @@ func (fake *FakeManager) UpdateOrgUsersCallCount() int {
 	return len(fake.updateOrgUsersArgsForCall)
 }
 
-func (fake *FakeManager) UpdateOrgUsersCalls(stub func() error) {
+func (fake *FakeManager) UpdateOrgUsersCalls(stub func() []error) {
 	fake.updateOrgUsersMutex.Lock()
 	defer fake.updateOrgUsersMutex.Unlock()
 	fake.UpdateOrgUsersStub = stub
 }
 
-func (fake *FakeManager) UpdateOrgUsersReturns(result1 error) {
+func (fake *FakeManager) UpdateOrgUsersReturns(result1 []error) {
 	fake.updateOrgUsersMutex.Lock()
 	defer fake.updateOrgUsersMutex.Unlock()
 	fake.UpdateOrgUsersStub = nil
 	fake.updateOrgUsersReturns = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateOrgUsersReturnsOnCall(i int, result1 error) {
+func (fake *FakeManager) UpdateOrgUsersReturnsOnCall(i int, result1 []error) {
 	fake.updateOrgUsersMutex.Lock()
 	defer fake.updateOrgUsersMutex.Unlock()
 	fake.UpdateOrgUsersStub = nil
 	if fake.updateOrgUsersReturnsOnCall == nil {
 		fake.updateOrgUsersReturnsOnCall = make(map[int]struct {
-			result1 error
+			result1 []error
 		})
 	}
 	fake.updateOrgUsersReturnsOnCall[i] = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateSpaceUsers() error {
+func (fake *FakeManager) UpdateSpaceUsers() []error {
 	fake.updateSpaceUsersMutex.Lock()
 	ret, specificReturn := fake.updateSpaceUsersReturnsOnCall[len(fake.updateSpaceUsersArgsForCall)]
 	fake.updateSpaceUsersArgsForCall = append(fake.updateSpaceUsersArgsForCall, struct {
@@ -495,32 +495,32 @@ func (fake *FakeManager) UpdateSpaceUsersCallCount() int {
 	return len(fake.updateSpaceUsersArgsForCall)
 }
 
-func (fake *FakeManager) UpdateSpaceUsersCalls(stub func() error) {
+func (fake *FakeManager) UpdateSpaceUsersCalls(stub func() []error) {
 	fake.updateSpaceUsersMutex.Lock()
 	defer fake.updateSpaceUsersMutex.Unlock()
 	fake.UpdateSpaceUsersStub = stub
 }
 
-func (fake *FakeManager) UpdateSpaceUsersReturns(result1 error) {
+func (fake *FakeManager) UpdateSpaceUsersReturns(result1 []error) {
 	fake.updateSpaceUsersMutex.Lock()
 	defer fake.updateSpaceUsersMutex.Unlock()
 	fake.UpdateSpaceUsersStub = nil
 	fake.updateSpaceUsersReturns = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateSpaceUsersReturnsOnCall(i int, result1 error) {
+func (fake *FakeManager) UpdateSpaceUsersReturnsOnCall(i int, result1 []error) {
 	fake.updateSpaceUsersMutex.Lock()
 	defer fake.updateSpaceUsersMutex.Unlock()
 	fake.UpdateSpaceUsersStub = nil
 	if fake.updateSpaceUsersReturnsOnCall == nil {
 		fake.updateSpaceUsersReturnsOnCall = make(map[int]struct {
-			result1 error
+			result1 []error
 		})
 	}
 	fake.updateSpaceUsersReturnsOnCall[i] = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 

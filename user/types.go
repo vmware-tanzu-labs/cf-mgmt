@@ -28,9 +28,9 @@ type RoleUser struct {
 type Manager interface {
 	InitializeLdap(ldapBindUser, ldapBindPassword, ldapServer string) error
 	DeinitializeLdap() error
-	UpdateSpaceUsers() error
-	UpdateOrgUsers() error
-	CleanupOrgUsers() error
+	UpdateSpaceUsers() []error
+	UpdateOrgUsers() []error
+	CleanupOrgUsers() []error
 	ListOrgUsersByRole(orgGUID string) (*RoleUsers, *RoleUsers, *RoleUsers, *RoleUsers, error)
 	ListSpaceUsersByRole(spaceGUID string) (*RoleUsers, *RoleUsers, *RoleUsers, *RoleUsers, error)
 }

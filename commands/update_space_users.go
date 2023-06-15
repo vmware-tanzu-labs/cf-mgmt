@@ -1,5 +1,7 @@
 package commands
 
+import "fmt"
+
 type UpdateSpaceUsersCommand struct {
 	BaseCFConfigCommand
 	BaseLDAPCommand
@@ -13,7 +15,11 @@ func (c *UpdateSpaceUsersCommand) Execute([]string) error {
 			return err
 		}
 		defer cfMgmt.UserManager.DeinitializeLdap()
-		return cfMgmt.UserManager.UpdateSpaceUsers()
+		errs := cfMgmt.UserManager.UpdateSpaceUsers()
+		if len(errs) > 0 {
+			return fmt.Errorf("got errors processing update space users %v", errs)
+		}
+		return nil
 	}
 	return nil
 }

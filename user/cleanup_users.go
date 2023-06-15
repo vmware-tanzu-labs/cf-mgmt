@@ -25,28 +25,29 @@ func (m *DefaultManager) removeOrphanedUsers(orphanedUsers []string) error {
 }
 
 // CleanupOrgUsers -
-func (m *DefaultManager) CleanupOrgUsers() error {
+func (m *DefaultManager) CleanupOrgUsers() []error {
+	errs := []error{}
 	m.ClearRoles()
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
-		return err
+		return []error{err}
 	}
 	uaaUsers, err := m.UAAMgr.ListUsers()
 	if err != nil {
-		return err
+		return []error{err}
 	}
 
 	for _, input := range orgConfigs {
 		if input.RemoveUsers {
 			if err := m.cleanupOrgUsers(uaaUsers, &input); err != nil {
-				return err
+				errs = append(errs, err)
 			}
 		} else {
 			lo.G.Infof("Not Removing Users from org %s", input.Org)
 		}
 	}
 	m.LogResults()
-	return nil
+	return errs
 }
 
 func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgConfig) error {
