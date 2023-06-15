@@ -95,7 +95,8 @@ func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 	lo.G.Debugf("Found %d users in the CF instance", len(userList))
 	for _, user := range userList {
 		userName := strings.Trim(user.Username, " ")
-		lo.G.Debugf("Adding to users userID [%s], externalID [%s], origin [%s], email [%s], GUID [%s]", userName, user.ExternalID, user.Origin, Email(user), user.ID)
+		externalID := strings.Trim(user.ExternalID, " ")
+		lo.G.Debugf("Adding to users userID [%s], externalID [%s], origin [%s], email [%s], GUID [%s]", userName, externalID, user.Origin, Email(user), user.ID)
 		users.Add(User{
 			Username:   userName,
 			ExternalID: user.ExternalID,

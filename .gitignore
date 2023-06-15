@@ -14,4 +14,7 @@ config_tests
 .envrc
 .vscode
 cf-mgmt-*
+test_configuration
+publish-develop.sh
+make-binary.sh
 .idea

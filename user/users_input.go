@@ -13,6 +13,7 @@ type UsersInput struct {
 	RoleUsers                                   *RoleUsers
 	AddUser                                     func(updateUserInput UsersInput, userName, userGUID string) error
 	RemoveUser                                  func(updateUserInput UsersInput, userName, userGUID string) error
+	Role                                        string
 }
 
 func (u *UsersInput) UniqueUsers() []string {

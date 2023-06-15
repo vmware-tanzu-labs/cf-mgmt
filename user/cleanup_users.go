@@ -26,6 +26,7 @@ func (m *DefaultManager) removeOrphanedUsers(orphanedUsers []string) error {
 
 // CleanupOrgUsers -
 func (m *DefaultManager) CleanupOrgUsers() error {
+	m.ClearRoles()
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return err
@@ -44,6 +45,7 @@ func (m *DefaultManager) CleanupOrgUsers() error {
 			lo.G.Infof("Not Removing Users from org %s", input.Org)
 		}
 	}
+	m.LogResults()
 	return nil
 }
 
@@ -52,7 +54,7 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 	if err != nil {
 		return err
 	}
-	orgUsers, err := m.Client.ListV3OrganizationRolesByGUIDAndType(org.Guid, ORG_USER)
+	orgUsers, _, _, _, err := m.ListOrgUsersByRole(org.Guid)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error listing org users for org %s", input.Org))
 	}
@@ -68,29 +70,29 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 	if err != nil {
 		return err
 	}
-	for _, orgUser := range orgUsers {
+	for _, orgUser := range orgUsers.Users() {
 		uaaUser := uaaUsers.GetByID(orgUser.GUID)
 		var guid string
 		if uaaUser == nil {
-			lo.G.Infof("Unable to find user (%s) GUID from uaa, using org user guid instead", orgUser.Username)
+			lo.G.Infof("Unable to find user (%s) GUID from uaa, using org user guid instead", orgUser.UserName)
 			guid = orgUser.GUID
 		} else {
 			guid = uaaUser.GUID
 		}
-		if !util.Matches(orgUser.Username, cfg.ProtectedUsers) {
-			if !usersInRoles.HasUser(orgUser.Username) {
+		if !util.Matches(orgUser.UserName, cfg.ProtectedUsers) {
+			if !usersInRoles.HasUser(orgUser.UserName) {
 				if m.Peek {
-					lo.G.Infof("[dry-run]: Removing User %s from org %s", orgUser.Username, input.Org)
+					lo.G.Infof("[dry-run]: Removing User %s from org %s", orgUser.UserName, input.Org)
 					continue
 				}
-				lo.G.Infof("Removing User %s from org %s", orgUser.Username, input.Org)
+				lo.G.Infof("Removing User %s from org %s", orgUser.UserName, input.Org)
 				role, err := m.GetOrgRoleGUID(org.Guid, guid, ORG_USER)
 				if err != nil {
 					return err
 				}
 				err = m.Client.DeleteV3Role(role)
 				if err != nil {
-					return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.Username, input.Org))
+					return errors.Wrap(err, fmt.Sprintf("Error removing user %s from org %s", orgUser.UserName, input.Org))
 				}
 			}
 		}
