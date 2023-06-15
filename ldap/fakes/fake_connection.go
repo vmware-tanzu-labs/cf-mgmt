@@ -9,9 +9,15 @@ import (
 )
 
 type FakeConnection struct {
-	CloseStub        func()
+	CloseStub        func() error
 	closeMutex       sync.RWMutex
 	closeArgsForCall []struct {
+	}
+	closeReturns struct {
+		result1 error
+	}
+	closeReturnsOnCall map[int]struct {
+		result1 error
 	}
 	IsClosingStub        func() bool
 	isClosingMutex       sync.RWMutex
@@ -40,15 +46,22 @@ type FakeConnection struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeConnection) Close() {
+func (fake *FakeConnection) Close() error {
 	fake.closeMutex.Lock()
+	ret, specificReturn := fake.closeReturnsOnCall[len(fake.closeArgsForCall)]
 	fake.closeArgsForCall = append(fake.closeArgsForCall, struct {
 	}{})
+	stub := fake.CloseStub
+	fakeReturns := fake.closeReturns
 	fake.recordInvocation("Close", []interface{}{})
 	fake.closeMutex.Unlock()
-	if fake.CloseStub != nil {
-		fake.CloseStub()
+	if stub != nil {
+		return stub()
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
 }
 
 func (fake *FakeConnection) CloseCallCount() int {
@@ -57,10 +70,33 @@ func (fake *FakeConnection) CloseCallCount() int {
 	return len(fake.closeArgsForCall)
 }
 
-func (fake *FakeConnection) CloseCalls(stub func()) {
+func (fake *FakeConnection) CloseCalls(stub func() error) {
 	fake.closeMutex.Lock()
 	defer fake.closeMutex.Unlock()
 	fake.CloseStub = stub
+}
+
+func (fake *FakeConnection) CloseReturns(result1 error) {
+	fake.closeMutex.Lock()
+	defer fake.closeMutex.Unlock()
+	fake.CloseStub = nil
+	fake.closeReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeConnection) CloseReturnsOnCall(i int, result1 error) {
+	fake.closeMutex.Lock()
+	defer fake.closeMutex.Unlock()
+	fake.CloseStub = nil
+	if fake.closeReturnsOnCall == nil {
+		fake.closeReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.closeReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeConnection) IsClosing() bool {
@@ -68,15 +104,16 @@ func (fake *FakeConnection) IsClosing() bool {
 	ret, specificReturn := fake.isClosingReturnsOnCall[len(fake.isClosingArgsForCall)]
 	fake.isClosingArgsForCall = append(fake.isClosingArgsForCall, struct {
 	}{})
+	stub := fake.IsClosingStub
+	fakeReturns := fake.isClosingReturns
 	fake.recordInvocation("IsClosing", []interface{}{})
 	fake.isClosingMutex.Unlock()
-	if fake.IsClosingStub != nil {
-		return fake.IsClosingStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.isClosingReturns
 	return fakeReturns.result1
 }
 
@@ -121,15 +158,16 @@ func (fake *FakeConnection) Search(arg1 *ldapa.SearchRequest) (*ldapa.SearchResu
 	fake.searchArgsForCall = append(fake.searchArgsForCall, struct {
 		arg1 *ldapa.SearchRequest
 	}{arg1})
+	stub := fake.SearchStub
+	fakeReturns := fake.searchReturns
 	fake.recordInvocation("Search", []interface{}{arg1})
 	fake.searchMutex.Unlock()
-	if fake.SearchStub != nil {
-		return fake.SearchStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.searchReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

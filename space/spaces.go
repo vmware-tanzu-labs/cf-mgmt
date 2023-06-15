@@ -14,7 +14,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-//NewManager -
+// NewManager -
 func NewManager(client CFClient, uaaMgr uaa.Manager,
 	orgReader organizationreader.Reader,
 	cfg config.Reader, peek bool) Manager {
@@ -27,7 +27,7 @@ func NewManager(client CFClient, uaaMgr uaa.Manager,
 	}
 }
 
-//DefaultManager -
+// DefaultManager -
 type DefaultManager struct {
 	Cfg       config.Reader
 	Client    CFClient
@@ -57,7 +57,7 @@ func (m *DefaultManager) init() error {
 	return nil
 }
 
-//UpdateSpaces -
+// UpdateSpaces -
 func (m *DefaultManager) UpdateSpaces() error {
 	m.spaces = nil
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
@@ -133,7 +133,7 @@ func (m *DefaultManager) ListSpaces(orgGUID string) ([]cfclient.Space, error) {
 
 }
 
-//FindSpace -
+// FindSpace -
 func (m *DefaultManager) FindSpace(orgName, spaceName string) (cfclient.Space, error) {
 	orgGUID, err := m.OrgReader.GetOrgGUID(orgName)
 	if err != nil {
@@ -191,7 +191,7 @@ func (m *DefaultManager) RenameSpace(originalSpaceName, spaceName, orgName strin
 	return err
 }
 
-//CreateSpaces -
+// CreateSpaces -
 func (m *DefaultManager) CreateSpaces() error {
 	m.spaces = nil
 	configSpaceList, err := m.Cfg.GetSpaceConfigs()
@@ -325,7 +325,7 @@ func (m *DefaultManager) ClearMetadata(space cfclient.Space, orgName string) err
 	return m.Client.RemoveSpaceMetadata(space.Guid)
 }
 
-//DeleteSpace - deletes a space based on GUID
+// DeleteSpace - deletes a space based on GUID
 func (m *DefaultManager) DeleteSpace(space cfclient.Space, orgName string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: delete space with %s from org %s", space.Name, orgName)

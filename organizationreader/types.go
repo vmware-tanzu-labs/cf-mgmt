@@ -4,7 +4,7 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
-//Reader -
+// Reader -
 type Reader interface {
 	ListOrgs() ([]cfclient.Org, error)
 	FindOrg(orgName string) (cfclient.Org, error)

@@ -14,7 +14,7 @@ type SpaceNamedQuotaConfigurationCommand struct {
 	Quota NamedSpaceQuota `group:"quota"`
 }
 
-//Execute - updates space named quotas
+// Execute - updates space named quotas
 func (c *SpaceNamedQuotaConfigurationCommand) Execute(args []string) error {
 	c.initConfig()
 	spaceQuota, err := c.ConfigManager.GetSpaceQuota(c.Name, c.Org)

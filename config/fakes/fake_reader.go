@@ -220,15 +220,16 @@ func (fake *FakeReader) GetASGConfigs() ([]config.ASGConfig, error) {
 	ret, specificReturn := fake.getASGConfigsReturnsOnCall[len(fake.getASGConfigsArgsForCall)]
 	fake.getASGConfigsArgsForCall = append(fake.getASGConfigsArgsForCall, struct {
 	}{})
+	stub := fake.GetASGConfigsStub
+	fakeReturns := fake.getASGConfigsReturns
 	fake.recordInvocation("GetASGConfigs", []interface{}{})
 	fake.getASGConfigsMutex.Unlock()
-	if fake.GetASGConfigsStub != nil {
-		return fake.GetASGConfigsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getASGConfigsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -275,15 +276,16 @@ func (fake *FakeReader) GetDefaultASGConfigs() ([]config.ASGConfig, error) {
 	ret, specificReturn := fake.getDefaultASGConfigsReturnsOnCall[len(fake.getDefaultASGConfigsArgsForCall)]
 	fake.getDefaultASGConfigsArgsForCall = append(fake.getDefaultASGConfigsArgsForCall, struct {
 	}{})
+	stub := fake.GetDefaultASGConfigsStub
+	fakeReturns := fake.getDefaultASGConfigsReturns
 	fake.recordInvocation("GetDefaultASGConfigs", []interface{}{})
 	fake.getDefaultASGConfigsMutex.Unlock()
-	if fake.GetDefaultASGConfigsStub != nil {
-		return fake.GetDefaultASGConfigsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getDefaultASGConfigsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -330,15 +332,16 @@ func (fake *FakeReader) GetGlobalConfig() (*config.GlobalConfig, error) {
 	ret, specificReturn := fake.getGlobalConfigReturnsOnCall[len(fake.getGlobalConfigArgsForCall)]
 	fake.getGlobalConfigArgsForCall = append(fake.getGlobalConfigArgsForCall, struct {
 	}{})
+	stub := fake.GetGlobalConfigStub
+	fakeReturns := fake.getGlobalConfigReturns
 	fake.recordInvocation("GetGlobalConfig", []interface{}{})
 	fake.getGlobalConfigMutex.Unlock()
-	if fake.GetGlobalConfigStub != nil {
-		return fake.GetGlobalConfigStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getGlobalConfigReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -386,15 +389,16 @@ func (fake *FakeReader) GetOrgConfig(arg1 string) (*config.OrgConfig, error) {
 	fake.getOrgConfigArgsForCall = append(fake.getOrgConfigArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetOrgConfigStub
+	fakeReturns := fake.getOrgConfigReturns
 	fake.recordInvocation("GetOrgConfig", []interface{}{arg1})
 	fake.getOrgConfigMutex.Unlock()
-	if fake.GetOrgConfigStub != nil {
-		return fake.GetOrgConfigStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getOrgConfigReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -448,15 +452,16 @@ func (fake *FakeReader) GetOrgConfigs() ([]config.OrgConfig, error) {
 	ret, specificReturn := fake.getOrgConfigsReturnsOnCall[len(fake.getOrgConfigsArgsForCall)]
 	fake.getOrgConfigsArgsForCall = append(fake.getOrgConfigsArgsForCall, struct {
 	}{})
+	stub := fake.GetOrgConfigsStub
+	fakeReturns := fake.getOrgConfigsReturns
 	fake.recordInvocation("GetOrgConfigs", []interface{}{})
 	fake.getOrgConfigsMutex.Unlock()
-	if fake.GetOrgConfigsStub != nil {
-		return fake.GetOrgConfigsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getOrgConfigsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -504,15 +509,16 @@ func (fake *FakeReader) GetOrgQuota(arg1 string) (*config.OrgQuota, error) {
 	fake.getOrgQuotaArgsForCall = append(fake.getOrgQuotaArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetOrgQuotaStub
+	fakeReturns := fake.getOrgQuotaReturns
 	fake.recordInvocation("GetOrgQuota", []interface{}{arg1})
 	fake.getOrgQuotaMutex.Unlock()
-	if fake.GetOrgQuotaStub != nil {
-		return fake.GetOrgQuotaStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getOrgQuotaReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -566,15 +572,16 @@ func (fake *FakeReader) GetOrgQuotas() ([]config.OrgQuota, error) {
 	ret, specificReturn := fake.getOrgQuotasReturnsOnCall[len(fake.getOrgQuotasArgsForCall)]
 	fake.getOrgQuotasArgsForCall = append(fake.getOrgQuotasArgsForCall, struct {
 	}{})
+	stub := fake.GetOrgQuotasStub
+	fakeReturns := fake.getOrgQuotasReturns
 	fake.recordInvocation("GetOrgQuotas", []interface{}{})
 	fake.getOrgQuotasMutex.Unlock()
-	if fake.GetOrgQuotasStub != nil {
-		return fake.GetOrgQuotasStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getOrgQuotasReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -623,15 +630,16 @@ func (fake *FakeReader) GetSpaceConfig(arg1 string, arg2 string) (*config.SpaceC
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.GetSpaceConfigStub
+	fakeReturns := fake.getSpaceConfigReturns
 	fake.recordInvocation("GetSpaceConfig", []interface{}{arg1, arg2})
 	fake.getSpaceConfigMutex.Unlock()
-	if fake.GetSpaceConfigStub != nil {
-		return fake.GetSpaceConfigStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getSpaceConfigReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -685,15 +693,16 @@ func (fake *FakeReader) GetSpaceConfigs() ([]config.SpaceConfig, error) {
 	ret, specificReturn := fake.getSpaceConfigsReturnsOnCall[len(fake.getSpaceConfigsArgsForCall)]
 	fake.getSpaceConfigsArgsForCall = append(fake.getSpaceConfigsArgsForCall, struct {
 	}{})
+	stub := fake.GetSpaceConfigsStub
+	fakeReturns := fake.getSpaceConfigsReturns
 	fake.recordInvocation("GetSpaceConfigs", []interface{}{})
 	fake.getSpaceConfigsMutex.Unlock()
-	if fake.GetSpaceConfigsStub != nil {
-		return fake.GetSpaceConfigsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getSpaceConfigsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -740,15 +749,16 @@ func (fake *FakeReader) GetSpaceDefaults() (*config.SpaceConfig, error) {
 	ret, specificReturn := fake.getSpaceDefaultsReturnsOnCall[len(fake.getSpaceDefaultsArgsForCall)]
 	fake.getSpaceDefaultsArgsForCall = append(fake.getSpaceDefaultsArgsForCall, struct {
 	}{})
+	stub := fake.GetSpaceDefaultsStub
+	fakeReturns := fake.getSpaceDefaultsReturns
 	fake.recordInvocation("GetSpaceDefaults", []interface{}{})
 	fake.getSpaceDefaultsMutex.Unlock()
-	if fake.GetSpaceDefaultsStub != nil {
-		return fake.GetSpaceDefaultsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getSpaceDefaultsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -797,15 +807,16 @@ func (fake *FakeReader) GetSpaceQuota(arg1 string, arg2 string) (*config.SpaceQu
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.GetSpaceQuotaStub
+	fakeReturns := fake.getSpaceQuotaReturns
 	fake.recordInvocation("GetSpaceQuota", []interface{}{arg1, arg2})
 	fake.getSpaceQuotaMutex.Unlock()
-	if fake.GetSpaceQuotaStub != nil {
-		return fake.GetSpaceQuotaStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getSpaceQuotaReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -860,15 +871,16 @@ func (fake *FakeReader) GetSpaceQuotas(arg1 string) ([]config.SpaceQuota, error)
 	fake.getSpaceQuotasArgsForCall = append(fake.getSpaceQuotasArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetSpaceQuotasStub
+	fakeReturns := fake.getSpaceQuotasReturns
 	fake.recordInvocation("GetSpaceQuotas", []interface{}{arg1})
 	fake.getSpaceQuotasMutex.Unlock()
-	if fake.GetSpaceQuotasStub != nil {
-		return fake.GetSpaceQuotasStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getSpaceQuotasReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -925,15 +937,16 @@ func (fake *FakeReader) LdapConfig(arg1 string, arg2 string, arg3 string) (*conf
 		arg2 string
 		arg3 string
 	}{arg1, arg2, arg3})
+	stub := fake.LdapConfigStub
+	fakeReturns := fake.ldapConfigReturns
 	fake.recordInvocation("LdapConfig", []interface{}{arg1, arg2, arg3})
 	fake.ldapConfigMutex.Unlock()
-	if fake.LdapConfigStub != nil {
-		return fake.LdapConfigStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.ldapConfigReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -988,15 +1001,16 @@ func (fake *FakeReader) OrgSpaces(arg1 string) (*config.Spaces, error) {
 	fake.orgSpacesArgsForCall = append(fake.orgSpacesArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.OrgSpacesStub
+	fakeReturns := fake.orgSpacesReturns
 	fake.recordInvocation("OrgSpaces", []interface{}{arg1})
 	fake.orgSpacesMutex.Unlock()
-	if fake.OrgSpacesStub != nil {
-		return fake.OrgSpacesStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.orgSpacesReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -1050,15 +1064,16 @@ func (fake *FakeReader) Orgs() (*config.Orgs, error) {
 	ret, specificReturn := fake.orgsReturnsOnCall[len(fake.orgsArgsForCall)]
 	fake.orgsArgsForCall = append(fake.orgsArgsForCall, struct {
 	}{})
+	stub := fake.OrgsStub
+	fakeReturns := fake.orgsReturns
 	fake.recordInvocation("Orgs", []interface{}{})
 	fake.orgsMutex.Unlock()
-	if fake.OrgsStub != nil {
-		return fake.OrgsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.orgsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -1105,15 +1120,16 @@ func (fake *FakeReader) Spaces() ([]config.Spaces, error) {
 	ret, specificReturn := fake.spacesReturnsOnCall[len(fake.spacesArgsForCall)]
 	fake.spacesArgsForCall = append(fake.spacesArgsForCall, struct {
 	}{})
+	stub := fake.SpacesStub
+	fakeReturns := fake.spacesReturns
 	fake.recordInvocation("Spaces", []interface{}{})
 	fake.spacesMutex.Unlock()
-	if fake.SpacesStub != nil {
-		return fake.SpacesStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.spacesReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

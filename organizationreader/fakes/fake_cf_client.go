@@ -59,15 +59,16 @@ func (fake *FakeCFClient) DeleteOrg(arg1 string, arg2 bool, arg3 bool) error {
 		arg2 bool
 		arg3 bool
 	}{arg1, arg2, arg3})
+	stub := fake.DeleteOrgStub
+	fakeReturns := fake.deleteOrgReturns
 	fake.recordInvocation("DeleteOrg", []interface{}{arg1, arg2, arg3})
 	fake.deleteOrgMutex.Unlock()
-	if fake.DeleteOrgStub != nil {
-		return fake.DeleteOrgStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteOrgReturns
 	return fakeReturns.result1
 }
 
@@ -119,15 +120,16 @@ func (fake *FakeCFClient) GetOrgByGuid(arg1 string) (cfclient.Org, error) {
 	fake.getOrgByGuidArgsForCall = append(fake.getOrgByGuidArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetOrgByGuidStub
+	fakeReturns := fake.getOrgByGuidReturns
 	fake.recordInvocation("GetOrgByGuid", []interface{}{arg1})
 	fake.getOrgByGuidMutex.Unlock()
-	if fake.GetOrgByGuidStub != nil {
-		return fake.GetOrgByGuidStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getOrgByGuidReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -181,15 +183,16 @@ func (fake *FakeCFClient) ListOrgs() ([]cfclient.Org, error) {
 	ret, specificReturn := fake.listOrgsReturnsOnCall[len(fake.listOrgsArgsForCall)]
 	fake.listOrgsArgsForCall = append(fake.listOrgsArgsForCall, struct {
 	}{})
+	stub := fake.ListOrgsStub
+	fakeReturns := fake.listOrgsReturns
 	fake.recordInvocation("ListOrgs", []interface{}{})
 	fake.listOrgsMutex.Unlock()
-	if fake.ListOrgsStub != nil {
-		return fake.ListOrgsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listOrgsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

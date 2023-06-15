@@ -82,10 +82,10 @@ var _ = Describe("Serviceaccess", func() {
 			globalCfg := &config.GlobalConfig{
 				EnableServiceAccess: true,
 				ServiceAccess: []*config.Broker{
-					&config.Broker{
+					{
 						Name: "mysql-broker",
 						Services: []*config.Service{
-							&config.Service{
+							{
 								Name:          "p-mysql",
 								NoAccessPlans: []string{"small"},
 							},
@@ -112,13 +112,13 @@ var _ = Describe("Serviceaccess", func() {
 			globalCfg := &config.GlobalConfig{
 				EnableServiceAccess: true,
 				ServiceAccess: []*config.Broker{
-					&config.Broker{
+					{
 						Name: "mysql-broker",
 						Services: []*config.Service{
-							&config.Service{
+							{
 								Name: "p-mysql",
 								LimitedAccessPlans: []*config.PlanVisibility{
-									&config.PlanVisibility{
+									{
 										Name: "small",
 										Orgs: []string{"test-org"},
 									},
@@ -368,9 +368,9 @@ var _ = Describe("Serviceaccess", func() {
 	Context("ProtectedOrgList", func() {
 		It("Should return a list", func() {
 			fakeOrgReader.ListOrgsReturns([]cfclient.Org{
-				cfclient.Org{Name: "foo"},
-				cfclient.Org{Name: "system"},
-				cfclient.Org{Name: "bar"},
+				{Name: "foo"},
+				{Name: "system"},
+				{Name: "bar"},
 			}, nil)
 			fakeReader.OrgsReturns(&config.Orgs{}, nil)
 			protectedOrgsList, err := manager.ProtectedOrgList()
@@ -379,9 +379,9 @@ var _ = Describe("Serviceaccess", func() {
 		})
 		It("Should error getting org config", func() {
 			fakeOrgReader.ListOrgsReturns([]cfclient.Org{
-				cfclient.Org{Name: "foo"},
-				cfclient.Org{Name: "system"},
-				cfclient.Org{Name: "bar"},
+				{Name: "foo"},
+				{Name: "system"},
+				{Name: "bar"},
 			}, nil)
 			fakeReader.OrgsReturns(&config.Orgs{}, errors.New("Getting org config"))
 			protectedOrgsList, err := manager.ProtectedOrgList()
@@ -390,9 +390,9 @@ var _ = Describe("Serviceaccess", func() {
 		})
 		It("Should error getting orgs", func() {
 			fakeOrgReader.ListOrgsReturns([]cfclient.Org{
-				cfclient.Org{Name: "foo"},
-				cfclient.Org{Name: "system"},
-				cfclient.Org{Name: "bar"},
+				{Name: "foo"},
+				{Name: "system"},
+				{Name: "bar"},
 			}, errors.New("Getting orgs"))
 			fakeReader.OrgsReturns(&config.Orgs{}, nil)
 			protectedOrgsList, err := manager.ProtectedOrgList()

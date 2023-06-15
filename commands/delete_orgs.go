@@ -5,7 +5,7 @@ type DeleteOrgsCommand struct {
 	BasePeekCommand
 }
 
-//Execute - deletes orgs
+// Execute - deletes orgs
 func (c *DeleteOrgsCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

@@ -13,7 +13,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-//NewManager -
+// NewManager -
 func NewManager(client CFClient, cfg config.Reader, orgReader organizationreader.Reader, spaceManager space.Manager, peek bool) (Manager, error) {
 	globalCfg, err := cfg.GetGlobalConfig()
 	if err != nil {

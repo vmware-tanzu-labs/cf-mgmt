@@ -73,7 +73,7 @@ func (m *Manager) Apply() error {
 	return nil
 }
 
-//RemoveUnknownVisibilites - will remove any service plan visiblities that are not known by cf-mgmt
+// RemoveUnknownVisibilites - will remove any service plan visiblities that are not known by cf-mgmt
 func (m *Manager) RemoveUnknownVisibilites(serviceInfo *ServiceInfo) error {
 	for servicePlanName, servicePlan := range serviceInfo.AllPlans() {
 		for _, plan := range servicePlan {
@@ -93,7 +93,7 @@ func (m *Manager) RemoveUnknownVisibilites(serviceInfo *ServiceInfo) error {
 	return nil
 }
 
-//DisablePublicServiceAccess - will ensure any public plan is made private
+// DisablePublicServiceAccess - will ensure any public plan is made private
 func (m *Manager) DisablePublicServiceAccess(serviceInfo *ServiceInfo) error {
 	for _, servicePlan := range serviceInfo.AllPlans() {
 		for _, plan := range servicePlan {
@@ -108,7 +108,7 @@ func (m *Manager) DisablePublicServiceAccess(serviceInfo *ServiceInfo) error {
 	return nil
 }
 
-//ListServiceInfo - returns services and their cooresponding plans
+// ListServiceInfo - returns services and their cooresponding plans
 func (m *Manager) ListServiceInfo() (*ServiceInfo, error) {
 	serviceInfo := &ServiceInfo{}
 	services, err := m.Client.ListServices()

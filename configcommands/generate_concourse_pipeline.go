@@ -2,14 +2,13 @@ package configcommands
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/vmwarepivotallabs/cf-mgmt/generated"
+	"github.com/vmwarepivotallabs/cf-mgmt/embedded"
 	"github.com/xchapter7x/lo"
 )
 
@@ -18,7 +17,7 @@ type GenerateConcoursePipelineCommand struct {
 	TargetDirectory string `long:"target-dir" default:"." description:"Name of the target directory to generate into"`
 }
 
-//Execute - generates concourse pipeline and tasks
+// Execute - generates concourse pipeline and tasks
 func (c *GenerateConcoursePipelineCommand) Execute([]string) error {
 	const varsFileName = "vars.yml"
 	const pipelineFileName = "pipeline.yml"
@@ -66,7 +65,7 @@ func (c *GenerateConcoursePipelineCommand) Execute([]string) error {
 }
 
 func (c *GenerateConcoursePipelineCommand) createFile(assetName, fileName string) error {
-	bytes, err := generated.Asset(fmt.Sprintf("files/%s", assetName))
+	bytes, err := embedded.Files.ReadFile(fmt.Sprintf("files/%s", assetName))
 	if err != nil {
 		return err
 	}
@@ -74,26 +73,26 @@ func (c *GenerateConcoursePipelineCommand) createFile(assetName, fileName string
 	if strings.HasSuffix(fileName, ".sh") {
 		perm = 0755
 	}
-	return ioutil.WriteFile(path.Join(c.TargetDirectory, fileName), bytes, perm)
+	return os.WriteFile(path.Join(c.TargetDirectory, fileName), bytes, perm)
 }
 
 func (c *GenerateConcoursePipelineCommand) createTaskYml() error {
 	version := GetVersion()
-	bytes, err := generated.Asset("files/cf-mgmt.yml")
+	bytes, err := embedded.Files.ReadFile("files/cf-mgmt.yml")
 	if err != nil {
 		return err
 	}
 	perm := os.FileMode(0666)
 	versioned := strings.Replace(string(bytes), "~VERSION~", version, -1)
-	return ioutil.WriteFile(filepath.Join(c.TargetDirectory, "ci", "tasks", "cf-mgmt.yml"), []byte(versioned), perm)
+	return os.WriteFile(filepath.Join(c.TargetDirectory, "ci", "tasks", "cf-mgmt.yml"), []byte(versioned), perm)
 }
 
 func (c *GenerateConcoursePipelineCommand) createVarsYml() error {
-	bytes, err := generated.Asset("files/vars-template.yml")
+	bytes, err := embedded.Files.ReadFile("files/vars-template.yml")
 	if err != nil {
 		return err
 	}
 	perm := os.FileMode(0666)
 	processedBytes := strings.Replace(string(bytes), "~CONFIGDIR~", c.ConfigDirectory, -1)
-	return ioutil.WriteFile(filepath.Join(c.ConfigDirectory, "vars.yml"), []byte(processedBytes), perm)
+	return os.WriteFile(filepath.Join(c.ConfigDirectory, "vars.yml"), []byte(processedBytes), perm)
 }

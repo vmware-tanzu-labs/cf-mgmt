@@ -5,7 +5,7 @@ type SharePrivateDomainsCommand struct {
 	BasePeekCommand
 }
 
-//Execute - creates private domains
+// Execute - creates private domains
 func (c *SharePrivateDomainsCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

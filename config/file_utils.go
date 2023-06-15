@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,7 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-//FindFiles -
+// FindFiles -
 func FindFiles(configDir, pattern string) ([]string, error) {
 	var foundFiles = make([]string, 0)
 	err := filepath.Walk(configDir,
@@ -23,31 +22,31 @@ func FindFiles(configDir, pattern string) ([]string, error) {
 	return foundFiles, err
 }
 
-//DeleteDirectory - deletes a directory
+// DeleteDirectory - deletes a directory
 func DeleteDirectory(path string) error {
 	err := os.RemoveAll(path)
 	return err
 }
 
-//FileOrDirectoryExists - checks if file exists
+// FileOrDirectoryExists - checks if file exists
 func FileOrDirectoryExists(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
 }
 
-//LoadFileBytes - Load a file and return the bytes
+// LoadFileBytes - Load a file and return the bytes
 func LoadFileBytes(path string) ([]byte, error) {
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error reading file %s", path)
 	}
 	return bytes, nil
 }
 
-//LoadFile -
+// LoadFile -
 func LoadFile(configFile string, dataType interface{}) error {
 	var data []byte
-	data, err := ioutil.ReadFile(configFile)
+	data, err := os.ReadFile(configFile)
 	if err != nil {
 		return errors.Wrapf(err, "Error reading file %s", configFile)
 	}
@@ -58,12 +57,12 @@ func LoadFile(configFile string, dataType interface{}) error {
 	return nil
 }
 
-//WriteFileBytes -
+// WriteFileBytes -
 func WriteFileBytes(configFile string, data []byte) error {
-	return ioutil.WriteFile(configFile, data, 0755)
+	return os.WriteFile(configFile, data, 0755)
 }
 
-//WriteFile -
+// WriteFile -
 func WriteFile(configFile string, dataType interface{}) error {
 	data, err := yaml.Marshal(dataType)
 	if err != nil {
@@ -72,7 +71,7 @@ func WriteFile(configFile string, dataType interface{}) error {
 	return WriteFileBytes(configFile, data)
 }
 
-//RenameDirectory -
+// RenameDirectory -
 func RenameDirectory(originalDirectory, newDirectory string) error {
 	return os.Rename(originalDirectory, newDirectory)
 }

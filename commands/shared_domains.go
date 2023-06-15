@@ -5,7 +5,7 @@ type SharedDomainsCommand struct {
 	BasePeekCommand
 }
 
-//Execute - adds/removes shared domains
+// Execute - adds/removes shared domains
 func (c *SharedDomainsCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

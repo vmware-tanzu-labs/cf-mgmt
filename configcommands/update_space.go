@@ -32,7 +32,7 @@ type UpdateSpaceConfigurationCommand struct {
 	Auditor                     UserRole   `group:"auditor" namespace:"auditor"`
 }
 
-//Execute - updates space configuration`
+// Execute - updates space configuration`
 func (c *UpdateSpaceConfigurationCommand) Execute(args []string) error {
 	lo.G.Warning("*** Deprecated *** - Use `space` command instead for adding/updating space configurations")
 	c.initConfig()

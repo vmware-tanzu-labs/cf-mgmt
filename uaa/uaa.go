@@ -9,7 +9,8 @@ import (
 	uaaclient "github.com/cloudfoundry-community/go-uaa"
 )
 
-//go:generate counterfeiter -o fakes/uaa_client.go uaa.go uaa
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate -o fakes/uaa_client.go uaa.go uaa
 type uaa interface {
 	CreateUser(user uaaclient.User) (*uaaclient.User, error)
 	ListAllUsers(filter string, sortBy string, attributes string, sortOrder uaaclient.SortOrder) ([]uaaclient.User, error)
@@ -70,7 +71,7 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 		ExternalID: externalID,
 		Origin:     origin,
 		Emails: []uaaclient.Email{
-			uaaclient.Email{
+			{
 				Value: userEmail,
 			},
 		},

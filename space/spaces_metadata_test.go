@@ -40,7 +40,7 @@ var _ = Describe("given SpaceManager", func() {
 		It("should add metadata label for given space", func() {
 			fakeClient.SupportsMetadataAPIReturns(true, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space: "testSpace",
 					Org:   "testOrg",
 					Metadata: &config.Metadata{
@@ -54,7 +54,7 @@ var _ = Describe("given SpaceManager", func() {
 				MetadataPrefix: "foo.bar",
 			}, nil)
 			spaces := []cfclient.Space{
-				cfclient.Space{
+				{
 					Name:             "testSpace",
 					Guid:             "test-space-guid",
 					OrganizationGuid: "testOrgGUID",
@@ -75,7 +75,7 @@ var _ = Describe("given SpaceManager", func() {
 		It("should add metadata annotation for given space", func() {
 			fakeClient.SupportsMetadataAPIReturns(true, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space: "testSpace",
 					Org:   "testOrg",
 					Metadata: &config.Metadata{
@@ -89,7 +89,7 @@ var _ = Describe("given SpaceManager", func() {
 				MetadataPrefix: "foo.bar",
 			}, nil)
 			spaces := []cfclient.Space{
-				cfclient.Space{
+				{
 					Name:             "testSpace",
 					Guid:             "test-space-guid",
 					OrganizationGuid: "testOrgGUID",
@@ -110,7 +110,7 @@ var _ = Describe("given SpaceManager", func() {
 		It("should remove metadata label for given space", func() {
 			fakeClient.SupportsMetadataAPIReturns(true, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space: "testSpace",
 					Org:   "testOrg",
 					Metadata: &config.Metadata{
@@ -124,7 +124,7 @@ var _ = Describe("given SpaceManager", func() {
 				MetadataPrefix: "foo.bar",
 			}, nil)
 			spaces := []cfclient.Space{
-				cfclient.Space{
+				{
 					Name:             "testSpace",
 					Guid:             "test-space-guid",
 					OrganizationGuid: "testOrgGUID",
@@ -146,7 +146,7 @@ var _ = Describe("given SpaceManager", func() {
 		It("should remove metadata annotation for given space", func() {
 			fakeClient.SupportsMetadataAPIReturns(true, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space: "testSpace",
 					Org:   "testOrg",
 					Metadata: &config.Metadata{
@@ -160,7 +160,7 @@ var _ = Describe("given SpaceManager", func() {
 				MetadataPrefix: "foo.bar",
 			}, nil)
 			spaces := []cfclient.Space{
-				cfclient.Space{
+				{
 					Name:             "testSpace",
 					Guid:             "test-space-guid",
 					OrganizationGuid: "testOrgGUID",

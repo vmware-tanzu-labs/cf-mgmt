@@ -17,7 +17,7 @@ func NewReader(client CFClient, cfg config.Reader, peek bool) Reader {
 	}
 }
 
-//DefaultManager -
+// DefaultManager -
 type DefaultReader struct {
 	Cfg    config.Reader
 	Client CFClient
@@ -55,7 +55,7 @@ func (m *DefaultReader) GetOrgGUID(orgName string) (string, error) {
 	return org.Guid, nil
 }
 
-//FindOrg -
+// FindOrg -
 func (m *DefaultReader) FindOrg(orgName string) (cfclient.Org, error) {
 	orgs, err := m.ListOrgs()
 	if err != nil {
@@ -75,7 +75,7 @@ func (m *DefaultReader) FindOrg(orgName string) (cfclient.Org, error) {
 	return cfclient.Org{}, fmt.Errorf("org %q not found", orgName)
 }
 
-//FindOrgByGUID -
+// FindOrgByGUID -
 func (m *DefaultReader) FindOrgByGUID(orgGUID string) (cfclient.Org, error) {
 	orgs, err := m.ListOrgs()
 	if err != nil {
@@ -95,7 +95,7 @@ func (m *DefaultReader) FindOrgByGUID(orgGUID string) (cfclient.Org, error) {
 	return cfclient.Org{}, fmt.Errorf("org %q not found", orgGUID)
 }
 
-//ListOrgs : Returns all orgs in the given foundation
+// ListOrgs : Returns all orgs in the given foundation
 func (m *DefaultReader) ListOrgs() ([]cfclient.Org, error) {
 	err := m.init()
 	if err != nil {

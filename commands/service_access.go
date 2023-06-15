@@ -5,7 +5,7 @@ type ServiceAccessCommand struct {
 	BasePeekCommand
 }
 
-//Execute - enables/disables service access
+// Execute - enables/disables service access
 func (c *ServiceAccessCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

@@ -33,7 +33,7 @@ type SpaceConfigurationCommand struct {
 	Metadata                    Metadata   `group:"metadata"`
 }
 
-//Execute - updates space configuration`
+// Execute - updates space configuration`
 func (c *SpaceConfigurationCommand) Execute(args []string) error {
 	c.initConfig()
 	var spaceConfig *config.SpaceConfig

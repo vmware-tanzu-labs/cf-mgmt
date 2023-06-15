@@ -5,7 +5,7 @@ type AssignDefaultSecurityGroups struct {
 	BasePeekCommand
 }
 
-//Execute - creates security groups
+// Execute - creates security groups
 func (c *AssignDefaultSecurityGroups) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error

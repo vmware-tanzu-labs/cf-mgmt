@@ -71,13 +71,13 @@ var _ = Describe("given Security Group Manager", func() {
 	Context("ListNonDefaultSecurityGroups", func() {
 		It("returns 2 security groups", func() {
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:    "group1",
 					Guid:    "group1-guid",
 					Running: false,
 					Staging: false,
 				},
-				cfclient.SecGroup{
+				{
 					Name:    "group2",
 					Guid:    "group2-guid",
 					Running: false,
@@ -100,13 +100,13 @@ var _ = Describe("given Security Group Manager", func() {
 	Context("ListDefaultSecurityGroups", func() {
 		It("returns 2 security groups", func() {
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:    "group1",
 					Guid:    "group1-guid",
 					Running: true,
 					Staging: false,
 				},
-				cfclient.SecGroup{
+				{
 					Name:    "group2",
 					Guid:    "group2-guid",
 					Running: false,
@@ -129,13 +129,13 @@ var _ = Describe("given Security Group Manager", func() {
 	Context("CreateApplicationSecurityGroups", func() {
 		BeforeEach(func() {
 			spaceConfigs := []config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					EnableSecurityGroup:   true,
 					Space:                 "space1",
 					Org:                   "org1",
 					SecurityGroupContents: asg_config,
 				},
-				config.SpaceConfig{
+				{
 					EnableSecurityGroup: false,
 					Space:               "space2",
 					Org:                 "org1",
@@ -151,7 +151,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should assign global group to space", func() {
 			spaceConfigs := []config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					EnableSecurityGroup: false,
 					Space:               "space1",
 					Org:                 "org1",
@@ -160,7 +160,7 @@ var _ = Describe("given Security Group Manager", func() {
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name: "dns",
 					Guid: "dns-guid",
 				},
@@ -175,7 +175,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should not assign global group to space that is already assigned", func() {
 			spaceConfigs := []config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					EnableSecurityGroup: false,
 					Space:               "space1",
 					Org:                 "org1",
@@ -184,13 +184,13 @@ var _ = Describe("given Security Group Manager", func() {
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name: "dns",
 					Guid: "dns-guid",
 				},
 			}, nil)
 			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name: "dns",
 					Guid: "dns-guid",
 				},
@@ -203,7 +203,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should unbind global group to space that is not in configuration", func() {
 			spaceConfigs := []config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					EnableSecurityGroup:         false,
 					Space:                       "space1",
 					Org:                         "org1",
@@ -213,22 +213,22 @@ var _ = Describe("given Security Group Manager", func() {
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name: "dns",
 					Guid: "dns-guid",
 					SpacesData: []cfclient.SpaceResource{
-						cfclient.SpaceResource{
+						{
 							Entity: cfclient.Space{
 								Guid: "space1-guid",
 							},
 						},
 					},
 				},
-				cfclient.SecGroup{
+				{
 					Name: "ntp",
 					Guid: "ntp-guid",
 					SpacesData: []cfclient.SpaceResource{
-						cfclient.SpaceResource{
+						{
 							Entity: cfclient.Space{
 								Guid: "space1-guid",
 							},
@@ -237,11 +237,11 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}, nil)
 			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name: "dns",
 					Guid: "dns-guid",
 				},
-				cfclient.SecGroup{
+				{
 					Name: "ntp",
 					Guid: "ntp-guid",
 				},
@@ -258,7 +258,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should not unbind space specific group to space", func() {
 			spaceConfigs := []config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					EnableSecurityGroup:         true,
 					Space:                       "space1",
 					Org:                         "org1",
@@ -268,22 +268,22 @@ var _ = Describe("given Security Group Manager", func() {
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name: "dns",
 					Guid: "dns-guid",
 				},
-				cfclient.SecGroup{
+				{
 					Name:  "org1-space1",
 					Guid:  "org1-space1-guid",
 					Rules: []cfclient.SecGroupRule{},
 				},
 			}, nil)
 			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name: "dns",
 					Guid: "dns-guid",
 				},
-				cfclient.SecGroup{
+				{
 					Name:  "org1-space1",
 					Guid:  "org1-space1-guid",
 					Rules: []cfclient.SecGroupRule{},
@@ -298,7 +298,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should unbind space specific group to space", func() {
 			spaceConfigs := []config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					EnableSecurityGroup:         false,
 					Space:                       "space1",
 					Org:                         "org1",
@@ -308,23 +308,23 @@ var _ = Describe("given Security Group Manager", func() {
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name: "dns",
 					Guid: "dns-guid",
 					SpacesData: []cfclient.SpaceResource{
-						cfclient.SpaceResource{
+						{
 							Entity: cfclient.Space{
 								Guid: "space1-guid",
 							},
 						},
 					},
 				},
-				cfclient.SecGroup{
+				{
 					Name:  "org1-space1",
 					Guid:  "org1-space1-guid",
 					Rules: []cfclient.SecGroupRule{},
 					SpacesData: []cfclient.SpaceResource{
-						cfclient.SpaceResource{
+						{
 							Entity: cfclient.Space{
 								Guid: "space1-guid",
 							},
@@ -333,11 +333,11 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}, nil)
 			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name: "dns",
 					Guid: "dns-guid",
 				},
-				cfclient.SecGroup{
+				{
 					Name:  "org1-space1",
 					Guid:  "org1-space1-guid",
 					Rules: []cfclient.SecGroupRule{},
@@ -352,7 +352,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should error assigning global group to space", func() {
 			spaceConfigs := []config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					EnableSecurityGroup: false,
 					Space:               "space1",
 					Org:                 "org1",
@@ -361,7 +361,7 @@ var _ = Describe("given Security Group Manager", func() {
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name: "dns",
 					Guid: "dns-guid",
 				},
@@ -374,7 +374,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should error when group doesn't exist", func() {
 			spaceConfigs := []config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					EnableSecurityGroup: false,
 					Space:               "space1",
 					Org:                 "org1",
@@ -402,7 +402,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should update and assign group to space", func() {
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:    "org1-space1",
 					Guid:    "org1-space1-guid",
 					Running: false,
@@ -420,14 +420,14 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should update and not assign group to space", func() {
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:    "org1-space1",
 					Guid:    "org1-space1-guid",
 					Running: false,
 					Staging: false,
 					SpacesData: []cfclient.SpaceResource{
-						cfclient.SpaceResource{Entity: cfclient.Space{Guid: "space1-guid"}},
-						cfclient.SpaceResource{Entity: cfclient.Space{Guid: "space2-guid"}},
+						{Entity: cfclient.Space{Guid: "space1-guid"}},
+						{Entity: cfclient.Space{Guid: "space2-guid"}},
 					},
 				},
 			}, nil)
@@ -450,7 +450,7 @@ var _ = Describe("given Security Group Manager", func() {
 		It("Should not update and not assign group to space", func() {
 			securityMgr.Peek = true
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:    "org1-space1",
 					Guid:    "org1-space1-guid",
 					Running: false,
@@ -484,7 +484,7 @@ var _ = Describe("given Security Group Manager", func() {
 	Context("CreateGlobalSecurityGroups", func() {
 		It("should create 1 asg from asg config", func() {
 			asgConfigs := []config.ASGConfig{
-				config.ASGConfig{
+				{
 					Name:  "asg-1",
 					Rules: asg_config,
 				},
@@ -497,7 +497,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should create 1 asg from default asg config", func() {
 			asgConfigs := []config.ASGConfig{
-				config.ASGConfig{
+				{
 					Name:  "asg-1",
 					Rules: asg_config,
 				},
@@ -510,13 +510,13 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should update 1 asg from asg config", func() {
 			asgConfigs := []config.ASGConfig{
-				config.ASGConfig{
+				{
 					Name:  "asg-1",
 					Rules: asg_config,
 				},
 			}
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:  "asg-1",
 					Guid:  "asg-1-guid",
 					Rules: []cfclient.SecGroupRule{},
@@ -530,7 +530,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should not update 1 asg from asg config", func() {
 			asgConfigs := []config.ASGConfig{
-				config.ASGConfig{
+				{
 					Name:  "asg-1",
 					Rules: asg_config,
 				},
@@ -539,7 +539,7 @@ var _ = Describe("given Security Group Manager", func() {
 			err := json.Unmarshal([]byte(asg_config), &securityGroupRules)
 			Expect(err).ShouldNot(HaveOccurred())
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:  "asg-1",
 					Guid:  "asg-1-guid",
 					Rules: securityGroupRules,
@@ -553,7 +553,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should error create 1 asg from asg config", func() {
 			asgConfigs := []config.ASGConfig{
-				config.ASGConfig{
+				{
 					Name:  "asg-1",
 					Rules: asg_config,
 				},
@@ -567,13 +567,13 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should error on update 1 asg from asg config", func() {
 			asgConfigs := []config.ASGConfig{
-				config.ASGConfig{
+				{
 					Name:  "asg-1",
 					Rules: asg_config,
 				},
 			}
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:  "asg-1",
 					Guid:  "asg-1-guid",
 					Rules: []cfclient.SecGroupRule{},
@@ -588,13 +588,13 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should error on update 1 asg from default config", func() {
 			asgConfigs := []config.ASGConfig{
-				config.ASGConfig{
+				{
 					Name:  "asg-1",
 					Rules: asg_config,
 				},
 			}
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:  "asg-1",
 					Guid:  "asg-1-guid",
 					Rules: []cfclient.SecGroupRule{},
@@ -625,7 +625,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should create 1 asg from asg config and remove trailing spaces", func() {
 			asgConfigs := []config.ASGConfig{
-				config.ASGConfig{
+				{
 					Name:  "asg-1",
 					Rules: asg_config_with_trailing_space,
 				},
@@ -642,7 +642,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should create 1 asg from asg config and remove trailing spaces", func() {
 			asgConfigs := []config.ASGConfig{
-				config.ASGConfig{
+				{
 					Name:  "asg-1",
 					Rules: asg_config_with_space,
 				},
@@ -661,7 +661,7 @@ var _ = Describe("given Security Group Manager", func() {
 	Context("AssignDefaultSecurityGroups", func() {
 		It("should assign running security group", func() {
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:  "asg-1",
 					Guid:  "asg-1-guid",
 					Rules: []cfclient.SecGroupRule{},
@@ -677,7 +677,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should not assign running security group", func() {
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:    "asg-1",
 					Guid:    "asg-1-guid",
 					Running: true,
@@ -704,7 +704,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should assign running staging group", func() {
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:  "asg-1",
 					Guid:  "asg-1-guid",
 					Rules: []cfclient.SecGroupRule{},
@@ -720,7 +720,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should not assign staging security group", func() {
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:    "asg-1",
 					Guid:    "asg-1-guid",
 					Staging: true,
@@ -747,7 +747,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("should unassign running security group", func() {
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:    "asg-1",
 					Guid:    "asg-1-guid",
 					Running: true,
@@ -763,7 +763,7 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 		It("should unassign staging security group", func() {
 			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+				{
 					Name:    "asg-1",
 					Guid:    "asg-1-guid",
 					Staging: true,
@@ -782,8 +782,8 @@ var _ = Describe("given Security Group Manager", func() {
 	Context("ListSpaceSecurityGroups", func() {
 		It("Should return 2", func() {
 			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{Name: "1", Guid: "1-guid"},
-				cfclient.SecGroup{Name: "2", Guid: "2-guid"},
+				{Name: "1", Guid: "1-guid"},
+				{Name: "2", Guid: "2-guid"},
 			}, nil)
 			secGroups, err := securityMgr.ListSpaceSecurityGroups("spaceGUID")
 			Expect(err).ShouldNot(HaveOccurred())

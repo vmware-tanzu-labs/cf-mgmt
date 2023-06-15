@@ -23,7 +23,7 @@ func NewManager(client CFClient, orgReader organizationreader.Reader, spaceMgr s
 	}
 }
 
-//DefaultManager -
+// DefaultManager -
 type DefaultManager struct {
 	Cfg       config.Reader
 	OrgReader organizationreader.Reader
@@ -32,7 +32,7 @@ type DefaultManager struct {
 	Peek      bool
 }
 
-//CreateOrgs -
+// CreateOrgs -
 func (m *DefaultManager) CreateOrgs() error {
 	m.OrgReader.ClearOrgList()
 	desiredOrgs, err := m.Cfg.GetOrgConfigs()
@@ -78,7 +78,7 @@ func (m *DefaultManager) CreateOrgs() error {
 	return nil
 }
 
-//DeleteOrgs -
+// DeleteOrgs -
 func (m *DefaultManager) DeleteOrgs() error {
 	m.OrgReader.ClearOrgList()
 	orgsConfig, err := m.Cfg.Orgs()
