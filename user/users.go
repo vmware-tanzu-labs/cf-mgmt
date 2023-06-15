@@ -94,9 +94,12 @@ func (m *DefaultManager) GetCFUsers() (map[string]cfclient.V3User, error) {
 		if err != nil {
 			return nil, err
 		}
+		lo.G.Debug("Begin CFUsers")
 		for _, cfUser := range cfUsers {
 			cfUserMap[cfUser.GUID] = cfUser
+			lo.G.Debugf("CFUser with username [%s] and guid [%s]", cfUser.Username, cfUser.GUID)
 		}
+		lo.G.Debug("End CFUsers")
 		m.CFUsers = cfUserMap
 	}
 	return m.CFUsers, nil
@@ -123,9 +126,18 @@ func (m *DefaultManager) dumpRolesUsers(entityType string, entityRoles map[strin
 		for guid, roles := range entityRoles {
 			for roleType, role := range roles {
 				for _, user := range role.Users() {
-					lo.G.Debugf("User %s with origin %s in role %s for entity type %s with guid %s", user.UserName, user.Origin, roleType, entityType, guid)
+					lo.G.Debugf("User [%s] with GUID[%s] and origin %s in role %s for entity type [%s/%s]", user.UserName, user.GUID, user.Origin, roleType, entityType, guid)
 				}
 			}
+		}
+	}
+}
+
+func (m *DefaultManager) dumpV3Roles(entityType string, roles []cfclient.V3Role) {
+	level, logging := os.LookupEnv("LOG_LEVEL")
+	if logging && strings.EqualFold(level, "DEBUG") {
+		for _, role := range roles {
+			lo.G.Debugf("For entity [%s/%s] and role [%s] user guid [%s]", entityType, role.GUID, role.Type, role.Relationships["user"].Data.GUID)
 		}
 	}
 }
@@ -133,12 +145,18 @@ func (m *DefaultManager) initializeSpaceUserRolesMap() error {
 	spaceV3UsersRolesMap := make(map[string]map[string][]cfclient.V3User)
 	query := url.Values{}
 	query["per_page"] = []string{"5000"}
+	query["order_by"] = []string{"created_at"}
 	query["types"] = []string{SPACE_AUDITOR + "," + SPACE_DEVELOPER + "," + SPACE_MANAGER + "," + SPACE_SUPPORTER}
 	roles, err := m.Client.ListV3RolesByQuery(query)
 	if err != nil {
 		return err
 	}
-	lo.G.Debugf("%d - space roles found", len(roles))
+	lo.G.Debugf("Found %d roles from %s API", len(roles), "space")
+	err = m.checkResultsAllReturned("space", roles)
+	if err != nil {
+		return err
+	}
+	m.dumpV3Roles("space", roles)
 	for _, role := range roles {
 		spaceGUID := role.Relationships["space"].Data.GUID
 		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
@@ -176,16 +194,34 @@ func (m *DefaultManager) initializeSpaceUserRolesMap() error {
 	return nil
 }
 
+func (m *DefaultManager) checkResultsAllReturned(entityType string, roles []cfclient.V3Role) error {
+	tracker := make(map[string]string)
+	for _, role := range roles {
+		if _, ok := tracker[role.GUID]; !ok {
+			tracker[role.GUID] = role.GUID
+		} else {
+			return fmt.Errorf("role for type %s with GUID[%s] is returned multiple times, pagination for v3 roles is not working", entityType, role.GUID)
+		}
+	}
+	return nil
+}
+
 func (m *DefaultManager) initializeOrgUserRolesMap() error {
 	orgV3UsersRolesMap := make(map[string]map[string][]cfclient.V3User)
 	query := url.Values{}
 	query["per_page"] = []string{"5000"}
+	query["order_by"] = []string{"created_at"}
 	query["types"] = []string{ORG_AUDITOR + "," + ORG_BILLING_MANAGER + "," + ORG_MANAGER + "," + ORG_USER}
 	roles, err := m.Client.ListV3RolesByQuery(query)
 	if err != nil {
 		return err
 	}
-	lo.G.Debugf("%d - org roles found", len(roles))
+	lo.G.Debugf("Found %d roles from %s API", len(roles), "organization")
+	err = m.checkResultsAllReturned("organization", roles)
+	if err != nil {
+		return err
+	}
+	m.dumpV3Roles("organization", roles)
 	for _, role := range roles {
 		orgGUID := role.Relationships["organization"].Data.GUID
 		user, err := m.getUserForGUID(role.Relationships["user"].Data.GUID)
@@ -653,7 +689,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 func (m *DefaultManager) dumpRoleUsers(message string, users []RoleUser) {
 	level, logging := os.LookupEnv("LOG_LEVEL")
 	if logging && strings.EqualFold(level, "DEBUG") {
-		lo.G.Debugf("Being %s", message)
+		lo.G.Debugf("Begin %s", message)
 		for _, roleUser := range users {
 			lo.G.Debugf("%+v", roleUser)
 		}
@@ -706,11 +742,11 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, usersInput User
 			return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
 		}
 		if !roleUsers.HasUser(lowerUserID) {
-			m.dumpRoleUsers(fmt.Sprintf("Org Role Users for %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
 			user := uaaUsers.GetByNameAndOrigin(lowerUserID, origin)
 			if user == nil {
-				return fmt.Errorf("Unable to find user %s for origin %s", lowerUserID, origin)
+				return fmt.Errorf("unable to find user %s for origin %s", lowerUserID, origin)
 			}
+			m.dumpRoleUsers(fmt.Sprintf("Adding user [%s] with guid[%s] with origin [%s] as doesn't exist in users for %s/%s - Role %s", lowerUserID, user.GUID, origin, usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
 			if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
 				return errors.Wrap(err, fmt.Sprintf("adding user %s for origin %s", user.Username, origin))
 			}

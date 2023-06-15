@@ -43,11 +43,11 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, usersInput UsersInp
 				}
 			}
 			if !roleUsers.HasUserForOrigin(userID, origin) {
-				m.dumpRoleUsers(fmt.Sprintf("Role Users %s/%s - Role %s", usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
 				user := uaaUsers.GetByNameAndOrigin(userID, origin)
 				if user == nil {
-					return fmt.Errorf("Unable to find user %s for origin %s", userID, origin)
+					return fmt.Errorf("unable to find user %s for origin %s", userID, origin)
 				}
+				m.dumpRoleUsers(fmt.Sprintf("Adding user [%s] with guid[%s] with origin [%s] as doesn't exist in users for %s/%s - Role %s for entity with guid[%s/%s]", userID, user.GUID, origin, usersInput.OrgName, usersInput.SpaceName, usersInput.Role, usersInput.OrgGUID, usersInput.SpaceGUID), roleUsers.Users())
 				if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
 					return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", user.Username, user.Origin))
 				}

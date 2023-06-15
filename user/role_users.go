@@ -6,6 +6,7 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
+	"github.com/xchapter7x/lo"
 )
 
 func NewRoleUsers(users []cfclient.V3User, uaaUsers *uaa.Users) (*RoleUsers, error) {
@@ -13,6 +14,7 @@ func NewRoleUsers(users []cfclient.V3User, uaaUsers *uaa.Users) (*RoleUsers, err
 	for _, user := range users {
 		uaaUser := uaaUsers.GetByID(user.GUID)
 		if uaaUser == nil {
+			lo.G.Debugf("User with guid[%s] is not found in UAA", user.GUID)
 			roleUsers.addOrphanedUser(user.GUID)
 			continue
 		}
@@ -23,7 +25,7 @@ func NewRoleUsers(users []cfclient.V3User, uaaUsers *uaa.Users) (*RoleUsers, err
 		}
 
 		if roleUser.UserName == "" {
-			return nil, fmt.Errorf("Username is blank for user with id %s", user.GUID)
+			return nil, fmt.Errorf("username is blank for user with id %s", user.GUID)
 		}
 		roleUsers.addUser(roleUser)
 	}
