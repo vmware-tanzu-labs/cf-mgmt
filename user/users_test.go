@@ -743,7 +743,7 @@ var _ = Describe("given UserSpaces", func() {
 				}, nil)
 				userManager.LdapConfig = &config.LdapConfig{Enabled: false}
 				err := userManager.UpdateSpaceUsers()
-				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(err)).To(Equal(0))
 			})
 		})
 
@@ -763,7 +763,7 @@ var _ = Describe("given UserSpaces", func() {
 				}, nil)
 				userManager.LdapConfig = &config.LdapConfig{Enabled: false}
 				err := userManager.UpdateOrgUsers()
-				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(err)).To(Equal(0))
 			})
 		})
 	})

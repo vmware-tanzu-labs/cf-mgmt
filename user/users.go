@@ -489,20 +489,21 @@ func (m *DefaultManager) AssociateOrgManager(input UsersInput, userName, userGUI
 }
 
 // UpdateSpaceUsers -
-func (m *DefaultManager) UpdateSpaceUsers() error {
+func (m *DefaultManager) UpdateSpaceUsers() []error {
+	errs := []error{}
 	m.ClearRoles()
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
-		return err
+		return []error{err}
 	}
 
 	for _, input := range spaceConfigs {
 		if err := m.updateSpaceUsers(&input); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 	m.LogResults()
-	return nil
+	return errs
 }
 
 func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
@@ -603,21 +604,22 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 }
 
 // UpdateOrgUsers -
-func (m *DefaultManager) UpdateOrgUsers() error {
+func (m *DefaultManager) UpdateOrgUsers() []error {
+	errs := []error{}
 	m.ClearRoles()
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
-		return err
+		return []error{err}
 	}
 
 	for _, input := range orgConfigs {
 		if err := m.updateOrgUsers(&input); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 
 	}
 	m.LogResults()
-	return nil
+	return errs
 }
 
 func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {

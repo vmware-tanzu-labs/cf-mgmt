@@ -1,5 +1,7 @@
 package commands
 
+import "fmt"
+
 type UpdateOrgUsersCommand struct {
 	BaseCFConfigCommand
 	BaseLDAPCommand
@@ -13,7 +15,11 @@ func (c *UpdateOrgUsersCommand) Execute([]string) error {
 			return err
 		}
 		defer cfMgmt.UserManager.DeinitializeLdap()
-		return cfMgmt.UserManager.UpdateOrgUsers()
+		errs := cfMgmt.UserManager.UpdateOrgUsers()
+		if len(errs) > 0 {
+			return fmt.Errorf("got errors processing update org users %v", errs)
+		}
+		return nil
 	}
 	return nil
 }

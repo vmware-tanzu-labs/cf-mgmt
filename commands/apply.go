@@ -37,8 +37,8 @@ func (c *ApplyCommand) Execute([]string) error {
 	}
 
 	fmt.Println("*********  Update Org Users")
-	if err = cfMgmt.UserManager.UpdateOrgUsers(); err != nil {
-		return err
+	if errs := cfMgmt.UserManager.UpdateOrgUsers(); len(errs) > 0 {
+		return fmt.Errorf("got errors processing org users %v", errs)
 	}
 
 	fmt.Println("*********  Create Global Security Groups")
@@ -87,8 +87,8 @@ func (c *ApplyCommand) Execute([]string) error {
 	}
 
 	fmt.Println("*********  Update Space Users")
-	if err = cfMgmt.UserManager.UpdateSpaceUsers(); err != nil {
-		return err
+	if errs := cfMgmt.UserManager.UpdateSpaceUsers(); len(errs) > 0 {
+		return fmt.Errorf("got errors processing space users %v", errs)
 	}
 
 	fmt.Println("*********  Create Space Quotas")
@@ -112,8 +112,8 @@ func (c *ApplyCommand) Execute([]string) error {
 	}
 
 	fmt.Println("*********  Cleanup Org Users")
-	if err = cfMgmt.UserManager.CleanupOrgUsers(); err != nil {
-		return err
+	if errs := cfMgmt.UserManager.CleanupOrgUsers(); len(errs) > 0 {
+		return fmt.Errorf("got errors processing cleanup org users %v", errs)
 	}
 
 	fmt.Println("*********  Shared Domains")
