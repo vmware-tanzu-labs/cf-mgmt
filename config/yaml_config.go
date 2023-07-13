@@ -407,12 +407,9 @@ func (m *yamlManager) AddSpaceToConfig(spaceConfig *SpaceConfig) error {
 // AddSecurityGroupToSpace - adds security group json to org/space location
 func (m *yamlManager) AddSecurityGroupToSpace(orgName, spaceName string, securityGroupDefinition []byte) error {
 	securityGroupFilePath := fmt.Sprintf("%s/%s/%s/security-group.json", m.ConfigDir, orgName, spaceName)
-	if !FileOrDirectoryExists(securityGroupFilePath) {
-		if err := WriteFileBytes(securityGroupFilePath, securityGroupDefinition); err != nil {
-			return err
-		}
+	if err := WriteFileBytes(securityGroupFilePath, securityGroupDefinition); err != nil {
+		return err
 	}
-
 	return nil
 }
 

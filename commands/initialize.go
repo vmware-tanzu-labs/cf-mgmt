@@ -6,6 +6,9 @@ import (
 
 	routing_api "code.cloudfoundry.org/routing-api"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	v3cfclient "github.com/cloudfoundry-community/go-cfclient/v3/client"
+	v3config "github.com/cloudfoundry-community/go-cfclient/v3/config"
+
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/configcommands"
 	"github.com/vmwarepivotallabs/cf-mgmt/isosegment"
@@ -71,6 +74,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 	cfMgmt.UAAManager = uaaMgr
 
 	var c *cfclient.Config
+	var cv3 *v3config.Config
 	if baseCommand.Password != "" {
 		lo.G.Warning("Password parameter is deprecated, create uaa client and client-secret instead")
 		c = &cfclient.Config{
@@ -80,6 +84,12 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 			Password:          baseCommand.Password,
 			UserAgent:         userAgent,
 		}
+		cv3, err = v3config.NewUserPassword(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
+			baseCommand.UserID,
+			baseCommand.Password)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		c = &cfclient.Config{
 			ApiAddress:        fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
@@ -88,8 +98,19 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 			ClientSecret:      baseCommand.ClientSecret,
 			UserAgent:         userAgent,
 		}
+		cv3, err = v3config.NewClientSecret(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
+			baseCommand.UserID,
+			baseCommand.ClientSecret)
+		if err != nil {
+			return nil, err
+		}
 	}
 	client, err := cfclient.NewClient(c)
+	if err != nil {
+		return nil, err
+	}
+	cv3.WithSkipTLSValidation(true)
+	v3client, err := v3cfclient.New(cv3)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +123,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 		return nil, err
 	}
 	cfMgmt.UserManager = userManager
-	cfMgmt.SecurityGroupManager = securitygroup.NewManager(client, cfMgmt.SpaceManager, cfg, peek)
+	cfMgmt.SecurityGroupManager = securitygroup.NewManager(v3client.SecurityGroups, cfMgmt.SpaceManager, cfg, peek)
 	cfMgmt.QuotaManager = quota.NewManager(client, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.OrgManager, cfg, peek)
 	cfMgmt.PrivateDomainManager = privatedomain.NewManager(client, cfMgmt.OrgReader, cfg, peek)
 	if isoSegmentManager, err := isosegment.NewManager(client, cfg, cfMgmt.OrgReader, cfMgmt.SpaceManager, peek); err == nil {

@@ -5,6 +5,7 @@ import (
 
 	"code.cloudfoundry.org/routing-api/models"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/isosegment"
@@ -242,7 +243,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 
 	for sgName, sgInfo := range securityGroups {
 		lo.G.Infof("Adding security group %s", sgName)
-		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
+		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.GUID); err == nil {
 			lo.G.Infof("Adding rules for %s", sgName)
 			im.ConfigMgr.AddSecurityGroup(sgName, rules)
 		} else {
@@ -252,13 +253,13 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 
 	for sgName, sgInfo := range defaultSecurityGroups {
 		lo.G.Infof("Adding default security group %s", sgName)
-		if sgInfo.Running {
+		if sgInfo.GloballyEnabled.Running {
 			globalConfig.RunningSecurityGroups = append(globalConfig.RunningSecurityGroups, sgName)
 		}
-		if sgInfo.Staging {
+		if sgInfo.GloballyEnabled.Staging {
 			globalConfig.StagingSecurityGroups = append(globalConfig.StagingSecurityGroups, sgName)
 		}
-		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
+		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.GUID); err == nil {
 			lo.G.Infof("Adding rules for %s", sgName)
 			im.ConfigMgr.AddDefaultSecurityGroup(sgName, rules)
 		} else {
@@ -324,7 +325,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 	return im.ConfigMgr.SaveGlobalConfig(globalConfig)
 }
 
-func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]cfclient.SecGroup) error {
+func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]*resource.SecurityGroup) error {
 	lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
 	spaces, _ := im.SpaceManager.ListSpaces(orgGUID)
 	lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
@@ -421,6 +422,8 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 				lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
 				if securityGroupName != spaceSGName {
 					spaceConfig.ASGs = append(spaceConfig.ASGs, securityGroupName)
+				} else {
+					spaceConfig.EnableSecurityGroup = true
 				}
 			}
 		}
@@ -429,8 +432,11 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 
 		if sgInfo, ok := securityGroups[spaceSGName]; ok {
 			delete(securityGroups, spaceSGName)
-			if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
-				im.ConfigMgr.AddSecurityGroupToSpace(orgConfig.Org, spaceName, rules)
+			if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.GUID); err == nil {
+				err = im.ConfigMgr.AddSecurityGroupToSpace(orgConfig.Org, spaceName, rules)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
