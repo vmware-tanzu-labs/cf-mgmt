@@ -42,6 +42,8 @@ github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghf
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudfoundry-community/go-cfclient v0.0.0-20220803221820-5e81c204bd31 h1:AsxHmMDEVDz8bz3Z34X4FeGTcG1nLsOU6wzdSPBXKwY=
 github.com/cloudfoundry-community/go-cfclient v0.0.0-20220803221820-5e81c204bd31/go.mod h1:sgaEj3tRn0hwe7GPdEUwxrdOqjBzyjyvyOCGf1OQyZY=
+github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.5 h1:D6Kc4/ockmFHKNKUSeMNt3G82rddwZV6xWbjIXv8oaE=
+github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.5/go.mod h1:hFja9UPzLkfNxTF8EM0sqs7K+J2BCoLcjNmrMbP24xY=
 github.com/cloudfoundry-community/go-uaa v0.3.2-0.20191219133444-673d775e96b5 h1:5F11z0kED/YxNc+CxKq/M4fieKyameP6w3t5FTcDNno=
 github.com/cloudfoundry-community/go-uaa v0.3.2-0.20191219133444-673d775e96b5/go.mod h1:8CCxX5F9y6y0IMBu/HDTx2Rgkpyb285XTk+k/iXY8no=
 github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0 h1:sDMmm+q/3+BukdIpxwO365v/Rbspp2Nt5XntgQRXq8Q=
