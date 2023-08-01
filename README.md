@@ -11,15 +11,15 @@
 
 This version of cf-mgmt is a fork of the cf-mgmt tool created by vmware/tanzu. The original tool can be found here: https://github.com/vmware-tanzu-labs/cf-mgmt
 
-This Rabobank version adds support for groups maintained in Azure Active Directory (Azure AD), instead of in AD (LDAP). 
+This Rabobank version adds support for groups maintained in Azure Active Directory (Azure AD), instead of in AD (LDAP)
 
-Documentation is only amended for as far as the Azure AD support. You may find inconsistencies with the original documentation. 
+Documentation is only amended for as far as the Azure AD support. You may find inconsistencies with the original documentation.
 
-In short: 
+In short:
 * ```The cf-mgmt update-org-users``` and ```cf-mgmt update-space-users``` commands have extra parameters to specify the required information for accessing Azure AD.
 * A new yaml file ```azureAD.yml``` can optionally be added to specify the Azure AD config parameters
 * the files ```orgConfig.yml``` and ```spaceConfig.yml``` can now have entries for ```aad_groups``` (comparable to the corresponding ldap entrie. aad_group is not supported)
-* the ```cf-mgmt-config``` command also generates the ```azureAD.yml``` file and ```aad_groups``` entries 
+* the ```cf-mgmt-config``` command also generates the ```azureAD.yml``` file and ```aad_groups``` entries
 
 # Cloud Foundry Management (cf-mgmt)
 
