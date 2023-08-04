@@ -1,10 +1,9 @@
 TAS version | Compatible?
 --- | ---
-2.13 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_13/badge)
-2.12 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_12/badge)
-2.11 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_11_lts2/badge)
-2.10 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_10/badge)
-2.7 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2_7_lts/badge)
+4.0 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-4-0/badge)
+3.0 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-3-0/badge)
+2.13 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2-13/badge)
+2.11 | ![CI](https://ci.cryo.cf-app.com/api/v1/teams/cf-mgmt/pipelines/cf-mgmt/jobs/test-against-tas-2-11/badge)
 
 # Cloud Foundry Management (cf-mgmt)
 
