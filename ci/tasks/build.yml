@@ -2,7 +2,7 @@ platform: linux
 image_resource:
   source:
     repository: cryogenics/essentials
-    tag: 0.1.67
+    tag: 0.1.68
   type: registry-image
 run:
   path: source/ci/tasks/build.sh
