@@ -7,6 +7,7 @@ import (
 	"testing"
 )
 
+
 func TestCmd(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Cmd Suite")
