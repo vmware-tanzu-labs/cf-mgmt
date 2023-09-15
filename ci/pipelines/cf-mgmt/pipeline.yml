@@ -118,6 +118,12 @@ resources:
   source:
     repository: harbor-repo.vmware.com/dockerhub-proxy-cache/pcfplatformrecovery/backup-and-restore
 
+- name: image-buildroot
+  type: docker-image
+  source:
+    repository: harbor-repo.vmware.com/dockerhub-proxy-cache/concourse/buildroot
+    tag: git
+
 #@ for/end v in data.values.tas_versions:
 - icon: pool
   name: #@ 'tas-' + v["version_slug"] + '-env'
@@ -368,6 +374,7 @@ jobs:
 - name: publish
   plan:
     - in_parallel:
+      - get: image-buildroot
       - get: source
         passed:
          - release
@@ -377,6 +384,7 @@ jobs:
           - release
     - task: prepare
       file: source/ci/tasks/prepare.yml
+      image: image-buildroot
     - put: docker-registry
       params:
         build: prepare-output
