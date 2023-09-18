@@ -215,8 +215,8 @@ jobs:
     resource: pull-request
     trigger: true
   - put: cf-deployment-env
+    attempts: *number_of_claim_env_retries
     params:
-      attempts: *number_of_claim_env_retries
       action: claim
 
 - name: test
@@ -280,8 +280,8 @@ jobs:
   - get: pull-request
     trigger: true
   - put: #@ 'tas-' + v["version_slug"] +'-env'
+    attempts: *number_of_claim_env_retries
     params:
-      attempts: *number_of_claim_env_retries
       action: claim
 
 - name: #@ 'test-against-tas-' + v["version_slug"]
