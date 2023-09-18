@@ -53,6 +53,7 @@ groups:
   - #@ 'unclaim-tas-' + v["version_slug"]
 #@ end
   - merge
+  - lint-pipeline
 - name: bump
   jobs:
   - bump-ci-tasks
@@ -201,6 +202,11 @@ resources:
   source:
     uri: git@github.com:pivotal/cryogenics-concourse-tasks.git
     private_key: *github_ssh_key
+    
+- name: bash
+  type: registry-image
+  source:
+    repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/bash
 
 jobs:
 - name: claim-cf
@@ -259,6 +265,7 @@ jobs:
     trigger: true
     passed:
     - unclaim-cf
+    - lint-pipeline
 #@ for v in data.values.tas_versions:
     - #@ 'unclaim-tas-' + v["version_slug"]
 #@ end
@@ -390,6 +397,22 @@ jobs:
         build: prepare-output
         tag_as_latest: true
         tag: prepare-output/version
+
+- name: lint-pipeline
+  plan:
+    - in_parallel:
+        - get: pull-request
+          trigger: true
+        - get: cryogenics-concourse-tasks
+        - get: bash
+    - task: check-pipeline-for-stray-secrets
+      image: bash
+      file: cryogenics-concourse-tasks/pipeline-linting/check-pipeline-for-stray-secrets/task.yml
+      input_mapping:
+        cryogenics-concourse-tasks: cryogenics-concourse-tasks
+        pipeline-repo: pull-request
+      params:
+        PIPELINE_TO_CHECK: ./pipeline-repo/ci/pipelines/cf-mgmt/pipeline.yml
 
 - name: bump-ci-tasks
   plan:
