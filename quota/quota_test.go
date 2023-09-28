@@ -75,14 +75,32 @@ var _ = Describe("given QuotaManager", func() {
 		BeforeEach(func() {
 			spaceConfigs := []config.SpaceConfig{
 				{
-					EnableSpaceQuota: true,
-					Space:            "space1",
-					Org:              "org1",
+					EnableSpaceQuota:        true,
+					Space:                   "space1",
+					Org:                     "org1",
+					MemoryLimit:             "10G",
+					InstanceMemoryLimit:     "unlimited",
+					TotalRoutes:             "1000",
+					TotalServices:           "100",
+					PaidServicePlansAllowed: true,
+					TotalReservedRoutePorts: "0",
+					TotalServiceKeys:        "unlimited",
+					AppInstanceLimit:        "unlimited",
+					AppTaskLimit:            "unlimited",
 				},
 				{
-					EnableSpaceQuota: false,
-					Space:            "space2",
-					Org:              "org1",
+					EnableSpaceQuota:        false,
+					Space:                   "space2",
+					Org:                     "org1",
+					MemoryLimit:             "10G",
+					InstanceMemoryLimit:     "unlimited",
+					TotalRoutes:             "1000",
+					TotalServices:           "100",
+					PaidServicePlansAllowed: true,
+					TotalReservedRoutePorts: "0",
+					TotalServiceKeys:        "unlimited",
+					AppInstanceLimit:        "unlimited",
+					AppTaskLimit:            "unlimited",
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
@@ -99,6 +117,15 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(fakeClient.CreateSpaceQuotaCallCount()).Should(Equal(1))
 			quotaRequest := fakeClient.CreateSpaceQuotaArgsForCall(0)
 			Expect(quotaRequest.Name).Should(Equal("space1"))
+			Expect(quotaRequest.AppInstanceLimit).Should(Equal(-1))
+			Expect(quotaRequest.AppTaskLimit).Should(Equal(-1))
+			Expect(quotaRequest.MemoryLimit).Should(Equal(10240))
+			Expect(quotaRequest.InstanceMemoryLimit).Should(Equal(-1))
+			Expect(quotaRequest.TotalRoutes).Should(Equal(1000))
+			Expect(quotaRequest.TotalServices).Should(Equal(100))
+			Expect(quotaRequest.TotalReservedRoutePorts).Should(Equal(0))
+			Expect(quotaRequest.TotalServiceKeys).Should(Equal(-1))
+			Expect(quotaRequest.NonBasicServicesAllowed).Should(BeTrue())
 			Expect(fakeClient.AssignSpaceQuotaCallCount()).Should(Equal(1))
 			quotaGUID, spaceGUID := fakeClient.AssignSpaceQuotaArgsForCall(0)
 			Expect(quotaGUID).Should(Equal("space-quota-guid"))
@@ -201,9 +228,18 @@ var _ = Describe("given QuotaManager", func() {
 			}, nil)
 			fakeClient.ListOrgSpaceQuotasReturns([]cfclient.SpaceQuota{
 				{
-					Name:             "space1",
-					Guid:             "space-quota-guid",
-					OrganizationGuid: "org1-guid",
+					Name:                    "space1",
+					Guid:                    "space-quota-guid",
+					OrganizationGuid:        "org1-guid",
+					AppInstanceLimit:        -1,
+					AppTaskLimit:            -1,
+					MemoryLimit:             10240,
+					InstanceMemoryLimit:     -1,
+					TotalRoutes:             1000,
+					TotalServices:           100,
+					TotalReservedRoutePorts: 0,
+					TotalServiceKeys:        -1,
+					NonBasicServicesAllowed: true,
 				},
 			}, nil)
 			err := quotaMgr.CreateSpaceQuotas()
@@ -273,12 +309,30 @@ var _ = Describe("given QuotaManager", func() {
 		BeforeEach(func() {
 			orgConfigs := []config.OrgConfig{
 				{
-					EnableOrgQuota: true,
-					Org:            "org1",
+					EnableOrgQuota:          true,
+					Org:                     "org1",
+					MemoryLimit:             "unlimited",
+					InstanceMemoryLimit:     "unlimited",
+					TotalRoutes:             "unlimited",
+					TotalServices:           "unlimited",
+					PaidServicePlansAllowed: true,
+					TotalReservedRoutePorts: "unlimited",
+					TotalServiceKeys:        "unlimited",
+					AppInstanceLimit:        "unlimited",
+					AppTaskLimit:            "unlimited",
 				},
 				{
-					EnableOrgQuota: false,
-					Org:            "org2",
+					EnableOrgQuota:          false,
+					Org:                     "org2",
+					MemoryLimit:             "unlimited",
+					InstanceMemoryLimit:     "unlimited",
+					TotalRoutes:             "unlimited",
+					TotalServices:           "unlimited",
+					PaidServicePlansAllowed: true,
+					TotalReservedRoutePorts: "unlimited",
+					TotalServiceKeys:        "unlimited",
+					AppInstanceLimit:        "unlimited",
+					AppTaskLimit:            "unlimited",
 				},
 			}
 			fakeReader.GetOrgConfigsReturns(orgConfigs, nil)
@@ -343,6 +397,15 @@ var _ = Describe("given QuotaManager", func() {
 			quotaGUID, quotaRequest := fakeClient.UpdateOrgQuotaArgsForCall(0)
 			Expect(quotaGUID).Should(Equal("org-quota-guid"))
 			Expect(quotaRequest.Name).Should(Equal("org1"))
+			Expect(quotaRequest.AppInstanceLimit).Should(Equal(-1))
+			Expect(quotaRequest.AppTaskLimit).Should(Equal(-1))
+			Expect(quotaRequest.MemoryLimit).Should(Equal(-1))
+			Expect(quotaRequest.InstanceMemoryLimit).Should(Equal(-1))
+			Expect(quotaRequest.TotalRoutes).Should(Equal(-1))
+			Expect(quotaRequest.TotalServices).Should(Equal(-1))
+			Expect(quotaRequest.TotalReservedRoutePorts).Should(Equal(-1))
+			Expect(quotaRequest.TotalServiceKeys).Should(Equal(-1))
+			Expect(quotaRequest.NonBasicServicesAllowed).Should(BeTrue())
 			Expect(fakeOrgMgr.UpdateOrgCallCount()).Should(Equal(0))
 		})
 
@@ -350,8 +413,17 @@ var _ = Describe("given QuotaManager", func() {
 			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org-guid", QuotaDefinitionGuid: "org-quota-guid"}, nil)
 			fakeClient.ListOrgQuotasReturns([]cfclient.OrgQuota{
 				{
-					Name: "org1",
-					Guid: "org-quota-guid",
+					Name:                    "org1",
+					Guid:                    "org-quota-guid",
+					AppInstanceLimit:        -1,
+					AppTaskLimit:            -1,
+					MemoryLimit:             -1,
+					InstanceMemoryLimit:     -1,
+					TotalRoutes:             -1,
+					TotalServices:           -1,
+					TotalReservedRoutePorts: -1,
+					TotalServiceKeys:        -1,
+					NonBasicServicesAllowed: true,
 				},
 			}, nil)
 			fakeClient.UpdateOrgQuotaReturns(nil, nil)
