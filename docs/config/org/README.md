@@ -3,11 +3,13 @@
 # `cf-mgmt-config org`
 
 `org` command allows adding/updating any property except name of org name within orgConfig.yml
+
 - quotas
 - user/role mappings
 - service access
 
 ## Command Usage
+
 ```
 Usage:
   cf-mgmt-config [OPTIONS] org [org-OPTIONS]
@@ -43,6 +45,7 @@ quota:
       --total-service-keys=                               Total Service Keys capacity for an Org
       --app-instance-limit=                               App Instance Limit an Org
       --app-task-limit=                                   App Task Limit an Org
+      --log-rate-limit-bytes-per-second=                  Log Rate limit per app for an org
 
 billing-manager:
       --billing-manager-ldap-user=                        Ldap User to add, specify multiple times

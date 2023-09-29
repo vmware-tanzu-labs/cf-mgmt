@@ -5,6 +5,7 @@
 `named-org-quota` command allows creating/updating named org quota
 
 ## Command Usage
+
 ```
 Usage:
   cf-mgmt-config [OPTIONS] named-org-quota [named-org-quota-OPTIONS]
@@ -27,5 +28,6 @@ quota:
       --total-service-keys=                     Total Service Keys capacity for an Org
       --app-instance-limit=                     App Instance Limit an Org
       --app-task-limit=                         App Task Limit an Org
+      --log-rate-limit-bytes-per-second=        Log Rate limit per app for an org
 
 ```

@@ -32,6 +32,7 @@ type OrgConfig struct {
 	TotalServiceKeys           string              `yaml:"total_service_keys,omitempty"`
 	AppInstanceLimit           string              `yaml:"app_instance_limit,omitempty"`
 	AppTaskLimit               string              `yaml:"app_task_limit,omitempty"`
+	LogRateLimitBytesPerSecond string              `yaml:"log_rate_limit_bytes_per_second,omitempty"`
 	DefaultIsoSegment          string              `yaml:"default_isolation_segment"`
 	ServiceAccess              map[string][]string `yaml:"service-access,omitempty"`
 	NamedQuota                 string              `yaml:"named_quota"`
@@ -40,32 +41,34 @@ type OrgConfig struct {
 
 func (o *OrgConfig) GetQuota() OrgQuota {
 	return OrgQuota{
-		Name:                    o.Org,
-		TotalPrivateDomains:     o.TotalPrivateDomains,
-		TotalReservedRoutePorts: o.TotalReservedRoutePorts,
-		TotalServiceKeys:        o.TotalServiceKeys,
-		AppInstanceLimit:        o.AppInstanceLimit,
-		AppTaskLimit:            o.AppTaskLimit,
-		MemoryLimit:             o.MemoryLimit,
-		InstanceMemoryLimit:     o.InstanceMemoryLimit,
-		TotalRoutes:             o.TotalRoutes,
-		TotalServices:           o.TotalServices,
-		PaidServicePlansAllowed: o.PaidServicePlansAllowed,
+		Name:                       o.Org,
+		TotalPrivateDomains:        o.TotalPrivateDomains,
+		TotalReservedRoutePorts:    o.TotalReservedRoutePorts,
+		TotalServiceKeys:           o.TotalServiceKeys,
+		AppInstanceLimit:           o.AppInstanceLimit,
+		AppTaskLimit:               o.AppTaskLimit,
+		MemoryLimit:                o.MemoryLimit,
+		InstanceMemoryLimit:        o.InstanceMemoryLimit,
+		TotalRoutes:                o.TotalRoutes,
+		TotalServices:              o.TotalServices,
+		PaidServicePlansAllowed:    o.PaidServicePlansAllowed,
+		LogRateLimitBytesPerSecond: o.LogRateLimitBytesPerSecond,
 	}
 }
 
 type OrgQuota struct {
-	Name                    string `yaml:"-"`
-	TotalPrivateDomains     string `yaml:"total_private_domains"`
-	TotalReservedRoutePorts string `yaml:"total_reserved_route_ports"`
-	TotalServiceKeys        string `yaml:"total_service_keys"`
-	AppInstanceLimit        string `yaml:"app_instance_limit"`
-	AppTaskLimit            string `yaml:"app_task_limit"`
-	MemoryLimit             string `yaml:"memory-limit"`
-	InstanceMemoryLimit     string `yaml:"instance-memory-limit"`
-	TotalRoutes             string `yaml:"total-routes"`
-	TotalServices           string `yaml:"total-services"`
-	PaidServicePlansAllowed bool   `yaml:"paid-service-plans-allowed"`
+	Name                       string `yaml:"-"`
+	TotalPrivateDomains        string `yaml:"total_private_domains"`
+	TotalReservedRoutePorts    string `yaml:"total_reserved_route_ports"`
+	TotalServiceKeys           string `yaml:"total_service_keys"`
+	AppInstanceLimit           string `yaml:"app_instance_limit"`
+	AppTaskLimit               string `yaml:"app_task_limit"`
+	MemoryLimit                string `yaml:"memory-limit"`
+	InstanceMemoryLimit        string `yaml:"instance-memory-limit"`
+	TotalRoutes                string `yaml:"total-routes"`
+	TotalServices              string `yaml:"total-services"`
+	PaidServicePlansAllowed    bool   `yaml:"paid-service-plans-allowed"`
+	LogRateLimitBytesPerSecond string `yaml:"log_rate_limit_bytes_per_second"`
 }
 
 // Orgs contains cf-mgmt configuration for all orgs.

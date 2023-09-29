@@ -267,7 +267,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		}
 	}
 
-	orgQuotas, err := im.QuotaManager.Client.ListOrgQuotas()
+	orgQuotas, err := im.QuotaManager.ListAllOrgQuotas()
 	if err != nil {
 		return err
 	}
@@ -275,17 +275,18 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 	for _, orgQuota := range orgQuotas {
 
 		err = im.ConfigMgr.AddOrgQuota(config.OrgQuota{
-			Name:                    orgQuota.Name,
-			AppInstanceLimit:        config.AsString(orgQuota.AppInstanceLimit),
-			TotalPrivateDomains:     config.AsString(orgQuota.TotalPrivateDomains),
-			TotalReservedRoutePorts: config.AsString(orgQuota.TotalReservedRoutePorts),
-			TotalServiceKeys:        config.AsString(orgQuota.TotalServiceKeys),
-			AppTaskLimit:            config.AsString(orgQuota.AppTaskLimit),
-			MemoryLimit:             config.ByteSize(orgQuota.MemoryLimit),
-			InstanceMemoryLimit:     config.ByteSize(orgQuota.InstanceMemoryLimit),
-			TotalRoutes:             config.AsString(orgQuota.TotalRoutes),
-			TotalServices:           config.AsString(orgQuota.TotalServices),
-			PaidServicePlansAllowed: orgQuota.NonBasicServicesAllowed,
+			Name:                       orgQuota.Name,
+			AppInstanceLimit:           config.AsString(orgQuota.Apps.TotalInstances),
+			TotalPrivateDomains:        config.AsString(orgQuota.Domains.TotalDomains),
+			TotalReservedRoutePorts:    config.AsString(orgQuota.Routes.TotalReservedPorts),
+			TotalServiceKeys:           config.AsString(orgQuota.Services.TotalServiceKeys),
+			AppTaskLimit:               config.AsString(orgQuota.Apps.PerAppTasks),
+			MemoryLimit:                config.ByteSize(orgQuota.Apps.TotalMemoryInMB),
+			InstanceMemoryLimit:        config.ByteSize(orgQuota.Apps.PerProcessMemoryInMB),
+			TotalRoutes:                config.AsString(orgQuota.Routes.TotalRoutes),
+			TotalServices:              config.AsString(orgQuota.Services.TotalServiceInstances),
+			PaidServicePlansAllowed:    *orgQuota.Services.PaidServicesAllowed,
+			LogRateLimitBytesPerSecond: config.AsString(orgQuota.Apps.LogRateLimitInBytesPerSecond),
 		})
 		if err != nil {
 			return err
@@ -338,17 +339,18 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 	for _, spaceQuota := range spaceQuotas {
 		if !im.doesSpaceExist(spaces, spaceQuota.Name) {
 			err = im.ConfigMgr.AddSpaceQuota(config.SpaceQuota{
-				Org:                     orgConfig.Org,
-				Name:                    spaceQuota.Name,
-				AppInstanceLimit:        config.AsString(spaceQuota.AppInstanceLimit),
-				TotalReservedRoutePorts: config.AsString(spaceQuota.TotalReservedRoutePorts),
-				TotalServiceKeys:        config.AsString(spaceQuota.TotalServiceKeys),
-				AppTaskLimit:            config.AsString(spaceQuota.AppTaskLimit),
-				MemoryLimit:             config.ByteSize(spaceQuota.MemoryLimit),
-				InstanceMemoryLimit:     config.ByteSize(spaceQuota.InstanceMemoryLimit),
-				TotalRoutes:             config.AsString(spaceQuota.TotalRoutes),
-				TotalServices:           config.AsString(spaceQuota.TotalServices),
-				PaidServicePlansAllowed: spaceQuota.NonBasicServicesAllowed,
+				Org:                        orgConfig.Org,
+				Name:                       spaceQuota.Name,
+				AppInstanceLimit:           config.AsString(spaceQuota.Apps.TotalInstances),
+				TotalReservedRoutePorts:    config.AsString(spaceQuota.Routes.TotalReservedPorts),
+				TotalServiceKeys:           config.AsString(spaceQuota.Services.TotalServiceKeys),
+				AppTaskLimit:               config.AsString(spaceQuota.Apps.PerAppTasks),
+				MemoryLimit:                config.ByteSize(spaceQuota.Apps.TotalMemoryInMB),
+				InstanceMemoryLimit:        config.ByteSize(spaceQuota.Apps.PerProcessMemoryInMB),
+				TotalRoutes:                config.AsString(spaceQuota.Routes.TotalRoutes),
+				TotalServices:              config.AsString(spaceQuota.Services.TotalServiceInstances),
+				PaidServicePlansAllowed:    *spaceQuota.Services.PaidServicesAllowed,
+				LogRateLimitBytesPerSecond: config.AsString(spaceQuota.Apps.LogRateLimitInBytesPerSecond),
 			})
 			if err != nil {
 				return err
@@ -372,22 +374,23 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 		}
 		//Add Quota definition if applicable
 		if orgSpace.QuotaDefinitionGuid != "" {
-			quota, err := orgSpace.Quota()
+			quota, err := im.QuotaManager.GetSpaceQuota(orgSpace.QuotaDefinitionGuid)
 			if err != nil {
 				return err
 			}
 			if quota != nil {
 				if quota.Name == orgSpace.Name {
 					spaceConfig.EnableSpaceQuota = true
-					spaceConfig.MemoryLimit = config.ByteSize(quota.MemoryLimit)
-					spaceConfig.InstanceMemoryLimit = config.ByteSize(quota.InstanceMemoryLimit)
-					spaceConfig.TotalRoutes = config.AsString(quota.TotalRoutes)
-					spaceConfig.TotalServices = config.AsString(quota.TotalServices)
-					spaceConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
-					spaceConfig.TotalReservedRoutePorts = config.AsString(quota.TotalReservedRoutePorts)
-					spaceConfig.TotalServiceKeys = config.AsString(quota.TotalServiceKeys)
-					spaceConfig.AppInstanceLimit = config.AsString(quota.AppInstanceLimit)
-					spaceConfig.AppTaskLimit = config.AsString(quota.AppTaskLimit)
+					spaceConfig.MemoryLimit = config.ByteSize(quota.Apps.TotalMemoryInMB)
+					spaceConfig.InstanceMemoryLimit = config.ByteSize(quota.Apps.PerProcessMemoryInMB)
+					spaceConfig.TotalRoutes = config.AsString(quota.Routes.TotalRoutes)
+					spaceConfig.TotalServices = config.AsString(quota.Services.TotalServiceInstances)
+					spaceConfig.PaidServicePlansAllowed = *quota.Services.PaidServicesAllowed
+					spaceConfig.TotalReservedRoutePorts = config.AsString(quota.Routes.TotalReservedPorts)
+					spaceConfig.TotalServiceKeys = config.AsString(quota.Services.TotalServiceKeys)
+					spaceConfig.AppInstanceLimit = config.AsString(quota.Apps.TotalInstances)
+					spaceConfig.AppTaskLimit = config.AsString(quota.Apps.PerAppTasks)
+					spaceConfig.LogRateLimitBytesPerSecond = config.AsString(quota.Apps.LogRateLimitInBytesPerSecond)
 				} else {
 					spaceConfig.NamedQuota = quota.Name
 				}
@@ -402,6 +405,7 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 			spaceConfig.TotalServiceKeys = orgConfig.TotalServiceKeys
 			spaceConfig.AppInstanceLimit = orgConfig.AppInstanceLimit
 			spaceConfig.AppTaskLimit = orgConfig.AppTaskLimit
+			spaceConfig.LogRateLimitBytesPerSecond = orgConfig.LogRateLimitBytesPerSecond
 		}
 
 		if orgSpace.IsolationSegmentGuid != "" {
@@ -495,7 +499,7 @@ func (im *Manager) getOrgName(orgs []cfclient.Org, orgGUID string) (string, erro
 			return org.Name, nil
 		}
 	}
-	return "", fmt.Errorf("No org exists for org guid %s", orgGUID)
+	return "", fmt.Errorf("no org exists for org guid %s", orgGUID)
 }
 
 func (im *Manager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
