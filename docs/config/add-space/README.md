@@ -2,9 +2,9 @@
 
 # `cf-mgmt-config add-space`
 
-*** Deprecated *** - Use `space` command instead
+**_ Deprecated _** - Use `space` command instead
 
-`add-space` allows for adding a space to a previously defined org.  This will generate a folder for each space inside the orgs folder.  In the spaces folder will contain a spaceConfig.yml and a security-group.json file.  Any space listed in spaces.yml will be created when the create-spaces operation is ran.  
+`add-space` allows for adding a space to a previously defined org. This will generate a folder for each space inside the orgs folder. In the spaces folder will contain a spaceConfig.yml and a security-group.json file. Any space listed in spaces.yml will be created when the create-spaces operation is ran.
 
 ## Command Usage
 
@@ -37,6 +37,7 @@ quota:
   --total-service-keys=                     Total Service Keys capacity for an Space
   --app-instance-limit=                     App Instance Limit for a space
   --app-task-limit=                         App Task Limit for a space
+  --log-rate-limit-bytes-per-second=        Log Rate limit per app for a space
 
 developer:
   --developer-ldap-user=                    Ldap User to add, specify multiple times

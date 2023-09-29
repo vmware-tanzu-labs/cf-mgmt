@@ -156,15 +156,16 @@ func (fake *FakeCFSecurityGroupClient) BindRunningSecurityGroup(arg1 context.Con
 		arg2 string
 		arg3 []string
 	}{arg1, arg2, arg3Copy})
+	stub := fake.BindRunningSecurityGroupStub
+	fakeReturns := fake.bindRunningSecurityGroupReturns
 	fake.recordInvocation("BindRunningSecurityGroup", []interface{}{arg1, arg2, arg3Copy})
 	fake.bindRunningSecurityGroupMutex.Unlock()
-	if fake.BindRunningSecurityGroupStub != nil {
-		return fake.BindRunningSecurityGroupStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.bindRunningSecurityGroupReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -226,15 +227,16 @@ func (fake *FakeCFSecurityGroupClient) BindStagingSecurityGroup(arg1 context.Con
 		arg2 string
 		arg3 []string
 	}{arg1, arg2, arg3Copy})
+	stub := fake.BindStagingSecurityGroupStub
+	fakeReturns := fake.bindStagingSecurityGroupReturns
 	fake.recordInvocation("BindStagingSecurityGroup", []interface{}{arg1, arg2, arg3Copy})
 	fake.bindStagingSecurityGroupMutex.Unlock()
-	if fake.BindStagingSecurityGroupStub != nil {
-		return fake.BindStagingSecurityGroupStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.bindStagingSecurityGroupReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -290,15 +292,16 @@ func (fake *FakeCFSecurityGroupClient) Create(arg1 context.Context, arg2 *resour
 		arg1 context.Context
 		arg2 *resource.SecurityGroupCreate
 	}{arg1, arg2})
+	stub := fake.CreateStub
+	fakeReturns := fake.createReturns
 	fake.recordInvocation("Create", []interface{}{arg1, arg2})
 	fake.createMutex.Unlock()
-	if fake.CreateStub != nil {
-		return fake.CreateStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -354,15 +357,16 @@ func (fake *FakeCFSecurityGroupClient) Get(arg1 context.Context, arg2 string) (*
 		arg1 context.Context
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.GetStub
+	fakeReturns := fake.getReturns
 	fake.recordInvocation("Get", []interface{}{arg1, arg2})
 	fake.getMutex.Unlock()
-	if fake.GetStub != nil {
-		return fake.GetStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -418,15 +422,16 @@ func (fake *FakeCFSecurityGroupClient) ListAll(arg1 context.Context, arg2 *clien
 		arg1 context.Context
 		arg2 *client.SecurityGroupListOptions
 	}{arg1, arg2})
+	stub := fake.ListAllStub
+	fakeReturns := fake.listAllReturns
 	fake.recordInvocation("ListAll", []interface{}{arg1, arg2})
 	fake.listAllMutex.Unlock()
-	if fake.ListAllStub != nil {
-		return fake.ListAllStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listAllReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -483,15 +488,16 @@ func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAll(arg1 context.Conte
 		arg2 string
 		arg3 *client.SecurityGroupSpaceListOptions
 	}{arg1, arg2, arg3})
+	stub := fake.ListRunningForSpaceAllStub
+	fakeReturns := fake.listRunningForSpaceAllReturns
 	fake.recordInvocation("ListRunningForSpaceAll", []interface{}{arg1, arg2, arg3})
 	fake.listRunningForSpaceAllMutex.Unlock()
-	if fake.ListRunningForSpaceAllStub != nil {
-		return fake.ListRunningForSpaceAllStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listRunningForSpaceAllReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -548,15 +554,16 @@ func (fake *FakeCFSecurityGroupClient) UnBindRunningSecurityGroup(arg1 context.C
 		arg2 string
 		arg3 string
 	}{arg1, arg2, arg3})
+	stub := fake.UnBindRunningSecurityGroupStub
+	fakeReturns := fake.unBindRunningSecurityGroupReturns
 	fake.recordInvocation("UnBindRunningSecurityGroup", []interface{}{arg1, arg2, arg3})
 	fake.unBindRunningSecurityGroupMutex.Unlock()
-	if fake.UnBindRunningSecurityGroupStub != nil {
-		return fake.UnBindRunningSecurityGroupStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.unBindRunningSecurityGroupReturns
 	return fakeReturns.result1
 }
 
@@ -610,15 +617,16 @@ func (fake *FakeCFSecurityGroupClient) UnBindStagingSecurityGroup(arg1 context.C
 		arg2 string
 		arg3 string
 	}{arg1, arg2, arg3})
+	stub := fake.UnBindStagingSecurityGroupStub
+	fakeReturns := fake.unBindStagingSecurityGroupReturns
 	fake.recordInvocation("UnBindStagingSecurityGroup", []interface{}{arg1, arg2, arg3})
 	fake.unBindStagingSecurityGroupMutex.Unlock()
-	if fake.UnBindStagingSecurityGroupStub != nil {
-		return fake.UnBindStagingSecurityGroupStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.unBindStagingSecurityGroupReturns
 	return fakeReturns.result1
 }
 
@@ -672,15 +680,16 @@ func (fake *FakeCFSecurityGroupClient) Update(arg1 context.Context, arg2 string,
 		arg2 string
 		arg3 *resource.SecurityGroupUpdate
 	}{arg1, arg2, arg3})
+	stub := fake.UpdateStub
+	fakeReturns := fake.updateReturns
 	fake.recordInvocation("Update", []interface{}{arg1, arg2, arg3})
 	fake.updateMutex.Unlock()
-	if fake.UpdateStub != nil {
-		return fake.UpdateStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.updateReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

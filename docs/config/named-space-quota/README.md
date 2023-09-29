@@ -5,6 +5,7 @@
 `named-space-quota` command allows creating/updating named space quotas for a given org
 
 ## Command Usage
+
 ```
 Usage:
   cf-mgmt-config [OPTIONS] named-space-quota [named-space-quota-OPTIONS]
@@ -27,4 +28,5 @@ quota:
       --total-service-keys=                     Total Service Keys capacity for an Space
       --app-instance-limit=                     App Instance Limit for a space
       --app-task-limit=                         App Task Limit for a space
+      --log-rate-limit-bytes-per-second=        Log Rate limit per app for a space
 ```
