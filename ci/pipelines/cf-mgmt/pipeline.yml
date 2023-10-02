@@ -269,7 +269,7 @@ jobs:
   - put: cf-deployment-env
     params:
       action: release
-      resource: env-cf-environment
+      resource: cf-environment-env
 
 - name: merge
   plan:
@@ -327,7 +327,7 @@ jobs:
   - put: #@ 'tas-' + v["version_slug"] + '-env'
     params:
       action: release
-      resource: environment
+      resource: #@ 'tas-' + v["version_slug"] +'-env'
 #@ end
 
 - name: check-for-changes
