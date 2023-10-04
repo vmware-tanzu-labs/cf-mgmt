@@ -20,7 +20,7 @@ github.com/bmizerany/pat
 # github.com/cloudfoundry-community/go-cfclient v0.0.0-20220803221820-5e81c204bd31
 ## explicit; go 1.15
 github.com/cloudfoundry-community/go-cfclient
-# github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.5
+# github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.5.0.20231004230151-5a83f39dfca2
 ## explicit; go 1.19
 github.com/cloudfoundry-community/go-cfclient/v3/client
 github.com/cloudfoundry-community/go-cfclient/v3/config
@@ -145,8 +145,8 @@ github.com/pmezard/go-difflib/difflib
 ## explicit; go 1.13
 # github.com/smartystreets/goconvey v1.6.4
 ## explicit
-# github.com/stretchr/testify v1.8.0
-## explicit; go 1.13
+# github.com/stretchr/testify v1.8.4
+## explicit; go 1.20
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/tedsuo/rata v1.0.1-0.20170830210128-07d200713958
@@ -166,14 +166,14 @@ golang.org/x/crypto/md4
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.14.0
+# golang.org/x/net v0.15.0
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
-# golang.org/x/oauth2 v0.6.0
-## explicit; go 1.17
+# golang.org/x/oauth2 v0.12.0
+## explicit; go 1.18
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal
@@ -233,7 +233,7 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/protobuf v1.28.1
+# google.golang.org/protobuf v1.31.0
 ## explicit; go 1.11
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire

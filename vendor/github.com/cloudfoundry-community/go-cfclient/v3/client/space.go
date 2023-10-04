@@ -2,9 +2,8 @@ package client
 
 import (
 	"context"
-	"net/url"
-
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
+	"net/url"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )

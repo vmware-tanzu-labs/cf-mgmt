@@ -55,12 +55,12 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 	if err != nil {
 		return err
 	}
-	orgUsers, _, _, _, err := m.ListOrgUsersByRole(org.Guid)
+	orgUsers, _, _, _, err := m.ListOrgUsersByRole(org.GUID)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error listing org users for org %s", input.Org))
 	}
 
-	usersInRoles, err := m.usersInOrgRoles(org.Name, org.Guid)
+	usersInRoles, err := m.usersInOrgRoles(org.Name, org.GUID)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error usersInOrgRoles for org %s", input.Org))
 	}
@@ -87,7 +87,7 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 					continue
 				}
 				lo.G.Infof("Removing User %s from org %s", orgUser.UserName, input.Org)
-				role, err := m.GetOrgRoleGUID(org.Guid, guid, ORG_USER)
+				role, err := m.GetOrgRoleGUID(org.GUID, guid, ORG_USER)
 				if err != nil {
 					return err
 				}

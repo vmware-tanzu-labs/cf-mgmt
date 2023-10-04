@@ -764,9 +764,9 @@ var _ = Describe("given UserSpaces", func() {
 						Org: "test-org",
 					},
 				}, nil)
-				orgFake.FindOrgReturns(cfclient.Org{
+				orgFake.FindOrgReturns(&resource.Organization{
 					Name: "test-org",
-					Guid: "test-org-guid",
+					GUID: "test-org-guid",
 				}, nil)
 				userManager.LdapConfig = &config.LdapConfig{Enabled: false}
 				err := userManager.UpdateOrgUsers()

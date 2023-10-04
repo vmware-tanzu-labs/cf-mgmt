@@ -628,14 +628,14 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 		return err
 	}
 
-	_, managers, billingManagers, auditors, err := m.ListOrgUsersByRole(org.Guid)
+	_, managers, billingManagers, auditors, err := m.ListOrgUsersByRole(org.GUID)
 	if err != nil {
 		return err
 	}
 	err = m.SyncUsers(
 		UsersInput{
 			OrgName:        org.Name,
-			OrgGUID:        org.Guid,
+			OrgGUID:        org.GUID,
 			LdapGroupNames: input.GetBillingManagerGroups(),
 			LdapUsers:      input.BillingManager.LDAPUsers,
 			Users:          input.BillingManager.Users,
@@ -652,7 +652,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 
 	err = m.SyncUsers(UsersInput{
 		OrgName:        org.Name,
-		OrgGUID:        org.Guid,
+		OrgGUID:        org.GUID,
 		LdapGroupNames: input.GetAuditorGroups(),
 		LdapUsers:      input.Auditor.LDAPUsers,
 		Users:          input.Auditor.Users,
@@ -669,7 +669,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 
 	err = m.SyncUsers(UsersInput{
 		OrgName:        org.Name,
-		OrgGUID:        org.Guid,
+		OrgGUID:        org.GUID,
 		LdapGroupNames: input.GetManagerGroups(),
 		LdapUsers:      input.Manager.LDAPUsers,
 		Users:          input.Manager.Users,

@@ -7,12 +7,10 @@ import (
 	"reflect"
 	"strings"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
-	"github.com/vmwarepivotallabs/cf-mgmt/organization"
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/xchapter7x/lo"
@@ -24,7 +22,6 @@ func NewManager(
 	orgQuotaClient CFOrgQuotaClient,
 	spaceMgr space.Manager,
 	orgReader organizationreader.Reader,
-	orgMgr organization.Manager,
 	cfg config.Reader, peek bool) *Manager {
 	return &Manager{
 		Cfg:              cfg,
@@ -32,7 +29,6 @@ func NewManager(
 		OrgQuoteClient:   orgQuotaClient,
 		SpaceMgr:         spaceMgr,
 		OrgReader:        orgReader,
-		OrgMgr:           orgMgr,
 		Peek:             peek,
 	}
 }
@@ -44,7 +40,6 @@ type Manager struct {
 	OrgQuoteClient   CFOrgQuotaClient
 	SpaceMgr         space.Manager
 	OrgReader        organizationreader.Reader
-	OrgMgr           organization.Manager
 	Peek             bool
 	SpaceQuotas      map[string]map[string]*resource.SpaceQuota
 }
@@ -162,7 +157,7 @@ func (m *Manager) createSpaceQuota(input config.SpaceQuota, space *resource.Spac
 			return err
 		}
 		for _, orgQuota := range orgQuotas {
-			if org.QuotaDefinitionGuid == orgQuota.GUID {
+			if org.Relationships.Quota.Data.GUID == orgQuota.GUID {
 				if orgQuota.Apps.TotalMemoryInMB == nil {
 					memoryLimit = nil
 				} else {
@@ -340,7 +335,7 @@ func (m *Manager) CreateOrgQuotas() error {
 				input.NamedQuota = input.Org
 			}
 			orgQuota := quotas[input.NamedQuota]
-			if org.QuotaDefinitionGuid != orgQuota.GUID {
+			if orgQuota != nil && (org.Relationships.Quota.Data == nil || org.Relationships.Quota.Data.GUID != orgQuota.GUID) {
 				if err = m.AssignQuotaToOrg(org, orgQuota); err != nil {
 					return err
 				}
@@ -509,19 +504,20 @@ func (m *Manager) UpdateOrgQuota(quotaGUID string, quota *resource.OrganizationQ
 	return err
 }
 
-func (m *Manager) AssignQuotaToOrg(org cfclient.Org, quota *resource.OrganizationQuota) error {
+func (m *Manager) AssignQuotaToOrg(org *resource.Organization, quota *resource.OrganizationQuota) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: assign quota %s to org %s", quota.Name, org.Name)
 		return nil
 	}
 	lo.G.Infof("Assigning quota %s to org %s", quota.Name, org.Name)
-	_, err := m.OrgMgr.UpdateOrg(org.Guid, cfclient.OrgRequest{
-		Name:                org.Name,
-		QuotaDefinitionGuid: quota.GUID,
-	})
+	_, err := m.OrgQuoteClient.Apply(context.Background(), quota.GUID, []string{org.GUID})
 	return err
 }
 
 func (m *Manager) GetSpaceQuota(guid string) (*resource.SpaceQuota, error) {
 	return m.SpaceQuoteClient.Get(context.Background(), guid)
+}
+
+func (m *Manager) GetOrgQuota(guid string) (*resource.OrganizationQuota, error) {
+	return m.OrgQuoteClient.Get(context.Background(), guid)
 }

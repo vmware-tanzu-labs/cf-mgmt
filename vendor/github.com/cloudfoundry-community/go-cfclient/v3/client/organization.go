@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
-	"net/url"
 )
 
 type OrganizationClient commonClient
@@ -89,6 +90,9 @@ func (c *OrganizationClient) GetDefaultIsolationSegment(ctx context.Context, gui
 	err := c.client.get(ctx, path.Format("/v3/organizations/%s/relationships/default_isolation_segment", guid), &relation)
 	if err != nil {
 		return "", err
+	}
+	if relation.Data == nil {
+		return "", nil
 	}
 	return relation.Data.GUID, nil
 }

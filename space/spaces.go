@@ -303,7 +303,7 @@ func (m *DefaultManager) DeleteSpaces() error {
 		if err != nil {
 			return err
 		}
-		spaces, err := m.ListSpaces(org.Guid)
+		spaces, err := m.ListSpaces(org.GUID)
 		if err != nil {
 			return err
 		}

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -421,9 +420,9 @@ var _ = Describe("given SpaceManager", func() {
 					},
 				},
 			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{
+			fakeOrgMgr.FindOrgReturns(&resource.Organization{
 				Name: "test2",
-				Guid: "test2-org-guid",
+				GUID: "test2-org-guid",
 			}, nil)
 			fakeSpaceClient.ListAllReturns(spaces, nil)
 			fakeSpaceClient.DeleteReturns("", nil)
@@ -469,9 +468,9 @@ var _ = Describe("given SpaceManager", func() {
 					},
 				},
 			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{
+			fakeOrgMgr.FindOrgReturns(&resource.Organization{
 				Name: "test2",
-				Guid: "test2-org-guid",
+				GUID: "test2-org-guid",
 			}, nil)
 			fakeSpaceClient.ListAllReturns(spaces, nil)
 			fakeSpaceClient.DeleteReturns("", errors.New("error"))
@@ -520,9 +519,9 @@ var _ = Describe("given SpaceManager", func() {
 					},
 				},
 			}
-			fakeOrgMgr.FindOrgReturns(cfclient.Org{
+			fakeOrgMgr.FindOrgReturns(&resource.Organization{
 				Name: "test2",
-				Guid: "test2-org-guid",
+				GUID: "test2-org-guid",
 			}, nil)
 			fakeSpaceClient.ListAllReturns(spaces, nil)
 			fakeSpaceClient.DeleteReturns("", nil)

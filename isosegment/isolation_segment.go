@@ -139,14 +139,14 @@ func (u *Updater) Unentitle() error {
 		}
 		if s := space.IsoSegment; s != "" {
 			if isosegment, ok := isolationSegmentsMap[s]; ok {
-				sm[org.Guid] = append(sm[org.Guid], &isosegment)
+				sm[org.GUID] = append(sm[org.GUID], &isosegment)
 			} else {
 				if !u.Peek {
 					return fmt.Errorf("Isolation segment [%s] does not exist", s)
 				}
 			}
 		} else {
-			sm[org.Guid] = append(sm[org.Guid], nil)
+			sm[org.GUID] = append(sm[org.GUID], nil)
 		}
 	}
 	for _, orgConfig := range orgs {
@@ -156,14 +156,14 @@ func (u *Updater) Unentitle() error {
 		}
 		if s := orgConfig.DefaultIsoSegment; s != "" {
 			if isosegment, ok := isolationSegmentsMap[s]; ok {
-				sm[org.Guid] = append(sm[org.Guid], &isosegment)
+				sm[org.GUID] = append(sm[org.GUID], &isosegment)
 			} else {
 				if !u.Peek {
 					return fmt.Errorf("Isolation segment [%s] does not exist", s)
 				}
 			}
 		} else {
-			sm[org.Guid] = append(sm[org.Guid], nil)
+			sm[org.GUID] = append(sm[org.GUID], nil)
 		}
 	}
 
@@ -219,7 +219,7 @@ func (u *Updater) Entitle() error {
 				if err != nil {
 					return errors.Wrap(err, "finding org for space configs in entitle")
 				}
-				sm[org.Guid] = append(sm[org.Guid], isosegment)
+				sm[org.GUID] = append(sm[org.GUID], isosegment)
 			} else {
 				if !u.Peek {
 					return fmt.Errorf("Isolation segment [%s] does not exist", s)
@@ -234,7 +234,7 @@ func (u *Updater) Entitle() error {
 				return errors.Wrap(err, "finding org for org configs in entitle")
 			}
 			if isosegment, ok := isolationSegmentsMap[s]; ok {
-				sm[org.Guid] = append(sm[org.Guid], isosegment)
+				sm[org.GUID] = append(sm[org.GUID], isosegment)
 			} else {
 				if !u.Peek {
 					return fmt.Errorf("Isolation segment [%s] does not exist", s)
@@ -283,8 +283,11 @@ func (u *Updater) UpdateOrgs() error {
 		if err != nil {
 			return err
 		}
-
-		if org.DefaultIsolationSegmentGuid != isolationSegmentGUID {
+		orgIsolationSegmentGUID, err := u.OrgReader.GetDefaultIsolationSegment(org)
+		if err != nil {
+			return err
+		}
+		if orgIsolationSegmentGUID != isolationSegmentGUID {
 			if u.Peek {
 				if isolationSegmentGUID != "" {
 					lo.G.Infof("[dry-run]: set default isolation segment for org %s to %s", oc.Org, oc.DefaultIsoSegment)
@@ -296,13 +299,13 @@ func (u *Updater) UpdateOrgs() error {
 
 			if isolationSegmentGUID != "" {
 				lo.G.Infof("set default isolation segment for org %s to %s", oc.Org, oc.DefaultIsoSegment)
-				err = u.Client.DefaultIsolationSegmentForOrg(org.Guid, isolationSegmentGUID)
+				err = u.Client.DefaultIsolationSegmentForOrg(org.GUID, isolationSegmentGUID)
 				if err != nil {
 					return err
 				}
 			} else {
 				lo.G.Infof("reset default isolation segment for org %s", oc.Org)
-				err = u.Client.ResetDefaultIsolationSegmentForOrg(org.Guid)
+				err = u.Client.ResetDefaultIsolationSegmentForOrg(org.GUID)
 				if err != nil {
 					return err
 				}

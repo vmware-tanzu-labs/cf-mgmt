@@ -1,11 +1,11 @@
 module github.com/vmwarepivotallabs/cf-mgmt
 
-go 1.19
+go 1.20
 
 require (
 	code.cloudfoundry.org/routing-api v0.0.0-20210519201915-b3b118a368e6
 	github.com/cloudfoundry-community/go-cfclient v0.0.0-20220803221820-5e81c204bd31
-	github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.5
+	github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.5.0.20231004230151-5a83f39dfca2
 	github.com/cloudfoundry-community/go-uaa v0.3.2
 	github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/jessevdk/go-flags v1.5.0
@@ -42,18 +42,18 @@ require (
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
-	github.com/stretchr/testify v1.8.0 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/tedsuo/rata v1.0.1-0.20170830210128-07d200713958 // indirect
 	github.com/vito/go-sse v1.0.0 // indirect
 	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.14.0 // indirect
-	golang.org/x/oauth2 v0.6.0 // indirect
+	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/oauth2 v0.12.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/tools v0.12.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

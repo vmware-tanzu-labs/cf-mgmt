@@ -19,4 +19,6 @@ type CFOrgQuotaClient interface {
 	ListAll(ctx context.Context, opts *v3cfclient.OrganizationQuotaListOptions) ([]*resource.OrganizationQuota, error)
 	Update(ctx context.Context, guid string, r *resource.OrganizationQuotaCreateOrUpdate) (*resource.OrganizationQuota, error)
 	Create(ctx context.Context, r *resource.OrganizationQuotaCreateOrUpdate) (*resource.OrganizationQuota, error)
+	Get(ctx context.Context, guid string) (*resource.OrganizationQuota, error)
+	Apply(ctx context.Context, guid string, organizationGUIDs []string) ([]string, error)
 }

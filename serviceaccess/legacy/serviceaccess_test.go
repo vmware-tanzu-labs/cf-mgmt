@@ -9,6 +9,7 @@ import (
 	. "github.com/vmwarepivotallabs/cf-mgmt/serviceaccess/legacy"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
 	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
 	"github.com/vmwarepivotallabs/cf-mgmt/serviceaccess/legacy/fakes"
@@ -51,12 +52,12 @@ var _ = Describe("Serviceaccess", func() {
 					"p-mysql": {"small"},
 				}},
 			}, nil)
-			fakeOrgReader.ListOrgsReturns([]cfclient.Org{
-				{Name: "system", Guid: "system-guid"},
-				{Name: "test-org", Guid: "test-org-guid"},
+			fakeOrgReader.ListOrgsReturns([]*resource.Organization{
+				{Name: "system", GUID: "system-guid"},
+				{Name: "test-org", GUID: "test-org-guid"},
 			}, nil)
 
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "test-org", Guid: "test-org-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{Name: "test-org", GUID: "test-org-guid"}, nil)
 			err := manager.Apply()
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.MakeServicePlanPrivateCallCount()).To(Equal(1))
@@ -95,7 +96,7 @@ var _ = Describe("Serviceaccess", func() {
 			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
 			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "20mb-guid", Name: "20mb"})
 
-			fakeOrgReader.ListOrgsReturns([]cfclient.Org{{Guid: "system-org-guid", Name: "system"}}, nil)
+			fakeOrgReader.ListOrgsReturns([]*resource.Organization{{GUID: "system-org-guid", Name: "system"}}, nil)
 			err := manager.EnableProtectedOrgServiceAccess(serviceInfo, []string{"system"})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(2))
@@ -106,7 +107,7 @@ var _ = Describe("Serviceaccess", func() {
 			servicePlanInfo := serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "20mb-guid", Name: "20mb"})
 			servicePlanInfo.AddOrg("system-org-guid", cfclient.ServicePlanVisibility{Guid: "visibility-guid"})
 
-			fakeOrgReader.ListOrgsReturns([]cfclient.Org{{Guid: "system-org-guid", Name: "system"}}, nil)
+			fakeOrgReader.ListOrgsReturns([]*resource.Organization{{GUID: "system-org-guid", Name: "system"}}, nil)
 			err := manager.EnableProtectedOrgServiceAccess(serviceInfo, []string{"system"})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(1))
@@ -119,7 +120,7 @@ var _ = Describe("Serviceaccess", func() {
 			servicePlanInfo := serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
 			servicePlanInfo.AddOrg("system-org-guid", cfclient.ServicePlanVisibility{Guid: "visibility-guid"})
 
-			fakeOrgReader.ListOrgsReturns([]cfclient.Org{{Guid: "system-org-guid", Name: "system"}}, nil)
+			fakeOrgReader.ListOrgsReturns([]*resource.Organization{{GUID: "system-org-guid", Name: "system"}}, nil)
 			err := manager.EnableProtectedOrgServiceAccess(serviceInfo, []string{"system"})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(0))
@@ -138,7 +139,7 @@ var _ = Describe("Serviceaccess", func() {
 			serviceInfo := &ServiceInfo{}
 			serviceInfo.AddPlan("p-mysql", cfclient.ServicePlan{Guid: "10mb-guid", Name: "10mb"})
 
-			fakeOrgReader.ListOrgsReturns([]cfclient.Org{{Guid: "system-org-guid", Name: "system"}}, nil)
+			fakeOrgReader.ListOrgsReturns([]*resource.Organization{{GUID: "system-org-guid", Name: "system"}}, nil)
 			fakeCFClient.CreateServicePlanVisibilityReturns(cfclient.ServicePlanVisibility{}, errors.New("Error creating visibility"))
 			err := manager.EnableProtectedOrgServiceAccess(serviceInfo, []string{"system"})
 			Expect(err).Should(MatchError("Error creating visibility"))
@@ -158,7 +159,7 @@ var _ = Describe("Serviceaccess", func() {
 					},
 				},
 			}
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid", Name: "test-org"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{GUID: "test-org-guid", Name: "test-org"}, nil)
 			err := manager.EnableOrgServiceAccess(serviceInfo, orgConfigs)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(1))
@@ -180,7 +181,7 @@ var _ = Describe("Serviceaccess", func() {
 					},
 				},
 			}
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid", Name: "test-org"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{GUID: "test-org-guid", Name: "test-org"}, nil)
 			err := manager.EnableOrgServiceAccess(serviceInfo, orgConfigs)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(0))
@@ -198,7 +199,7 @@ var _ = Describe("Serviceaccess", func() {
 					},
 				},
 			}
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid", Name: "test-org"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{GUID: "test-org-guid", Name: "test-org"}, nil)
 			err := manager.EnableOrgServiceAccess(serviceInfo, orgConfigs)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(0))
@@ -216,7 +217,7 @@ var _ = Describe("Serviceaccess", func() {
 					},
 				},
 			}
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid", Name: "test-org"}, errors.New("Org not found"))
+			fakeOrgReader.FindOrgReturns(&resource.Organization{GUID: "test-org-guid", Name: "test-org"}, errors.New("Org not found"))
 			err := manager.EnableOrgServiceAccess(serviceInfo, orgConfigs)
 			Expect(err).Should(MatchError("Org not found"))
 			Expect(fakeCFClient.CreateServicePlanVisibilityCallCount()).To(Equal(0))
@@ -234,7 +235,7 @@ var _ = Describe("Serviceaccess", func() {
 					},
 				},
 			}
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Guid: "test-org-guid", Name: "test-org"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{GUID: "test-org-guid", Name: "test-org"}, nil)
 			fakeCFClient.CreateServicePlanVisibilityReturns(cfclient.ServicePlanVisibility{}, errors.New("Error creating visibility"))
 			err := manager.EnableOrgServiceAccess(serviceInfo, orgConfigs)
 			Expect(err).Should(MatchError("Error creating visibility"))
