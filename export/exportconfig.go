@@ -377,7 +377,7 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 			return err
 		}
 		//Add Quota definition if applicable
-		if orgSpace.Relationships.Quota != nil {
+		if orgSpace.Relationships.Quota.Data != nil {
 			quota, err := im.QuotaManager.GetSpaceQuota(orgSpace.Relationships.Quota.Data.GUID)
 			if err != nil {
 				return err
