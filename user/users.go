@@ -509,14 +509,14 @@ func (m *DefaultManager) SyncUsers(usersInput UsersInput) error {
 		lo.G.Debugf("Users after LDAP sync %+v", roleUsers.Users())
 	}
 
-	if err := m.SyncInternalUsers(roleUsers, usersInput); err != nil {
+	if err := m.SyncInternalUsers(roleUsers, usersInput, false); err != nil {
 		return errors.Wrap(err, "adding internal users")
 	}
 	if len(roleUsers.Users()) > 0 {
 		lo.G.Debugf("Users after Internal sync %+v", roleUsers.Users())
 	}
 
-	if err := m.SyncInternalSPNUsers(roleUsers, usersInput); err != nil {
+	if err := m.SyncInternalUsers(roleUsers, usersInput, true); err != nil {
 		return errors.Wrap(err, "adding internal SPN users")
 	}
 	if len(roleUsers.Users()) > 0 {
@@ -544,9 +544,18 @@ func (m *DefaultManager) SyncUsers(usersInput UsersInput) error {
 	return nil
 }
 
-func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
-	origin := "uaa"
-	for _, userID := range usersInput.UniqueUsers() {
+func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, usersInput UsersInput, spnUsers bool) error {
+	var userList []string
+	var origin string
+	if !spnUsers {
+		origin = "uaa"
+		userList = usersInput.UniqueUsers()
+	} else {
+		origin = m.AzureADConfig.SPNOrigin
+		userList = usersInput.UniqueSPNUsers()
+	}
+
+	for _, userID := range userList {
 		lowerUserID := strings.ToLower(userID)
 		uaaUserList := m.UAAUsers.GetByName(lowerUserID)
 		if len(uaaUserList) == 0 || !strings.EqualFold(uaaUserList[0].Origin, origin) {
@@ -568,29 +577,29 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, usersInput User
 	return nil
 }
 
-func (m *DefaultManager) SyncInternalSPNUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
-	origin := m.AzureADConfig.SPNOrigin
-	for _, userID := range usersInput.UniqueSPNUsers() {
-		lowerUserID := strings.ToLower(userID)
-		uaaUserList := m.UAAUsers.GetByName(lowerUserID)
-		if len(uaaUserList) == 0 || !strings.EqualFold(uaaUserList[0].Origin, origin) {
-			return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
-		}
-		if !roleUsers.HasUser(lowerUserID) {
-			lo.G.Debugf("Role Users %+v", roleUsers.users)
-			user := m.UAAUsers.GetByNameAndOrigin(lowerUserID, origin)
-			if user == nil {
-				return fmt.Errorf("Unable to find user %s for origin %s", lowerUserID, origin)
-			}
-			if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
-				return errors.Wrap(err, fmt.Sprintf("adding user %s for origin %s", user.Username, origin))
-			}
-		} else {
-			roleUsers.RemoveUserForOrigin(lowerUserID, origin)
-		}
-	}
-	return nil
-}
+//	func (m *DefaultManager) SyncInternalSPNUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
+//		origin := m.AzureADConfig.SPNOrigin
+//		for _, userID := range usersInput.UniqueSPNUsers() {
+//			lowerUserID := strings.ToLower(userID)
+//			uaaUserList := m.UAAUsers.GetByName(lowerUserID)
+//			if len(uaaUserList) == 0 || !strings.EqualFold(uaaUserList[0].Origin, origin) {
+//				return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
+//			}
+//			if !roleUsers.HasUser(lowerUserID) {
+//				lo.G.Debugf("Role Users %+v", roleUsers.users)
+//				user := m.UAAUsers.GetByNameAndOrigin(lowerUserID, origin)
+//				if user == nil {
+//					return fmt.Errorf("Unable to find user %s for origin %s", lowerUserID, origin)
+//				}
+//				if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
+//					return errors.Wrap(err, fmt.Sprintf("adding user %s for origin %s", user.Username, origin))
+//				}
+//			} else {
+//				roleUsers.RemoveUserForOrigin(lowerUserID, origin)
+//			}
+//		}
+//		return nil
+//	}
 func (m *DefaultManager) RemoveUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
 	if usersInput.RemoveUsers {
 		cfg, err := m.Cfg.GetGlobalConfig()
