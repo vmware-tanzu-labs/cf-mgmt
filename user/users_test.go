@@ -39,15 +39,15 @@ var _ = Describe("given UserSpaces", func() {
 	Context("User Manager()", func() {
 		BeforeEach(func() {
 			userManager = &DefaultManager{
-				Client:     client,
-				Cfg:        fakeReader,
-				UAAMgr:     uaaFake,
-				LdapMgr:    ldapFake,
-				AzureADMgr: azureADFake,
-				SpaceMgr:   spaceFake,
-				OrgReader:  orgFake,
-				Peek:       false,
-				LdapConfig: &config.LdapConfig{Origin: "ldap"},
+				Client:        client,
+				Cfg:           fakeReader,
+				UAAMgr:        uaaFake,
+				LdapMgr:       ldapFake,
+				AzureADMgr:    azureADFake,
+				SpaceMgr:      spaceFake,
+				OrgReader:     orgFake,
+				Peek:          false,
+				LdapConfig:    &config.LdapConfig{Origin: "ldap"},
 				AzureADConfig: &config.AzureADConfig{},
 			}
 
@@ -163,7 +163,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   userManager.AssociateSpaceAuditor,
 					RoleUsers: InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).ShouldNot(HaveOccurred())
 				orgGUID, userGUID, role := client.CreateV3OrganizationRoleArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org_guid"))
@@ -185,7 +185,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   userManager.AssociateSpaceAuditor,
 					RoleUsers: InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(0))
 				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
@@ -198,7 +198,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   userManager.AssociateSpaceAuditor,
 					RoleUsers: InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).Should(Equal("user test2 doesn't exist in origin uaa, so must add internal user first"))
 			})
@@ -212,7 +212,7 @@ var _ = Describe("given UserSpaces", func() {
 					RoleUsers: InitRoleUsers(),
 				}
 				client.CreateV3OrganizationRoleReturns(&cfclient.V3Role{}, errors.New("error"))
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).Should(HaveOccurred())
 				Expect(client.CreateV3OrganizationRoleCallCount()).Should(Equal(1))
 				Expect(client.CreateV3SpaceRoleCallCount()).Should(Equal(0))
