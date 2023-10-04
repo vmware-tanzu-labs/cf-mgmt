@@ -3,7 +3,6 @@ package space
 import (
 	"context"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	v3cfclient "github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
@@ -19,19 +18,6 @@ type Manager interface {
 	IsSSHEnabled(*resource.Space) (bool, error)
 	UpdateSpacesMetadata() error
 	GetSpaceIsolationSegmentGUID(*resource.Space) (string, error)
-}
-
-type CFClient interface {
-	GetSpaceByGuid(spaceGUID string) (cfclient.Space, error)
-	UpdateSpace(spaceGUID string, req cfclient.SpaceRequest) (cfclient.Space, error)
-	CreateSpace(req cfclient.SpaceRequest) (cfclient.Space, error)
-	DeleteSpace(guid string, recursive, async bool) error
-	ListSpaces() ([]cfclient.Space, error)
-	SupportsMetadataAPI() (bool, error)
-	UpdateSpaceMetadata(spaceGUID string, metadata cfclient.Metadata) error
-	SpaceMetadata(spaceGUID string) (*cfclient.Metadata, error)
-	RemoveSpaceMetadata(spaceGUID string) error
-	ListOrgs() ([]cfclient.Org, error)
 }
 
 type CFSpaceClient interface {

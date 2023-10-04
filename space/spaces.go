@@ -8,7 +8,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -18,13 +17,12 @@ import (
 )
 
 // NewManager -
-func NewManager(client CFClient, spaceClient CFSpaceClient, spaceFeatureClient CFSpaceFeatureClient, uaaMgr uaa.Manager,
+func NewManager(spaceClient CFSpaceClient, spaceFeatureClient CFSpaceFeatureClient, uaaMgr uaa.Manager,
 	orgReader organizationreader.Reader,
 	cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
 		Cfg:                cfg,
 		UAAMgr:             uaaMgr,
-		Client:             client,
 		SpaceClient:        spaceClient,
 		SpaceFeatureClient: spaceFeatureClient,
 		OrgReader:          orgReader,
@@ -35,7 +33,6 @@ func NewManager(client CFClient, spaceClient CFSpaceClient, spaceFeatureClient C
 // DefaultManager -
 type DefaultManager struct {
 	Cfg                config.Reader
-	Client             CFClient
 	SpaceClient        CFSpaceClient
 	SpaceFeatureClient CFSpaceFeatureClient
 	UAAMgr             uaa.Manager
@@ -330,30 +327,11 @@ func (m *DefaultManager) DeleteSpaces() error {
 	return nil
 }
 
-func (m *DefaultManager) ClearMetadata(space *resource.Space, orgName string) error {
-	supports, err := m.Client.SupportsMetadataAPI()
-	if err != nil {
-		return err
-	}
-	if !supports {
-		return nil
-	}
-	if m.Peek {
-		lo.G.Infof("[dry-run]: removing space metadata from space %s in org %s", space.Name, orgName)
-		return nil
-	}
-	lo.G.Infof("removing space metadata from space %s in org %s", space.Name, orgName)
-	return m.Client.RemoveSpaceMetadata(space.GUID)
-}
-
 // DeleteSpace - deletes a space based on GUID
 func (m *DefaultManager) DeleteSpace(space *resource.Space, orgName string) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: delete space with %s from org %s", space.Name, orgName)
 		return nil
-	}
-	if err := m.ClearMetadata(space, orgName); err != nil {
-		return err
 	}
 	lo.G.Infof("delete space with %s from org %s", space.Name, orgName)
 	_, err := m.SpaceClient.Delete(context.Background(), space.GUID)
@@ -361,15 +339,6 @@ func (m *DefaultManager) DeleteSpace(space *resource.Space, orgName string) erro
 }
 
 func (m *DefaultManager) UpdateSpacesMetadata() error {
-	supports, err := m.Client.SupportsMetadataAPI()
-	if err != nil {
-		return errors.Wrap(err, "checking if supports v3 metadata api")
-	}
-	if !supports {
-		lo.G.Infof("Your deployment does not yet support v3 metadata api")
-		return nil
-	}
-
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		return err
@@ -386,28 +355,40 @@ func (m *DefaultManager) UpdateSpacesMetadata() error {
 			if err != nil {
 				continue
 			}
-			metadata := &cfclient.Metadata{}
+			if space.Metadata == nil {
+				space.Metadata = &resource.Metadata{}
+			}
+			//clear any labels that start with the prefix
+			for key, _ := range space.Metadata.Labels {
+				if strings.Contains(key, globalCfg.MetadataPrefix) {
+					space.Metadata.Labels[key] = nil
+				}
+			}
 			if spaceConfig.Metadata.Labels != nil {
 				for key, value := range spaceConfig.Metadata.Labels {
 					if len(value) > 0 {
-						metadata.AddLabel(globalCfg.MetadataPrefix, key, value)
+						space.Metadata.SetLabel(globalCfg.MetadataPrefix, key, value)
 					} else {
-						metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
+						space.Metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
 					}
+				}
+			}
+			//clear any labels that start with the prefix
+			for key, _ := range space.Metadata.Annotations {
+				if strings.Contains(key, globalCfg.MetadataPrefix) {
+					space.Metadata.Annotations[key] = nil
 				}
 			}
 			if spaceConfig.Metadata.Annotations != nil {
 				for key, value := range spaceConfig.Metadata.Annotations {
 					if len(value) > 0 {
-						metadata.AddAnnotation(fmt.Sprintf("%s/%s", globalCfg.MetadataPrefix, key), value)
+						space.Metadata.SetAnnotation(globalCfg.MetadataPrefix, key, value)
 					} else {
-						metadata.RemoveAnnotation(fmt.Sprintf("%s/%s", globalCfg.MetadataPrefix, key))
-						// For bug in capi that removal doesn't include prefix
-						metadata.RemoveAnnotation(key)
+						space.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, key)
 					}
 				}
 			}
-			err = m.UpdateSpaceMetadata(spaceConfig.Org, space, *metadata)
+			err = m.UpdateSpaceMetadata(spaceConfig.Org, space)
 			if err != nil {
 				return err
 			}
@@ -416,13 +397,17 @@ func (m *DefaultManager) UpdateSpacesMetadata() error {
 	return nil
 }
 
-func (m *DefaultManager) UpdateSpaceMetadata(org string, space *resource.Space, metadata cfclient.Metadata) error {
+func (m *DefaultManager) UpdateSpaceMetadata(org string, space *resource.Space) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: update org/space %s/%s metadata", org, space.Name)
 		return nil
 	}
 	lo.G.Infof("update org/space %s/%s metadata", org, space.Name)
-	return m.Client.UpdateSpaceMetadata(space.GUID, metadata)
+	_, err := m.SpaceClient.Update(context.Background(), space.GUID, &resource.SpaceUpdate{
+		Name:     space.Name,
+		Metadata: space.Metadata,
+	})
+	return err
 }
 
 func (m *DefaultManager) DeleteSpacesForOrg(orgGUID, orgName string) (err error) {

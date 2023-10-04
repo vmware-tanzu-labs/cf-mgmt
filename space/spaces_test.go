@@ -23,7 +23,6 @@ var _ = Describe("given SpaceManager", func() {
 	var (
 		fakeUaa                *uaafakes.FakeManager
 		fakeOrgMgr             *orgfakes.FakeReader
-		fakeClient             *spacefakes.FakeCFClient
 		spaceManager           space.DefaultManager
 		fakeReader             *configfakes.FakeReader
 		fakeSpaceClient        *spacefakes.FakeCFSpaceClient
@@ -33,13 +32,11 @@ var _ = Describe("given SpaceManager", func() {
 	BeforeEach(func() {
 		fakeUaa = new(uaafakes.FakeManager)
 		fakeOrgMgr = new(orgfakes.FakeReader)
-		fakeClient = new(spacefakes.FakeCFClient)
 		fakeReader = new(configfakes.FakeReader)
 		fakeSpaceClient = new(spacefakes.FakeCFSpaceClient)
 		fakeSpaceFeatureClient = new(spacefakes.FakeCFSpaceFeatureClient)
 		spaceManager = space.DefaultManager{
 			Cfg:                fakeReader,
-			Client:             fakeClient,
 			UAAMgr:             fakeUaa,
 			OrgReader:          fakeOrgMgr,
 			Peek:               false,
@@ -254,7 +251,7 @@ var _ = Describe("given SpaceManager", func() {
 
 			err := spaceManager.UpdateSpaces()
 			Expect(err).Should(BeNil())
-			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(0))
+			Expect(fakeSpaceClient.UpdateCallCount()).Should(Equal(0))
 			Expect(fakeSpaceFeatureClient.EnableSSHCallCount()).Should(Equal(0))
 		})
 
@@ -320,7 +317,7 @@ var _ = Describe("given SpaceManager", func() {
 
 			err := spaceManager.UpdateSpaces()
 			Expect(err).Should(BeNil())
-			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(0))
+			Expect(fakeSpaceClient.UpdateCallCount()).Should(Equal(0))
 			Expect(fakeSpaceFeatureClient.EnableSSHCallCount()).Should(Equal(1))
 			_, spaceGUID, enableSSH := fakeSpaceFeatureClient.EnableSSHArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("space1GUID"))
@@ -347,7 +344,7 @@ var _ = Describe("given SpaceManager", func() {
 
 			err := spaceManager.UpdateSpaces()
 			Expect(err).Should(BeNil())
-			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(0))
+			Expect(fakeSpaceClient.UpdateCallCount()).Should(Equal(0))
 			Expect(fakeSpaceFeatureClient.EnableSSHCallCount()).Should(Equal(0))
 		})
 
@@ -372,7 +369,7 @@ var _ = Describe("given SpaceManager", func() {
 
 			err := spaceManager.UpdateSpaces()
 			Expect(err).ShouldNot(BeNil())
-			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(0))
+			Expect(fakeSpaceClient.UpdateCallCount()).Should(Equal(0))
 			Expect(fakeSpaceFeatureClient.EnableSSHCallCount()).Should(Equal(1))
 		})
 
@@ -528,7 +525,7 @@ var _ = Describe("given SpaceManager", func() {
 				Guid: "test2-org-guid",
 			}, nil)
 			fakeSpaceClient.ListAllReturns(spaces, nil)
-			fakeClient.DeleteSpaceReturns(nil)
+			fakeSpaceClient.DeleteReturns("", nil)
 			Expect(spaceManager.DeleteSpaces()).Should(Succeed())
 			Expect(fakeSpaceClient.DeleteCallCount()).Should(Equal(0))
 		})
