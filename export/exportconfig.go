@@ -190,7 +190,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 			return err
 		}
 		//Add Quota definition if applicable
-		if org.Relationships.Quota.Data.GUID != "" {
+		if org.Relationships.Quota.Data != nil {
 			orgQuota, err := im.QuotaManager.GetOrgQuota(org.Relationships.Quota.Data.GUID)
 			if err != nil {
 				return err
