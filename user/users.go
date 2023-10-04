@@ -337,6 +337,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 		GroupNames:  input.GetDeveloperGroups(),
 		LdapUsers:   input.Developer.LDAPUsers,
 		Users:       input.Developer.Users,
+		SPNUsers:    input.Developer.SPNUsers,
 		SamlUsers:   input.Developer.SamlUsers,
 		RemoveUsers: input.RemoveUsers,
 		RoleUsers:   developers,
@@ -355,6 +356,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 			GroupNames:  input.GetManagerGroups(),
 			LdapUsers:   input.Manager.LDAPUsers,
 			Users:       input.Manager.Users,
+			SPNUsers:    input.Manager.SPNUsers,
 			SamlUsers:   input.Manager.SamlUsers,
 			RemoveUsers: input.RemoveUsers,
 			RoleUsers:   managers,
@@ -372,6 +374,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 			GroupNames:  input.GetAuditorGroups(),
 			LdapUsers:   input.Auditor.LDAPUsers,
 			Users:       input.Auditor.Users,
+			SPNUsers:    input.Auditor.SPNUsers,
 			SamlUsers:   input.Auditor.SamlUsers,
 			RemoveUsers: input.RemoveUsers,
 			RoleUsers:   auditors,
@@ -389,6 +392,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 		GroupNames:  input.GetSupporterGroups(),
 		LdapUsers:   input.Supporter.LDAPUsers,
 		Users:       input.Supporter.Users,
+		SPNUsers:    input.Supporter.SPNUsers,
 		SamlUsers:   input.Supporter.SamlUsers,
 		RemoveUsers: input.RemoveUsers,
 		RoleUsers:   supporters,
@@ -440,6 +444,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 			GroupNames:  input.GetBillingManagerGroups(),
 			LdapUsers:   input.BillingManager.LDAPUsers,
 			Users:       input.BillingManager.Users,
+			SPNUsers:    input.BillingManager.SPNUsers,
 			SamlUsers:   input.BillingManager.SamlUsers,
 			RemoveUsers: input.RemoveUsers,
 			RoleUsers:   billingManagers,
@@ -456,6 +461,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 		GroupNames:  input.GetAuditorGroups(),
 		LdapUsers:   input.Auditor.LDAPUsers,
 		Users:       input.Auditor.Users,
+		SPNUsers:    input.Auditor.SPNUsers,
 		SamlUsers:   input.Auditor.SamlUsers,
 		RemoveUsers: input.RemoveUsers,
 		RoleUsers:   auditors,
@@ -472,6 +478,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 		GroupNames:  input.GetManagerGroups(),
 		LdapUsers:   input.Manager.LDAPUsers,
 		Users:       input.Manager.Users,
+		SPNUsers:    input.Manager.SPNUsers,
 		SamlUsers:   input.Manager.SamlUsers,
 		RemoveUsers: input.RemoveUsers,
 		RoleUsers:   managers,
@@ -507,6 +514,13 @@ func (m *DefaultManager) SyncUsers(usersInput UsersInput) error {
 	}
 	if len(roleUsers.Users()) > 0 {
 		lo.G.Debugf("Users after Internal sync %+v", roleUsers.Users())
+	}
+
+	if err := m.SyncInternalSPNUsers(roleUsers, usersInput); err != nil {
+		return errors.Wrap(err, "adding internal SPN users")
+	}
+	if len(roleUsers.Users()) > 0 {
+		lo.G.Debugf("Users after Internal SPN sync %+v", roleUsers.Users())
 	}
 
 	if err := m.SyncSamlUsers(roleUsers, usersInput); err != nil {
@@ -554,6 +568,29 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *RoleUsers, usersInput User
 	return nil
 }
 
+func (m *DefaultManager) SyncInternalSPNUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
+	origin := m.AzureADConfig.SPNOrigin
+	for _, userID := range usersInput.UniqueSPNUsers() {
+		lowerUserID := strings.ToLower(userID)
+		uaaUserList := m.UAAUsers.GetByName(lowerUserID)
+		if len(uaaUserList) == 0 || !strings.EqualFold(uaaUserList[0].Origin, origin) {
+			return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
+		}
+		if !roleUsers.HasUser(lowerUserID) {
+			lo.G.Debugf("Role Users %+v", roleUsers.users)
+			user := m.UAAUsers.GetByNameAndOrigin(lowerUserID, origin)
+			if user == nil {
+				return fmt.Errorf("Unable to find user %s for origin %s", lowerUserID, origin)
+			}
+			if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
+				return errors.Wrap(err, fmt.Sprintf("adding user %s for origin %s", user.Username, origin))
+			}
+		} else {
+			roleUsers.RemoveUserForOrigin(lowerUserID, origin)
+		}
+	}
+	return nil
+}
 func (m *DefaultManager) RemoveUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
 	if usersInput.RemoveUsers {
 		cfg, err := m.Cfg.GetGlobalConfig()
@@ -621,7 +658,7 @@ func (m *DefaultManager) InitializeAzureAD(tenantId, clientId, secret, origin st
 			return err
 		}
 		m.AzureADMgr = azureAdMgr
-		lo.G.Debugf("Azure AD is Enabled, with TenantId: %s, ClientID: %s, Origin: %s", aadConfig.TenantID, aadConfig.ClientId, aadConfig.UserOrigin)
+		lo.G.Debugf("Azure AD is Enabled, with TenantId: %s, ClientID: %s, Origin: %s, SPNOrigin: %s", aadConfig.TenantID, aadConfig.ClientId, aadConfig.UserOrigin, aadConfig.SPNOrigin)
 
 	}
 	return nil
