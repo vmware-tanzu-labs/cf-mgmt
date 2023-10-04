@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -305,7 +306,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
-				spaceManager.FindSpaceReturns(cfclient.Space{Name: "org1space2", Guid: "space_guid"}, nil)
+				spaceManager.FindSpaceReturns(&resource.Space{Name: "org1space2", GUID: "space_guid"}, nil)
 				Ω(u.UpdateSpaces()).Should(Succeed())
 				Expect(client.IsolationSegmentForSpaceCallCount()).Should(Equal(1))
 				spaceGUID, isolationSegmentGUID := client.IsolationSegmentForSpaceArgsForCall(0)
@@ -323,7 +324,8 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
-				spaceManager.FindSpaceReturns(cfclient.Space{Name: "org1space2", Guid: "space_guid", IsolationSegmentGuid: "foo"}, nil)
+				spaceManager.FindSpaceReturns(&resource.Space{Name: "org1space2", GUID: "space_guid"}, nil)
+				spaceManager.GetSpaceIsolationSegmentGUIDReturns("foo", nil)
 				Ω(u.UpdateSpaces()).Should(Succeed())
 				Expect(client.ResetIsolationSegmentForSpaceCallCount()).Should(Equal(1))
 				spaceGUID := client.ResetIsolationSegmentForSpaceArgsForCall(0)
@@ -361,7 +363,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
-				spaceManager.FindSpaceReturns(cfclient.Space{Name: "org1space2", Guid: "space_guid"}, nil)
+				spaceManager.FindSpaceReturns(&resource.Space{Name: "org1space2", GUID: "space_guid"}, nil)
 				client.IsolationSegmentForSpaceReturns(errors.New("error"))
 				Ω(u.UpdateSpaces()).ShouldNot(Succeed())
 			})

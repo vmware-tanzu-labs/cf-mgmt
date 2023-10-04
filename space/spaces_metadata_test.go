@@ -1,7 +1,7 @@
 package space_test
 
 import (
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -15,11 +15,13 @@ import (
 
 var _ = Describe("given SpaceManager", func() {
 	var (
-		fakeUaa      *uaafakes.FakeManager
-		fakeOrgMgr   *orgfakes.FakeReader
-		fakeClient   *spacefakes.FakeCFClient
-		spaceManager space.DefaultManager
-		fakeReader   *configfakes.FakeReader
+		fakeUaa                *uaafakes.FakeManager
+		fakeOrgMgr             *orgfakes.FakeReader
+		fakeClient             *spacefakes.FakeCFClient
+		spaceManager           space.DefaultManager
+		fakeReader             *configfakes.FakeReader
+		fakeSpaceClient        *spacefakes.FakeCFSpaceClient
+		fakeSpaceFeatureClient *spacefakes.FakeCFSpaceFeatureClient
 	)
 
 	BeforeEach(func() {
@@ -27,12 +29,16 @@ var _ = Describe("given SpaceManager", func() {
 		fakeOrgMgr = new(orgfakes.FakeReader)
 		fakeClient = new(spacefakes.FakeCFClient)
 		fakeReader = new(configfakes.FakeReader)
+		fakeSpaceClient = new(spacefakes.FakeCFSpaceClient)
+		fakeSpaceFeatureClient = new(spacefakes.FakeCFSpaceFeatureClient)
 		spaceManager = space.DefaultManager{
-			Cfg:       fakeReader,
-			Client:    fakeClient,
-			UAAMgr:    fakeUaa,
-			OrgReader: fakeOrgMgr,
-			Peek:      false,
+			Cfg:                fakeReader,
+			Client:             fakeClient,
+			UAAMgr:             fakeUaa,
+			OrgReader:          fakeOrgMgr,
+			Peek:               false,
+			SpaceClient:        fakeSpaceClient,
+			SpaceFeatureClient: fakeSpaceFeatureClient,
 		}
 	})
 
@@ -53,15 +59,21 @@ var _ = Describe("given SpaceManager", func() {
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				MetadataPrefix: "foo.bar",
 			}, nil)
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "testSpace",
-					Guid:             "test-space-guid",
-					OrganizationGuid: "testOrgGUID",
+					Name: "testSpace",
+					GUID: "test-space-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			err := spaceManager.UpdateSpacesMetadata()
 			Expect(err).Should(BeNil())
 
@@ -88,15 +100,21 @@ var _ = Describe("given SpaceManager", func() {
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				MetadataPrefix: "foo.bar",
 			}, nil)
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "testSpace",
-					Guid:             "test-space-guid",
-					OrganizationGuid: "testOrgGUID",
+					Name: "testSpace",
+					GUID: "test-space-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			err := spaceManager.UpdateSpacesMetadata()
 			Expect(err).Should(BeNil())
 
@@ -123,15 +141,21 @@ var _ = Describe("given SpaceManager", func() {
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				MetadataPrefix: "foo.bar",
 			}, nil)
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "testSpace",
-					Guid:             "test-space-guid",
-					OrganizationGuid: "testOrgGUID",
+					Name: "testSpace",
+					GUID: "test-space-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			err := spaceManager.UpdateSpacesMetadata()
 			Expect(err).Should(BeNil())
 
@@ -159,15 +183,21 @@ var _ = Describe("given SpaceManager", func() {
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				MetadataPrefix: "foo.bar",
 			}, nil)
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "testSpace",
-					Guid:             "test-space-guid",
-					OrganizationGuid: "testOrgGUID",
+					Name: "testSpace",
+					GUID: "test-space-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			err := spaceManager.UpdateSpacesMetadata()
 			Expect(err).Should(BeNil())
 
@@ -184,8 +214,8 @@ var _ = Describe("given SpaceManager", func() {
 	Context("ClearMetadata()", func() {
 		It("should remove metadata from given space", func() {
 			fakeClient.SupportsMetadataAPIReturns(true, nil)
-			space := cfclient.Space{
-				Guid: "space-guid",
+			space := &resource.Space{
+				GUID: "space-guid",
 			}
 			err := spaceManager.ClearMetadata(space, "test-org")
 			Expect(err).ShouldNot(HaveOccurred())

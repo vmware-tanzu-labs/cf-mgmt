@@ -66,7 +66,7 @@ func (m *Manager) CreateSpaceQuotas() error {
 			if err != nil {
 				return errors.Wrap(err, "Finding spaces")
 			}
-			quotas, err := m.ListAllSpaceQuotasForOrg(space.OrganizationGuid)
+			quotas, err := m.ListAllSpaceQuotasForOrg(space.Relationships.Organization.Data.GUID)
 			if err != nil {
 				return errors.Wrap(err, "ListAllSpaceQuotasForOrg")
 			}
@@ -98,7 +98,8 @@ func (m *Manager) CreateSpaceQuotas() error {
 				}
 			}
 			spaceQuota := quotas[input.NamedQuota]
-			if spaceQuota != nil && space.QuotaDefinitionGuid != spaceQuota.GUID {
+
+			if spaceQuota != nil && (space.Relationships.Quota == nil || space.Relationships.Quota.Data.GUID != spaceQuota.GUID) {
 				if err = m.AssignQuotaToSpace(space, spaceQuota); err != nil {
 					return err
 				}
@@ -108,7 +109,7 @@ func (m *Manager) CreateSpaceQuotas() error {
 	return nil
 }
 
-func (m *Manager) createSpaceQuota(input config.SpaceQuota, space cfclient.Space, quotas map[string]*resource.SpaceQuota, orgQuotas map[string]*resource.OrganizationQuota) error {
+func (m *Manager) createSpaceQuota(input config.SpaceQuota, space *resource.Space, quotas map[string]*resource.SpaceQuota, orgQuotas map[string]*resource.OrganizationQuota) error {
 	quota := &resource.SpaceQuotaCreateOrUpdate{
 		Name:     &input.Name,
 		Apps:     &resource.SpaceQuotaApps{},
@@ -276,13 +277,13 @@ func (m *Manager) UpdateSpaceQuota(quotaGUID string, quota *resource.SpaceQuotaC
 	return err
 }
 
-func (m *Manager) AssignQuotaToSpace(space cfclient.Space, quota *resource.SpaceQuota) error {
+func (m *Manager) AssignQuotaToSpace(space *resource.Space, quota *resource.SpaceQuota) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: assigning quota %s to space %s", quota.Name, space.Name)
 		return nil
 	}
 	lo.G.Infof("Assigning quota %s to %s", quota.Name, space.Name)
-	_, err := m.SpaceQuoteClient.Apply(context.Background(), quota.GUID, []string{space.Guid})
+	_, err := m.SpaceQuoteClient.Apply(context.Background(), quota.GUID, []string{space.GUID})
 	return err
 }
 

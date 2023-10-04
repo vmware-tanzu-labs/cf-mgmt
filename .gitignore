@@ -18,3 +18,4 @@ test_configuration
 publish-develop.sh
 make-binary.sh
 .idea
+test-for-pagination.sh

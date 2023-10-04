@@ -368,13 +368,13 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 
 		spaceConfig := &config.SpaceConfig{Org: orgConfig.Org, Space: spaceName, EnableUnassignSecurityGroup: true}
 		//Add users
-		err = im.addSpaceUsers(spaceConfig, orgSpace.Guid)
+		err = im.addSpaceUsers(spaceConfig, orgSpace.Relationships.Organization.Data.GUID)
 		if err != nil {
 			return err
 		}
 		//Add Quota definition if applicable
-		if orgSpace.QuotaDefinitionGuid != "" {
-			quota, err := im.QuotaManager.GetSpaceQuota(orgSpace.QuotaDefinitionGuid)
+		if orgSpace.Relationships.Quota != nil {
+			quota, err := im.QuotaManager.GetSpaceQuota(orgSpace.Relationships.Quota.Data.GUID)
 			if err != nil {
 				return err
 			}
@@ -407,21 +407,28 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 			spaceConfig.AppTaskLimit = orgConfig.AppTaskLimit
 			spaceConfig.LogRateLimitBytesPerSecond = orgConfig.LogRateLimitBytesPerSecond
 		}
-
-		if orgSpace.IsolationSegmentGuid != "" {
+		isoSegGUID, err := im.SpaceManager.GetSpaceIsolationSegmentGUID(orgSpace)
+		if err != nil {
+			return err
+		}
+		if isoSegGUID != "" {
 			for _, isosegment := range isolationSegments {
-				if isosegment.GUID == orgSpace.IsolationSegmentGuid {
+				if isosegment.GUID == isoSegGUID {
 					spaceConfig.IsoSegment = isosegment.Name
 				}
 			}
 
 		}
-		if orgSpace.AllowSSH {
+		sshEnabled, err := im.SpaceManager.IsSSHEnabled(orgSpace)
+		if err != nil {
+			return err
+		}
+		if sshEnabled {
 			spaceConfig.AllowSSH = true
 		}
 
 		spaceSGName := fmt.Sprintf("%s-%s", orgConfig.Org, spaceName)
-		if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.Guid); err == nil {
+		if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.GUID); err == nil {
 			for securityGroupName := range spaceSGNames {
 				lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
 				if securityGroupName != spaceSGName {
@@ -502,7 +509,7 @@ func (im *Manager) getOrgName(orgs []cfclient.Org, orgGUID string) (string, erro
 	return "", fmt.Errorf("no org exists for org guid %s", orgGUID)
 }
 
-func (im *Manager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
+func (im *Manager) doesSpaceExist(spaces []*resource.Space, spaceName string) bool {
 	for _, space := range spaces {
 		if space.Name == spaceName {
 			return true

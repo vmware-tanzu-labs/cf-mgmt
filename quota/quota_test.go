@@ -138,10 +138,16 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{
-				Name:             "space1",
-				Guid:             "space1-guid",
-				OrganizationGuid: "org1-guid",
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "space1",
+				GUID: "space1-guid",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+				},
 			}, nil)
 		})
 		It("should create a quota and assign it", func() {
@@ -249,11 +255,21 @@ var _ = Describe("given QuotaManager", func() {
 		})
 
 		It("should update a quota and not assign it", func() {
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{
-				Name:                "space1",
-				Guid:                "space1-guid",
-				OrganizationGuid:    "org1-guid",
-				QuotaDefinitionGuid: "space-quota-guid",
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "space1",
+				GUID: "space1-guid",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+					Quota: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "space-quota-guid",
+						},
+					},
+				},
 			}, nil)
 			fakeSpaceQuotaClient.ListAllReturns([]*resource.SpaceQuota{
 				{
@@ -280,11 +296,20 @@ var _ = Describe("given QuotaManager", func() {
 		})
 
 		It("should not update a quota or assign it", func() {
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{
-				Name:                "space1",
-				Guid:                "space1-guid",
-				OrganizationGuid:    "org1-guid",
-				QuotaDefinitionGuid: "space-quota-guid",
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "space1",
+				GUID: "space1-guid",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+					Quota: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "space-quota-guid",
+						}},
+				},
 			}, nil)
 			fakeSpaceQuotaClient.ListAllReturns([]*resource.SpaceQuota{
 				{
@@ -374,7 +399,7 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(err).ShouldNot(BeNil())
 		})
 		It("Should error finding space", func() {
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{}, errors.New("error"))
+			fakeSpaceMgr.FindSpaceReturns(nil, errors.New("error"))
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(BeNil())
 		})
@@ -678,7 +703,16 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}, nil)
 			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{GUID: "my-named-quota-guid", Name: "my-named-quota"}, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name: "test-space"}, nil)
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "test-space",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+				},
+			}, nil)
 
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(HaveOccurred())
@@ -697,7 +731,16 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}, nil)
 			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{GUID: "test-space-quota-guid", Name: "test-space"}, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name: "test-space"}, nil)
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "test-space",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+				},
+			}, nil)
 
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(HaveOccurred())
@@ -722,7 +765,7 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}, nil)
 			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{GUID: "my-named-quota-guid", Name: "my-named-quota"}, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name: "test-space"}, nil)
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{Name: "test-space"}, nil)
 
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(HaveOccurred())

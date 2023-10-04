@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -20,11 +21,13 @@ import (
 
 var _ = Describe("given SpaceManager", func() {
 	var (
-		fakeUaa      *uaafakes.FakeManager
-		fakeOrgMgr   *orgfakes.FakeReader
-		fakeClient   *spacefakes.FakeCFClient
-		spaceManager space.DefaultManager
-		fakeReader   *configfakes.FakeReader
+		fakeUaa                *uaafakes.FakeManager
+		fakeOrgMgr             *orgfakes.FakeReader
+		fakeClient             *spacefakes.FakeCFClient
+		spaceManager           space.DefaultManager
+		fakeReader             *configfakes.FakeReader
+		fakeSpaceClient        *spacefakes.FakeCFSpaceClient
+		fakeSpaceFeatureClient *spacefakes.FakeCFSpaceFeatureClient
 	)
 
 	BeforeEach(func() {
@@ -32,38 +35,55 @@ var _ = Describe("given SpaceManager", func() {
 		fakeOrgMgr = new(orgfakes.FakeReader)
 		fakeClient = new(spacefakes.FakeCFClient)
 		fakeReader = new(configfakes.FakeReader)
+		fakeSpaceClient = new(spacefakes.FakeCFSpaceClient)
+		fakeSpaceFeatureClient = new(spacefakes.FakeCFSpaceFeatureClient)
 		spaceManager = space.DefaultManager{
-			Cfg:       fakeReader,
-			Client:    fakeClient,
-			UAAMgr:    fakeUaa,
-			OrgReader: fakeOrgMgr,
-			Peek:      false,
+			Cfg:                fakeReader,
+			Client:             fakeClient,
+			UAAMgr:             fakeUaa,
+			OrgReader:          fakeOrgMgr,
+			Peek:               false,
+			SpaceClient:        fakeSpaceClient,
+			SpaceFeatureClient: fakeSpaceFeatureClient,
 		}
 	})
 
 	Context("FindSpace()", func() {
 		It("should return an space", func() {
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "testSpace",
-					OrganizationGuid: "testOrgGUID",
+					Name: "testSpace",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			space, err := spaceManager.FindSpace("testOrg", "testSpace")
 			Expect(err).Should(BeNil())
 			Expect(space).ShouldNot(BeNil())
 			Expect(space.Name).Should(Equal("testSpace"))
 		})
 		It("should return an error if space not found", func() {
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
 					Name: "testSpace",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "Other-org-guid",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			_, err := spaceManager.FindSpace("testOrg", "testSpace2")
 			Expect(err).Should(HaveOccurred())
 		})
@@ -75,7 +95,7 @@ var _ = Describe("given SpaceManager", func() {
 		})
 		It("should return an error if unable to get Spaces", func() {
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(nil, fmt.Errorf("test"))
+			fakeSpaceClient.ListAllReturns(nil, fmt.Errorf("test"))
 			_, err := spaceManager.FindSpace("testOrg", "testSpace2")
 			Expect(err).Should(HaveOccurred())
 		})
@@ -93,36 +113,52 @@ var _ = Describe("given SpaceManager", func() {
 			}, nil)
 		})
 		It("should create 2 spaces", func() {
-			spaces := []cfclient.Space{}
+			spaces := []*resource.Space{}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
+			fakeSpaceClient.CreateReturnsOnCall(0, &resource.Space{
+				GUID: "space1-guid",
+				Name: "space1",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "testOrgGUID",
+						},
+					},
+				},
+			}, nil)
 			Expect(spaceManager.CreateSpaces()).Should(Succeed())
-
-			Expect(fakeClient.CreateSpaceCallCount()).Should(Equal(2))
+			Expect(fakeSpaceClient.CreateCallCount()).Should(Equal(2))
 			var spaceNames []string
-			spaceRequest := fakeClient.CreateSpaceArgsForCall(0)
-			Expect(spaceRequest.OrganizationGuid).Should(Equal("testOrgGUID"))
+			_, spaceRequest := fakeSpaceClient.CreateArgsForCall(0)
+			Expect(spaceRequest.Relationships.Organization.Data.GUID).Should(Equal("testOrgGUID"))
 			spaceNames = append(spaceNames, spaceRequest.Name)
-			spaceRequest = fakeClient.CreateSpaceArgsForCall(1)
-			Expect(spaceRequest.OrganizationGuid).Should(Equal("testOrgGUID"))
+			_, spaceRequest = fakeSpaceClient.CreateArgsForCall(1)
+			Expect(spaceRequest.Relationships.Organization.Data.GUID).Should(Equal("testOrgGUID"))
 			spaceNames = append(spaceNames, spaceRequest.Name)
 			Expect(spaceNames).Should(ConsistOf([]string{"space1", "space2"}))
 		})
 
 		It("should create 1 space", func() {
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "space1",
-					OrganizationGuid: "testOrgGUID",
+					Name: "space1",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 
 			Expect(spaceManager.CreateSpaces()).Should(Succeed())
-			Expect(fakeClient.CreateSpaceCallCount()).Should(Equal(1))
-			spaceRequest := fakeClient.CreateSpaceArgsForCall(0)
-			Expect(spaceRequest.OrganizationGuid).Should(Equal("testOrgGUID"))
+			Expect(fakeSpaceClient.CreateCallCount()).Should(Equal(1))
+			_, spaceRequest := fakeSpaceClient.CreateArgsForCall(0)
+			Expect(spaceRequest.Relationships.Organization.Data.GUID).Should(Equal("testOrgGUID"))
 			Expect(spaceRequest.Name).Should(Equal("space2"))
 		})
 
@@ -138,21 +174,26 @@ var _ = Describe("given SpaceManager", func() {
 					OriginalSpace: "space1",
 				},
 			}, nil)
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "space1",
-					Guid:             "space1-guid",
-					OrganizationGuid: "testOrgGUID",
+					Name: "space1",
+					GUID: "space1-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			Expect(spaceManager.CreateSpaces()).Should(Succeed())
-			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(1))
-			spaceGUID, spaceRequest := fakeClient.UpdateSpaceArgsForCall(0)
+			Expect(fakeSpaceClient.UpdateCallCount()).Should(Equal(1))
+			_, spaceGUID, spaceRequest := fakeSpaceClient.UpdateArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("space1-guid"))
 			Expect(spaceRequest.Name).Should(Equal("new-space1"))
-			Expect(spaceRequest.OrganizationGuid).Should(Equal("testOrgGUID"))
 		})
 	})
 
@@ -167,44 +208,54 @@ var _ = Describe("given SpaceManager", func() {
 		})
 		It("should turn on allow ssh", func() {
 
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "space1",
-					OrganizationGuid: "testOrgGUID",
-					Guid:             "space1GUID",
-					AllowSSH:         false,
+					Name: "space1",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
+					GUID: "space1GUID",
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
-			fakeClient.UpdateSpaceReturns(cfclient.Space{}, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
+			fakeSpaceFeatureClient.IsSSHEnabledReturns(false, nil)
 
 			err := spaceManager.UpdateSpaces()
 			Expect(err).Should(BeNil())
-			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(1))
-			spaceGUID, updateSpace := fakeClient.UpdateSpaceArgsForCall(0)
+			Expect(fakeSpaceClient.UpdateCallCount()).Should(Equal(0))
+			Expect(fakeSpaceFeatureClient.EnableSSHCallCount()).Should(Equal(1))
+			_, spaceGUID, enableSSH := fakeSpaceFeatureClient.EnableSSHArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("space1GUID"))
-			Expect(updateSpace.OrganizationGuid).Should(Equal("testOrgGUID"))
-			Expect(updateSpace.Name).Should(Equal("space1"))
-			Expect(updateSpace.AllowSSH).Should(Equal(true))
+			Expect(enableSSH).Should(Equal(true))
 		})
 
 		It("should do nothing as ssh didn't change", func() {
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "space1",
-					OrganizationGuid: "testOrgGUID",
-					Guid:             "space1GUID",
-					AllowSSH:         true,
+					Name: "space1",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
+					GUID: "space1GUID",
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
-			fakeClient.UpdateSpaceReturns(cfclient.Space{}, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
+			fakeSpaceFeatureClient.IsSSHEnabledReturns(true, nil)
 
 			err := spaceManager.UpdateSpaces()
 			Expect(err).Should(BeNil())
 			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(0))
+			Expect(fakeSpaceFeatureClient.EnableSSHCallCount()).Should(Equal(0))
 		})
 
 		It("should turn on ssh temporarily", func() {
@@ -216,23 +267,29 @@ var _ = Describe("given SpaceManager", func() {
 					AllowSSHUntil: future.Format(time.RFC3339),
 				},
 			}, nil)
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "space1",
-					OrganizationGuid: "testOrgGUID",
-					Guid:             "space1GUID",
-					AllowSSH:         false,
+					Name: "space1",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
+					GUID: "space1GUID",
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
-			fakeClient.UpdateSpaceReturns(cfclient.Space{}, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
+			fakeSpaceFeatureClient.IsSSHEnabledReturns(false, nil)
 
 			err := spaceManager.UpdateSpaces()
 			Expect(err).Should(BeNil())
-			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(1))
-			_, spaceRequest := fakeClient.UpdateSpaceArgsForCall(0)
-			Expect(spaceRequest.AllowSSH).To(BeTrue())
+			Expect(fakeSpaceFeatureClient.EnableSSHCallCount()).Should(Equal(1))
+			_, spaceGUID, enableSSH := fakeSpaceFeatureClient.EnableSSHArgsForCall(0)
+			Expect(spaceGUID).Should(Equal("space1GUID"))
+			Expect(enableSSH).Should(Equal(true))
 		})
 
 		It("should turn off temporarily granted ssh", func() {
@@ -244,59 +301,79 @@ var _ = Describe("given SpaceManager", func() {
 					AllowSSHUntil: past.Format(time.RFC3339),
 				},
 			}, nil)
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
-					Name:             "space1",
-					OrganizationGuid: "testOrgGUID",
-					Guid:             "space1GUID",
-					AllowSSH:         true,
+					Name: "space1",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
+					GUID: "space1GUID",
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
-			fakeClient.UpdateSpaceReturns(cfclient.Space{}, nil)
-
-			err := spaceManager.UpdateSpaces()
-			Expect(err).Should(BeNil())
-			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(1))
-			_, spaceRequest := fakeClient.UpdateSpaceArgsForCall(0)
-			Expect(spaceRequest.AllowSSH).To(BeFalse())
-		})
-		It("should do nothing as peek", func() {
-			spaceManager.Peek = true
-			spaces := []cfclient.Space{
-				{
-					Name:             "space1",
-					OrganizationGuid: "testOrgGUID",
-					Guid:             "space1GUID",
-					AllowSSH:         false,
-				},
-			}
-			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
-			fakeClient.UpdateSpaceReturns(cfclient.Space{}, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
+			fakeSpaceFeatureClient.IsSSHEnabledReturns(true, nil)
 
 			err := spaceManager.UpdateSpaces()
 			Expect(err).Should(BeNil())
 			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(0))
+			Expect(fakeSpaceFeatureClient.EnableSSHCallCount()).Should(Equal(1))
+			_, spaceGUID, enableSSH := fakeSpaceFeatureClient.EnableSSHArgsForCall(0)
+			Expect(spaceGUID).Should(Equal("space1GUID"))
+			Expect(enableSSH).Should(Equal(false))
 		})
-
-		It("should error on update space", func() {
-			spaces := []cfclient.Space{
+		It("should do nothing as peek", func() {
+			spaceManager.Peek = true
+			spaces := []*resource.Space{
 				{
-					Name:             "space1",
-					OrganizationGuid: "testOrgGUID",
-					Guid:             "space1GUID",
-					AllowSSH:         false,
+					Name: "space1",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
+					GUID: "space1GUID",
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
-			fakeClient.UpdateSpaceReturns(cfclient.Space{}, errors.New("error"))
+			fakeSpaceClient.ListAllReturns(spaces, nil)
+			fakeSpaceFeatureClient.IsSSHEnabledReturns(false, nil)
+
+			err := spaceManager.UpdateSpaces()
+			Expect(err).Should(BeNil())
+			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(0))
+			Expect(fakeSpaceFeatureClient.EnableSSHCallCount()).Should(Equal(0))
+		})
+
+		It("should error on update space", func() {
+			spaces := []*resource.Space{
+				{
+					Name: "space1",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
+					GUID: "space1GUID",
+				},
+			}
+			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
+			fakeSpaceFeatureClient.IsSSHEnabledReturns(false, nil)
+			fakeSpaceFeatureClient.EnableSSHReturns(errors.New("error"))
 
 			err := spaceManager.UpdateSpaces()
 			Expect(err).ShouldNot(BeNil())
-			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(1))
+			Expect(fakeClient.UpdateSpaceCallCount()).Should(Equal(0))
+			Expect(fakeSpaceFeatureClient.EnableSSHCallCount()).Should(Equal(1))
 		})
 
 	})
@@ -312,89 +389,148 @@ var _ = Describe("given SpaceManager", func() {
 			fakeReader.GetSpaceConfigReturns(&config.SpaceConfig{}, nil)
 		})
 		It("should delete 1", func() {
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
 					Name: "space1",
-					Guid: "space1-guid",
+					GUID: "space1-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "test1-org-guid",
+							},
+						},
+					},
 				},
 				{
 					Name: "space2",
-					Guid: "space2-guid",
+					GUID: "space2-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "test1-org-guid",
+							},
+						},
+					},
 				},
 				{
-					Name:             "space3",
-					Guid:             "space3-guid",
-					OrganizationGuid: "test2-org-guid",
+					Name: "space3",
+					GUID: "space3-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "test2-org-guid",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.FindOrgReturns(cfclient.Org{
 				Name: "test2",
 				Guid: "test2-org-guid",
 			}, nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
-			fakeClient.DeleteSpaceReturns(nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
+			fakeSpaceClient.DeleteReturns("", nil)
 			Expect(spaceManager.DeleteSpaces()).Should(Succeed())
-			Expect(fakeClient.DeleteSpaceCallCount()).Should(Equal(1))
-			spaceGUID, recursive, async := fakeClient.DeleteSpaceArgsForCall(0)
+			Expect(fakeSpaceClient.DeleteCallCount()).Should(Equal(1))
+			_, spaceGUID := fakeSpaceClient.DeleteArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("space3-guid"))
-			Expect(recursive).Should(Equal(true))
-			Expect(async).Should(Equal(false))
 		})
 
 		It("should error", func() {
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
 					Name: "space1",
-					Guid: "space1-guid",
+					GUID: "space1-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "test1-org-guid",
+							},
+						},
+					},
 				},
 				{
 					Name: "space2",
-					Guid: "space2-guid",
+					GUID: "space2-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "test1-org-guid",
+							},
+						},
+					},
 				},
 				{
-					Name:             "space3",
-					Guid:             "space3-guid",
-					OrganizationGuid: "test2-org-guid",
+					Name: "space3",
+					GUID: "space3-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "test2-org-guid",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.FindOrgReturns(cfclient.Org{
 				Name: "test2",
 				Guid: "test2-org-guid",
 			}, nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
-			fakeClient.DeleteSpaceReturns(errors.New("error"))
+			fakeSpaceClient.ListAllReturns(spaces, nil)
+			fakeSpaceClient.DeleteReturns("", errors.New("error"))
 			Expect(spaceManager.DeleteSpaces()).ShouldNot(Succeed())
-			Expect(fakeClient.DeleteSpaceCallCount()).Should(Equal(1))
-			spaceGUID, recursive, async := fakeClient.DeleteSpaceArgsForCall(0)
+			Expect(fakeSpaceClient.DeleteCallCount()).Should(Equal(1))
+			_, spaceGUID := fakeSpaceClient.DeleteArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("space3-guid"))
-			Expect(recursive).Should(Equal(true))
-			Expect(async).Should(Equal(false))
+			// Expect(recursive).Should(Equal(true))
+			// Expect(async).Should(Equal(false))
 		})
 
 		It("should peek", func() {
 			spaceManager.Peek = true
-			spaces := []cfclient.Space{
+			spaces := []*resource.Space{
 				{
 					Name: "space1",
-					Guid: "space1-guid",
+					GUID: "space1-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "test2-org-guid",
+							},
+						},
+					},
 				},
 				{
 					Name: "space2",
-					Guid: "space2-guid",
+					GUID: "space2-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "test2-org-guid",
+							},
+						},
+					},
 				},
 				{
 					Name: "space3",
-					Guid: "space3-guid",
+					GUID: "space3-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "test2-org-guid",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.FindOrgReturns(cfclient.Org{
 				Name: "test2",
 				Guid: "test2-org-guid",
 			}, nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			fakeClient.DeleteSpaceReturns(nil)
 			Expect(spaceManager.DeleteSpaces()).Should(Succeed())
-			Expect(fakeClient.DeleteSpaceCallCount()).Should(Equal(0))
+			Expect(fakeSpaceClient.DeleteCallCount()).Should(Equal(0))
 		})
 	})
 })

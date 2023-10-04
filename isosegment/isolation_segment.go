@@ -349,7 +349,11 @@ func (u *Updater) UpdateSpaces() error {
 		if err != nil {
 			return err
 		}
-		if space.IsolationSegmentGuid != isolationSegmentGUID {
+		spaceIsoSegGUID, err := u.SpaceManager.GetSpaceIsolationSegmentGUID(space)
+		if err != nil {
+			return err
+		}
+		if spaceIsoSegGUID != isolationSegmentGUID {
 			if u.Peek {
 				if sc.IsoSegment != "" {
 					lo.G.Infof("[dry-run]: set isolation segment for space %s to %s (org %s)", sc.Space, sc.IsoSegment, sc.Org)
@@ -360,13 +364,13 @@ func (u *Updater) UpdateSpaces() error {
 			}
 			if sc.IsoSegment != "" {
 				lo.G.Infof("set isolation segment for space %s to %s (org %s)", sc.Space, sc.IsoSegment, sc.Org)
-				err = u.Client.IsolationSegmentForSpace(space.Guid, isolationSegmentGUID)
+				err = u.Client.IsolationSegmentForSpace(space.GUID, isolationSegmentGUID)
 				if err != nil {
 					return err
 				}
 			} else {
 				lo.G.Infof("reset isolation segment for space %s (org %s)", sc.Space, sc.Org)
-				err = u.Client.ResetIsolationSegmentForSpace(space.Guid)
+				err = u.Client.ResetIsolationSegmentForSpace(space.GUID)
 				if err != nil {
 					return err
 				}

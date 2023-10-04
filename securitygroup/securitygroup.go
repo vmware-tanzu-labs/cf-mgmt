@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 
 	"github.com/pkg/errors"
@@ -49,7 +48,7 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 		if err != nil {
 			return errors.Wrapf(err, "Finding org/space %s/%s", input.Org, input.Space)
 		}
-		existingSpaceSecurityGroups, err := m.ListSpaceSecurityGroups(space.Guid)
+		existingSpaceSecurityGroups, err := m.ListSpaceSecurityGroups(space.GUID)
 		if err != nil {
 			return errors.Wrapf(err, "Unabled to list existing space security groups for org/space [%s/%s]", input.Org, input.Space)
 		}
@@ -309,20 +308,20 @@ func (m *DefaultManager) updateSecurityRulesWithDefaults(rules []resource.Securi
 	return updatedRules
 }
 
-func (m *DefaultManager) isSecurityGroupAssignedToSpace(space cfclient.Space, secGroup *resource.SecurityGroup) bool {
+func (m *DefaultManager) isSecurityGroupAssignedToSpace(space *resource.Space, secGroup *resource.SecurityGroup) bool {
 	for _, spaceRelation := range secGroup.Relationships.RunningSpaces.Data {
-		if spaceRelation.GUID == space.Guid {
+		if spaceRelation.GUID == space.GUID {
 			return true
 		}
 	}
 	for _, spaceRelation := range secGroup.Relationships.StagingSpaces.Data {
-		if spaceRelation.GUID == space.Guid {
+		if spaceRelation.GUID == space.GUID {
 			return true
 		}
 	}
 	return false
 }
-func (m *DefaultManager) AssignSecurityGroupToSpace(space cfclient.Space, secGroup *resource.SecurityGroup) error {
+func (m *DefaultManager) AssignSecurityGroupToSpace(space *resource.Space, secGroup *resource.SecurityGroup) error {
 	if m.isSecurityGroupAssignedToSpace(space, secGroup) {
 		lo.G.Debugf("Security group %s is already assigned to space %s, skipping", secGroup.Name, space.Name)
 		return nil
@@ -332,11 +331,11 @@ func (m *DefaultManager) AssignSecurityGroupToSpace(space cfclient.Space, secGro
 		return nil
 	}
 	lo.G.Infof("assigning security group %s to space %s", secGroup.Name, space.Name)
-	_, err := m.Client.BindRunningSecurityGroup(context.Background(), secGroup.GUID, []string{space.Guid})
+	_, err := m.Client.BindRunningSecurityGroup(context.Background(), secGroup.GUID, []string{space.GUID})
 	return err
 }
 
-func (m *DefaultManager) UnassignSecurityGroupToSpace(space cfclient.Space, secGroup *resource.SecurityGroup) error {
+func (m *DefaultManager) UnassignSecurityGroupToSpace(space *resource.Space, secGroup *resource.SecurityGroup) error {
 	if !m.isSecurityGroupAssignedToSpace(space, secGroup) {
 		lo.G.Debugf("Security group %s isn't assigned to space %s, skipping", secGroup.Name, space.Name)
 		return nil
@@ -346,7 +345,7 @@ func (m *DefaultManager) UnassignSecurityGroupToSpace(space cfclient.Space, secG
 		return nil
 	}
 	lo.G.Infof("unassigning security group %s to space %s", secGroup.Name, space.Name)
-	return m.Client.UnBindRunningSecurityGroup(context.Background(), secGroup.GUID, space.Guid)
+	return m.Client.UnBindRunningSecurityGroup(context.Background(), secGroup.GUID, space.GUID)
 }
 
 func (m *DefaultManager) removeDestinationWhitespace(rules []*resource.SecurityGroupRule) []*resource.SecurityGroupRule {
