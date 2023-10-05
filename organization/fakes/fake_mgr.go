@@ -4,7 +4,6 @@ package fakes
 import (
 	"sync"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/vmwarepivotallabs/cf-mgmt/organization"
 )
 
@@ -40,20 +39,6 @@ type FakeManager struct {
 	}
 	renameOrgReturnsOnCall map[int]struct {
 		result1 error
-	}
-	UpdateOrgStub        func(string, cfclient.OrgRequest) (cfclient.Org, error)
-	updateOrgMutex       sync.RWMutex
-	updateOrgArgsForCall []struct {
-		arg1 string
-		arg2 cfclient.OrgRequest
-	}
-	updateOrgReturns struct {
-		result1 cfclient.Org
-		result2 error
-	}
-	updateOrgReturnsOnCall map[int]struct {
-		result1 cfclient.Org
-		result2 error
 	}
 	UpdateOrgsMetadataStub        func() error
 	updateOrgsMetadataMutex       sync.RWMutex
@@ -237,71 +222,6 @@ func (fake *FakeManager) RenameOrgReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateOrg(arg1 string, arg2 cfclient.OrgRequest) (cfclient.Org, error) {
-	fake.updateOrgMutex.Lock()
-	ret, specificReturn := fake.updateOrgReturnsOnCall[len(fake.updateOrgArgsForCall)]
-	fake.updateOrgArgsForCall = append(fake.updateOrgArgsForCall, struct {
-		arg1 string
-		arg2 cfclient.OrgRequest
-	}{arg1, arg2})
-	stub := fake.UpdateOrgStub
-	fakeReturns := fake.updateOrgReturns
-	fake.recordInvocation("UpdateOrg", []interface{}{arg1, arg2})
-	fake.updateOrgMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeManager) UpdateOrgCallCount() int {
-	fake.updateOrgMutex.RLock()
-	defer fake.updateOrgMutex.RUnlock()
-	return len(fake.updateOrgArgsForCall)
-}
-
-func (fake *FakeManager) UpdateOrgCalls(stub func(string, cfclient.OrgRequest) (cfclient.Org, error)) {
-	fake.updateOrgMutex.Lock()
-	defer fake.updateOrgMutex.Unlock()
-	fake.UpdateOrgStub = stub
-}
-
-func (fake *FakeManager) UpdateOrgArgsForCall(i int) (string, cfclient.OrgRequest) {
-	fake.updateOrgMutex.RLock()
-	defer fake.updateOrgMutex.RUnlock()
-	argsForCall := fake.updateOrgArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeManager) UpdateOrgReturns(result1 cfclient.Org, result2 error) {
-	fake.updateOrgMutex.Lock()
-	defer fake.updateOrgMutex.Unlock()
-	fake.UpdateOrgStub = nil
-	fake.updateOrgReturns = struct {
-		result1 cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeManager) UpdateOrgReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
-	fake.updateOrgMutex.Lock()
-	defer fake.updateOrgMutex.Unlock()
-	fake.UpdateOrgStub = nil
-	if fake.updateOrgReturnsOnCall == nil {
-		fake.updateOrgReturnsOnCall = make(map[int]struct {
-			result1 cfclient.Org
-			result2 error
-		})
-	}
-	fake.updateOrgReturnsOnCall[i] = struct {
-		result1 cfclient.Org
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeManager) UpdateOrgsMetadata() error {
 	fake.updateOrgsMetadataMutex.Lock()
 	ret, specificReturn := fake.updateOrgsMetadataReturnsOnCall[len(fake.updateOrgsMetadataArgsForCall)]
@@ -364,8 +284,6 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.deleteOrgsMutex.RUnlock()
 	fake.renameOrgMutex.RLock()
 	defer fake.renameOrgMutex.RUnlock()
-	fake.updateOrgMutex.RLock()
-	defer fake.updateOrgMutex.RUnlock()
 	fake.updateOrgsMetadataMutex.RLock()
 	defer fake.updateOrgsMetadataMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

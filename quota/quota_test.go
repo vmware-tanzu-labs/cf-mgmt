@@ -3,13 +3,11 @@ package quota_test
 import (
 	"errors"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
-	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organization/fakes"
 	orgreaderfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
 	"github.com/vmwarepivotallabs/cf-mgmt/quota"
 	quotafakes "github.com/vmwarepivotallabs/cf-mgmt/quota/fakes"
@@ -20,7 +18,6 @@ import (
 var _ = Describe("given QuotaManager", func() {
 	var (
 		fakeReader           *configfakes.FakeReader
-		fakeOrgMgr           *orgfakes.FakeManager
 		fakeOrgReader        *orgreaderfakes.FakeReader
 		fakeSpaceMgr         *spacefakes.FakeManager
 		quotaMgr             *quota.Manager
@@ -30,7 +27,6 @@ var _ = Describe("given QuotaManager", func() {
 
 	BeforeEach(func() {
 		fakeReader = new(configfakes.FakeReader)
-		fakeOrgMgr = new(orgfakes.FakeManager)
 		fakeOrgReader = new(orgreaderfakes.FakeReader)
 		fakeSpaceMgr = new(spacefakes.FakeManager)
 		fakeSpaceQuotaClient = new(quotafakes.FakeCFSpaceQuotaClient)
@@ -39,7 +35,6 @@ var _ = Describe("given QuotaManager", func() {
 			Cfg:              fakeReader,
 			SpaceQuoteClient: fakeSpaceQuotaClient,
 			OrgQuoteClient:   fakeOrgQuotaClient,
-			OrgMgr:           fakeOrgMgr,
 			OrgReader:        fakeOrgReader,
 			SpaceMgr:         fakeSpaceMgr,
 			Peek:             false,
@@ -138,10 +133,16 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{
-				Name:             "space1",
-				Guid:             "space1-guid",
-				OrganizationGuid: "org1-guid",
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "space1",
+				GUID: "space1-guid",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+				},
 			}, nil)
 		})
 		It("should create a quota and assign it", func() {
@@ -181,8 +182,14 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}, nil)
 			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{Name: "space1", GUID: "space-quota-guid"}, nil)
-			fakeOrgReader.FindOrgReturns(cfclient.Org{
-				QuotaDefinitionGuid: "org1-quota-guid",
+			fakeOrgReader.FindOrgReturns(&resource.Organization{
+				Relationships: resource.QuotaRelationship{
+					Quota: resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-quota-guid",
+						},
+					},
+				},
 			}, nil)
 			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
 				{
@@ -249,11 +256,21 @@ var _ = Describe("given QuotaManager", func() {
 		})
 
 		It("should update a quota and not assign it", func() {
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{
-				Name:                "space1",
-				Guid:                "space1-guid",
-				OrganizationGuid:    "org1-guid",
-				QuotaDefinitionGuid: "space-quota-guid",
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "space1",
+				GUID: "space1-guid",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+					Quota: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "space-quota-guid",
+						},
+					},
+				},
 			}, nil)
 			fakeSpaceQuotaClient.ListAllReturns([]*resource.SpaceQuota{
 				{
@@ -280,11 +297,20 @@ var _ = Describe("given QuotaManager", func() {
 		})
 
 		It("should not update a quota or assign it", func() {
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{
-				Name:                "space1",
-				Guid:                "space1-guid",
-				OrganizationGuid:    "org1-guid",
-				QuotaDefinitionGuid: "space-quota-guid",
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "space1",
+				GUID: "space1-guid",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+					Quota: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "space-quota-guid",
+						}},
+				},
 			}, nil)
 			fakeSpaceQuotaClient.ListAllReturns([]*resource.SpaceQuota{
 				{
@@ -374,7 +400,7 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(err).ShouldNot(BeNil())
 		})
 		It("Should error finding space", func() {
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{}, errors.New("error"))
+			fakeSpaceMgr.FindSpaceReturns(nil, errors.New("error"))
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(BeNil())
 		})
@@ -417,7 +443,7 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}
 			fakeReader.GetOrgConfigsReturns(orgConfigs, nil)
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{Name: "org1", GUID: "org-guid"}, nil)
 		})
 		It("should create a quota and assign it", func() {
 			fakeOrgQuotaClient.CreateReturns(&resource.OrganizationQuota{Name: "org1", GUID: "org-quota-guid"}, nil)
@@ -426,10 +452,10 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(fakeOrgQuotaClient.CreateCallCount()).Should(Equal(1))
 			_, quotaRequest := fakeOrgQuotaClient.CreateArgsForCall(0)
 			Expect(*quotaRequest.Name).Should(Equal("org1"))
-			Expect(fakeOrgMgr.UpdateOrgCallCount()).Should(Equal(1))
-			orgGUID, orgRequest := fakeOrgMgr.UpdateOrgArgsForCall(0)
-			Expect(orgGUID).Should(Equal("org-guid"))
-			Expect(orgRequest.QuotaDefinitionGuid).Should(Equal("org-quota-guid"))
+			Expect(fakeOrgQuotaClient.ApplyCallCount()).Should(Equal(1))
+			_, orgGUID, orgRequest := fakeOrgQuotaClient.ApplyArgsForCall(0)
+			Expect(orgGUID).Should(Equal("org-quota-guid"))
+			Expect(orgRequest).Should(ContainElement("org-guid"))
 		})
 
 		It("should error creating a quota", func() {
@@ -458,14 +484,23 @@ var _ = Describe("given QuotaManager", func() {
 			_, quotaGUID, quotaRequest := fakeOrgQuotaClient.UpdateArgsForCall(0)
 			Expect(quotaGUID).Should(Equal("org-quota-guid"))
 			Expect(*quotaRequest.Name).Should(Equal("org1"))
-			Expect(fakeOrgMgr.UpdateOrgCallCount()).Should(Equal(1))
-			orgGUID, orgRequest := fakeOrgMgr.UpdateOrgArgsForCall(0)
-			Expect(orgGUID).Should(Equal("org-guid"))
-			Expect(orgRequest.QuotaDefinitionGuid).Should(Equal("org-quota-guid"))
+			Expect(fakeOrgQuotaClient.ApplyCallCount()).Should(Equal(1))
+			_, orgGUID, orgRequest := fakeOrgQuotaClient.ApplyArgsForCall(0)
+			Expect(orgGUID).Should(Equal("org-quota-guid"))
+			Expect(orgRequest).Should(ContainElement("org-guid"))
 		})
 
 		It("should update a quota and not assign it", func() {
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org-guid", QuotaDefinitionGuid: "org-quota-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{
+				Name: "org1", GUID: "org-guid",
+				Relationships: resource.QuotaRelationship{
+					Quota: resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org-quota-guid",
+						},
+					},
+				},
+			}, nil)
 			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
 				{
 					Name: "org1",
@@ -491,11 +526,20 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(quotaRequest.Routes.TotalReservedPorts).Should(BeNil())
 			Expect(quotaRequest.Services.TotalServiceKeys).Should(BeNil())
 			Expect(*quotaRequest.Services.PaidServicesAllowed).Should(BeTrue())
-			Expect(fakeOrgMgr.UpdateOrgCallCount()).Should(Equal(0))
+			Expect(fakeOrgQuotaClient.ApplyCallCount()).Should(Equal(0))
 		})
 
 		It("should not update a quota or assign it", func() {
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org-guid", QuotaDefinitionGuid: "org-quota-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{
+				Name: "org1", GUID: "org-guid",
+				Relationships: resource.QuotaRelationship{
+					Quota: resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org-quota-guid",
+						},
+					},
+				},
+			}, nil)
 			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
 				{
 					Name: "org1",
@@ -524,11 +568,20 @@ var _ = Describe("given QuotaManager", func() {
 			err := quotaMgr.CreateOrgQuotas()
 			Expect(err).Should(BeNil())
 			Expect(fakeOrgQuotaClient.UpdateCallCount()).Should(Equal(0))
-			Expect(fakeOrgMgr.UpdateOrgCallCount()).Should(Equal(0))
+			Expect(fakeOrgQuotaClient.ApplyCallCount()).Should(Equal(0))
 		})
 
 		It("should error updating quota", func() {
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org-guid", QuotaDefinitionGuid: "org-quota-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{
+				Name: "org1", GUID: "org-guid",
+				Relationships: resource.QuotaRelationship{
+					Quota: resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org-quota-guid",
+						},
+					},
+				},
+			}, nil)
 			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
 				{
 					Name: "org1",
@@ -542,11 +595,20 @@ var _ = Describe("given QuotaManager", func() {
 			err := quotaMgr.CreateOrgQuotas()
 			Expect(err).ShouldNot(BeNil())
 			Expect(fakeOrgQuotaClient.UpdateCallCount()).Should(Equal(1))
-			Expect(fakeOrgMgr.UpdateOrgCallCount()).Should(Equal(0))
+			Expect(fakeOrgQuotaClient.ApplyCallCount()).Should(Equal(0))
 		})
 
 		It("should error assigning quota", func() {
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org-guid", QuotaDefinitionGuid: "org-quota-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{
+				Name: "org1", GUID: "org-guid",
+				Relationships: resource.QuotaRelationship{
+					Quota: resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org-quota-guid",
+						},
+					},
+				},
+			}, nil)
 			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
 				{
 					Name: "org1",
@@ -557,21 +619,21 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}, nil)
 			fakeOrgQuotaClient.UpdateReturns(nil, nil)
-			fakeOrgMgr.UpdateOrgReturns(cfclient.Org{}, errors.New("error"))
+			fakeOrgQuotaClient.ApplyReturns(nil, errors.New("error"))
 			err := quotaMgr.CreateOrgQuotas()
 			Expect(err).ShouldNot(BeNil())
 			Expect(fakeOrgQuotaClient.UpdateCallCount()).Should(Equal(1))
 			_, quotaGUID, quotaRequest := fakeOrgQuotaClient.UpdateArgsForCall(0)
 			Expect(quotaGUID).Should(Equal("org-quota-guid2"))
 			Expect(*quotaRequest.Name).Should(Equal("org1"))
-			Expect(fakeOrgMgr.UpdateOrgCallCount()).Should(Equal(1))
+			Expect(fakeOrgQuotaClient.ApplyCallCount()).Should(Equal(1))
 		})
 		It("should peek create a quota and peek assign it", func() {
 			quotaMgr.Peek = true
 			err := quotaMgr.CreateOrgQuotas()
 			Expect(err).Should(BeNil())
 			Expect(fakeOrgQuotaClient.CreateCallCount()).Should(Equal(0))
-			Expect(fakeOrgMgr.UpdateOrgCallCount()).Should(Equal(0))
+			Expect(fakeOrgQuotaClient.ApplyCallCount()).Should(Equal(0))
 		})
 
 		It("Should error getting configs", func() {
@@ -580,7 +642,7 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(err).ShouldNot(BeNil())
 		})
 		It("Should error finding org", func() {
-			fakeOrgReader.FindOrgReturns(cfclient.Org{}, errors.New("error"))
+			fakeOrgReader.FindOrgReturns(&resource.Organization{}, errors.New("error"))
 			err := quotaMgr.CreateOrgQuotas()
 			Expect(err).ShouldNot(BeNil())
 		})
@@ -653,12 +715,12 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}, nil)
 			fakeOrgQuotaClient.CreateReturns(&resource.OrganizationQuota{GUID: "my-named-quota-guid", Name: "my-named-quota"}, nil)
-			fakeOrgReader.FindOrgReturns(cfclient.Org{Name: "test"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{Name: "test"}, nil)
 
 			err := quotaMgr.CreateOrgQuotas()
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeOrgQuotaClient.CreateCallCount()).Should(Equal(1))
-			Expect(fakeOrgMgr.UpdateOrgCallCount()).Should(Equal(1))
+			Expect(fakeOrgQuotaClient.ApplyCallCount()).Should(Equal(1))
 		})
 	})
 
@@ -678,7 +740,16 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}, nil)
 			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{GUID: "my-named-quota-guid", Name: "my-named-quota"}, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name: "test-space"}, nil)
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "test-space",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+				},
+			}, nil)
 
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(HaveOccurred())
@@ -697,7 +768,16 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}, nil)
 			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{GUID: "test-space-quota-guid", Name: "test-space"}, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name: "test-space"}, nil)
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "test-space",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+				},
+			}, nil)
 
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(HaveOccurred())
@@ -722,7 +802,7 @@ var _ = Describe("given QuotaManager", func() {
 				},
 			}, nil)
 			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{GUID: "my-named-quota-guid", Name: "my-named-quota"}, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{Name: "test-space"}, nil)
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{Name: "test-space"}, nil)
 
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(HaveOccurred())

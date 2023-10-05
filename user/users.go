@@ -517,16 +517,16 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 	lo.G.Debug("")
 	lo.G.Debug("")
 
-	managers, developers, auditors, supporters, err := m.ListSpaceUsersByRole(space.Guid)
+	managers, developers, auditors, supporters, err := m.ListSpaceUsersByRole(space.GUID)
 	if err != nil {
 		return err
 	}
 
 	if err = m.SyncUsers(UsersInput{
 		SpaceName:      space.Name,
-		SpaceGUID:      space.Guid,
+		SpaceGUID:      space.GUID,
 		OrgName:        input.Org,
-		OrgGUID:        space.OrganizationGuid,
+		OrgGUID:        space.Relationships.Organization.Data.GUID,
 		LdapGroupNames: input.GetDeveloperGroups(),
 		LdapUsers:      input.Developer.LDAPUsers,
 		Users:          input.Developer.Users,
@@ -543,8 +543,8 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 	if err = m.SyncUsers(
 		UsersInput{
 			SpaceName:      space.Name,
-			SpaceGUID:      space.Guid,
-			OrgGUID:        space.OrganizationGuid,
+			SpaceGUID:      space.GUID,
+			OrgGUID:        space.Relationships.Organization.Data.GUID,
 			OrgName:        input.Org,
 			LdapGroupNames: input.GetManagerGroups(),
 			LdapUsers:      input.Manager.LDAPUsers,
@@ -561,8 +561,8 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 	if err = m.SyncUsers(
 		UsersInput{
 			SpaceName:      space.Name,
-			SpaceGUID:      space.Guid,
-			OrgGUID:        space.OrganizationGuid,
+			SpaceGUID:      space.GUID,
+			OrgGUID:        space.Relationships.Organization.Data.GUID,
 			OrgName:        input.Org,
 			LdapGroupNames: input.GetAuditorGroups(),
 			LdapUsers:      input.Auditor.LDAPUsers,
@@ -579,9 +579,9 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 
 	if err = m.SyncUsers(UsersInput{
 		SpaceName:      space.Name,
-		SpaceGUID:      space.Guid,
+		SpaceGUID:      space.GUID,
 		OrgName:        input.Org,
-		OrgGUID:        space.OrganizationGuid,
+		OrgGUID:        space.Relationships.Organization.Data.GUID,
 		LdapGroupNames: input.GetSupporterGroups(),
 		LdapUsers:      input.Supporter.LDAPUsers,
 		Users:          input.Supporter.Users,
@@ -628,14 +628,14 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 		return err
 	}
 
-	_, managers, billingManagers, auditors, err := m.ListOrgUsersByRole(org.Guid)
+	_, managers, billingManagers, auditors, err := m.ListOrgUsersByRole(org.GUID)
 	if err != nil {
 		return err
 	}
 	err = m.SyncUsers(
 		UsersInput{
 			OrgName:        org.Name,
-			OrgGUID:        org.Guid,
+			OrgGUID:        org.GUID,
 			LdapGroupNames: input.GetBillingManagerGroups(),
 			LdapUsers:      input.BillingManager.LDAPUsers,
 			Users:          input.BillingManager.Users,
@@ -652,7 +652,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 
 	err = m.SyncUsers(UsersInput{
 		OrgName:        org.Name,
-		OrgGUID:        org.Guid,
+		OrgGUID:        org.GUID,
 		LdapGroupNames: input.GetAuditorGroups(),
 		LdapUsers:      input.Auditor.LDAPUsers,
 		Users:          input.Auditor.Users,
@@ -669,7 +669,7 @@ func (m *DefaultManager) updateOrgUsers(input *config.OrgConfig) error {
 
 	err = m.SyncUsers(UsersInput{
 		OrgName:        org.Name,
-		OrgGUID:        org.Guid,
+		OrgGUID:        org.GUID,
 		LdapGroupNames: input.GetManagerGroups(),
 		LdapUsers:      input.Manager.LDAPUsers,
 		Users:          input.Manager.Users,

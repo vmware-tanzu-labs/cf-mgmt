@@ -185,13 +185,13 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		lo.G.Infof("Processing org: %s ", orgName)
 		orgConfig := &config.OrgConfig{Org: orgName}
 		//Add users
-		err = im.addOrgUsers(orgConfig, org.Guid)
+		err = im.addOrgUsers(orgConfig, org.GUID)
 		if err != nil {
 			return err
 		}
 		//Add Quota definition if applicable
-		if org.QuotaDefinitionGuid != "" {
-			orgQuota, err := org.Quota()
+		if org.Relationships.Quota.Data != nil {
+			orgQuota, err := im.QuotaManager.GetOrgQuota(org.Relationships.Quota.Data.GUID)
 			if err != nil {
 				return err
 			}
@@ -200,15 +200,19 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 				orgConfig.NamedQuota = orgQuota.Name
 			}
 		}
-		if org.DefaultIsolationSegmentGuid != "" {
+		orgIsolationSegmentGUID, err := im.OrgReader.GetDefaultIsolationSegment(org)
+		if err != nil {
+			return err
+		}
+		if orgIsolationSegmentGUID != "" {
 			for _, isosegment := range isolationSegments {
-				if isosegment.GUID == org.DefaultIsolationSegmentGuid {
+				if isosegment.GUID == orgIsolationSegmentGUID {
 					orgConfig.DefaultIsoSegment = isosegment.Name
 				}
 			}
 		}
 
-		privatedomains, err := im.PrivateDomainManager.ListOrgSharedPrivateDomains(org.Guid)
+		privatedomains, err := im.PrivateDomainManager.ListOrgSharedPrivateDomains(org.GUID)
 		if err != nil {
 			return err
 		}
@@ -216,7 +220,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 			orgConfig.SharedPrivateDomains = append(orgConfig.SharedPrivateDomains, privatedomain)
 		}
 
-		privatedomains, err = im.PrivateDomainManager.ListOrgOwnedPrivateDomains(org.Guid)
+		privatedomains, err = im.PrivateDomainManager.ListOrgOwnedPrivateDomains(org.GUID)
 		if err != nil {
 			return err
 		}
@@ -234,7 +238,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		}
 		lo.G.Infof("Done creating org %s", orgConfig.Org)
 		if !skipSpaces {
-			err := im.processSpaces(orgConfig, org.Guid, excludedSpaces, isolationSegments, securityGroups)
+			err := im.processSpaces(orgConfig, org.GUID, excludedSpaces, isolationSegments, securityGroups)
 			if err != nil {
 				return errors.Wrapf(err, "Processing org %s", orgConfig.Org)
 			}
@@ -368,13 +372,13 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 
 		spaceConfig := &config.SpaceConfig{Org: orgConfig.Org, Space: spaceName, EnableUnassignSecurityGroup: true}
 		//Add users
-		err = im.addSpaceUsers(spaceConfig, orgSpace.Guid)
+		err = im.addSpaceUsers(spaceConfig, orgSpace.Relationships.Organization.Data.GUID)
 		if err != nil {
 			return err
 		}
 		//Add Quota definition if applicable
-		if orgSpace.QuotaDefinitionGuid != "" {
-			quota, err := im.QuotaManager.GetSpaceQuota(orgSpace.QuotaDefinitionGuid)
+		if orgSpace.Relationships.Quota.Data != nil {
+			quota, err := im.QuotaManager.GetSpaceQuota(orgSpace.Relationships.Quota.Data.GUID)
 			if err != nil {
 				return err
 			}
@@ -407,21 +411,28 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 			spaceConfig.AppTaskLimit = orgConfig.AppTaskLimit
 			spaceConfig.LogRateLimitBytesPerSecond = orgConfig.LogRateLimitBytesPerSecond
 		}
-
-		if orgSpace.IsolationSegmentGuid != "" {
+		isoSegGUID, err := im.SpaceManager.GetSpaceIsolationSegmentGUID(orgSpace)
+		if err != nil {
+			return err
+		}
+		if isoSegGUID != "" {
 			for _, isosegment := range isolationSegments {
-				if isosegment.GUID == orgSpace.IsolationSegmentGuid {
+				if isosegment.GUID == isoSegGUID {
 					spaceConfig.IsoSegment = isosegment.Name
 				}
 			}
 
 		}
-		if orgSpace.AllowSSH {
+		sshEnabled, err := im.SpaceManager.IsSSHEnabled(orgSpace)
+		if err != nil {
+			return err
+		}
+		if sshEnabled {
 			spaceConfig.AllowSSH = true
 		}
 
 		spaceSGName := fmt.Sprintf("%s-%s", orgConfig.Org, spaceName)
-		if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.Guid); err == nil {
+		if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.GUID); err == nil {
 			for securityGroupName := range spaceSGNames {
 				lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
 				if securityGroupName != spaceSGName {
@@ -447,7 +458,7 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 	return nil
 }
 
-func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs []cfclient.Org) error {
+func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs []*resource.Organization) error {
 	globalConfig.ServiceAccess = nil
 	serviceInfo, err := im.ServiceAccessManager.ListServiceInfo()
 	if err != nil {
@@ -493,16 +504,16 @@ func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs [
 	return nil
 }
 
-func (im *Manager) getOrgName(orgs []cfclient.Org, orgGUID string) (string, error) {
+func (im *Manager) getOrgName(orgs []*resource.Organization, orgGUID string) (string, error) {
 	for _, org := range orgs {
-		if org.Guid == orgGUID {
+		if org.GUID == orgGUID {
 			return org.Name, nil
 		}
 	}
 	return "", fmt.Errorf("no org exists for org guid %s", orgGUID)
 }
 
-func (im *Manager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
+func (im *Manager) doesSpaceExist(spaces []*resource.Space, spaceName string) bool {
 	for _, space := range spaces {
 		if space.Name == spaceName {
 			return true

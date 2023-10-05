@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -736,10 +737,16 @@ var _ = Describe("given UserSpaces", func() {
 						Org:   "test-org",
 					},
 				}, nil)
-				spaceFake.FindSpaceReturns(cfclient.Space{
-					Name:             "test-space",
-					OrganizationGuid: "test-org-guid",
-					Guid:             "test-space-guid",
+				spaceFake.FindSpaceReturns(&resource.Space{
+					Name: "test-space",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "test-org-guid",
+							},
+						},
+					},
+					GUID: "test-space-guid",
 				}, nil)
 				userManager.LdapConfig = &config.LdapConfig{Enabled: false}
 				err := userManager.UpdateSpaceUsers()
@@ -757,9 +764,9 @@ var _ = Describe("given UserSpaces", func() {
 						Org: "test-org",
 					},
 				}, nil)
-				orgFake.FindOrgReturns(cfclient.Org{
+				orgFake.FindOrgReturns(&resource.Organization{
 					Name: "test-org",
-					Guid: "test-org-guid",
+					GUID: "test-org-guid",
 				}, nil)
 				userManager.LdapConfig = &config.LdapConfig{Enabled: false}
 				err := userManager.UpdateOrgUsers()

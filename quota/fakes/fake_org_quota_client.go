@@ -11,6 +11,21 @@ import (
 )
 
 type FakeCFOrgQuotaClient struct {
+	ApplyStub        func(context.Context, string, []string) ([]string, error)
+	applyMutex       sync.RWMutex
+	applyArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 []string
+	}
+	applyReturns struct {
+		result1 []string
+		result2 error
+	}
+	applyReturnsOnCall map[int]struct {
+		result1 []string
+		result2 error
+	}
 	CreateStub        func(context.Context, *resource.OrganizationQuotaCreateOrUpdate) (*resource.OrganizationQuota, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
@@ -22,6 +37,20 @@ type FakeCFOrgQuotaClient struct {
 		result2 error
 	}
 	createReturnsOnCall map[int]struct {
+		result1 *resource.OrganizationQuota
+		result2 error
+	}
+	GetStub        func(context.Context, string) (*resource.OrganizationQuota, error)
+	getMutex       sync.RWMutex
+	getArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	getReturns struct {
+		result1 *resource.OrganizationQuota
+		result2 error
+	}
+	getReturnsOnCall map[int]struct {
 		result1 *resource.OrganizationQuota
 		result2 error
 	}
@@ -56,6 +85,77 @@ type FakeCFOrgQuotaClient struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeCFOrgQuotaClient) Apply(arg1 context.Context, arg2 string, arg3 []string) ([]string, error) {
+	var arg3Copy []string
+	if arg3 != nil {
+		arg3Copy = make([]string, len(arg3))
+		copy(arg3Copy, arg3)
+	}
+	fake.applyMutex.Lock()
+	ret, specificReturn := fake.applyReturnsOnCall[len(fake.applyArgsForCall)]
+	fake.applyArgsForCall = append(fake.applyArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 []string
+	}{arg1, arg2, arg3Copy})
+	stub := fake.ApplyStub
+	fakeReturns := fake.applyReturns
+	fake.recordInvocation("Apply", []interface{}{arg1, arg2, arg3Copy})
+	fake.applyMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCFOrgQuotaClient) ApplyCallCount() int {
+	fake.applyMutex.RLock()
+	defer fake.applyMutex.RUnlock()
+	return len(fake.applyArgsForCall)
+}
+
+func (fake *FakeCFOrgQuotaClient) ApplyCalls(stub func(context.Context, string, []string) ([]string, error)) {
+	fake.applyMutex.Lock()
+	defer fake.applyMutex.Unlock()
+	fake.ApplyStub = stub
+}
+
+func (fake *FakeCFOrgQuotaClient) ApplyArgsForCall(i int) (context.Context, string, []string) {
+	fake.applyMutex.RLock()
+	defer fake.applyMutex.RUnlock()
+	argsForCall := fake.applyArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeCFOrgQuotaClient) ApplyReturns(result1 []string, result2 error) {
+	fake.applyMutex.Lock()
+	defer fake.applyMutex.Unlock()
+	fake.ApplyStub = nil
+	fake.applyReturns = struct {
+		result1 []string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFOrgQuotaClient) ApplyReturnsOnCall(i int, result1 []string, result2 error) {
+	fake.applyMutex.Lock()
+	defer fake.applyMutex.Unlock()
+	fake.ApplyStub = nil
+	if fake.applyReturnsOnCall == nil {
+		fake.applyReturnsOnCall = make(map[int]struct {
+			result1 []string
+			result2 error
+		})
+	}
+	fake.applyReturnsOnCall[i] = struct {
+		result1 []string
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeCFOrgQuotaClient) Create(arg1 context.Context, arg2 *resource.OrganizationQuotaCreateOrUpdate) (*resource.OrganizationQuota, error) {
@@ -118,6 +218,71 @@ func (fake *FakeCFOrgQuotaClient) CreateReturnsOnCall(i int, result1 *resource.O
 		})
 	}
 	fake.createReturnsOnCall[i] = struct {
+		result1 *resource.OrganizationQuota
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFOrgQuotaClient) Get(arg1 context.Context, arg2 string) (*resource.OrganizationQuota, error) {
+	fake.getMutex.Lock()
+	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
+	fake.getArgsForCall = append(fake.getArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.GetStub
+	fakeReturns := fake.getReturns
+	fake.recordInvocation("Get", []interface{}{arg1, arg2})
+	fake.getMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCFOrgQuotaClient) GetCallCount() int {
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
+	return len(fake.getArgsForCall)
+}
+
+func (fake *FakeCFOrgQuotaClient) GetCalls(stub func(context.Context, string) (*resource.OrganizationQuota, error)) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = stub
+}
+
+func (fake *FakeCFOrgQuotaClient) GetArgsForCall(i int) (context.Context, string) {
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
+	argsForCall := fake.getArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeCFOrgQuotaClient) GetReturns(result1 *resource.OrganizationQuota, result2 error) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = nil
+	fake.getReturns = struct {
+		result1 *resource.OrganizationQuota
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCFOrgQuotaClient) GetReturnsOnCall(i int, result1 *resource.OrganizationQuota, result2 error) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = nil
+	if fake.getReturnsOnCall == nil {
+		fake.getReturnsOnCall = make(map[int]struct {
+			result1 *resource.OrganizationQuota
+			result2 error
+		})
+	}
+	fake.getReturnsOnCall[i] = struct {
 		result1 *resource.OrganizationQuota
 		result2 error
 	}{result1, result2}
@@ -257,8 +422,12 @@ func (fake *FakeCFOrgQuotaClient) UpdateReturnsOnCall(i int, result1 *resource.O
 func (fake *FakeCFOrgQuotaClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.applyMutex.RLock()
+	defer fake.applyMutex.RUnlock()
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
 	fake.listAllMutex.RLock()
 	defer fake.listAllMutex.RUnlock()
 	fake.updateMutex.RLock()

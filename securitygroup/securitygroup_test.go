@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 
 	. "github.com/onsi/ginkgo"
@@ -152,10 +151,16 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
 				Name: "space1",
-				Guid: "space1-guid",
-				//OrganizationGUID: "org1-guid",
+				GUID: "space1-guid",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+				},
 			}, nil)
 		})
 
@@ -495,7 +500,7 @@ var _ = Describe("given Security Group Manager", func() {
 			Expect(err).Should(HaveOccurred())
 		})
 		It("Should error returning space", func() {
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{}, errors.New("error"))
+			fakeSpaceMgr.FindSpaceReturns(nil, errors.New("error"))
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).Should(HaveOccurred())
 		})

@@ -115,16 +115,16 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool) (*CFMgmt
 		return nil, err
 	}
 
-	cfMgmt.OrgReader = organizationreader.NewReader(client, cfg, peek)
-	cfMgmt.SpaceManager = space.NewManager(client, cfMgmt.UAAManager, cfMgmt.OrgReader, cfg, peek)
-	cfMgmt.OrgManager = organization.NewManager(client, cfMgmt.OrgReader, cfMgmt.SpaceManager, cfg, peek)
+	cfMgmt.OrgReader = organizationreader.NewReader(client, v3client.Organizations, cfg, peek)
+	cfMgmt.SpaceManager = space.NewManager(v3client.Spaces, v3client.SpaceFeatures, cfMgmt.UAAManager, cfMgmt.OrgReader, cfg, peek)
+	cfMgmt.OrgManager = organization.NewManager(v3client.Organizations, cfMgmt.OrgReader, cfg, peek)
 	userManager, err := user.NewManager(client, cfg, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.UAAManager, peek)
 	if err != nil {
 		return nil, err
 	}
 	cfMgmt.UserManager = userManager
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(v3client.SecurityGroups, cfMgmt.SpaceManager, cfg, peek)
-	cfMgmt.QuotaManager = quota.NewManager(v3client.SpaceQuotas, v3client.OrganizationQuotas, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfMgmt.OrgManager, cfg, peek)
+	cfMgmt.QuotaManager = quota.NewManager(v3client.SpaceQuotas, v3client.OrganizationQuotas, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfg, peek)
 	cfMgmt.PrivateDomainManager = privatedomain.NewManager(client, cfMgmt.OrgReader, cfg, peek)
 	if isoSegmentManager, err := isosegment.NewManager(client, cfg, cfMgmt.OrgReader, cfMgmt.SpaceManager, peek); err == nil {
 		cfMgmt.IsolationSegmentManager = isoSegmentManager
