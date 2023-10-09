@@ -296,7 +296,7 @@ jobs:
     params:
       action: create
       duration: 24h
-      resource: #@ 'environment-av-' + v["version_slug"]
+      resource: #@ 'tas-' + v["version_slug"] +'-env'
       timeout: 6h
 
 - name: #@ 'test-against-tas-' + v["version_slug"]
