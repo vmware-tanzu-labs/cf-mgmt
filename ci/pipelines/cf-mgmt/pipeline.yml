@@ -45,11 +45,11 @@ groups:
   jobs:
   - claim-cf
   - test
-  - unclaim-cf
+  - release-cf
 #@ for v in data.values.tas_versions:
   - #@ 'claim-tas-' + v["version_slug"]
   - #@ 'test-against-tas-' + v["version_slug"]
-  - #@ 'unclaim-tas-' + v["version_slug"]
+  - #@ 'release-tas-' + v["version_slug"]
 #@ end
   - merge
   - lint-pipeline
@@ -259,7 +259,7 @@ jobs:
       merge: false
       status: failure
 
-- name: unclaim-cf
+- name: release-cf
   plan:
   - get: cf-deployment-env
     trigger: true
@@ -276,10 +276,10 @@ jobs:
   - get: pull-request
     trigger: true
     passed:
-    - unclaim-cf
+    - release-cf
     - lint-pipeline
 #@ for v in data.values.tas_versions:
-    - #@ 'unclaim-tas-' + v["version_slug"]
+    - #@ 'release-tas-' + v["version_slug"]
 #@ end
   - put: pull-request
     params:
@@ -315,7 +315,7 @@ jobs:
       input_mapping:
         env: #@ 'tas-' + v["version_slug"] +'-env'
 
-- name: #@ 'unclaim-tas-' + v["version_slug"]
+- name: #@ 'release-tas-' + v["version_slug"]
   plan:
   - get: pull-request
     passed:
