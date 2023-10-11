@@ -125,8 +125,9 @@ resources:
     tag: git
 
 #@ for/end v in data.values.tas_versions:
-- icon: pool
-  name: #@ 'tas-' + v["version_slug"] + '-env'
+- name: #@ 'tas-' + v["version_slug"] + '-env'
+  type: shepherd
+  icon: pool
   source:
     url: https://v2.shepherd.run
     service-account-key: *shepherd_account_key
@@ -136,7 +137,13 @@ resources:
       pool:
         namespace: official
         name: #@ v["pool_name"]
-  type: shepherd
+    output:
+      json-file:
+        - path: "pcf.yml"
+          fields:
+            password: "output.ops_manager.password"
+            target: "output.ops_manager.url"
+            username: "output.ops_manager.username"
 
 - name: source
   type: git
@@ -224,12 +231,13 @@ jobs:
     resource: pull-request
     trigger: true
   - put: cf-deployment-env
+    timeout: 6h
     attempts: *number_of_claim_env_retries
     params:
       action: create
       duration: 24h
       resource: env-cf-deployment
-    timeout: 6h
+      timeout: 6h
 
 - name: test
   plan:
@@ -292,6 +300,7 @@ jobs:
   - get: pull-request
     trigger: true
   - put: #@ 'tas-' + v["version_slug"] +'-env'
+    timeout: 6h
     attempts: *number_of_claim_env_retries
     params:
       action: create
