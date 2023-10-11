@@ -8,7 +8,7 @@ code.cloudfoundry.org/routing-api/models
 # code.cloudfoundry.org/trace-logger v0.0.0-20170119230301-107ef08a939d
 ## explicit
 code.cloudfoundry.org/trace-logger
-# github.com/Azure/go-ntlmssp v0.0.0-20220621081337-cb9428e4ac1e
+# github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358
 ## explicit
 github.com/Azure/go-ntlmssp
 # github.com/Masterminds/semver v1.5.0
@@ -27,10 +27,10 @@ github.com/cloudfoundry-community/go-uaa/passwordcredentials
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
-# github.com/go-asn1-ber/asn1-ber v1.5.4
+# github.com/go-asn1-ber/asn1-ber v1.5.5
 ## explicit; go 1.13
 github.com/go-asn1-ber/asn1-ber
-# github.com/go-ldap/ldap/v3 v3.4.4
+# github.com/go-ldap/ldap/v3 v3.4.6
 ## explicit; go 1.14
 github.com/go-ldap/ldap/v3
 # github.com/golang/protobuf v1.5.3
@@ -43,6 +43,9 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
+# github.com/google/uuid v1.3.1
+## explicit
+github.com/google/uuid
 # github.com/gopherjs/gopherjs v0.0.0-20210803090616-8f023c250c89
 ## explicit; go 1.16
 # github.com/jessevdk/go-flags v1.5.0
@@ -119,7 +122,7 @@ github.com/vito/go-sse/sse
 # github.com/xchapter7x/lo v0.0.0-20160804235750-e33b245fc7a8
 ## explicit
 github.com/xchapter7x/lo
-# golang.org/x/crypto v0.12.0
+# golang.org/x/crypto v0.13.0
 ## explicit; go 1.17
 golang.org/x/crypto/md4
 # golang.org/x/net v0.14.0
@@ -134,10 +137,10 @@ golang.org/x/net/html/charset
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.11.0
+# golang.org/x/sys v0.12.0
 ## explicit; go 1.17
 golang.org/x/sys/unix
-# golang.org/x/text v0.12.0
+# golang.org/x/text v0.13.0
 ## explicit; go 1.17
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
