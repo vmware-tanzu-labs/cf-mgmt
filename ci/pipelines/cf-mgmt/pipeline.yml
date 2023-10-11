@@ -64,6 +64,7 @@ groups:
 
 resource_types:
 - name: shepherd
+  tag: v1
   source:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
   type: registry-image
