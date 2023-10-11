@@ -1,9 +1,9 @@
-TAS version | Compatible?
+TAS version | Compatible
 --- | ---
-4.0 | ![CI](https://runway-ci.eng.vmware.com/api/v1/teams/cryogenics/pipelines/cf-mgmt/jobs/test-against-tas-4-0/badge)
-3.0 | ![CI](https://runway-ci.eng.vmware.com/api/v1/teams/cryogenics/pipelines/cf-mgmt/jobs/test-against-tas-3-0/badge)
-2.13 | ![CI](https://runway-ci.eng.vmware.com/api/v1/teams/cryogenics/pipelines/cf-mgmt/jobs/test-against-tas-2-13/badge)
-2.11 | ![CI](https://runway-ci.eng.vmware.com/api/v1/teams/cryogenics/pipelines/cf-mgmt/jobs/test-against-tas-2-11/badge)
+4.0
+3.0
+2.13
+2.11
 
 # Cloud Foundry Management (cf-mgmt)
 
