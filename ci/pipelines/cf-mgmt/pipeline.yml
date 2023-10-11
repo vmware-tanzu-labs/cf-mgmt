@@ -64,8 +64,8 @@ groups:
 
 resource_types:
 - name: shepherd
-  tag: v1
   source:
+    tag: v1
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
   type: registry-image
 
@@ -278,7 +278,7 @@ jobs:
   - put: cf-deployment-env
     params:
       action: release
-      resource: cf-environment-env
+      resource: cf-deployment-env
 
 - name: merge
   plan:
