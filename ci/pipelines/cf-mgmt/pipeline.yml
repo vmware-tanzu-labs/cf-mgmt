@@ -54,6 +54,7 @@ var_sources:
     auth_params: *cerberus
     url: *cerberus_url
     path_prefix: secret
+    lookup_templates: ["/{{.Pipeline}}/{{.Secret}}", "/{{.Secret}}"]
 groups:
 - name: test
   jobs:
