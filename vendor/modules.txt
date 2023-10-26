@@ -30,7 +30,7 @@ github.com/fsnotify/fsnotify
 # github.com/go-asn1-ber/asn1-ber v1.5.5
 ## explicit; go 1.13
 github.com/go-asn1-ber/asn1-ber
-# github.com/go-ldap/ldap/v3 v3.4.6
+# github.com/go-ldap/ldap/v3 v3.4.4
 ## explicit; go 1.14
 github.com/go-ldap/ldap/v3
 # github.com/golang/protobuf v1.5.3
@@ -45,7 +45,6 @@ github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
 # github.com/google/uuid v1.3.1
 ## explicit
-github.com/google/uuid
 # github.com/gopherjs/gopherjs v0.0.0-20210803090616-8f023c250c89
 ## explicit; go 1.16
 # github.com/jessevdk/go-flags v1.5.0
