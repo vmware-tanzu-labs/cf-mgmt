@@ -69,5 +69,6 @@ jobs:
         with:
           body: "Release ${{ env.VERSION }}"
           files: dist/*
+          tag_name: ${{ env.VERSION }}
 
 
