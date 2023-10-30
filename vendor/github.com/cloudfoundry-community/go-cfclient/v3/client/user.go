@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
-	"net/url"
 )
 
 type UserClient commonClient
@@ -36,7 +37,7 @@ func NewUserListOptions() *UserListOptions {
 	}
 }
 
-func (o UserListOptions) ToQueryString() url.Values {
+func (o UserListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -78,7 +79,7 @@ func (c *UserClient) List(ctx context.Context, opts *UserListOptions) ([]*resour
 		opts = NewUserListOptions()
 	}
 	var res resource.UserList
-	err := c.client.get(ctx, path.Format("/v3/users?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/users", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}

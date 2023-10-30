@@ -2,8 +2,9 @@ package client
 
 import (
 	"context"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"net/url"
+
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
@@ -30,7 +31,7 @@ func NewRoleListOptions() *RoleListOptions {
 	}
 }
 
-func (o *RoleListOptions) ToQueryString() url.Values {
+func (o *RoleListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -138,7 +139,7 @@ func (c *RoleClient) List(ctx context.Context, opts *RoleListOptions) ([]*resour
 		opts = NewRoleListOptions()
 	}
 	var res resource.RoleList
-	err := c.client.get(ctx, path.Format("/v3/roles?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/roles", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -164,7 +165,7 @@ func (c *RoleClient) ListIncludeOrganizations(ctx context.Context, opts *RoleLis
 	opts.Include = resource.RoleIncludeOrganization
 
 	var res resource.RoleList
-	err := c.client.get(ctx, path.Format("/v3/roles?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/roles", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -204,7 +205,7 @@ func (c *RoleClient) ListIncludeSpaces(ctx context.Context, opts *RoleListOption
 	opts.Include = resource.RoleIncludeSpace
 
 	var res resource.RoleList
-	err := c.client.get(ctx, path.Format("/v3/roles?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/roles", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -244,7 +245,7 @@ func (c *RoleClient) ListIncludeUsers(ctx context.Context, opts *RoleListOptions
 	opts.Include = resource.RoleIncludeUser
 
 	var res resource.RoleList
-	err := c.client.get(ctx, path.Format("/v3/roles?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/roles", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, nil, err
 	}

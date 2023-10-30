@@ -2,8 +2,9 @@ package client
 
 import (
 	"context"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"net/url"
+
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
@@ -34,7 +35,7 @@ func NewRouteListOptions() *RouteListOptions {
 	}
 }
 
-func (o RouteListOptions) ToQueryString() url.Values {
+func (o RouteListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -54,7 +55,7 @@ func NewRouteReservationListOptions() *RouteReservationListOptions {
 	}
 }
 
-func (o RouteReservationListOptions) ToQueryString() url.Values {
+func (o RouteReservationListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -176,7 +177,7 @@ func (c *RouteClient) IsRouteReserved(ctx context.Context, domainGUID string, op
 		opts = NewRouteReservationListOptions()
 	}
 	var match map[string]bool
-	err := c.client.get(ctx, path.Format("/v3/domains/%s/route_reservations?%s", domainGUID, opts.ToQueryString()), &match)
+	err := c.client.list(ctx, "/v3/domains/"+domainGUID+"/route_reservations", opts.ToQueryString, &match)
 	if err != nil {
 		return false, err
 	}
@@ -191,7 +192,7 @@ func (c *RouteClient) List(ctx context.Context, opts *RouteListOptions) ([]*reso
 	opts.Include = resource.RouteIncludeNone
 
 	var res resource.RouteList
-	err := c.client.get(ctx, path.Format("/v3/routes?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/routes", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -217,7 +218,7 @@ func (c *RouteClient) ListForApp(ctx context.Context, appGUID string, opts *Rout
 	opts.Include = resource.RouteIncludeNone
 
 	var res resource.RouteList
-	err := c.client.get(ctx, path.Format("/v3/apps/%s/routes?%s", appGUID, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/apps/"+appGUID+"/routes", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -243,7 +244,7 @@ func (c *RouteClient) ListIncludeDomains(ctx context.Context, opts *RouteListOpt
 	opts.Include = resource.RouteIncludeDomain
 
 	var res resource.RouteList
-	err := c.client.get(ctx, path.Format("/v3/routes?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/routes", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -282,7 +283,7 @@ func (c *RouteClient) ListIncludeSpaces(ctx context.Context, opts *RouteListOpti
 	opts.Include = resource.RouteIncludeSpace
 
 	var res resource.RouteList
-	err := c.client.get(ctx, path.Format("/v3/routes?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/routes", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -321,7 +322,7 @@ func (c *RouteClient) ListIncludeSpacesAndOrganizations(ctx context.Context, opt
 	opts.Include = resource.RouteIncludeSpaceOrganization
 
 	var res resource.RouteList
-	err := c.client.get(ctx, path.Format("/v3/routes?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/routes", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}

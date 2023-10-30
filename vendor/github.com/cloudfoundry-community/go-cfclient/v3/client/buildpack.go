@@ -2,10 +2,11 @@ package client
 
 import (
 	"context"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
-	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"io"
 	"net/url"
+
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
 
 type BuildpackClient commonClient
@@ -25,7 +26,7 @@ func NewBuildpackListOptions() *BuildpackListOptions {
 	}
 }
 
-func (o BuildpackListOptions) ToQueryString() url.Values {
+func (o BuildpackListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -68,7 +69,7 @@ func (c *BuildpackClient) List(ctx context.Context, opts *BuildpackListOptions) 
 		opts = NewBuildpackListOptions()
 	}
 	var res resource.BuildpackList
-	err := c.client.get(ctx, path.Format("/v3/buildpacks?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/buildpacks", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}

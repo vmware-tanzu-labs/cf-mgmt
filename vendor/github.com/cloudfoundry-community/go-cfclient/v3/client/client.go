@@ -5,18 +5,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cloudfoundry-community/go-cfclient/v3/config"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/check"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/http"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/ios"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
-	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"io"
 	"mime/multipart"
 	http2 "net/http"
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/cloudfoundry-community/go-cfclient/v3/config"
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/check"
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/http"
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/ios"
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
 
 // Client used to communicate with Cloud Foundry
@@ -143,8 +144,8 @@ func New(config *config.Config) (*Client, error) {
 }
 
 // AccessToken returns the raw encoded OAuth access token without the bearer prefix
-func (c *Client) AccessToken(ignoredCtx context.Context) (string, error) {
-	token, err := c.authenticatedClientProvider.AccessToken()
+func (c *Client) AccessToken(ctx context.Context) (string, error) {
+	token, err := c.authenticatedClientProvider.AccessToken(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -163,7 +164,7 @@ func (c *Client) SSHCode(ctx context.Context) (string, error) {
 	values.Set("response_type", "code")
 	values.Set("client_id", r.Links.AppSSH.Meta.OauthClient) // client_id，used by cf server
 
-	token, err := c.authenticatedClientProvider.AccessToken()
+	token, err := c.authenticatedClientProvider.AccessToken(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -216,6 +217,17 @@ func (c *Client) delete(ctx context.Context, path string) (string, error) {
 		return "", c.decodeError(resp)
 	}
 	return c.decodeJobIDOrBody(resp, nil)
+}
+
+func (c *Client) list(ctx context.Context, urlPathFormat string, queryStrFunc func() (url.Values, error), result any) error {
+	params, err := queryStrFunc()
+	if err != nil {
+		return fmt.Errorf("error while generate query params: %w", err)
+	}
+	if len(params) > 0 {
+		urlPathFormat = strings.TrimSuffix(urlPathFormat+"?"+params.Encode(), "?")
+	}
+	return c.get(ctx, urlPathFormat, result)
 }
 
 // get does an HTTP GET to the specified endpoint and automatically handles unmarshalling

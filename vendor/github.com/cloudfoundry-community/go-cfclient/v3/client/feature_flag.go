@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
-	"net/url"
 )
 
 type FeatureFlagClient commonClient
@@ -21,7 +22,7 @@ func NewFeatureFlagListOptions() *FeatureFlagListOptions {
 	}
 }
 
-func (o FeatureFlagListOptions) ToQueryString() url.Values {
+func (o FeatureFlagListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -41,7 +42,7 @@ func (c *FeatureFlagClient) List(ctx context.Context, opts *FeatureFlagListOptio
 		opts = NewFeatureFlagListOptions()
 	}
 	var res resource.FeatureFlagList
-	err := c.client.get(ctx, path.Format("/v3/feature_flags?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/feature_flags", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}

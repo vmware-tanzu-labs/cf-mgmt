@@ -2,8 +2,9 @@ package client
 
 import (
 	"context"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"net/url"
+
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
@@ -27,7 +28,7 @@ func NewSpaceQuotaListOptions() *SpaceQuotaListOptions {
 	}
 }
 
-func (o SpaceQuotaListOptions) ToQueryString() url.Values {
+func (o SpaceQuotaListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -85,7 +86,7 @@ func (c *SpaceQuotaClient) List(ctx context.Context, opts *SpaceQuotaListOptions
 	}
 
 	var res resource.SpaceQuotaList
-	err := c.client.get(ctx, path.Format("/v3/space_quotas?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/space_quotas", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}

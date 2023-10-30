@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
-	"net/url"
 )
 
 type DomainClient commonClient
@@ -25,7 +26,7 @@ func NewDomainListOptions() *DomainListOptions {
 	}
 }
 
-func (o DomainListOptions) ToQueryString() url.Values {
+func (o DomainListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -71,7 +72,7 @@ func (c *DomainClient) Get(ctx context.Context, guid string) (*resource.Domain, 
 // List pages Domains the user has access to
 func (c *DomainClient) List(ctx context.Context, opts *DomainListOptions) ([]*resource.Domain, *Pager, error) {
 	var res resource.DomainList
-	err := c.client.get(ctx, path.Format("/v3/domains?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/domains", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -95,7 +96,7 @@ func (c *DomainClient) ListForOrganization(ctx context.Context, organizationGUID
 		opts = NewDomainListOptions()
 	}
 	var res resource.DomainList
-	err := c.client.get(ctx, path.Format("/v3/organizations/%s/domains?%s", organizationGUID, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/organizations/"+organizationGUID+"/domains", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
