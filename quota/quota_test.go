@@ -409,6 +409,55 @@ var _ = Describe("given QuotaManager", func() {
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(BeNil())
 		})
+
+		It("Should convert -1 in configuration to unlimited", func() {
+			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
+				{
+					EnableSpaceQuota: true,
+					Space:            "space1",
+					Org:              "org1",
+					MemoryLimit:      "-1",
+					AppInstanceLimit: "-1",
+				},
+			}, nil)
+			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{Name: "space1", GUID: "space-quota-guid"}, nil)
+			fakeOrgReader.FindOrgReturns(&resource.Organization{
+				Relationships: resource.QuotaRelationship{
+					Quota: resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-quota-guid",
+						},
+					},
+				},
+			}, nil)
+			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
+				{
+					GUID: "org1-quota-guid",
+					Apps: resource.OrganizationQuotaApps{
+						TotalMemoryInMB: util.GetIntPointer(1000),
+					},
+				},
+				{
+					GUID: "org2-quota-guid",
+					Apps: resource.OrganizationQuotaApps{
+						TotalMemoryInMB: util.GetIntPointer(1000),
+					},
+				},
+			}, nil)
+			err := quotaMgr.CreateSpaceQuotas()
+			Expect(err).Should(BeNil())
+			Expect(fakeSpaceQuotaClient.CreateCallCount()).Should(Equal(1))
+			_, quotaRequest := fakeSpaceQuotaClient.CreateArgsForCall(0)
+			Expect(*quotaRequest.Name).Should(Equal("space1"))
+			Expect(quotaRequest.Apps).ShouldNot(BeNil())
+			Expect(quotaRequest.Apps.TotalMemoryInMB).Should(BeNil())
+			Expect(quotaRequest.Apps.TotalInstances).Should(BeNil())
+			Expect(fakeSpaceQuotaClient.ApplyCallCount()).Should(Equal(1))
+			_, quotaGUID, spaceGUIDs := fakeSpaceQuotaClient.ApplyArgsForCall(0)
+			Expect(quotaGUID).Should(Equal("space-quota-guid"))
+			Expect(spaceGUIDs).Should(ContainElement("space1-guid"))
+		})
+
 	})
 
 	Context("CreateOrgQuotas()", func() {
