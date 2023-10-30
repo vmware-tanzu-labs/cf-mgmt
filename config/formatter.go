@@ -70,6 +70,9 @@ func ToInteger(s string) (*int, error) {
 	if strings.EqualFold(s, "unlimited") {
 		return nil, nil
 	}
+	if strings.EqualFold(s, "-1") {
+		return nil, nil
+	}
 	val, err := strconv.Atoi(strings.TrimSpace(s))
 	if err == nil {
 		return util.GetIntPointer(val), nil
@@ -82,6 +85,9 @@ func ToMegabytes(s string) (*int, error) {
 		return util.GetIntPointer(0), nil
 	}
 	if strings.EqualFold(s, "unlimited") {
+		return nil, nil
+	}
+	if strings.EqualFold(s, "-1") {
 		return nil, nil
 	}
 	value, err := strconv.Atoi(strings.TrimSpace(s))
