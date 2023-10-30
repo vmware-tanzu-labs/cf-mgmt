@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
-	"net/url"
 )
 
 type RevisionClient commonClient
@@ -23,7 +24,7 @@ func NewRevisionListOptions() *RevisionListOptions {
 	}
 }
 
-func (o RevisionListOptions) ToQueryString() url.Values {
+func (o RevisionListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -60,7 +61,7 @@ func (c *RevisionClient) ListForApp(ctx context.Context, appGUID string, opts *R
 		opts = NewRevisionListOptions()
 	}
 	var res resource.RevisionList
-	err := c.client.get(ctx, path.Format("/v3/apps/%s/revisions?%s", appGUID, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/apps/"+appGUID+"/revisions", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -84,7 +85,7 @@ func (c *RevisionClient) ListForAppDeployed(ctx context.Context, appGUID string,
 		opts = NewRevisionListOptions()
 	}
 	var res resource.RevisionList
-	err := c.client.get(ctx, path.Format("/v3/apps/%s/revisions/deployed?%s", appGUID, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/apps/"+appGUID+"/revisions/deployed", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}

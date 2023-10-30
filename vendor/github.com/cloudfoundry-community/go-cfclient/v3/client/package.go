@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/http"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
-	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"io"
 	http2 "net/http"
 	"net/url"
+
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/http"
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
 
 type PackageClient commonClient
@@ -30,7 +31,7 @@ func NewPackageListOptions() *PackageListOptions {
 	}
 }
 
-func (o PackageListOptions) ToQueryString() url.Values {
+func (o PackageListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -127,7 +128,7 @@ func (c *PackageClient) List(ctx context.Context, opts *PackageListOptions) ([]*
 		opts = NewPackageListOptions()
 	}
 	var res resource.PackageList
-	err := c.client.get(ctx, path.Format("/v3/packages?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/packages", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -151,7 +152,7 @@ func (c *PackageClient) ListForApp(ctx context.Context, appGUID string, opts *Pa
 		opts = NewPackageListOptions()
 	}
 	var res resource.PackageList
-	err := c.client.get(ctx, path.Format("/v3/apps/%s/packages?%s", appGUID, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/apps/"+appGUID+"/packages", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
-	"net/url"
 )
 
 type BuildClient commonClient
@@ -32,7 +33,7 @@ func NewBuildListOptions() *BuildListOptions {
 	}
 }
 
-func (o BuildListOptions) ToQueryString() url.Values {
+func (o BuildListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -43,7 +44,7 @@ func NewBuildAppListOptions() *BuildAppListOptions {
 	}
 }
 
-func (o BuildAppListOptions) ToQueryString() url.Values {
+func (o BuildAppListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -93,7 +94,7 @@ func (c *BuildClient) List(ctx context.Context, opts *BuildListOptions) ([]*reso
 		opts = NewBuildListOptions()
 	}
 	var res resource.BuildList
-	err := c.client.get(ctx, path.Format("/v3/builds?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/builds", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -117,7 +118,7 @@ func (c *BuildClient) ListForApp(ctx context.Context, appGUID string, opts *Buil
 		opts = NewBuildAppListOptions()
 	}
 	var res resource.BuildList
-	err := c.client.get(ctx, path.Format("/v3/apps/%s/builds?%s", appGUID, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/apps/"+appGUID+"/builds", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}

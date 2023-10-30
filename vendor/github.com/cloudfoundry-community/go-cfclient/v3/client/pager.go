@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
@@ -10,59 +11,47 @@ var ErrNoResultsReturned = errors.New("expected 1 or more results, but got 0")
 var ErrExactlyOneResultNotReturned = errors.New("expected exactly 1 result, but got less or more than 1")
 
 type Pager struct {
-	NextPageURL     string
-	PreviousPageURL string
+	NextPageReader     *path.QuerystringReader
+	PreviousPageReader *path.QuerystringReader
 
 	TotalResults int
 	TotalPages   int
-
-	nextPageQSReader     *path.QuerystringReader
-	previousPageQSReader *path.QuerystringReader
 }
 
 func NewPager(pagination resource.Pagination) *Pager {
+	nextPageReader, _ := path.NewQuerystringReader(pagination.Next.Href)
+	previousPageReader, _ := path.NewQuerystringReader(pagination.Previous.Href)
+
 	return &Pager{
-		NextPageURL:     pagination.Next.Href,
-		PreviousPageURL: pagination.Previous.Href,
-		TotalResults:    pagination.TotalResults,
-		TotalPages:      pagination.TotalPages,
+		NextPageReader:     nextPageReader,
+		PreviousPageReader: previousPageReader,
+		TotalResults:       pagination.TotalResults,
+		TotalPages:         pagination.TotalPages,
 	}
 }
 
 func (p *Pager) HasNextPage() bool {
-	q, err := path.NewQuerystringReader(p.NextPageURL)
-	if err != nil {
-		return false
-	}
-	p.nextPageQSReader = q
-	return true
+	return p.NextPageReader != nil
 }
 
 func (p *Pager) NextPage(opts ListOptioner) {
-	if !p.HasNextPage() {
-		return
+	if p.HasNextPage() {
+		page := p.NextPageReader.Int(PageField)
+		perPage := p.NextPageReader.Int(PerPageField)
+		opts.CurrentPage(page, perPage)
 	}
-	page := p.nextPageQSReader.Int(PageField)
-	perPage := p.nextPageQSReader.Int(PerPageField)
-	opts.CurrentPage(page, perPage)
 }
 
 func (p *Pager) HasPreviousPage() bool {
-	q, err := path.NewQuerystringReader(p.PreviousPageURL)
-	if err != nil {
-		return false
-	}
-	p.previousPageQSReader = q
-	return true
+	return p.PreviousPageReader != nil
 }
 
 func (p *Pager) PreviousPage(opts ListOptioner) {
-	if !p.HasPreviousPage() {
-		return
+	if p.HasPreviousPage() {
+		page := p.PreviousPageReader.Int(PageField)
+		perPage := p.PreviousPageReader.Int(PerPageField)
+		opts.CurrentPage(page, perPage)
 	}
-	page := p.previousPageQSReader.Int(PageField)
-	perPage := p.previousPageQSReader.Int(PerPageField)
-	opts.CurrentPage(page, perPage)
 }
 
 type ListFunc[T ListOptioner, R any] func(opts T) ([]R, *Pager, error)

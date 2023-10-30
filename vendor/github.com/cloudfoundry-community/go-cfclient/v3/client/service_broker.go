@@ -2,8 +2,9 @@ package client
 
 import (
 	"context"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"net/url"
+
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
@@ -25,7 +26,7 @@ func NewServiceBrokerListOptions() *ServiceBrokerListOptions {
 	}
 }
 
-func (o ServiceBrokerListOptions) ToQueryString() url.Values {
+func (o ServiceBrokerListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -63,7 +64,7 @@ func (c *ServiceBrokerClient) List(ctx context.Context, opts *ServiceBrokerListO
 	}
 
 	var res resource.ServiceBrokerList
-	err := c.client.get(ctx, path.Format("/v3/service_brokers?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/service_brokers", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}

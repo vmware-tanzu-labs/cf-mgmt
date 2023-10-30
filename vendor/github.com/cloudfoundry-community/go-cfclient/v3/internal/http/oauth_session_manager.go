@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cloudfoundry-community/go-cfclient/v3/config"
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/jwt"
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -12,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
+	"time"
 )
 
 // OAuthSessionManager creates and manages OAuth http client instances
@@ -34,8 +36,8 @@ func NewOAuthSessionManager(config *config.Config) *OAuthSessionManager {
 }
 
 // Client returns an authenticated OAuth http client
-func (m *OAuthSessionManager) Client(followRedirects bool) (*http.Client, error) {
-	err := m.init(context.Background())
+func (m *OAuthSessionManager) Client(ctx context.Context, followRedirects bool) (*http.Client, error) {
+	err := m.init(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -53,17 +55,21 @@ func (m *OAuthSessionManager) Client(followRedirects bool) (*http.Client, error)
 // likely in response to a 401
 //
 // This won't work for userTokenAuth since we have no credentials to exchange for a new token.
-func (m *OAuthSessionManager) ReAuthenticate() error {
+func (m *OAuthSessionManager) ReAuthenticate(ctx context.Context) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
+	if m.isUserTokenAuth() {
+		return errors.New("cannot reauthenticate user token auth type, check your access and/or refresh token expiration date")
+	}
+
 	// attempt to create a new token source
-	return m.newTokenSource(context.Background())
+	return m.newTokenSource(ctx)
 }
 
 // AccessToken returns the raw OAuth access token
-func (m *OAuthSessionManager) AccessToken() (string, error) {
-	err := m.init(context.Background())
+func (m *OAuthSessionManager) AccessToken(ctx context.Context) (string, error) {
+	err := m.init(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -109,9 +115,9 @@ func (m *OAuthSessionManager) newTokenSource(ctx context.Context) error {
 	oauthCtx := context.WithValue(ctx, oauth2.HTTPClient, m.config.HTTPClient())
 
 	switch {
-	case m.config.Token != "":
-		m.userTokenAuth(oauthCtx, loginEndpoint, uaaEndpoint)
-	case m.config.ClientID != "":
+	case m.isUserTokenAuth():
+		return m.userTokenAuth(oauthCtx, loginEndpoint, uaaEndpoint)
+	case m.isClientAuth():
 		m.clientAuth(oauthCtx, uaaEndpoint)
 	default:
 		return m.userAuth(oauthCtx, loginEndpoint, uaaEndpoint)
@@ -167,7 +173,7 @@ func (m *OAuthSessionManager) clientAuth(ctx context.Context, uaaEndpoint string
 }
 
 // userTokenAuth initializes client credentials from existing bearer token.
-func (m *OAuthSessionManager) userTokenAuth(ctx context.Context, loginEndpoint, uaaEndpoint string) {
+func (m *OAuthSessionManager) userTokenAuth(ctx context.Context, loginEndpoint, uaaEndpoint string) (err error) {
 	authConfig := &oauth2.Config{
 		ClientID: "cf",
 		Scopes:   []string{""},
@@ -177,13 +183,26 @@ func (m *OAuthSessionManager) userTokenAuth(ctx context.Context, loginEndpoint, 
 		},
 	}
 
-	// Token is expected to have no "bearer" prefix
+	// we could be given only a refresh token, so optionally parse
+	var exp time.Time
+	if m.config.AccessToken != "" {
+		exp, err = jwt.AccessTokenExpiration(m.config.AccessToken)
+		if err != nil {
+			return err
+		}
+	}
+
+	// AccessToken is expected to have no "bearer" prefix
 	token := &oauth2.Token{
-		AccessToken: m.config.Token,
-		TokenType:   "Bearer",
+		RefreshToken: m.config.RefreshToken,
+		AccessToken:  m.config.AccessToken,
+		Expiry:       exp,
+		TokenType:    "Bearer",
 	}
 	tokenSource := authConfig.TokenSource(ctx, token)
 	m.initOAuthClient(ctx, tokenSource)
+
+	return nil
 }
 
 func (m *OAuthSessionManager) initOAuthClient(ctx context.Context, tokenSource oauth2.TokenSource) {
@@ -213,4 +232,12 @@ func (m *OAuthSessionManager) initOAuthClient(ctx context.Context, tokenSource o
 	m.oauthClientNonRedirecting = oauthClientNonRedirecting
 	m.oauthClient = oauthClient
 	m.tokenSource = tokenSource
+}
+
+func (m *OAuthSessionManager) isUserTokenAuth() bool {
+	return m.config.RefreshToken != "" || m.config.AccessToken != ""
+}
+
+func (m *OAuthSessionManager) isClientAuth() bool {
+	return m.config.ClientID != ""
 }

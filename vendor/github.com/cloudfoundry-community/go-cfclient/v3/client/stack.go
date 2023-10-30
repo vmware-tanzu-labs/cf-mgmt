@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
-	"net/url"
 )
 
 type StackClient commonClient
@@ -23,7 +24,7 @@ func NewStackListOptions() *StackListOptions {
 	}
 }
 
-func (o StackListOptions) ToQueryString() url.Values {
+func (o StackListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -66,7 +67,7 @@ func (c *StackClient) List(ctx context.Context, opts *StackListOptions) ([]*reso
 		opts = NewStackListOptions()
 	}
 	var res resource.StackList
-	err := c.client.get(ctx, path.Format("/v3/stacks?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/stacks", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -90,7 +91,7 @@ func (c *StackClient) ListAppsOnStack(ctx context.Context, guid string, opts *St
 		opts = NewStackListOptions()
 	}
 	var res resource.AppList
-	err := c.client.get(ctx, path.Format("/v3/stacks/%s/apps?%s", guid, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/stacks/"+guid+"/apps", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}

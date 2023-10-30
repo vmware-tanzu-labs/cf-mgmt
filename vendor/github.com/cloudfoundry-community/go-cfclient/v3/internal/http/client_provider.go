@@ -1,13 +1,16 @@
 package http
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+)
 
 type ClientProvider interface {
 	// Client returns a *http.Client
-	Client(followRedirects bool) (*http.Client, error)
+	Client(ctx context.Context, followRedirects bool) (*http.Client, error)
 
 	// ReAuthenticate tells the provider to re-initialize the auth context
-	ReAuthenticate() error
+	ReAuthenticate(ctx context.Context) error
 }
 
 type UnauthenticatedClientProvider struct {
@@ -15,14 +18,14 @@ type UnauthenticatedClientProvider struct {
 	httpClientNonRedirecting *http.Client
 }
 
-func (c *UnauthenticatedClientProvider) Client(followRedirects bool) (*http.Client, error) {
+func (c *UnauthenticatedClientProvider) Client(ctx context.Context, followRedirects bool) (*http.Client, error) {
 	if followRedirects {
 		return c.httpClient, nil
 	}
 	return c.httpClientNonRedirecting, nil
 }
 
-func (c *UnauthenticatedClientProvider) ReAuthenticate() error {
+func (c *UnauthenticatedClientProvider) ReAuthenticate(ctx context.Context) error {
 	return nil
 }
 

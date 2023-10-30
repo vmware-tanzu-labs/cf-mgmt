@@ -2,8 +2,9 @@ package client
 
 import (
 	"context"
-	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"net/url"
+
+	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 )
@@ -22,7 +23,7 @@ func NewSidecarListOptions() *SidecarListOptions {
 	}
 }
 
-func (o SidecarListOptions) ToQueryString() url.Values {
+func (o SidecarListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -72,7 +73,7 @@ func (c *SidecarClient) ListForApp(ctx context.Context, appGUID string, opts *Si
 		opts = NewSidecarListOptions()
 	}
 	var res resource.SidecarList
-	err := c.client.get(ctx, path.Format("/v3/apps/%s/sidecars?%s", appGUID, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/apps/"+appGUID+"/sidecars", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -96,7 +97,7 @@ func (c *SidecarClient) ListForProcess(ctx context.Context, processGUID string, 
 		opts = NewSidecarListOptions()
 	}
 	var res resource.SidecarList
-	err := c.client.get(ctx, path.Format("/v3/processes/%s/sidecars?%s", processGUID, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/processes/"+processGUID+"/sidecars", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}

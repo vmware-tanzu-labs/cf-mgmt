@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/cloudfoundry-community/go-cfclient/v3/internal/path"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
-	"net/url"
 )
 
 type SecurityGroupClient commonClient
@@ -29,7 +30,7 @@ func NewSecurityGroupListOptions() *SecurityGroupListOptions {
 	}
 }
 
-func (o SecurityGroupListOptions) ToQueryString() url.Values {
+func (o SecurityGroupListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -48,7 +49,7 @@ func NewSecurityGroupSpaceListOptions() *SecurityGroupSpaceListOptions {
 	}
 }
 
-func (o SecurityGroupSpaceListOptions) ToQueryString() url.Values {
+func (o SecurityGroupSpaceListOptions) ToQueryString() (url.Values, error) {
 	return o.ListOptions.ToQueryString(o)
 }
 
@@ -132,7 +133,7 @@ func (c *SecurityGroupClient) List(ctx context.Context, opts *SecurityGroupListO
 		opts = NewSecurityGroupListOptions()
 	}
 	var res resource.SecurityGroupList
-	err := c.client.get(ctx, path.Format("/v3/security_groups?%s", opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/security_groups", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -163,7 +164,7 @@ func (c *SecurityGroupClient) ListRunningForSpace(ctx context.Context, spaceGUID
 		opts = NewSecurityGroupSpaceListOptions()
 	}
 	var res resource.SecurityGroupList
-	err := c.client.get(ctx, path.Format("/v3/spaces/%s/running_security_groups?%s", spaceGUID, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/spaces/"+spaceGUID+"/running_security_groups", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -187,7 +188,7 @@ func (c *SecurityGroupClient) ListStagingForSpace(ctx context.Context, spaceGUID
 		opts = NewSecurityGroupSpaceListOptions()
 	}
 	var res resource.SecurityGroupList
-	err := c.client.get(ctx, path.Format("/v3/spaces/%s/staging_security_groups?%s", spaceGUID, opts.ToQueryString()), &res)
+	err := c.client.list(ctx, "/v3/spaces/"+spaceGUID+"/staging_security_groups", opts.ToQueryString, &res)
 	if err != nil {
 		return nil, nil, err
 	}
