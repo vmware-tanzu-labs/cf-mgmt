@@ -14,13 +14,16 @@ type ApplyCommand struct {
 func (c *ApplyCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
-	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err != nil {
+	ldapMgr, err := InitializeLdapManager(c.BaseCFConfigCommand, c.BaseLDAPCommand)
+	if err != nil {
 		return err
 	}
-	if err = cfMgmt.UserManager.InitializeLdap(c.LdapUser, c.LdapPassword, c.LdapServer); err != nil {
+	if ldapMgr != nil {
+		defer ldapMgr.Close()
+	}
+	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, ldapMgr); err != nil {
 		return err
 	}
-	defer cfMgmt.UserManager.DeinitializeLdap()
 	fmt.Println("*********  Creating Orgs")
 	if err = cfMgmt.OrgManager.CreateOrgs(); err != nil {
 		return err

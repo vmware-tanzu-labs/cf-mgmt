@@ -12,6 +12,7 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/vmwarepivotallabs/cf-mgmt/privatedomain"
 	"github.com/vmwarepivotallabs/cf-mgmt/quota"
+	"github.com/vmwarepivotallabs/cf-mgmt/role"
 	"github.com/vmwarepivotallabs/cf-mgmt/securitygroup"
 	"github.com/vmwarepivotallabs/cf-mgmt/serviceaccess"
 	"github.com/vmwarepivotallabs/cf-mgmt/shareddomain"
@@ -34,7 +35,8 @@ func NewExportManager(
 	privateDomainMgr privatedomain.Manager,
 	sharedDomainMgr *shareddomain.Manager,
 	serviceAccessMgr *serviceaccess.Manager,
-	quotaMgr *quota.Manager) *Manager {
+	quotaMgr *quota.Manager,
+	roleMgr role.Manager) *Manager {
 	return &Manager{
 		ConfigMgr:            config.NewManager(configDir),
 		UAAMgr:               uaaMgr,
@@ -47,6 +49,7 @@ func NewExportManager(
 		SharedDomainManager:  sharedDomainMgr,
 		ServiceAccessManager: serviceAccessMgr,
 		QuotaManager:         quotaMgr,
+		RoleManager:          roleMgr,
 	}
 }
 
@@ -55,6 +58,7 @@ type Manager struct {
 	UAAMgr               uaa.Manager
 	SpaceManager         space.Manager
 	UserManager          user.Manager
+	RoleManager          role.Manager
 	OrgReader            organizationreader.Reader
 	SecurityGroupManager securitygroup.Manager
 	IsoSegmentManager    isosegment.Manager
@@ -523,7 +527,7 @@ func (im *Manager) doesSpaceExist(spaces []*resource.Space, spaceName string) bo
 }
 
 func (im *Manager) addOrgUsers(orgConfig *config.OrgConfig, orgGUID string) error {
-	_, managerRoleUsers, billingManagerRoleUsers, auditorRoleUsers, err := im.UserManager.ListOrgUsersByRole(orgGUID)
+	_, managerRoleUsers, billingManagerRoleUsers, auditorRoleUsers, err := im.RoleManager.ListOrgUsersByRole(orgGUID)
 	if err != nil {
 		return err
 	}
@@ -534,7 +538,7 @@ func (im *Manager) addOrgUsers(orgConfig *config.OrgConfig, orgGUID string) erro
 }
 
 func (im *Manager) addSpaceUsers(spaceConfig *config.SpaceConfig, spaceGUID string) error {
-	managerRoleUsers, developerRoleUsers, auditorRoleUsers, supporterRoleUsers, err := im.UserManager.ListSpaceUsersByRole(spaceGUID)
+	managerRoleUsers, developerRoleUsers, auditorRoleUsers, supporterRoleUsers, err := im.RoleManager.ListSpaceUsersByRole(spaceGUID)
 	if err != nil {
 		return err
 	}
@@ -545,41 +549,41 @@ func (im *Manager) addSpaceUsers(spaceConfig *config.SpaceConfig, spaceGUID stri
 	return nil
 }
 
-func (im *Manager) addOrgManagers(orgConfig *config.OrgConfig, orgGUID string, orgMgrs *user.RoleUsers) {
+func (im *Manager) addOrgManagers(orgConfig *config.OrgConfig, orgGUID string, orgMgrs *role.RoleUsers) {
 	lo.G.Debugf("Found %d Org Managers for Org: %s", len(orgMgrs.Users()), orgConfig.Org)
 	doAddUsers(orgMgrs, &orgConfig.Manager.Users, &orgConfig.Manager.LDAPUsers, &orgConfig.Manager.SamlUsers)
 }
 
-func (im *Manager) addBillingManagers(orgConfig *config.OrgConfig, orgGUID string, orgBillingMgrs *user.RoleUsers) {
+func (im *Manager) addBillingManagers(orgConfig *config.OrgConfig, orgGUID string, orgBillingMgrs *role.RoleUsers) {
 	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs.Users()), orgConfig.Org)
 	doAddUsers(orgBillingMgrs, &orgConfig.BillingManager.Users, &orgConfig.BillingManager.LDAPUsers, &orgConfig.BillingManager.SamlUsers)
 }
 
-func (im *Manager) addOrgAuditors(orgConfig *config.OrgConfig, orgGUID string, orgAuditors *user.RoleUsers) {
+func (im *Manager) addOrgAuditors(orgConfig *config.OrgConfig, orgGUID string, orgAuditors *role.RoleUsers) {
 	lo.G.Debugf("Found %d Org Auditors for Org: %s", len(orgAuditors.Users()), orgConfig.Org)
 	doAddUsers(orgAuditors, &orgConfig.Auditor.Users, &orgConfig.Auditor.LDAPUsers, &orgConfig.Auditor.SamlUsers)
 }
 
-func (im *Manager) addSpaceManagers(spaceConfig *config.SpaceConfig, spaceGUID string, spaceMgrs *user.RoleUsers) {
+func (im *Manager) addSpaceManagers(spaceConfig *config.SpaceConfig, spaceGUID string, spaceMgrs *role.RoleUsers) {
 	lo.G.Debugf("Found %d Space Managers for Org: %s and  Space:  %s", len(spaceMgrs.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceMgrs, &spaceConfig.Manager.Users, &spaceConfig.Manager.LDAPUsers, &spaceConfig.Manager.SamlUsers)
 }
 
-func (im *Manager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, spaceGUID string, spaceDevs *user.RoleUsers) {
+func (im *Manager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, spaceGUID string, spaceDevs *role.RoleUsers) {
 	lo.G.Debugf("Found %d Space Developers for Org: %s and  Space:  %s", len(spaceDevs.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceDevs, &spaceConfig.Developer.Users, &spaceConfig.Developer.LDAPUsers, &spaceConfig.Developer.SamlUsers)
 }
 
-func (im *Manager) addSpaceAuditors(spaceConfig *config.SpaceConfig, spaceGUID string, spaceAuditors *user.RoleUsers) {
+func (im *Manager) addSpaceAuditors(spaceConfig *config.SpaceConfig, spaceGUID string, spaceAuditors *role.RoleUsers) {
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceAuditors, &spaceConfig.Auditor.Users, &spaceConfig.Auditor.LDAPUsers, &spaceConfig.Auditor.SamlUsers)
 }
-func (im *Manager) addSpaceSupporters(spaceConfig *config.SpaceConfig, spaceGUID string, spaceSupporters *user.RoleUsers) {
+func (im *Manager) addSpaceSupporters(spaceConfig *config.SpaceConfig, spaceGUID string, spaceSupporters *role.RoleUsers) {
 	lo.G.Debugf("Found %d Space Supporters for Org: %s and  Space:  %s", len(spaceSupporters.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceSupporters, &spaceConfig.Supporter.Users, &spaceConfig.Supporter.LDAPUsers, &spaceConfig.Supporter.SamlUsers)
 }
 
-func doAddUsers(roleUser *user.RoleUsers, uaaUsers *[]string, ldapUsers *[]string, samlUsers *[]string) {
+func doAddUsers(roleUser *role.RoleUsers, uaaUsers *[]string, ldapUsers *[]string, samlUsers *[]string) {
 	for _, cfUser := range roleUser.Users() {
 		if cfUser.Origin == "uaa" {
 			*uaaUsers = append(*uaaUsers, cfUser.UserName)

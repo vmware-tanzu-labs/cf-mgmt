@@ -31,6 +31,7 @@ func (c *ExportConfigurationCommand) Execute([]string) error {
 			cfMgmt.SharedDomainManager,
 			cfMgmt.ServiceAccessManager,
 			cfMgmt.QuotaManager,
+			cfMgmt.RoleManager,
 		)
 		exportManager.SkipRoutingGroups = c.SkipRoutingGroups
 		excludedOrgs := make(map[string]string)
