@@ -1,6 +1,11 @@
 package user
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/vmwarepivotallabs/cf-mgmt/role"
+)
 
 // UsersInput
 type UsersInput struct {
@@ -10,10 +15,24 @@ type UsersInput struct {
 	SpaceName                                   string
 	OrgName                                     string
 	RemoveUsers                                 bool
-	RoleUsers                                   *RoleUsers
-	AddUser                                     func(updateUserInput UsersInput, userName, userGUID string) error
-	RemoveUser                                  func(updateUserInput UsersInput, userName, userGUID string) error
+	RoleUsers                                   *role.RoleUsers
+	AddUser                                     func(orgGUID, entityName, entityGUID, userName, userGUID string) error
+	RemoveUser                                  func(entityName, entityGUID, userName, userGUID string) error
 	Role                                        string
+}
+
+func (u *UsersInput) EntityName() string {
+	if u.SpaceGUID != "" {
+		return fmt.Sprintf("%s/%s", u.OrgName, u.SpaceName)
+	}
+	return u.OrgName
+}
+
+func (u *UsersInput) EntityGUID() string {
+	if u.SpaceGUID != "" {
+		return u.SpaceGUID
+	}
+	return u.OrgGUID
 }
 
 func (u *UsersInput) UniqueUsers() []string {

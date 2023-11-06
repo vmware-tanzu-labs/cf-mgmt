@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	"github.com/vmwarepivotallabs/cf-mgmt/role"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
-func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
+func (m *DefaultManager) SyncSamlUsers(roleUsers *role.RoleUsers, usersInput UsersInput) error {
 	origin := m.LdapConfig.Origin
 	uaaUsers, err := m.GetUAAUsers()
 	if err != nil {
@@ -37,7 +38,7 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers *RoleUsers, usersInput UsersInp
 		}
 		if !roleUsers.HasUserForOrigin(userEmail, user.Origin) {
 			m.dumpRoleUsers(fmt.Sprintf("Adding user [%s] with guid[%s] with origin [%s] as doesn't exist in users for %s/%s - Role %s", userEmail, user.GUID, origin, usersInput.OrgName, usersInput.SpaceName, usersInput.Role), roleUsers.Users())
-			if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
+			if err := usersInput.AddUser(usersInput.OrgGUID, usersInput.EntityName(), usersInput.EntityGUID(), user.Username, user.GUID); err != nil {
 				return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", user.Username, user.Origin))
 			}
 		} else {

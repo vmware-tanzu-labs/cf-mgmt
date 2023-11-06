@@ -9,7 +9,7 @@ type UpdateOrgsMetadataCommand struct {
 func (c *UpdateOrgsMetadataCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
-	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
+	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, nil); err == nil {
 		err = cfMgmt.OrgManager.UpdateOrgsMetadata()
 	}
 	return err

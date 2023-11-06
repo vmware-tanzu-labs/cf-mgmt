@@ -23,7 +23,7 @@ func (c *ExportServiceAccessCommand) Execute([]string) error {
 			cfMgmt.PrivateDomainManager,
 			cfMgmt.SharedDomainManager,
 			cfMgmt.ServiceAccessManager,
-			cfMgmt.QuotaManager)
+			cfMgmt.QuotaManager, cfMgmt.RoleManager)
 
 		return exportManager.ExportServiceAccess()
 	}

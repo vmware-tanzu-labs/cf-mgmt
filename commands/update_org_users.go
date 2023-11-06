@@ -10,11 +10,14 @@ type UpdateOrgUsersCommand struct {
 
 // Execute - updates orgs quotas
 func (c *UpdateOrgUsersCommand) Execute([]string) error {
-	if cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
-		if err := cfMgmt.UserManager.InitializeLdap(c.LdapUser, c.LdapPassword, c.LdapServer); err != nil {
-			return err
-		}
-		defer cfMgmt.UserManager.DeinitializeLdap()
+	ldapMgr, err := InitializeLdapManager(c.BaseCFConfigCommand, c.BaseLDAPCommand)
+	if err != nil {
+		return err
+	}
+	if ldapMgr != nil {
+		defer ldapMgr.Close()
+	}
+	if cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, ldapMgr); err == nil {
 		errs := cfMgmt.UserManager.UpdateOrgUsers()
 		if len(errs) > 0 {
 			return fmt.Errorf("got errors processing update org users %v", errs)
