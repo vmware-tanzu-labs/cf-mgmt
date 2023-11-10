@@ -7,11 +7,12 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/ldap"
+	"github.com/vmwarepivotallabs/cf-mgmt/role"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
-func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
+func (m *DefaultManager) SyncLdapUsers(roleUsers *role.RoleUsers, usersInput UsersInput) error {
 	origin := m.LdapConfig.Origin
 	if m.LdapConfig.Enabled {
 		uaaUsers, err := m.GetUAAUsers()
@@ -48,7 +49,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *RoleUsers, usersInput UsersInp
 					return fmt.Errorf("unable to find user %s for origin %s", userID, origin)
 				}
 				m.dumpRoleUsers(fmt.Sprintf("Adding user [%s] with guid[%s] with origin [%s] as doesn't exist in users for %s/%s - Role %s for entity with guid[%s/%s]", userID, user.GUID, origin, usersInput.OrgName, usersInput.SpaceName, usersInput.Role, usersInput.OrgGUID, usersInput.SpaceGUID), roleUsers.Users())
-				if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
+				if err := usersInput.AddUser(usersInput.OrgGUID, usersInput.EntityName(), usersInput.EntityGUID(), user.Username, user.GUID); err != nil {
 					return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", user.Username, user.Origin))
 				}
 			} else {

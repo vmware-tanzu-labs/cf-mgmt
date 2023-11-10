@@ -9,7 +9,7 @@ type CleanupOrgUsersCommand struct {
 
 // Execute - removes org users
 func (c *CleanupOrgUsersCommand) Execute([]string) error {
-	if cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
+	if cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, nil); err == nil {
 		errs := cfMgmt.UserManager.CleanupOrgUsers()
 		if len(errs) > 0 {
 			return fmt.Errorf("got errors processing cleanup users %v", errs)

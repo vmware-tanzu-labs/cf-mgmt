@@ -3,6 +3,5 @@
 tas_versions:
     - {'version_slug': '2-11', 'pool_name': 'tas-2_11' , 'pivnet_ert_windows': '^2\.11\.\d+((-alpha|-beta|-rc)\.\d+)?(\+LTS-T)?$' }
     - {'version_slug': '2-13', 'pool_name': 'tas-2_13' , 'pivnet_ert_windows': '^2\.13\.\d+((-alpha|-beta|-rc)\.\d+)?(\+LTS-T)?$' }
-    - {'version_slug': '3-0', 'pool_name': 'tas_three' , 'pivnet_ert_windows': '^3\.0\.\d+((-alpha|-beta|-rc)\.\d+)?(\+LTS-T)?$' }
     - {'version_slug': '4-0', 'pool_name': 'tas_four' , 'pivnet_ert_windows': '^4\.0\.\d+((-alpha|-beta|-rc)\.\d+)?(\+LTS-T)?$' }
     - {'version_slug': '5-0', 'pool_name': 'tas-5_0' , 'pivnet_ert_windows': '^5\.0\.\d+((-alpha|-beta|-rc)\.\d+)?(\+LTS-T)?$' }

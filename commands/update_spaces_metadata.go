@@ -9,7 +9,7 @@ type UpdateSpacesMetadataCommand struct {
 func (c *UpdateSpacesMetadataCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
-	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
+	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, nil); err == nil {
 		err = cfMgmt.SpaceManager.UpdateSpacesMetadata()
 	}
 	return err
