@@ -256,7 +256,11 @@ func asJson(role *resource.Role) string {
 func (m *DefaultManager) GetCFUsers() (map[string]*resource.User, error) {
 	if m.CFUsers == nil {
 		cfUserMap := make(map[string]*resource.User)
-		cfUsers, err := m.UserClient.ListAll(context.Background(), &client.UserListOptions{})
+		cfUsers, err := m.UserClient.ListAll(context.Background(), &client.UserListOptions{
+			ListOptions: &client.ListOptions{
+				PerPage: 5000,
+			},
+		})
 		if err != nil {
 			return nil, err
 		}
