@@ -27,17 +27,16 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *role.RoleUsers, usersInput Use
 		for _, inputUser := range ldapUsers {
 			userToUse := m.UpdateUserInfo(inputUser)
 			userID := userToUse.UserID
-			userList := uaaUsers.GetByName(userID)
-			if len(userList) == 0 {
-				lo.G.Debug("User", userID, "doesn't exist in cloud foundry, so creating user")
+			uaaUser := uaaUsers.GetByNameAndOrigin(userID, origin)
+			if uaaUser == nil {
+				lo.G.Debugf("User %s doesn't exist in cloud foundry with origin, so creating user", userID, origin)
 				if userGUID, err := m.UAAMgr.CreateExternalUser(userID, userToUse.Email, userToUse.UserDN, m.LdapConfig.Origin); err != nil {
-					lo.G.Errorf("Unable to create user %s with error %s", userID, err.Error())
-					continue
+					return err
 				} else {
 					m.AddUAAUser(uaa.User{
 						Username:   userID,
 						ExternalID: userToUse.UserDN,
-						Origin:     m.LdapConfig.Origin,
+						Origin:     origin,
 						Email:      userToUse.Email,
 						GUID:       userGUID,
 					})
@@ -64,6 +63,7 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *role.RoleUsers, usersInput Use
 }
 
 func (m *DefaultManager) GetLDAPUsers(usersInput UsersInput) ([]ldap.User, error) {
+	origin := m.LdapConfig.Origin
 	var ldapUsers []ldap.User
 	uaaUsers, err := m.GetUAAUsers()
 	if err != nil {
@@ -99,21 +99,18 @@ func (m *DefaultManager) GetLDAPUsers(usersInput UsersInput) ([]ldap.User, error
 		}
 	}
 	for _, userID := range usersInput.LdapUsers {
-		userList := uaaUsers.GetByName(userID)
-		if len(userList) > 0 {
-			lo.G.Debugf("UserID [%s] found in UAA, skipping ldap lookup", userID)
-			for _, uaaUser := range userList {
-				lo.G.Debugf("Checking if userID [%s] with origin [%s] and externalID [%s] matches ldap origin", uaaUser.Username, uaaUser.Origin, uaaUser.ExternalID)
-				if strings.EqualFold(uaaUser.Origin, m.LdapConfig.Origin) {
-					ldapUsers = append(ldapUsers, ldap.User{
-						UserID: userID,
-						UserDN: uaaUser.ExternalID,
-						Email:  uaaUser.Email,
-					})
-				}
+		uaaUser := uaaUsers.GetByNameAndOrigin(userID, origin)
+		if uaaUser != nil {
+			lo.G.Debugf("UserID [%s] found in UAA for origin %s, skipping ldap lookup", userID, origin)
+			if strings.EqualFold(uaaUser.Origin, m.LdapConfig.Origin) {
+				ldapUsers = append(ldapUsers, ldap.User{
+					UserID: userID,
+					UserDN: uaaUser.ExternalID,
+					Email:  uaaUser.Email,
+				})
 			}
 		} else {
-			lo.G.Debugf("User [%s] not found in UAA, executing ldap lookup", userID)
+			lo.G.Debugf("User [%s] not found in UAA for origin [%s], executing ldap lookup", userID, origin)
 			user, err := m.LdapMgr.GetUserByID(userID)
 			if err != nil {
 				return nil, err

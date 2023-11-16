@@ -325,8 +325,8 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *role.RoleUsers, usersInput
 	}
 	for _, userID := range usersInput.UniqueUsers() {
 		lowerUserID := strings.ToLower(userID)
-		uaaUserList := uaaUsers.GetByName(lowerUserID)
-		if len(uaaUserList) == 0 || !strings.EqualFold(uaaUserList[0].Origin, origin) {
+		uaaUser := uaaUsers.GetByNameAndOrigin(lowerUserID, origin)
+		if uaaUser == nil {
 			return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
 		}
 		if !roleUsers.HasUser(lowerUserID) {

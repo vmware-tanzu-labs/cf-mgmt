@@ -236,8 +236,8 @@ var _ = Describe("given UserSpaces", func() {
 					nil)
 				uaaFake.CreateExternalUserReturns("guid", errors.New("error"))
 				err := userManager.SyncLdapUsers(roleUsers, updateUsersInput)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(len(userManager.UAAUsers.GetByName("test_ldap3"))).Should(Equal(0))
+				Expect(err).Should(HaveOccurred())
+				Expect(userManager.UAAUsers.GetByNameAndOrigin("test_ldap3", "ldap")).Should(BeNil())
 				Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(1))
 			})
 

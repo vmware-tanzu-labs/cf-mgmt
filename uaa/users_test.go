@@ -46,18 +46,6 @@ var _ = Describe("Users", func() {
 			Expect(len(users.List())).To(Equal(5))
 		})
 
-		It("Get By Name should find multiples", func() {
-			Expect(len(users.GetByName("test"))).To(Equal(2))
-		})
-
-		It("Get By Name should find none", func() {
-			Expect(len(users.GetByName("foo"))).To(Equal(0))
-		})
-
-		It("Get By Name should find one", func() {
-			Expect(len(users.GetByName("test2"))).To(Equal(1))
-		})
-
 		It("Get By ID should return nil", func() {
 			Expect(users.GetByID("foo")).To(BeNil())
 		})
@@ -76,6 +64,21 @@ var _ = Describe("Users", func() {
 
 		It("Get By ExternalID should return nil", func() {
 			Expect(users.GetByExternalID("cn=test3")).To(BeNil())
+		})
+
+		It("Get By Name and origin should return nil", func() {
+			Expect(users.GetByNameAndOrigin("test2", "foo")).To(BeNil())
+		})
+
+		It("Get By Name and uaa origin should not return nil", func() {
+			uaaUser := users.GetByNameAndOrigin("test", "uaa")
+			Expect(uaaUser).ToNot(BeNil())
+			Expect(uaaUser.Origin).To(Equal("uaa"))
+		})
+		It("Get By Name and ldap origin should not return nil", func() {
+			uaaUser := users.GetByNameAndOrigin("test", "ldap")
+			Expect(uaaUser).ToNot(BeNil())
+			Expect(uaaUser.Origin).To(Equal("ldap"))
 		})
 	})
 })

@@ -39,25 +39,14 @@ func (u *Users) Exists(userName string) bool {
 	return ok
 }
 
-func (u *Users) GetByName(userName string) []User {
-	if u.userMap == nil {
-		return nil
-	}
-	return u.userMap[strings.ToLower(userName)]
-}
-
 func (u *Users) GetByNameAndOrigin(userName, origin string) *User {
 	if u.userMap == nil {
 		return nil
 	}
 	userList := u.userMap[strings.ToLower(userName)]
-	if len(userList) == 1 {
-		return &userList[0]
-	} else {
-		for _, user := range userList {
-			if strings.EqualFold(user.Origin, origin) {
-				return &user
-			}
+	for _, user := range userList {
+		if strings.EqualFold(user.Origin, origin) {
+			return &user
 		}
 	}
 	return nil
