@@ -16,12 +16,11 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers *role.RoleUsers, usersInput Use
 		return err
 	}
 	for _, userEmail := range usersInput.UniqueSamlUsers() {
-		userList := uaaUsers.GetByName(userEmail)
-		if len(userList) == 0 {
-			lo.G.Debug("User", userEmail, "doesn't exist in cloud foundry, so creating user")
+		uaaUser := uaaUsers.GetByNameAndOrigin(userEmail, origin)
+		if uaaUser == nil {
+			lo.G.Debugf("user %s doesn't exist in cloud foundry with origin %s, so creating user", userEmail, origin)
 			if userGUID, err := m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, origin); err != nil {
-				lo.G.Error("Unable to create user", userEmail)
-				continue
+				return err
 			} else {
 				m.AddUAAUser(uaa.User{
 					Username:   userEmail,

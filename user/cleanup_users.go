@@ -79,7 +79,7 @@ func (m *DefaultManager) cleanupOrgUsers(uaaUsers *uaa.Users, input *config.OrgC
 			guid = uaaUser.GUID
 		}
 		if !util.Matches(orgUser.UserName, cfg.ProtectedUsers) {
-			if !usersInRoles.HasUser(orgUser.UserName) {
+			if !usersInRoles.HasUserForGUID(orgUser.UserName, guid) {
 				if m.Peek {
 					lo.G.Infof("[dry-run]: Removing User %s from org %s", orgUser.UserName, input.Org)
 					continue

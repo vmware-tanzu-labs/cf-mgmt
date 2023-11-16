@@ -86,6 +86,26 @@ var _ = Describe("given UserSpaces", func() {
 				Expect(userGUID).Should(Equal("test-user-guid"))
 			})
 
+			It("Should add internal user to role and ldap user to role", func() {
+				updateUsersInput := UsersInput{
+					Users:     []string{"test"},
+					SpaceGUID: "space_guid",
+					OrgGUID:   "org_guid",
+					SpaceName: "spaceName",
+					OrgName:   "orgName",
+					AddUser:   roleMgrFake.AssociateSpaceAuditor,
+					RoleUsers: role.InitRoleUsers(),
+				}
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				Expect(err).ShouldNot(HaveOccurred())
+				orgGUID, spaceName, spaceGUID, userName, userGUID := roleMgrFake.AssociateSpaceAuditorArgsForCall(0)
+				Expect(orgGUID).Should(Equal("org_guid"))
+				Expect(spaceName).Should(Equal("orgName/spaceName"))
+				Expect(spaceGUID).Should(Equal("space_guid"))
+				Expect(userName).Should(Equal("test"))
+				Expect(userGUID).Should(Equal("test-user-guid"))
+			})
+
 			It("Should not add existing internal user to role", func() {
 				updateUsersInput := UsersInput{
 					Users:     []string{"test-existing"},
@@ -256,6 +276,46 @@ var _ = Describe("given UserSpaces", func() {
 				userManager.LdapConfig = &config.LdapConfig{Enabled: false}
 				err := userManager.UpdateOrgUsers()
 				Expect(len(err)).To(Equal(0))
+			})
+		})
+		Context("Sync Users", func() {
+			var roleUsers *role.RoleUsers
+			BeforeEach(func() {
+				uaaUsers := &uaa.Users{}
+				uaaUsers.Add(uaa.User{Username: "test", Origin: "uaa", GUID: "test-user-guid"})
+				uaaUsers.Add(uaa.User{Username: "test", Origin: "ldap", GUID: "test-ldap-user-guid", ExternalID: "cn=test"})
+				roleUsers, _ = role.NewRoleUsers([]*resource.User{}, uaaUsers)
+
+				userManager.UAAUsers = uaaUsers
+			})
+			It("Should add internal user to role and ldap user with same name to role", func() {
+				updateUsersInput := UsersInput{
+					Users:     []string{"test"},
+					LdapUsers: []string{"test"},
+					SpaceGUID: "space_guid",
+					OrgGUID:   "org_guid",
+					SpaceName: "spaceName",
+					OrgName:   "orgName",
+					AddUser:   roleMgrFake.AssociateSpaceAuditor,
+					RoleUsers: roleUsers,
+				}
+				userManager.LdapConfig = &config.LdapConfig{Enabled: true, Origin: "ldap"}
+				err := userManager.SyncUsers(updateUsersInput)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(roleMgrFake.AssociateSpaceAuditorCallCount()).Should(Equal(2))
+				orgGUID, spaceName, spaceGUID, userName, userGUID := roleMgrFake.AssociateSpaceAuditorArgsForCall(0)
+				Expect(orgGUID).Should(Equal("org_guid"))
+				Expect(spaceName).Should(Equal("orgName/spaceName"))
+				Expect(spaceGUID).Should(Equal("space_guid"))
+				Expect(userName).Should(Equal("test"))
+				Expect(userGUID).Should(Equal("test-ldap-user-guid"))
+
+				orgGUID, spaceName, spaceGUID, userName, userGUID = roleMgrFake.AssociateSpaceAuditorArgsForCall(1)
+				Expect(orgGUID).Should(Equal("org_guid"))
+				Expect(spaceName).Should(Equal("orgName/spaceName"))
+				Expect(spaceGUID).Should(Equal("space_guid"))
+				Expect(userName).Should(Equal("test"))
+				Expect(userGUID).Should(Equal("test-user-guid"))
 			})
 		})
 	})

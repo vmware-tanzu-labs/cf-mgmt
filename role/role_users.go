@@ -48,10 +48,10 @@ func (r *RoleUsers) OrphanedUsers() []string {
 	return userList
 }
 
-func (r *RoleUsers) HasUser(userName string) bool {
-	_, ok := r.users[strings.ToLower(userName)]
-	return ok
-}
+// func (r *RoleUsers) HasUser(userName string) bool {
+// 	_, ok := r.users[strings.ToLower(userName)]
+// 	return ok
+// }
 
 func (r *RoleUsers) HasUserForGUID(userName, userGUID string) bool {
 	userList := r.users[strings.ToLower(userName)]
