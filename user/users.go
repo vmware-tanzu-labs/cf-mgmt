@@ -329,7 +329,7 @@ func (m *DefaultManager) SyncInternalUsers(roleUsers *role.RoleUsers, usersInput
 		if uaaUser == nil {
 			return fmt.Errorf("user %s doesn't exist in origin %s, so must add internal user first", lowerUserID, origin)
 		}
-		if !roleUsers.HasUser(lowerUserID) {
+		if !roleUsers.HasUserForGUID(lowerUserID, uaaUser.GUID) {
 			user := uaaUsers.GetByNameAndOrigin(lowerUserID, origin)
 			if user == nil {
 				return fmt.Errorf("unable to find user %s for origin %s", lowerUserID, origin)

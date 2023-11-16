@@ -94,10 +94,10 @@ var _ = Describe("SamlUsers", func() {
 				AddUser:   roleMgrFake.AssociateSpaceAuditor,
 				RoleUsers: role.InitRoleUsers(),
 			}
-			Expect(roleUsers.HasUser("test.test@test.com")).Should(BeTrue())
+			Expect(roleUsers.HasUserForOrigin("test.test@test.com", "saml_origin")).Should(BeTrue())
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(roleUsers.HasUser("test.test@test.com")).Should(BeFalse())
+			Expect(roleUsers.HasUserForOrigin("test.test@test.com", "saml_origin")).Should(BeFalse())
 			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(0))
 			Expect(roleMgrFake.AssociateSpaceAuditorCallCount()).Should(Equal(0))
 
@@ -113,7 +113,7 @@ var _ = Describe("SamlUsers", func() {
 			}
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(roleUsers.HasUser("Test.Test@test.com")).Should(BeFalse())
+			Expect(roleUsers.HasUserForOrigin("Test.Test@test.com", "saml_origin")).Should(BeFalse())
 			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(0))
 			Expect(roleMgrFake.AssociateSpaceAuditorCallCount()).Should(Equal(0))
 		})
