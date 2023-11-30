@@ -9,16 +9,16 @@ import (
 
 // UsersInput
 type UsersInput struct {
-	SpaceGUID                                   string
-	OrgGUID                                     string
-	LdapUsers, Users, LdapGroupNames, SamlUsers []string
-	SpaceName                                   string
-	OrgName                                     string
-	RemoveUsers                                 bool
-	RoleUsers                                   *role.RoleUsers
-	AddUser                                     func(orgGUID, entityName, entityGUID, userName, userGUID string) error
-	RemoveUser                                  func(entityName, entityGUID, userName, userGUID string) error
-	Role                                        string
+	SpaceGUID                                             string
+	OrgGUID                                               string
+	LdapUsers, Users, SPNUsers, LdapGroupNames, SamlUsers []string
+	SpaceName                                             string
+	OrgName                                               string
+	RemoveUsers                                           bool
+	RoleUsers                                             *role.RoleUsers
+	AddUser                                               func(orgGUID, entityName, entityGUID, userName, userGUID string) error
+	RemoveUser                                            func(entityName, entityGUID, userName, userGUID string) error
+	Role                                                  string
 }
 
 func (u *UsersInput) EntityName() string {
@@ -37,6 +37,10 @@ func (u *UsersInput) EntityGUID() string {
 
 func (u *UsersInput) UniqueUsers() []string {
 	return uniqueSlice(u.Users)
+}
+
+func (u *UsersInput) UniqueSPNUsers() []string {
+	return uniqueSlice(u.SPNUsers)
 }
 
 func (u *UsersInput) UniqueSamlUsers() []string {

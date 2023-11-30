@@ -80,7 +80,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   roleMgrFake.AssociateSpaceAuditor,
 					RoleUsers: role.InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).ShouldNot(HaveOccurred())
 				orgGUID, spaceName, spaceGUID, userName, userGUID := roleMgrFake.AssociateSpaceAuditorArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org_guid"))
@@ -100,7 +100,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   roleMgrFake.AssociateSpaceAuditor,
 					RoleUsers: role.InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).ShouldNot(HaveOccurred())
 				orgGUID, spaceName, spaceGUID, userName, userGUID := roleMgrFake.AssociateSpaceAuditorArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org_guid"))
@@ -118,7 +118,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   roleMgrFake.AssociateSpaceAuditor,
 					RoleUsers: role.InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(roleMgrFake.AssociateSpaceAuditorCallCount()).Should(Equal(0))
 			})
@@ -130,7 +130,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   roleMgrFake.AssociateSpaceAuditor,
 					RoleUsers: role.InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).Should(Equal("user test2 doesn't exist in origin uaa, so must add internal user first"))
 			})
@@ -144,7 +144,7 @@ var _ = Describe("given UserSpaces", func() {
 					RoleUsers: role.InitRoleUsers(),
 				}
 				roleMgrFake.AssociateSpaceAuditorReturns(errors.New("error"))
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).Should(HaveOccurred())
 				Expect(roleMgrFake.AssociateSpaceAuditorCallCount()).Should(Equal(1))
 			})

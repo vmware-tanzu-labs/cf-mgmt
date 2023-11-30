@@ -11,7 +11,7 @@ jobs:
     name: Test all components
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v3
         with:
           go-version-file: 'go.mod'
@@ -23,7 +23,7 @@ jobs:
     needs: test-job
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Go version
         uses: actions/setup-go@v3
         with:
@@ -50,7 +50,7 @@ jobs:
     needs: build-job
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install versioning tool
         run: go install github.com/xchapter7x/versioning@latest
       - name: Determine Version
@@ -62,16 +62,13 @@ jobs:
         with:
           name: dist
           path: dist
-      - name: Create Release using hub
+      - name: Create Release using gh
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          asset_file_list=()
-          for f in dist/*
-          do
-            asset_file_list+=("-a" "${f}")
-          done
-          tag_name=${VERSION}
-          hub release create "${asset_file_list[@]}" -m "Release $tag_name" "$tag_name"
-          
+        with:
+          body: "Release ${{ env.VERSION }}"
+          files: dist/*
+          tag_name: ${{ env.VERSION }}
+
 

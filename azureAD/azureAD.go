@@ -101,7 +101,7 @@ func graphGetIdFromName(token, name string) (string, error) {
 	}
 
 	if len(result.Value) != 1 {
-		lo.G.Errorf("Number of Id's returned for groupname search should be exactly one!")
+		lo.G.Errorf("Number of Id's returned for groupname (%s) search should be exactly one, not %d!", name, result.Value)
 		return "", err
 	}
 
@@ -127,7 +127,7 @@ func doHttpCall(requestUrl string, Headers map[string]string) ([]byte, error) {
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 	body, _ := io.ReadAll(response.Body)
 	return body, nil
 }

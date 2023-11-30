@@ -592,6 +592,7 @@ func (m *yamlManager) AzureADConfig(tenantId, clientId, secret, origin string) (
 			lo.G.Infof("Using environment provided Azure AD Origin %s instead of %s", origin, config.UserOrigin)
 			config.UserOrigin = origin
 		}
+		// SPNOrigin: always use from file
 	} else {
 		config.UserOrigin = "Disabled" // Needed way down in the code path. Should at that point not be empty
 	}

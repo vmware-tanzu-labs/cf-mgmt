@@ -4,6 +4,7 @@ package config
 type UserMgmt struct {
 	LDAPUsers  []string `yaml:"ldap_users"`
 	Users      []string `yaml:"users"`
+	SPNUsers   []string `yaml:"spn_users,omitempty"`
 	SamlUsers  []string `yaml:"saml_users"`
 	LDAPGroup  string   `yaml:"ldap_group,omitempty"`
 	LDAPGroups []string `yaml:"ldap_groups"`
