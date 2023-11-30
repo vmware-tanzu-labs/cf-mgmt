@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -47,7 +48,7 @@ var _ = Describe("Isolation Segments", func() {
 
 		Context("when no segments exist", func() {
 			BeforeEach(func() {
-				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{cfclient.IsolationSegment{Name: "shared"}}, nil)
+				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{{Name: "shared"}}, nil)
 			})
 
 			It("creates isolation segments", func() {
@@ -152,7 +153,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
-				orgReader.FindOrgReturns(cfclient.Org{Guid: "orgGUID"}, nil)
+				orgReader.FindOrgReturns(&resource.Organization{GUID: "orgGUID"}, nil)
 			})
 
 			It("makes no changes", func() {
@@ -171,7 +172,7 @@ var _ = Describe("Isolation Segments", func() {
 
 			It("entitles both orgs to their isolation segments", func() {
 				By("entitling org1 to iso00 (used by one of its spaces)")
-				orgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
+				orgReader.FindOrgReturns(&resource.Organization{Name: "org1", GUID: "org1_guid"}, nil)
 				Ω(u.Entitle()).Should(Succeed())
 				Expect(client.AddIsolationSegmentToOrgCallCount()).Should(Equal(2))
 				var isoSegmentGUIDs []string
@@ -186,6 +187,7 @@ var _ = Describe("Isolation Segments", func() {
 
 			It("makes no change when DryRun is enabled", func() {
 				u.Peek = true
+				orgReader.FindOrgReturns(&resource.Organization{Name: "org1", GUID: "org1_guid"}, nil)
 				Ω(u.Entitle()).Should(Succeed())
 				Expect(client.AddIsolationSegmentToOrgCallCount()).Should(Equal(0))
 			})
@@ -202,7 +204,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 					{Name: "extra", GUID: "extra_guid"}}, nil)
-				orgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
+				orgReader.FindOrgReturns(&resource.Organization{Name: "org1", GUID: "org1_guid"}, nil)
 			})
 
 			It("revokes org2's access to the extra isolation segment when CleanUp is enabled", func() {
@@ -230,7 +232,7 @@ var _ = Describe("Isolation Segments", func() {
 	Describe("UpdateOrgs() default isolation segment", func() {
 		Context("when org1 is configured to use iso00 by default", func() {
 			It("sets isolation segments correctly", func() {
-				orgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
+				orgReader.FindOrgReturns(&resource.Organization{Name: "org1", GUID: "org1_guid"}, nil)
 				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
@@ -248,7 +250,8 @@ var _ = Describe("Isolation Segments", func() {
 				u.Cfg = config.NewManager("./fixtures/0003")
 			})
 			It("sets isolation segments correctly", func() {
-				orgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid", DefaultIsolationSegmentGuid: "foo"}, nil)
+				orgReader.FindOrgReturns(&resource.Organization{Name: "org1", GUID: "org1_guid"}, nil)
+				orgReader.GetDefaultIsolationSegmentReturns("foo", nil)
 				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
@@ -287,7 +290,7 @@ var _ = Describe("Isolation Segments", func() {
 		Context("when there is an error setting the default isolation segment", func() {
 			It("fails", func() {
 
-				orgReader.FindOrgReturns(cfclient.Org{Name: "org1", Guid: "org1_guid"}, nil)
+				orgReader.FindOrgReturns(&resource.Organization{Name: "org1", GUID: "org1_guid"}, nil)
 				client.ListIsolationSegmentsReturns([]cfclient.IsolationSegment{
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
@@ -305,7 +308,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
-				spaceManager.FindSpaceReturns(cfclient.Space{Name: "org1space2", Guid: "space_guid"}, nil)
+				spaceManager.FindSpaceReturns(&resource.Space{Name: "org1space2", GUID: "space_guid"}, nil)
 				Ω(u.UpdateSpaces()).Should(Succeed())
 				Expect(client.IsolationSegmentForSpaceCallCount()).Should(Equal(1))
 				spaceGUID, isolationSegmentGUID := client.IsolationSegmentForSpaceArgsForCall(0)
@@ -323,7 +326,8 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
-				spaceManager.FindSpaceReturns(cfclient.Space{Name: "org1space2", Guid: "space_guid", IsolationSegmentGuid: "foo"}, nil)
+				spaceManager.FindSpaceReturns(&resource.Space{Name: "org1space2", GUID: "space_guid"}, nil)
+				spaceManager.GetSpaceIsolationSegmentGUIDReturns("foo", nil)
 				Ω(u.UpdateSpaces()).Should(Succeed())
 				Expect(client.ResetIsolationSegmentForSpaceCallCount()).Should(Equal(1))
 				spaceGUID := client.ResetIsolationSegmentForSpaceArgsForCall(0)
@@ -361,7 +365,7 @@ var _ = Describe("Isolation Segments", func() {
 					{Name: "iso01", GUID: "iso01_guid"},
 					{Name: "default_iso", GUID: "default_iso_guid"},
 				}, nil)
-				spaceManager.FindSpaceReturns(cfclient.Space{Name: "org1space2", Guid: "space_guid"}, nil)
+				spaceManager.FindSpaceReturns(&resource.Space{Name: "org1space2", GUID: "space_guid"}, nil)
 				client.IsolationSegmentForSpaceReturns(errors.New("error"))
 				Ω(u.UpdateSpaces()).ShouldNot(Succeed())
 			})

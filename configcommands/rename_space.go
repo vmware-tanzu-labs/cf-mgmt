@@ -14,7 +14,7 @@ type RenameSpaceConfigurationCommand struct {
 	NewSpaceName string `long:"new-space" description:"Space name to rename to" required:"true"`
 }
 
-//Execute - renames space config
+// Execute - renames space config
 func (c *RenameSpaceConfigurationCommand) Execute(args []string) error {
 	c.initConfig()
 	spaceConfig, err := c.ConfigManager.GetSpaceConfig(c.OrgName, c.SpaceName)

@@ -2,7 +2,6 @@ package config_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -189,7 +188,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 			}
 			spaces := &config.Spaces{Org: orgName}
 			BeforeEach(func() {
-				tempDir, err = ioutil.TempDir("", "cf-mgmt")
+				tempDir, err = os.MkdirTemp("", "cf-mgmt")
 				Expect(err).ShouldNot(HaveOccurred())
 				configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
 				configManager.CreateConfigIfNotExists("ldap")
@@ -371,7 +370,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 				var err error
 				var configManager config.Manager
 				BeforeEach(func() {
-					tempDir, err = ioutil.TempDir("", "cf-mgmt")
+					tempDir, err = os.MkdirTemp("", "cf-mgmt")
 					Expect(err).ShouldNot(HaveOccurred())
 					configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
 					configManager.CreateConfigIfNotExists("ldap")
@@ -484,7 +483,7 @@ var _ = Describe("CF-Mgmt Config", func() {
 
 			BeforeEach(func() {
 				var err error
-				tempDir, err = ioutil.TempDir("", "cf-mgmt")
+				tempDir, err = os.MkdirTemp("", "cf-mgmt")
 				Expect(err).ShouldNot(HaveOccurred())
 				configManager = config.NewManager(path.Join(tempDir, "cfmgmt"))
 				configManager.CreateConfigIfNotExists("ldap")

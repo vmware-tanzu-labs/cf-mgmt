@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	"github.com/vmwarepivotallabs/cf-mgmt/space"
 )
 
 type FakeCFClient struct {
@@ -790,5 +789,3 @@ func (fake *FakeCFClient) recordInvocation(key string, args []interface{}) {
 	}
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
-
-var _ space.CFClient = new(FakeCFClient)

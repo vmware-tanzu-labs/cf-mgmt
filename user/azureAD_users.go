@@ -6,11 +6,12 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/azureAD"
+	"github.com/vmwarepivotallabs/cf-mgmt/role"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
-func (m *DefaultManager) SyncAzureADUsers(roleUsers *RoleUsers, usersInput UsersInput) error {
+func (m *DefaultManager) SyncAzureADUsers(roleUsers *role.RoleUsers, usersInput UsersInput) error {
 	origin := m.AzureADConfig.UserOrigin
 	if m.AzureADConfig.Enabled {
 		azureADUsers, err := m.GetAzureADUsers(usersInput)
@@ -21,9 +22,9 @@ func (m *DefaultManager) SyncAzureADUsers(roleUsers *RoleUsers, usersInput Users
 		for _, inputUser := range azureADUsers {
 			userToUse := m.UpdateADUserInfo(inputUser)
 			userID := userToUse.Upn
-			userList := m.UAAUsers.GetByName(userID)
+			uaaUser := m.UAAUsers.GetByNameAndOrigin(userID, origin)
 			lo.G.Debugf("SyncAzureADUsers: Processing user: %s", userID)
-			if len(userList) == 0 {
+			if uaaUser == nil {
 				lo.G.Debugf("AAD User %s doesn't exist in cloud foundry, so creating user", userToUse.Upn)
 				if userGUID, err := m.UAAMgr.CreateExternalUser(userToUse.Upn, userToUse.Upn, userToUse.Upn, m.AzureADConfig.UserOrigin); err != nil {
 					lo.G.Errorf("Unable to create AAD user %s with error %s", userToUse.Upn, err.Error())
@@ -44,7 +45,7 @@ func (m *DefaultManager) SyncAzureADUsers(roleUsers *RoleUsers, usersInput Users
 				if user == nil {
 					return fmt.Errorf("Unable to find user %s for origin %s", userID, origin)
 				}
-				if err := usersInput.AddUser(usersInput, user.Username, user.GUID); err != nil {
+				if err := usersInput.AddUser(usersInput.OrgGUID, usersInput.EntityName(), usersInput.EntityGUID(), user.Username, user.GUID); err != nil {
 					return errors.Wrap(err, fmt.Sprintf("User %s with origin %s", user.Username, user.Origin))
 				}
 			} else {
@@ -60,7 +61,8 @@ func (m *DefaultManager) SyncAzureADUsers(roleUsers *RoleUsers, usersInput Users
 
 func (m *DefaultManager) GetAzureADUsers(usersInput UsersInput) ([]azureAD.UserType, error) {
 	var azureADUsers []azureAD.UserType
-	for _, groupName := range usersInput.UniqueGroupNames() {
+	// a hack, at the moment, as the ldap group names are getting abused to also store the aad groups
+	for _, groupName := range usersInput.UniqueLdapGroupNames() {
 
 		userUPNList, err := m.AzureADMgr.GraphGetGroupMembers(m.AzureADMgr.GetADToken(), groupName)
 		if err != nil {

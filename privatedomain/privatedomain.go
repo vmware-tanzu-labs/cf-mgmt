@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/xchapter7x/lo"
@@ -22,7 +23,7 @@ func NewManager(client CFClient, orgReader organizationreader.Reader, cfg config
 	}
 }
 
-//DefaultManager -
+// DefaultManager -
 type DefaultManager struct {
 	Cfg       config.Reader
 	OrgReader organizationreader.Reader
@@ -48,7 +49,7 @@ func (m *DefaultManager) CreatePrivateDomains() error {
 		privateDomainMap := make(map[string]string)
 		for _, privateDomain := range orgConfig.PrivateDomains {
 			if existingPrivateDomain, ok := allPrivateDomains[privateDomain]; ok {
-				if org.Guid != existingPrivateDomain.OwningOrganizationGuid {
+				if org.GUID != existingPrivateDomain.OwningOrganizationGuid {
 					existingOrg, err := m.OrgReader.FindOrgByGUID(existingPrivateDomain.OwningOrganizationGuid)
 					if err != nil {
 						return err
@@ -56,7 +57,7 @@ func (m *DefaultManager) CreatePrivateDomains() error {
 					return fmt.Errorf("Private Domain %s already exists in org [%s]", privateDomain, existingOrg.Name)
 				}
 			} else {
-				privateDomain, err := m.CreatePrivateDomain(&org, privateDomain)
+				privateDomain, err := m.CreatePrivateDomain(org, privateDomain)
 				if err != nil {
 					return err
 				}
@@ -66,7 +67,7 @@ func (m *DefaultManager) CreatePrivateDomains() error {
 		}
 
 		if orgConfig.RemovePrivateDomains {
-			orgPrivateDomains, err := m.ListOrgOwnedPrivateDomains(org.Guid)
+			orgPrivateDomains, err := m.ListOrgOwnedPrivateDomains(org.GUID)
 			if err != nil {
 				return err
 			}
@@ -101,7 +102,7 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		if err != nil {
 			return err
 		}
-		orgSharedPrivateDomains, err := m.ListOrgSharedPrivateDomains(org.Guid)
+		orgSharedPrivateDomains, err := m.ListOrgSharedPrivateDomains(org.GUID)
 		if err != nil {
 			return err
 		}
@@ -111,7 +112,7 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		for _, privateDomainName := range orgConfig.SharedPrivateDomains {
 			if _, ok := orgSharedPrivateDomains[privateDomainName]; !ok {
 				if privateDomain, ok := privateDomains[privateDomainName]; ok {
-					err = m.SharePrivateDomain(&org, privateDomain)
+					err = m.SharePrivateDomain(org, privateDomain)
 					if err != nil {
 						return err
 					}
@@ -127,7 +128,7 @@ func (m *DefaultManager) SharePrivateDomains() error {
 		if orgConfig.RemoveSharedPrivateDomains {
 			lo.G.Debugf("Org %s Shared Domains to be removed %+v", orgConfig.Org, reflect.ValueOf(orgSharedPrivateDomains).MapKeys())
 			for _, privateDomain := range orgSharedPrivateDomains {
-				err = m.RemoveSharedPrivateDomain(&org, privateDomain)
+				err = m.RemoveSharedPrivateDomain(org, privateDomain)
 				if err != nil {
 					return err
 				}
@@ -153,21 +154,21 @@ func (m *DefaultManager) ListAllPrivateDomains() (map[string]cfclient.Domain, er
 	return privateDomainMap, nil
 }
 
-func (m *DefaultManager) CreatePrivateDomain(org *cfclient.Org, privateDomain string) (*cfclient.Domain, error) {
+func (m *DefaultManager) CreatePrivateDomain(org *resource.Organization, privateDomain string) (*cfclient.Domain, error) {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: create private domain %s for org %s", privateDomain, org.Name)
-		return &cfclient.Domain{Guid: "dry-run-guid", Name: privateDomain, OwningOrganizationGuid: org.Guid}, nil
+		return &cfclient.Domain{Guid: "dry-run-guid", Name: privateDomain, OwningOrganizationGuid: org.GUID}, nil
 	}
 	lo.G.Infof("Creating Private Domain %s for Org %s", privateDomain, org.Name)
-	return m.Client.CreateDomain(privateDomain, org.Guid)
+	return m.Client.CreateDomain(privateDomain, org.GUID)
 }
-func (m *DefaultManager) SharePrivateDomain(org *cfclient.Org, domain cfclient.Domain) error {
+func (m *DefaultManager) SharePrivateDomain(org *resource.Organization, domain cfclient.Domain) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: Share private domain %s for org %s", domain.Name, org.Name)
 		return nil
 	}
 	lo.G.Infof("Share private domain %s for org %s", domain.Name, org.Name)
-	_, err := m.Client.ShareOrgPrivateDomain(org.Guid, domain.Guid)
+	_, err := m.Client.ShareOrgPrivateDomain(org.GUID, domain.Guid)
 	return err
 }
 
@@ -221,11 +222,11 @@ func (m *DefaultManager) DeletePrivateDomain(domain cfclient.Domain) error {
 	return m.Client.DeleteDomain(domain.Guid)
 }
 
-func (m *DefaultManager) RemoveSharedPrivateDomain(org *cfclient.Org, domain cfclient.Domain) error {
+func (m *DefaultManager) RemoveSharedPrivateDomain(org *resource.Organization, domain cfclient.Domain) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: Unshare private domain %s for org %s", domain.Name, org.Name)
 		return nil
 	}
 	lo.G.Infof("Unshare private domain %s for org %s", domain.Name, org.Name)
-	return m.Client.UnshareOrgPrivateDomain(org.Guid, domain.Guid)
+	return m.Client.UnshareOrgPrivateDomain(org.GUID, domain.Guid)
 }

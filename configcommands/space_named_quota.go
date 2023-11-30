@@ -14,7 +14,7 @@ type SpaceNamedQuotaConfigurationCommand struct {
 	Quota NamedSpaceQuota `group:"quota"`
 }
 
-//Execute - updates space named quotas
+// Execute - updates space named quotas
 func (c *SpaceNamedQuotaConfigurationCommand) Execute(args []string) error {
 	c.initConfig()
 	spaceQuota, err := c.ConfigManager.GetSpaceQuota(c.Name, c.Org)
@@ -23,16 +23,17 @@ func (c *SpaceNamedQuotaConfigurationCommand) Execute(args []string) error {
 	}
 	if spaceQuota == nil {
 		spaceQuota = &config.SpaceQuota{
-			Name:                    c.Name,
-			Org:                     c.Org,
-			TotalReservedRoutePorts: "unlimited",
-			TotalServiceKeys:        "unlimited",
-			AppInstanceLimit:        "unlimited",
-			AppTaskLimit:            "unlimited",
-			InstanceMemoryLimit:     "unlimited",
-			TotalRoutes:             "unlimited",
-			TotalServices:           "unlimited",
-			PaidServicePlansAllowed: true,
+			Name:                       c.Name,
+			Org:                        c.Org,
+			TotalReservedRoutePorts:    "unlimited",
+			TotalServiceKeys:           "unlimited",
+			AppInstanceLimit:           "unlimited",
+			AppTaskLimit:               "unlimited",
+			InstanceMemoryLimit:        "unlimited",
+			TotalRoutes:                "unlimited",
+			TotalServices:              "unlimited",
+			PaidServicePlansAllowed:    true,
+			LogRateLimitBytesPerSecond: "unlimited",
 		}
 	}
 	errorString := ""
@@ -54,6 +55,7 @@ func updateSpaceNamedQuotaConfig(namedSpaceQuota *config.SpaceQuota, spaceQuota 
 	convertToFormattedInt("total-service-keys", &namedSpaceQuota.TotalServiceKeys, spaceQuota.TotalServiceKeys, config.UNLIMITED, errorString)
 	convertToFormattedInt("app-instance-limit", &namedSpaceQuota.AppInstanceLimit, spaceQuota.AppInstanceLimit, config.UNLIMITED, errorString)
 	convertToFormattedInt("app-task-limit", &namedSpaceQuota.AppTaskLimit, spaceQuota.AppTaskLimit, config.UNLIMITED, errorString)
+	convertToFormattedInt("app-task-limit", &namedSpaceQuota.LogRateLimitBytesPerSecond, spaceQuota.LogRateLimitBytesPerSecond, config.UNLIMITED, errorString)
 }
 
 func (c *SpaceNamedQuotaConfigurationCommand) initConfig() {

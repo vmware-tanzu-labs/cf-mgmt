@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/securitygroup"
 )
 
@@ -52,28 +52,28 @@ type FakeManager struct {
 		result1 []byte
 		result2 error
 	}
-	ListDefaultSecurityGroupsStub        func() (map[string]cfclient.SecGroup, error)
+	ListDefaultSecurityGroupsStub        func() (map[string]*resource.SecurityGroup, error)
 	listDefaultSecurityGroupsMutex       sync.RWMutex
 	listDefaultSecurityGroupsArgsForCall []struct {
 	}
 	listDefaultSecurityGroupsReturns struct {
-		result1 map[string]cfclient.SecGroup
+		result1 map[string]*resource.SecurityGroup
 		result2 error
 	}
 	listDefaultSecurityGroupsReturnsOnCall map[int]struct {
-		result1 map[string]cfclient.SecGroup
+		result1 map[string]*resource.SecurityGroup
 		result2 error
 	}
-	ListNonDefaultSecurityGroupsStub        func() (map[string]cfclient.SecGroup, error)
+	ListNonDefaultSecurityGroupsStub        func() (map[string]*resource.SecurityGroup, error)
 	listNonDefaultSecurityGroupsMutex       sync.RWMutex
 	listNonDefaultSecurityGroupsArgsForCall []struct {
 	}
 	listNonDefaultSecurityGroupsReturns struct {
-		result1 map[string]cfclient.SecGroup
+		result1 map[string]*resource.SecurityGroup
 		result2 error
 	}
 	listNonDefaultSecurityGroupsReturnsOnCall map[int]struct {
-		result1 map[string]cfclient.SecGroup
+		result1 map[string]*resource.SecurityGroup
 		result2 error
 	}
 	ListSpaceSecurityGroupsStub        func(string) (map[string]string, error)
@@ -316,7 +316,7 @@ func (fake *FakeManager) GetSecurityGroupRulesReturnsOnCall(i int, result1 []byt
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListDefaultSecurityGroups() (map[string]cfclient.SecGroup, error) {
+func (fake *FakeManager) ListDefaultSecurityGroups() (map[string]*resource.SecurityGroup, error) {
 	fake.listDefaultSecurityGroupsMutex.Lock()
 	ret, specificReturn := fake.listDefaultSecurityGroupsReturnsOnCall[len(fake.listDefaultSecurityGroupsArgsForCall)]
 	fake.listDefaultSecurityGroupsArgsForCall = append(fake.listDefaultSecurityGroupsArgsForCall, struct {
@@ -340,39 +340,39 @@ func (fake *FakeManager) ListDefaultSecurityGroupsCallCount() int {
 	return len(fake.listDefaultSecurityGroupsArgsForCall)
 }
 
-func (fake *FakeManager) ListDefaultSecurityGroupsCalls(stub func() (map[string]cfclient.SecGroup, error)) {
+func (fake *FakeManager) ListDefaultSecurityGroupsCalls(stub func() (map[string]*resource.SecurityGroup, error)) {
 	fake.listDefaultSecurityGroupsMutex.Lock()
 	defer fake.listDefaultSecurityGroupsMutex.Unlock()
 	fake.ListDefaultSecurityGroupsStub = stub
 }
 
-func (fake *FakeManager) ListDefaultSecurityGroupsReturns(result1 map[string]cfclient.SecGroup, result2 error) {
+func (fake *FakeManager) ListDefaultSecurityGroupsReturns(result1 map[string]*resource.SecurityGroup, result2 error) {
 	fake.listDefaultSecurityGroupsMutex.Lock()
 	defer fake.listDefaultSecurityGroupsMutex.Unlock()
 	fake.ListDefaultSecurityGroupsStub = nil
 	fake.listDefaultSecurityGroupsReturns = struct {
-		result1 map[string]cfclient.SecGroup
+		result1 map[string]*resource.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListDefaultSecurityGroupsReturnsOnCall(i int, result1 map[string]cfclient.SecGroup, result2 error) {
+func (fake *FakeManager) ListDefaultSecurityGroupsReturnsOnCall(i int, result1 map[string]*resource.SecurityGroup, result2 error) {
 	fake.listDefaultSecurityGroupsMutex.Lock()
 	defer fake.listDefaultSecurityGroupsMutex.Unlock()
 	fake.ListDefaultSecurityGroupsStub = nil
 	if fake.listDefaultSecurityGroupsReturnsOnCall == nil {
 		fake.listDefaultSecurityGroupsReturnsOnCall = make(map[int]struct {
-			result1 map[string]cfclient.SecGroup
+			result1 map[string]*resource.SecurityGroup
 			result2 error
 		})
 	}
 	fake.listDefaultSecurityGroupsReturnsOnCall[i] = struct {
-		result1 map[string]cfclient.SecGroup
+		result1 map[string]*resource.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListNonDefaultSecurityGroups() (map[string]cfclient.SecGroup, error) {
+func (fake *FakeManager) ListNonDefaultSecurityGroups() (map[string]*resource.SecurityGroup, error) {
 	fake.listNonDefaultSecurityGroupsMutex.Lock()
 	ret, specificReturn := fake.listNonDefaultSecurityGroupsReturnsOnCall[len(fake.listNonDefaultSecurityGroupsArgsForCall)]
 	fake.listNonDefaultSecurityGroupsArgsForCall = append(fake.listNonDefaultSecurityGroupsArgsForCall, struct {
@@ -396,34 +396,34 @@ func (fake *FakeManager) ListNonDefaultSecurityGroupsCallCount() int {
 	return len(fake.listNonDefaultSecurityGroupsArgsForCall)
 }
 
-func (fake *FakeManager) ListNonDefaultSecurityGroupsCalls(stub func() (map[string]cfclient.SecGroup, error)) {
+func (fake *FakeManager) ListNonDefaultSecurityGroupsCalls(stub func() (map[string]*resource.SecurityGroup, error)) {
 	fake.listNonDefaultSecurityGroupsMutex.Lock()
 	defer fake.listNonDefaultSecurityGroupsMutex.Unlock()
 	fake.ListNonDefaultSecurityGroupsStub = stub
 }
 
-func (fake *FakeManager) ListNonDefaultSecurityGroupsReturns(result1 map[string]cfclient.SecGroup, result2 error) {
+func (fake *FakeManager) ListNonDefaultSecurityGroupsReturns(result1 map[string]*resource.SecurityGroup, result2 error) {
 	fake.listNonDefaultSecurityGroupsMutex.Lock()
 	defer fake.listNonDefaultSecurityGroupsMutex.Unlock()
 	fake.ListNonDefaultSecurityGroupsStub = nil
 	fake.listNonDefaultSecurityGroupsReturns = struct {
-		result1 map[string]cfclient.SecGroup
+		result1 map[string]*resource.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ListNonDefaultSecurityGroupsReturnsOnCall(i int, result1 map[string]cfclient.SecGroup, result2 error) {
+func (fake *FakeManager) ListNonDefaultSecurityGroupsReturnsOnCall(i int, result1 map[string]*resource.SecurityGroup, result2 error) {
 	fake.listNonDefaultSecurityGroupsMutex.Lock()
 	defer fake.listNonDefaultSecurityGroupsMutex.Unlock()
 	fake.ListNonDefaultSecurityGroupsStub = nil
 	if fake.listNonDefaultSecurityGroupsReturnsOnCall == nil {
 		fake.listNonDefaultSecurityGroupsReturnsOnCall = make(map[int]struct {
-			result1 map[string]cfclient.SecGroup
+			result1 map[string]*resource.SecurityGroup
 			result2 error
 		})
 	}
 	fake.listNonDefaultSecurityGroupsReturnsOnCall[i] = struct {
-		result1 map[string]cfclient.SecGroup
+		result1 map[string]*resource.SecurityGroup
 		result2 error
 	}{result1, result2}
 }

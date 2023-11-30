@@ -1,11 +1,11 @@
 package organization
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	"github.com/pkg/errors"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
@@ -13,26 +13,25 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-func NewManager(client CFClient, orgReader organizationreader.Reader, spaceMgr space.Manager, cfg config.Reader, peek bool) Manager {
+func NewManager(orgClient CFOrgClient, orgReader organizationreader.Reader, cfg config.Reader, peek bool) Manager {
 	return &DefaultManager{
 		Cfg:       cfg,
-		Client:    client,
 		OrgReader: orgReader,
-		SpaceMgr:  spaceMgr,
+		OrgClient: orgClient,
 		Peek:      peek,
 	}
 }
 
-//DefaultManager -
+// DefaultManager -
 type DefaultManager struct {
 	Cfg       config.Reader
 	OrgReader organizationreader.Reader
+	OrgClient CFOrgClient
 	SpaceMgr  space.Manager
-	Client    CFClient
 	Peek      bool
 }
 
-//CreateOrgs -
+// CreateOrgs -
 func (m *DefaultManager) CreateOrgs() error {
 	m.OrgReader.ClearOrgList()
 	desiredOrgs, err := m.Cfg.GetOrgConfigs()
@@ -78,7 +77,7 @@ func (m *DefaultManager) CreateOrgs() error {
 	return nil
 }
 
-//DeleteOrgs -
+// DeleteOrgs -
 func (m *DefaultManager) DeleteOrgs() error {
 	m.OrgReader.ClearOrgList()
 	orgsConfig, err := m.Cfg.Orgs()
@@ -109,7 +108,7 @@ func (m *DefaultManager) DeleteOrgs() error {
 		return err
 	}
 
-	orgsToDelete := make([]cfclient.Org, 0)
+	orgsToDelete := make([]*resource.Organization, 0)
 	for _, org := range orgs {
 		if _, exists := configuredOrgs[org.Name]; !exists {
 			if !util.Matches(org.Name, orgsConfig.ProtectedOrgList()) {
@@ -123,12 +122,9 @@ func (m *DefaultManager) DeleteOrgs() error {
 	}
 
 	for _, org := range orgsToDelete {
-		if err := m.ClearMetadata(org); err != nil {
-			return err
-		}
-		if err := m.SpaceMgr.DeleteSpacesForOrg(org.Guid, org.Name); err != nil {
-			return err
-		}
+		// if err := m.SpaceMgr.DeleteSpacesForOrg(org.GUID, org.Name); err != nil {
+		// 	return err
+		// }
 		if err := m.DeleteOrg(org); err != nil {
 			return err
 		}
@@ -137,7 +133,7 @@ func (m *DefaultManager) DeleteOrgs() error {
 	return nil
 }
 
-func doesOrgExist(orgName string, orgs []cfclient.Org) bool {
+func doesOrgExist(orgName string, orgs []*resource.Organization) bool {
 	for _, org := range orgs {
 		if strings.EqualFold(org.Name, orgName) {
 			return true
@@ -145,7 +141,7 @@ func doesOrgExist(orgName string, orgs []cfclient.Org) bool {
 	}
 	return false
 }
-func doesOrgExistFromRename(orgName string, orgs []cfclient.Org) bool {
+func doesOrgExistFromRename(orgName string, orgs []*resource.Organization) bool {
 	for _, org := range orgs {
 		if strings.EqualFold(org.Name, orgName) {
 			return true
@@ -154,7 +150,7 @@ func doesOrgExistFromRename(orgName string, orgs []cfclient.Org) bool {
 	return false
 }
 
-func (m *DefaultManager) orgNames(orgs []cfclient.Org) []string {
+func (m *DefaultManager) orgNames(orgs []*resource.Organization) []string {
 	var orgNames []string
 	for _, org := range orgs {
 		orgNames = append(orgNames, org.Name)
@@ -169,7 +165,7 @@ func (m *DefaultManager) CreateOrg(orgName string, currentOrgs []string) error {
 		return nil
 	}
 	lo.G.Infof("create org %s as it doesn't exist in %v", orgName, currentOrgs)
-	org, err := m.Client.CreateOrg(cfclient.OrgRequest{
+	org, err := m.OrgClient.Create(context.Background(), &resource.OrganizationCreate{
 		Name: orgName,
 	})
 	if err != nil {
@@ -189,20 +185,21 @@ func (m *DefaultManager) RenameOrg(originalOrgName, newOrgName string) error {
 	if err != nil {
 		return err
 	}
-	_, err = m.Client.UpdateOrg(org.Guid, cfclient.OrgRequest{
+	_, err = m.updateOrg(org.GUID, &resource.OrganizationUpdate{
 		Name: newOrgName,
 	})
 	org.Name = newOrgName
 	return err
 }
 
-func (m *DefaultManager) DeleteOrg(org cfclient.Org) error {
+func (m *DefaultManager) DeleteOrg(org *resource.Organization) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: delete org %s", org.Name)
 		return nil
 	}
 	lo.G.Infof("Deleting [%s] org", org.Name)
-	return m.Client.DeleteOrg(org.Guid, true, false)
+	_, err := m.OrgClient.Delete(context.Background(), org.GUID)
+	return err
 }
 
 func (m *DefaultManager) DeleteOrgByName(orgName string) error {
@@ -218,20 +215,11 @@ func (m *DefaultManager) DeleteOrgByName(orgName string) error {
 	return fmt.Errorf("org[%s] not found", orgName)
 }
 
-func (m *DefaultManager) UpdateOrg(orgGUID string, orgRequest cfclient.OrgRequest) (cfclient.Org, error) {
-	return m.Client.UpdateOrg(orgGUID, orgRequest)
+func (m *DefaultManager) updateOrg(orgGUID string, orgRequest *resource.OrganizationUpdate) (*resource.Organization, error) {
+	return m.OrgClient.Update(context.Background(), orgGUID, orgRequest)
 }
 
 func (m *DefaultManager) UpdateOrgsMetadata() error {
-	supports, err := m.Client.SupportsMetadataAPI()
-	if err != nil {
-		return errors.Wrap(err, "checking if supports v3 metadata api")
-	}
-	if !supports {
-		lo.G.Infof("Your deployment does not yet support v3 metadata api")
-		return nil
-	}
-
 	orgConfigList, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return err
@@ -248,57 +236,47 @@ func (m *DefaultManager) UpdateOrgsMetadata() error {
 			if err != nil {
 				return err
 			}
-			metadata := cfclient.Metadata{}
+			if org.Metadata == nil {
+				org.Metadata = &resource.Metadata{}
+			}
+			//clear any labels that start with the prefix
+			for key, _ := range org.Metadata.Labels {
+				if strings.Contains(key, globalCfg.MetadataPrefix) {
+					org.Metadata.Labels[key] = nil
+				}
+			}
 			if orgConfig.Metadata.Labels != nil {
 				for key, value := range orgConfig.Metadata.Labels {
 					if len(value) > 0 {
-						metadata.AddLabel(globalCfg.MetadataPrefix, key, value)
+						org.Metadata.SetLabel(globalCfg.MetadataPrefix, key, value)
 					} else {
-						metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
+						org.Metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
 					}
+				}
+			}
+			//clear any Annotations that start with the prefix
+			for key, _ := range org.Metadata.Annotations {
+				if strings.Contains(key, globalCfg.MetadataPrefix) {
+					org.Metadata.Annotations[key] = nil
 				}
 			}
 			if orgConfig.Metadata.Annotations != nil {
 				for key, value := range orgConfig.Metadata.Annotations {
 					if len(value) > 0 {
-						metadata.AddAnnotation(fmt.Sprintf("%s/%s", globalCfg.MetadataPrefix, key), value)
+						org.Metadata.SetAnnotation(globalCfg.MetadataPrefix, key, value)
 					} else {
-						metadata.RemoveAnnotation(fmt.Sprintf("%s/%s", globalCfg.MetadataPrefix, key))
-						// For bug in capi that removal doesn't include prefix
-						metadata.RemoveAnnotation(key)
+						org.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, key)
 					}
 				}
 			}
-			err = m.UpdateOrgMetadata(org, metadata)
+			_, err = m.updateOrg(org.GUID, &resource.OrganizationUpdate{
+				Name:     org.Name,
+				Metadata: org.Metadata,
+			})
 			if err != nil {
 				return err
 			}
 		}
 	}
 	return nil
-}
-
-func (m *DefaultManager) UpdateOrgMetadata(org cfclient.Org, metadata cfclient.Metadata) error {
-	if m.Peek {
-		lo.G.Infof("[dry-run]: update org %s metadata", org.Name)
-		return nil
-	}
-	lo.G.Infof("update org [%s] metadata", org.Name)
-	return m.Client.UpdateOrgMetadata(org.Guid, metadata)
-}
-
-func (m *DefaultManager) ClearMetadata(org cfclient.Org) error {
-	supports, err := m.Client.SupportsMetadataAPI()
-	if err != nil {
-		return err
-	}
-	if !supports {
-		return nil
-	}
-	if m.Peek {
-		lo.G.Infof("[dry-run]: removing org metadata from org %s", org.Name)
-		return nil
-	}
-	lo.G.Infof("removing org metadata from org %s", org.Name)
-	return m.Client.RemoveOrgMetadata(org.Guid)
 }

@@ -29,9 +29,9 @@ var _ = Describe("UsersInput", func() {
 		})
 		It("Should return unique ldap group list", func() {
 			input := UsersInput{
-				GroupNames: []string{"test", "test", "test2"},
+				LdapGroupNames: []string{"test", "test", "test2"},
 			}
-			Expect(input.UniqueGroupNames()).Should(ConsistOf([]string{"test", "test2"}))
+			Expect(input.UniqueLdapGroupNames()).Should(ConsistOf([]string{"test", "test2"}))
 		})
 	})
 })

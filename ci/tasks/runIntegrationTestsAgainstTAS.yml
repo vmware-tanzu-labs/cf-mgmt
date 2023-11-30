@@ -1,15 +1,11 @@
 platform: linux
-
 image_resource:
   type: registry-image
   source:
-    repository: cryogenics/essentials-cf6
-    tag: latest
-
+    repository: harbor-repo.vmware.com/cryogenics/essentials
+    tag: 0.1.81
 inputs:
-- name: source
-- name: env
-
+  - name: source
+  - name: env
 run:
   path: source/ci/tasks/runIntegrationTestsAgainstTAS.sh
-

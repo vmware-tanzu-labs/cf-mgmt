@@ -176,19 +176,19 @@ func (m *Manager) CreatePlanVisibility(servicePlan *ServicePlanInfo, orgName str
 	if err != nil {
 		return err
 	}
-	if !servicePlan.OrgHasAccess(org.Guid) {
+	if !servicePlan.OrgHasAccess(org.GUID) {
 		if m.Peek {
 			lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", servicePlan.Name, servicePlan.ServiceName, orgName)
 			return nil
 		}
 		lo.G.Infof("adding plan %s for service %s to org %s", servicePlan.Name, servicePlan.ServiceName, orgName)
-		_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.Guid)
+		_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.GUID)
 		if err != nil {
 			return err
 		}
 	} else {
 		lo.G.Debugf("plan %s for service %s already visible to org %s", servicePlan.Name, servicePlan.ServiceName, orgName)
-		servicePlan.RemoveOrg(org.Guid)
+		servicePlan.RemoveOrg(org.GUID)
 	}
 	return nil
 }
@@ -225,7 +225,7 @@ func (m *Manager) MakePrivate(servicePlan *ServicePlanInfo) error {
 
 func (m *Manager) RemoveVisibilities(servicePlan *ServicePlanInfo) error {
 	for _, visibility := range servicePlan.ListVisibilities() {
-		org, err := m.OrgReader.GetOrgByGUID(visibility.OrgGUID)
+		org, err := m.OrgReader.FindOrgByGUID(visibility.OrgGUID)
 		if err != nil {
 			return err
 		}

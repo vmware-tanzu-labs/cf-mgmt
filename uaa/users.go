@@ -14,7 +14,7 @@ func (u *Users) Add(user User) {
 	if u.userMap == nil {
 		u.userMap = make(map[string][]User)
 	}
-	key := strings.ToLower(user.Username)
+	key := strings.Trim(strings.ToLower(user.Username), " ")
 	existingUsers := u.userMap[key]
 	existingUsers = append(existingUsers, user)
 	u.userMap[key] = existingUsers
@@ -39,25 +39,14 @@ func (u *Users) Exists(userName string) bool {
 	return ok
 }
 
-func (u *Users) GetByName(userName string) []User {
-	if u.userMap == nil {
-		return nil
-	}
-	return u.userMap[strings.ToLower(userName)]
-}
-
 func (u *Users) GetByNameAndOrigin(userName, origin string) *User {
 	if u.userMap == nil {
 		return nil
 	}
 	userList := u.userMap[strings.ToLower(userName)]
-	if len(userList) == 1 {
-		return &userList[0]
-	} else {
-		for _, user := range userList {
-			if strings.EqualFold(user.Origin, origin) {
-				return &user
-			}
+	for _, user := range userList {
+		if strings.EqualFold(user.Origin, origin) {
+			return &user
 		}
 	}
 	return nil

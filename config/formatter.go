@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/vmwarepivotallabs/cf-mgmt/util"
 )
 
 const (
@@ -21,22 +22,22 @@ var (
 	timePattern  = regexp.MustCompile(`(?i)^(-?\d+)([DHM])$`)
 )
 
-func ByteSize(bytes int) string {
-	if bytes == -1 {
+func ByteSize(bytes *int) string {
+	if bytes == nil {
 		return "unlimited"
 	}
 	unit := ""
-	value := float32(bytes)
+	value := float32(*bytes)
 	switch {
-	case bytes >= TERABYTE:
+	case *bytes >= TERABYTE:
 		unit = "T"
 		value = value / TERABYTE
-	case bytes >= GIGABYTE:
+	case *bytes >= GIGABYTE:
 		unit = "G"
 		value = value / GIGABYTE
-	case bytes == 0:
+	case *bytes == 0:
 		return "0"
-	case bytes < GIGABYTE:
+	case *bytes < GIGABYTE:
 		unit = "M"
 	}
 	stringValue := fmt.Sprintf("%.1f", value)
@@ -49,48 +50,58 @@ func StringToMegabytes(s string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("must be an integer instead of [%s]", s)
 	}
-	if i == -1 {
+	if i == nil {
 		return "unlimited", nil
 	}
 	return ByteSize(i), nil
 }
 
-func AsString(i int) string {
-	if i == -1 {
+func AsString(i *int) string {
+	if i == nil {
 		return "unlimited"
 	}
-	return strconv.Itoa(i)
+	return strconv.Itoa(*i)
 }
 
-func ToInteger(s string) (int, error) {
+func ToInteger(s string) (*int, error) {
 	if s == "" {
-		return 0, nil
+		return nil, nil
 	}
 	if strings.EqualFold(s, "unlimited") {
-		return -1, nil
+		return nil, nil
 	}
-	return strconv.Atoi(strings.TrimSpace(s))
+	if strings.EqualFold(s, "-1") {
+		return nil, nil
+	}
+	val, err := strconv.Atoi(strings.TrimSpace(s))
+	if err == nil {
+		return util.GetIntPointer(val), nil
+	}
+	return nil, err
 }
 
-func ToMegabytes(s string) (int, error) {
+func ToMegabytes(s string) (*int, error) {
 	if s == "" {
-		return 0, nil
+		return util.GetIntPointer(0), nil
 	}
 	if strings.EqualFold(s, "unlimited") {
-		return -1, nil
+		return nil, nil
+	}
+	if strings.EqualFold(s, "-1") {
+		return nil, nil
 	}
 	value, err := strconv.Atoi(strings.TrimSpace(s))
 	if err == nil {
-		return value, nil
+		return util.GetIntPointer(value), nil
 	}
 	parts := bytesPattern.FindStringSubmatch(strings.TrimSpace(s))
 	if len(parts) < 3 {
-		return 0, errors.Wrap(invalidByteQuantityError(), "Unable to find match by pattern")
+		return nil, errors.Wrap(invalidByteQuantityError(), "Unable to find match by pattern")
 	}
 
 	floatValue, err := strconv.ParseFloat(parts[1], 64)
 	if err != nil {
-		return 0, errors.Wrap(invalidByteQuantityError(), "Unable to convert to integer")
+		return nil, errors.Wrap(invalidByteQuantityError(), "Unable to convert to integer")
 	}
 
 	var bytes float64
@@ -104,7 +115,7 @@ func ToMegabytes(s string) (int, error) {
 		bytes = floatValue * MEGABYTE
 	}
 
-	return int(bytes / float64(MEGABYTE)), nil
+	return util.GetIntPointer(int(bytes / float64(MEGABYTE))), nil
 }
 
 func FutureTime(t time.Time, timeToAdd string) (string, error) {

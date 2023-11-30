@@ -14,7 +14,7 @@ type ExportConfigurationCommand struct {
 	SkipRoutingGroups bool     `long:"skip-routing-groups" description:"Will not export routing groups. Set to true if tcp routing is not configured"`
 }
 
-//Execute - initializes cf-mgmt configuration
+// Execute - initializes cf-mgmt configuration
 func (c *ExportConfigurationCommand) Execute([]string) error {
 	if cfMgmt, err := InitializeManagers(c.BaseCFConfigCommand); err != nil {
 		lo.G.Errorf("Unable to initialize cf-mgmt. Error : %s", err)
@@ -31,6 +31,7 @@ func (c *ExportConfigurationCommand) Execute([]string) error {
 			cfMgmt.SharedDomainManager,
 			cfMgmt.ServiceAccessManager,
 			cfMgmt.QuotaManager,
+			cfMgmt.RoleManager,
 		)
 		exportManager.SkipRoutingGroups = c.SkipRoutingGroups
 		excludedOrgs := make(map[string]string)

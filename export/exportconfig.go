@@ -5,12 +5,14 @@ import (
 
 	"code.cloudfoundry.org/routing-api/models"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/isosegment"
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/vmwarepivotallabs/cf-mgmt/privatedomain"
 	"github.com/vmwarepivotallabs/cf-mgmt/quota"
+	"github.com/vmwarepivotallabs/cf-mgmt/role"
 	"github.com/vmwarepivotallabs/cf-mgmt/securitygroup"
 	"github.com/vmwarepivotallabs/cf-mgmt/serviceaccess"
 	"github.com/vmwarepivotallabs/cf-mgmt/shareddomain"
@@ -21,7 +23,7 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-//NewExportManager Creates a new instance of the ImportConfig manager
+// NewExportManager Creates a new instance of the ImportConfig manager
 func NewExportManager(
 	configDir string,
 	uaaMgr uaa.Manager,
@@ -33,7 +35,8 @@ func NewExportManager(
 	privateDomainMgr privatedomain.Manager,
 	sharedDomainMgr *shareddomain.Manager,
 	serviceAccessMgr *serviceaccess.Manager,
-	quotaMgr *quota.Manager) *Manager {
+	quotaMgr *quota.Manager,
+	roleMgr role.Manager) *Manager {
 	return &Manager{
 		ConfigMgr:            config.NewManager(configDir),
 		UAAMgr:               uaaMgr,
@@ -46,6 +49,7 @@ func NewExportManager(
 		SharedDomainManager:  sharedDomainMgr,
 		ServiceAccessManager: serviceAccessMgr,
 		QuotaManager:         quotaMgr,
+		RoleManager:          roleMgr,
 	}
 }
 
@@ -54,6 +58,7 @@ type Manager struct {
 	UAAMgr               uaa.Manager
 	SpaceManager         space.Manager
 	UserManager          user.Manager
+	RoleManager          role.Manager
 	OrgReader            organizationreader.Reader
 	SecurityGroupManager securitygroup.Manager
 	IsoSegmentManager    isosegment.Manager
@@ -104,8 +109,8 @@ func (im *Manager) ExportServiceAccess() error {
 	return err
 }
 
-//ExportConfig Imports org and space configuration from an existing CF instance
-//Entries part of excludedOrgs and excludedSpaces are not included in the import
+// ExportConfig Imports org and space configuration from an existing CF instance
+// Entries part of excludedOrgs and excludedSpaces are not included in the import
 func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, skipSpaces bool) error {
 	//Get all the users from the foundation
 	uaaUsers, err := im.UAAMgr.ListUsers()
@@ -184,13 +189,13 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		lo.G.Infof("Processing org: %s ", orgName)
 		orgConfig := &config.OrgConfig{Org: orgName}
 		//Add users
-		err = im.addOrgUsers(orgConfig, org.Guid)
+		err = im.addOrgUsers(orgConfig, org.GUID)
 		if err != nil {
 			return err
 		}
 		//Add Quota definition if applicable
-		if org.QuotaDefinitionGuid != "" {
-			orgQuota, err := org.Quota()
+		if org.Relationships.Quota.Data != nil {
+			orgQuota, err := im.QuotaManager.GetOrgQuota(org.Relationships.Quota.Data.GUID)
 			if err != nil {
 				return err
 			}
@@ -199,15 +204,19 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 				orgConfig.NamedQuota = orgQuota.Name
 			}
 		}
-		if org.DefaultIsolationSegmentGuid != "" {
+		orgIsolationSegmentGUID, err := im.OrgReader.GetDefaultIsolationSegment(org)
+		if err != nil {
+			return err
+		}
+		if orgIsolationSegmentGUID != "" {
 			for _, isosegment := range isolationSegments {
-				if isosegment.GUID == org.DefaultIsolationSegmentGuid {
+				if isosegment.GUID == orgIsolationSegmentGUID {
 					orgConfig.DefaultIsoSegment = isosegment.Name
 				}
 			}
 		}
 
-		privatedomains, err := im.PrivateDomainManager.ListOrgSharedPrivateDomains(org.Guid)
+		privatedomains, err := im.PrivateDomainManager.ListOrgSharedPrivateDomains(org.GUID)
 		if err != nil {
 			return err
 		}
@@ -215,7 +224,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 			orgConfig.SharedPrivateDomains = append(orgConfig.SharedPrivateDomains, privatedomain)
 		}
 
-		privatedomains, err = im.PrivateDomainManager.ListOrgOwnedPrivateDomains(org.Guid)
+		privatedomains, err = im.PrivateDomainManager.ListOrgOwnedPrivateDomains(org.GUID)
 		if err != nil {
 			return err
 		}
@@ -233,7 +242,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		}
 		lo.G.Infof("Done creating org %s", orgConfig.Org)
 		if !skipSpaces {
-			err := im.processSpaces(orgConfig, org.Guid, excludedSpaces, isolationSegments, securityGroups)
+			err := im.processSpaces(orgConfig, org.GUID, excludedSpaces, isolationSegments, securityGroups)
 			if err != nil {
 				return errors.Wrapf(err, "Processing org %s", orgConfig.Org)
 			}
@@ -242,7 +251,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 
 	for sgName, sgInfo := range securityGroups {
 		lo.G.Infof("Adding security group %s", sgName)
-		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
+		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.GUID); err == nil {
 			lo.G.Infof("Adding rules for %s", sgName)
 			im.ConfigMgr.AddSecurityGroup(sgName, rules)
 		} else {
@@ -252,13 +261,13 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 
 	for sgName, sgInfo := range defaultSecurityGroups {
 		lo.G.Infof("Adding default security group %s", sgName)
-		if sgInfo.Running {
+		if sgInfo.GloballyEnabled.Running {
 			globalConfig.RunningSecurityGroups = append(globalConfig.RunningSecurityGroups, sgName)
 		}
-		if sgInfo.Staging {
+		if sgInfo.GloballyEnabled.Staging {
 			globalConfig.StagingSecurityGroups = append(globalConfig.StagingSecurityGroups, sgName)
 		}
-		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
+		if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.GUID); err == nil {
 			lo.G.Infof("Adding rules for %s", sgName)
 			im.ConfigMgr.AddDefaultSecurityGroup(sgName, rules)
 		} else {
@@ -266,7 +275,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		}
 	}
 
-	orgQuotas, err := im.QuotaManager.Client.ListOrgQuotas()
+	orgQuotas, err := im.QuotaManager.ListAllOrgQuotas()
 	if err != nil {
 		return err
 	}
@@ -274,17 +283,18 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 	for _, orgQuota := range orgQuotas {
 
 		err = im.ConfigMgr.AddOrgQuota(config.OrgQuota{
-			Name:                    orgQuota.Name,
-			AppInstanceLimit:        config.AsString(orgQuota.AppInstanceLimit),
-			TotalPrivateDomains:     config.AsString(orgQuota.TotalPrivateDomains),
-			TotalReservedRoutePorts: config.AsString(orgQuota.TotalReservedRoutePorts),
-			TotalServiceKeys:        config.AsString(orgQuota.TotalServiceKeys),
-			AppTaskLimit:            config.AsString(orgQuota.AppTaskLimit),
-			MemoryLimit:             config.ByteSize(orgQuota.MemoryLimit),
-			InstanceMemoryLimit:     config.ByteSize(orgQuota.InstanceMemoryLimit),
-			TotalRoutes:             config.AsString(orgQuota.TotalRoutes),
-			TotalServices:           config.AsString(orgQuota.TotalServices),
-			PaidServicePlansAllowed: orgQuota.NonBasicServicesAllowed,
+			Name:                       orgQuota.Name,
+			AppInstanceLimit:           config.AsString(orgQuota.Apps.TotalInstances),
+			TotalPrivateDomains:        config.AsString(orgQuota.Domains.TotalDomains),
+			TotalReservedRoutePorts:    config.AsString(orgQuota.Routes.TotalReservedPorts),
+			TotalServiceKeys:           config.AsString(orgQuota.Services.TotalServiceKeys),
+			AppTaskLimit:               config.AsString(orgQuota.Apps.PerAppTasks),
+			MemoryLimit:                config.ByteSize(orgQuota.Apps.TotalMemoryInMB),
+			InstanceMemoryLimit:        config.ByteSize(orgQuota.Apps.PerProcessMemoryInMB),
+			TotalRoutes:                config.AsString(orgQuota.Routes.TotalRoutes),
+			TotalServices:              config.AsString(orgQuota.Services.TotalServiceInstances),
+			PaidServicePlansAllowed:    *orgQuota.Services.PaidServicesAllowed,
+			LogRateLimitBytesPerSecond: config.AsString(orgQuota.Apps.LogRateLimitInBytesPerSecond),
 		})
 		if err != nil {
 			return err
@@ -324,7 +334,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 	return im.ConfigMgr.SaveGlobalConfig(globalConfig)
 }
 
-func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]cfclient.SecGroup) error {
+func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]*resource.SecurityGroup) error {
 	lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
 	spaces, _ := im.SpaceManager.ListSpaces(orgGUID)
 	lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
@@ -337,17 +347,18 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 	for _, spaceQuota := range spaceQuotas {
 		if !im.doesSpaceExist(spaces, spaceQuota.Name) {
 			err = im.ConfigMgr.AddSpaceQuota(config.SpaceQuota{
-				Org:                     orgConfig.Org,
-				Name:                    spaceQuota.Name,
-				AppInstanceLimit:        config.AsString(spaceQuota.AppInstanceLimit),
-				TotalReservedRoutePorts: config.AsString(spaceQuota.TotalReservedRoutePorts),
-				TotalServiceKeys:        config.AsString(spaceQuota.TotalServiceKeys),
-				AppTaskLimit:            config.AsString(spaceQuota.AppTaskLimit),
-				MemoryLimit:             config.ByteSize(spaceQuota.MemoryLimit),
-				InstanceMemoryLimit:     config.ByteSize(spaceQuota.InstanceMemoryLimit),
-				TotalRoutes:             config.AsString(spaceQuota.TotalRoutes),
-				TotalServices:           config.AsString(spaceQuota.TotalServices),
-				PaidServicePlansAllowed: spaceQuota.NonBasicServicesAllowed,
+				Org:                        orgConfig.Org,
+				Name:                       spaceQuota.Name,
+				AppInstanceLimit:           config.AsString(spaceQuota.Apps.TotalInstances),
+				TotalReservedRoutePorts:    config.AsString(spaceQuota.Routes.TotalReservedPorts),
+				TotalServiceKeys:           config.AsString(spaceQuota.Services.TotalServiceKeys),
+				AppTaskLimit:               config.AsString(spaceQuota.Apps.PerAppTasks),
+				MemoryLimit:                config.ByteSize(spaceQuota.Apps.TotalMemoryInMB),
+				InstanceMemoryLimit:        config.ByteSize(spaceQuota.Apps.PerProcessMemoryInMB),
+				TotalRoutes:                config.AsString(spaceQuota.Routes.TotalRoutes),
+				TotalServices:              config.AsString(spaceQuota.Services.TotalServiceInstances),
+				PaidServicePlansAllowed:    *spaceQuota.Services.PaidServicesAllowed,
+				LogRateLimitBytesPerSecond: config.AsString(spaceQuota.Apps.LogRateLimitInBytesPerSecond),
 			})
 			if err != nil {
 				return err
@@ -365,28 +376,29 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 
 		spaceConfig := &config.SpaceConfig{Org: orgConfig.Org, Space: spaceName, EnableUnassignSecurityGroup: true}
 		//Add users
-		err = im.addSpaceUsers(spaceConfig, orgSpace.Guid)
+		err = im.addSpaceUsers(spaceConfig, orgSpace.Relationships.Organization.Data.GUID)
 		if err != nil {
 			return err
 		}
 		//Add Quota definition if applicable
-		if orgSpace.QuotaDefinitionGuid != "" {
-			quota, err := orgSpace.Quota()
+		if orgSpace.Relationships.Quota.Data != nil {
+			quota, err := im.QuotaManager.GetSpaceQuota(orgSpace.Relationships.Quota.Data.GUID)
 			if err != nil {
 				return err
 			}
 			if quota != nil {
 				if quota.Name == orgSpace.Name {
 					spaceConfig.EnableSpaceQuota = true
-					spaceConfig.MemoryLimit = config.ByteSize(quota.MemoryLimit)
-					spaceConfig.InstanceMemoryLimit = config.ByteSize(quota.InstanceMemoryLimit)
-					spaceConfig.TotalRoutes = config.AsString(quota.TotalRoutes)
-					spaceConfig.TotalServices = config.AsString(quota.TotalServices)
-					spaceConfig.PaidServicePlansAllowed = quota.NonBasicServicesAllowed
-					spaceConfig.TotalReservedRoutePorts = config.AsString(quota.TotalReservedRoutePorts)
-					spaceConfig.TotalServiceKeys = config.AsString(quota.TotalServiceKeys)
-					spaceConfig.AppInstanceLimit = config.AsString(quota.AppInstanceLimit)
-					spaceConfig.AppTaskLimit = config.AsString(quota.AppTaskLimit)
+					spaceConfig.MemoryLimit = config.ByteSize(quota.Apps.TotalMemoryInMB)
+					spaceConfig.InstanceMemoryLimit = config.ByteSize(quota.Apps.PerProcessMemoryInMB)
+					spaceConfig.TotalRoutes = config.AsString(quota.Routes.TotalRoutes)
+					spaceConfig.TotalServices = config.AsString(quota.Services.TotalServiceInstances)
+					spaceConfig.PaidServicePlansAllowed = *quota.Services.PaidServicesAllowed
+					spaceConfig.TotalReservedRoutePorts = config.AsString(quota.Routes.TotalReservedPorts)
+					spaceConfig.TotalServiceKeys = config.AsString(quota.Services.TotalServiceKeys)
+					spaceConfig.AppInstanceLimit = config.AsString(quota.Apps.TotalInstances)
+					spaceConfig.AppTaskLimit = config.AsString(quota.Apps.PerAppTasks)
+					spaceConfig.LogRateLimitBytesPerSecond = config.AsString(quota.Apps.LogRateLimitInBytesPerSecond)
 				} else {
 					spaceConfig.NamedQuota = quota.Name
 				}
@@ -401,26 +413,36 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 			spaceConfig.TotalServiceKeys = orgConfig.TotalServiceKeys
 			spaceConfig.AppInstanceLimit = orgConfig.AppInstanceLimit
 			spaceConfig.AppTaskLimit = orgConfig.AppTaskLimit
+			spaceConfig.LogRateLimitBytesPerSecond = orgConfig.LogRateLimitBytesPerSecond
 		}
-
-		if orgSpace.IsolationSegmentGuid != "" {
+		isoSegGUID, err := im.SpaceManager.GetSpaceIsolationSegmentGUID(orgSpace)
+		if err != nil {
+			return err
+		}
+		if isoSegGUID != "" {
 			for _, isosegment := range isolationSegments {
-				if isosegment.GUID == orgSpace.IsolationSegmentGuid {
+				if isosegment.GUID == isoSegGUID {
 					spaceConfig.IsoSegment = isosegment.Name
 				}
 			}
 
 		}
-		if orgSpace.AllowSSH {
+		sshEnabled, err := im.SpaceManager.IsSSHEnabled(orgSpace)
+		if err != nil {
+			return err
+		}
+		if sshEnabled {
 			spaceConfig.AllowSSH = true
 		}
 
 		spaceSGName := fmt.Sprintf("%s-%s", orgConfig.Org, spaceName)
-		if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.Guid); err == nil {
+		if spaceSGNames, err := im.SecurityGroupManager.ListSpaceSecurityGroups(orgSpace.GUID); err == nil {
 			for securityGroupName := range spaceSGNames {
 				lo.G.Infof("Adding named security group [%s] to space [%s]", securityGroupName, spaceName)
 				if securityGroupName != spaceSGName {
 					spaceConfig.ASGs = append(spaceConfig.ASGs, securityGroupName)
+				} else {
+					spaceConfig.EnableSecurityGroup = true
 				}
 			}
 		}
@@ -429,15 +451,18 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 
 		if sgInfo, ok := securityGroups[spaceSGName]; ok {
 			delete(securityGroups, spaceSGName)
-			if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.Guid); err == nil {
-				im.ConfigMgr.AddSecurityGroupToSpace(orgConfig.Org, spaceName, rules)
+			if rules, err := im.SecurityGroupManager.GetSecurityGroupRules(sgInfo.GUID); err == nil {
+				err = im.ConfigMgr.AddSecurityGroupToSpace(orgConfig.Org, spaceName, rules)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
 	return nil
 }
 
-func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs []cfclient.Org) error {
+func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs []*resource.Organization) error {
 	globalConfig.ServiceAccess = nil
 	serviceInfo, err := im.ServiceAccessManager.ListServiceInfo()
 	if err != nil {
@@ -483,16 +508,16 @@ func (im *Manager) exportServiceAccess(globalConfig *config.GlobalConfig, orgs [
 	return nil
 }
 
-func (im *Manager) getOrgName(orgs []cfclient.Org, orgGUID string) (string, error) {
+func (im *Manager) getOrgName(orgs []*resource.Organization, orgGUID string) (string, error) {
 	for _, org := range orgs {
-		if org.Guid == orgGUID {
+		if org.GUID == orgGUID {
 			return org.Name, nil
 		}
 	}
-	return "", fmt.Errorf("No org exists for org guid %s", orgGUID)
+	return "", fmt.Errorf("no org exists for org guid %s", orgGUID)
 }
 
-func (im *Manager) doesSpaceExist(spaces []cfclient.Space, spaceName string) bool {
+func (im *Manager) doesSpaceExist(spaces []*resource.Space, spaceName string) bool {
 	for _, space := range spaces {
 		if space.Name == spaceName {
 			return true
@@ -502,7 +527,7 @@ func (im *Manager) doesSpaceExist(spaces []cfclient.Space, spaceName string) boo
 }
 
 func (im *Manager) addOrgUsers(orgConfig *config.OrgConfig, orgGUID string) error {
-	_, managerRoleUsers, billingManagerRoleUsers, auditorRoleUsers, err := im.UserManager.ListOrgUsersByRole(orgGUID)
+	_, managerRoleUsers, billingManagerRoleUsers, auditorRoleUsers, err := im.RoleManager.ListOrgUsersByRole(orgGUID)
 	if err != nil {
 		return err
 	}
@@ -513,7 +538,7 @@ func (im *Manager) addOrgUsers(orgConfig *config.OrgConfig, orgGUID string) erro
 }
 
 func (im *Manager) addSpaceUsers(spaceConfig *config.SpaceConfig, spaceGUID string) error {
-	managerRoleUsers, developerRoleUsers, auditorRoleUsers, supporterRoleUsers, err := im.UserManager.ListSpaceUsersByRole(spaceGUID)
+	managerRoleUsers, developerRoleUsers, auditorRoleUsers, supporterRoleUsers, err := im.RoleManager.ListSpaceUsersByRole(spaceGUID)
 	if err != nil {
 		return err
 	}
@@ -524,41 +549,41 @@ func (im *Manager) addSpaceUsers(spaceConfig *config.SpaceConfig, spaceGUID stri
 	return nil
 }
 
-func (im *Manager) addOrgManagers(orgConfig *config.OrgConfig, orgGUID string, orgMgrs *user.RoleUsers) {
+func (im *Manager) addOrgManagers(orgConfig *config.OrgConfig, orgGUID string, orgMgrs *role.RoleUsers) {
 	lo.G.Debugf("Found %d Org Managers for Org: %s", len(orgMgrs.Users()), orgConfig.Org)
 	doAddUsers(orgMgrs, &orgConfig.Manager.Users, &orgConfig.Manager.LDAPUsers, &orgConfig.Manager.SamlUsers)
 }
 
-func (im *Manager) addBillingManagers(orgConfig *config.OrgConfig, orgGUID string, orgBillingMgrs *user.RoleUsers) {
+func (im *Manager) addBillingManagers(orgConfig *config.OrgConfig, orgGUID string, orgBillingMgrs *role.RoleUsers) {
 	lo.G.Debugf("Found %d Org Billing Managers for Org: %s", len(orgBillingMgrs.Users()), orgConfig.Org)
 	doAddUsers(orgBillingMgrs, &orgConfig.BillingManager.Users, &orgConfig.BillingManager.LDAPUsers, &orgConfig.BillingManager.SamlUsers)
 }
 
-func (im *Manager) addOrgAuditors(orgConfig *config.OrgConfig, orgGUID string, orgAuditors *user.RoleUsers) {
+func (im *Manager) addOrgAuditors(orgConfig *config.OrgConfig, orgGUID string, orgAuditors *role.RoleUsers) {
 	lo.G.Debugf("Found %d Org Auditors for Org: %s", len(orgAuditors.Users()), orgConfig.Org)
 	doAddUsers(orgAuditors, &orgConfig.Auditor.Users, &orgConfig.Auditor.LDAPUsers, &orgConfig.Auditor.SamlUsers)
 }
 
-func (im *Manager) addSpaceManagers(spaceConfig *config.SpaceConfig, spaceGUID string, spaceMgrs *user.RoleUsers) {
+func (im *Manager) addSpaceManagers(spaceConfig *config.SpaceConfig, spaceGUID string, spaceMgrs *role.RoleUsers) {
 	lo.G.Debugf("Found %d Space Managers for Org: %s and  Space:  %s", len(spaceMgrs.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceMgrs, &spaceConfig.Manager.Users, &spaceConfig.Manager.LDAPUsers, &spaceConfig.Manager.SamlUsers)
 }
 
-func (im *Manager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, spaceGUID string, spaceDevs *user.RoleUsers) {
+func (im *Manager) addSpaceDevelopers(spaceConfig *config.SpaceConfig, spaceGUID string, spaceDevs *role.RoleUsers) {
 	lo.G.Debugf("Found %d Space Developers for Org: %s and  Space:  %s", len(spaceDevs.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceDevs, &spaceConfig.Developer.Users, &spaceConfig.Developer.LDAPUsers, &spaceConfig.Developer.SamlUsers)
 }
 
-func (im *Manager) addSpaceAuditors(spaceConfig *config.SpaceConfig, spaceGUID string, spaceAuditors *user.RoleUsers) {
+func (im *Manager) addSpaceAuditors(spaceConfig *config.SpaceConfig, spaceGUID string, spaceAuditors *role.RoleUsers) {
 	lo.G.Debugf("Found %d Space Auditors for Org: %s and  Space:  %s", len(spaceAuditors.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceAuditors, &spaceConfig.Auditor.Users, &spaceConfig.Auditor.LDAPUsers, &spaceConfig.Auditor.SamlUsers)
 }
-func (im *Manager) addSpaceSupporters(spaceConfig *config.SpaceConfig, spaceGUID string, spaceSupporters *user.RoleUsers) {
+func (im *Manager) addSpaceSupporters(spaceConfig *config.SpaceConfig, spaceGUID string, spaceSupporters *role.RoleUsers) {
 	lo.G.Debugf("Found %d Space Supporters for Org: %s and  Space:  %s", len(spaceSupporters.Users()), spaceConfig.Org, spaceConfig.Space)
 	doAddUsers(spaceSupporters, &spaceConfig.Supporter.Users, &spaceConfig.Supporter.LDAPUsers, &spaceConfig.Supporter.SamlUsers)
 }
 
-func doAddUsers(roleUser *user.RoleUsers, uaaUsers *[]string, ldapUsers *[]string, samlUsers *[]string) {
+func doAddUsers(roleUser *role.RoleUsers, uaaUsers *[]string, ldapUsers *[]string, samlUsers *[]string) {
 	for _, cfUser := range roleUser.Users() {
 		if cfUser.Origin == "uaa" {
 			*uaaUsers = append(*uaaUsers, cfUser.UserName)

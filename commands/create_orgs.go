@@ -5,11 +5,11 @@ type CreateOrgsCommand struct {
 	BasePeekCommand
 }
 
-//Execute - creates organizations
+// Execute - creates organizations
 func (c *CreateOrgsCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
-	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
+	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, nil); err == nil {
 		err = cfMgmt.OrgManager.CreateOrgs()
 	}
 	return err

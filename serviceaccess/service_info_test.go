@@ -14,15 +14,15 @@ var _ = Describe("ServiceInfo", func() {
 
 		It("returns standard brokers", func() {
 			standardBrokers := []cfclient.ServiceBroker{
-				cfclient.ServiceBroker{
+				{
 					Guid: "some-guid",
 					Name: "some-name",
 				},
-				cfclient.ServiceBroker{
+				{
 					Guid: "some-guid-2",
 					Name: "some-name-2",
 				},
-				cfclient.ServiceBroker{
+				{
 					Guid: "some-guid-3",
 					Name: "some-name-3",
 				},
@@ -36,15 +36,15 @@ var _ = Describe("ServiceInfo", func() {
 
 		It("does not return space scoped brokers", func() {
 			brokers := []cfclient.ServiceBroker{
-				cfclient.ServiceBroker{
+				{
 					Guid: "some-guid",
 					Name: "some-name",
 				},
-				cfclient.ServiceBroker{
+				{
 					Guid: "some-guid-2",
 					Name: "some-name-2",
 				},
-				cfclient.ServiceBroker{
+				{
 					Guid:      "some-guid-3",
 					Name:      "some-space-broker-name",
 					SpaceGUID: "non-empty-guid",

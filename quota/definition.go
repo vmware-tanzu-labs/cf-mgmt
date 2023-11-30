@@ -1,4 +1,5 @@
 package quota
 
-//go:generate counterfeiter -o fakes/fake_cf_client.go types.go CFClient
-//go:generate counterfeiter -o fakes/fake_mgr.go types.go Manager
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate -o fakes/fake_space_quota_client.go types.go CFSpaceQuotaClient
+//counterfeiter:generate -o fakes/fake_org_quota_client.go types.go CFOrgQuotaClient

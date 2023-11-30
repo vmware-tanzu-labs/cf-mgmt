@@ -49,55 +49,59 @@ type Metadata struct {
 }
 
 type OrgQuota struct {
-	EnableOrgQuota          string `long:"enable-org-quota" description:"Enable the Org Quota in the config" choice:"true" choice:"false"`
-	MemoryLimit             string `long:"memory-limit" description:"An Org's memory limit in Megabytes"`
-	InstanceMemoryLimit     string `long:"instance-memory-limit" description:"Global Org Application instance memory limit in Megabytes"`
-	TotalRoutes             string `long:"total-routes" description:"Total Routes capacity for an Org"`
-	TotalServices           string `long:"total-services" description:"Total Services capacity for an Org"`
-	PaidServicesAllowed     string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an org" choice:"true" choice:"false"`
-	TotalPrivateDomains     string `long:"total-private-domains" description:"Total Private Domain capacity for an Org"`
-	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Org"`
-	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Org"`
-	AppInstanceLimit        string `long:"app-instance-limit" description:"App Instance Limit an Org"`
-	AppTaskLimit            string `long:"app-task-limit" description:"App Task Limit an Org"`
+	EnableOrgQuota             string `long:"enable-org-quota" description:"Enable the Org Quota in the config" choice:"true" choice:"false"`
+	MemoryLimit                string `long:"memory-limit" description:"An Org's memory limit in Megabytes"`
+	InstanceMemoryLimit        string `long:"instance-memory-limit" description:"Global Org Application instance memory limit in Megabytes"`
+	TotalRoutes                string `long:"total-routes" description:"Total Routes capacity for an Org"`
+	TotalServices              string `long:"total-services" description:"Total Services capacity for an Org"`
+	PaidServicesAllowed        string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an org" choice:"true" choice:"false"`
+	TotalPrivateDomains        string `long:"total-private-domains" description:"Total Private Domain capacity for an Org"`
+	TotalReservedRoutePorts    string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Org"`
+	TotalServiceKeys           string `long:"total-service-keys" description:"Total Service Keys capacity for an Org"`
+	AppInstanceLimit           string `long:"app-instance-limit" description:"App Instance Limit an Org"`
+	AppTaskLimit               string `long:"app-task-limit" description:"App Task Limit an Org"`
+	LogRateLimitBytesPerSecond string `long:"log-rate-limit-bytes-per-second" description:"Log Rate limit per app for an org"`
 }
 
 type NamedOrgQuota struct {
-	MemoryLimit             string `long:"memory-limit" description:"An Org's memory limit in Megabytes"`
-	InstanceMemoryLimit     string `long:"instance-memory-limit" description:"Global Org Application instance memory limit in Megabytes"`
-	TotalRoutes             string `long:"total-routes" description:"Total Routes capacity for an Org"`
-	TotalServices           string `long:"total-services" description:"Total Services capacity for an Org"`
-	PaidServicesAllowed     string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an org" choice:"true" choice:"false"`
-	TotalPrivateDomains     string `long:"total-private-domains" description:"Total Private Domain capacity for an Org"`
-	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Org"`
-	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Org"`
-	AppInstanceLimit        string `long:"app-instance-limit" description:"App Instance Limit an Org"`
-	AppTaskLimit            string `long:"app-task-limit" description:"App Task Limit an Org"`
+	MemoryLimit                string `long:"memory-limit" description:"An Org's memory limit in Megabytes"`
+	InstanceMemoryLimit        string `long:"instance-memory-limit" description:"Global Org Application instance memory limit in Megabytes"`
+	TotalRoutes                string `long:"total-routes" description:"Total Routes capacity for an Org"`
+	TotalServices              string `long:"total-services" description:"Total Services capacity for an Org"`
+	PaidServicesAllowed        string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an org" choice:"true" choice:"false"`
+	TotalPrivateDomains        string `long:"total-private-domains" description:"Total Private Domain capacity for an Org"`
+	TotalReservedRoutePorts    string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Org"`
+	TotalServiceKeys           string `long:"total-service-keys" description:"Total Service Keys capacity for an Org"`
+	AppInstanceLimit           string `long:"app-instance-limit" description:"App Instance Limit an Org"`
+	AppTaskLimit               string `long:"app-task-limit" description:"App Task Limit an Org"`
+	LogRateLimitBytesPerSecond string `long:"log-rate-limit-bytes-per-second" description:"Log Rate limit per app for an org"`
 }
 
 type SpaceQuota struct {
-	EnableSpaceQuota        string `long:"enable-space-quota" description:"Enable the Space Quota in the config" choice:"true" choice:"false"`
-	MemoryLimit             string `long:"memory-limit" description:"An Space's memory limit in Megabytes"`
-	InstanceMemoryLimit     string `long:"instance-memory-limit" description:"Space Application instance memory limit in Megabytes"`
-	TotalRoutes             string `long:"total-routes" description:"Total Routes capacity for an Space"`
-	TotalServices           string `long:"total-services" description:"Total Services capacity for an Space"`
-	PaidServicesAllowed     string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an Space" choice:"true" choice:"false"`
-	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Space"`
-	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Space"`
-	AppInstanceLimit        string `long:"app-instance-limit" description:"App Instance Limit for a space"`
-	AppTaskLimit            string `long:"app-task-limit" description:"App Task Limit for a space"`
+	EnableSpaceQuota           string `long:"enable-space-quota" description:"Enable the Space Quota in the config" choice:"true" choice:"false"`
+	MemoryLimit                string `long:"memory-limit" description:"An Space's memory limit in Megabytes"`
+	InstanceMemoryLimit        string `long:"instance-memory-limit" description:"Space Application instance memory limit in Megabytes"`
+	TotalRoutes                string `long:"total-routes" description:"Total Routes capacity for an Space"`
+	TotalServices              string `long:"total-services" description:"Total Services capacity for an Space"`
+	PaidServicesAllowed        string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an Space" choice:"true" choice:"false"`
+	TotalReservedRoutePorts    string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Space"`
+	TotalServiceKeys           string `long:"total-service-keys" description:"Total Service Keys capacity for an Space"`
+	AppInstanceLimit           string `long:"app-instance-limit" description:"App Instance Limit for a space"`
+	AppTaskLimit               string `long:"app-task-limit" description:"App Task Limit for a space"`
+	LogRateLimitBytesPerSecond string `long:"log-rate-limit-bytes-per-second" description:"Log Rate limit per app for a space"`
 }
 
 type NamedSpaceQuota struct {
-	MemoryLimit             string `long:"memory-limit" description:"An Space's memory limit in Megabytes"`
-	InstanceMemoryLimit     string `long:"instance-memory-limit" description:"Space Application instance memory limit in Megabytes"`
-	TotalRoutes             string `long:"total-routes" description:"Total Routes capacity for an Space"`
-	TotalServices           string `long:"total-services" description:"Total Services capacity for an Space"`
-	PaidServicesAllowed     string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an Space" choice:"true" choice:"false"`
-	TotalReservedRoutePorts string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Space"`
-	TotalServiceKeys        string `long:"total-service-keys" description:"Total Service Keys capacity for an Space"`
-	AppInstanceLimit        string `long:"app-instance-limit" description:"App Instance Limit for a space"`
-	AppTaskLimit            string `long:"app-task-limit" description:"App Task Limit for a space"`
+	MemoryLimit                string `long:"memory-limit" description:"An Space's memory limit in Megabytes"`
+	InstanceMemoryLimit        string `long:"instance-memory-limit" description:"Space Application instance memory limit in Megabytes"`
+	TotalRoutes                string `long:"total-routes" description:"Total Routes capacity for an Space"`
+	TotalServices              string `long:"total-services" description:"Total Services capacity for an Space"`
+	PaidServicesAllowed        string `long:"paid-service-plans-allowed" description:"Allow paid services to appear in an Space" choice:"true" choice:"false"`
+	TotalReservedRoutePorts    string `long:"total-reserved-route-ports" description:"Total Reserved Route Ports capacity for an Space"`
+	TotalServiceKeys           string `long:"total-service-keys" description:"Total Service Keys capacity for a Space"`
+	AppInstanceLimit           string `long:"app-instance-limit" description:"App Instance Limit for a space"`
+	AppTaskLimit               string `long:"app-task-limit" description:"App Task Limit for a space"`
+	LogRateLimitBytesPerSecond string `long:"log-rate-limit-bytes-per-second" description:"Log Rate limit per app for a space"`
 }
 
 func updateUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, currentAADGroups []string, userRole *UserRole, errorString *string) {
@@ -227,6 +231,7 @@ func updateOrgQuotaConfig(namedQuota string, clearNamedQuota bool, orgConfig *co
 		orgConfig.TotalServiceKeys = config.UNLIMITED
 		orgConfig.AppInstanceLimit = config.UNLIMITED
 		orgConfig.AppTaskLimit = config.UNLIMITED
+		orgConfig.LogRateLimitBytesPerSecond = config.UNLIMITED
 	}
 	if namedQuota != "" {
 		orgConfig.NamedQuota = namedQuota
@@ -240,6 +245,7 @@ func updateOrgQuotaConfig(namedQuota string, clearNamedQuota bool, orgConfig *co
 		orgConfig.TotalServiceKeys = ""
 		orgConfig.AppInstanceLimit = ""
 		orgConfig.AppTaskLimit = ""
+		orgConfig.LogRateLimitBytesPerSecond = ""
 	} else {
 		convertToBool("enable-org-quota", &orgConfig.EnableOrgQuota, orgQuota.EnableOrgQuota, errorString)
 		convertToGB("memory-limit", &orgConfig.MemoryLimit, orgQuota.MemoryLimit, "100M", errorString)
@@ -252,6 +258,7 @@ func updateOrgQuotaConfig(namedQuota string, clearNamedQuota bool, orgConfig *co
 		convertToFormattedInt("total-service-keys", &orgConfig.TotalServiceKeys, orgQuota.TotalServiceKeys, config.UNLIMITED, errorString)
 		convertToFormattedInt("app-instance-limit", &orgConfig.AppInstanceLimit, orgQuota.AppInstanceLimit, config.UNLIMITED, errorString)
 		convertToFormattedInt("app-task-limit", &orgConfig.AppTaskLimit, orgQuota.AppTaskLimit, config.UNLIMITED, errorString)
+		convertToFormattedInt("log-rate-limit-bytes-per-second", &orgConfig.LogRateLimitBytesPerSecond, orgQuota.LogRateLimitBytesPerSecond, config.UNLIMITED, errorString)
 	}
 }
 
@@ -267,6 +274,7 @@ func updateSpaceQuotaConfig(namedQuota string, clearNamedQuota bool, spaceConfig
 		spaceConfig.TotalServiceKeys = config.UNLIMITED
 		spaceConfig.AppInstanceLimit = config.UNLIMITED
 		spaceConfig.AppTaskLimit = config.UNLIMITED
+		spaceConfig.LogRateLimitBytesPerSecond = config.UNLIMITED
 	}
 	if namedQuota != "" {
 		spaceConfig.NamedQuota = namedQuota
@@ -280,6 +288,7 @@ func updateSpaceQuotaConfig(namedQuota string, clearNamedQuota bool, spaceConfig
 		spaceConfig.TotalServiceKeys = ""
 		spaceConfig.AppInstanceLimit = ""
 		spaceConfig.AppTaskLimit = ""
+		spaceConfig.LogRateLimitBytesPerSecond = ""
 	} else {
 		convertToBool("enable-space-quota", &spaceConfig.EnableSpaceQuota, spaceQuota.EnableSpaceQuota, errorString)
 		convertToGB("memory-limit", &spaceConfig.MemoryLimit, spaceQuota.MemoryLimit, config.UNLIMITED, errorString)
@@ -290,7 +299,7 @@ func updateSpaceQuotaConfig(namedQuota string, clearNamedQuota bool, spaceConfig
 		convertToFormattedInt("total-reserved-route-ports", &spaceConfig.TotalReservedRoutePorts, spaceQuota.TotalReservedRoutePorts, config.UNLIMITED, errorString)
 		convertToFormattedInt("total-service-keys", &spaceConfig.TotalServiceKeys, spaceQuota.TotalServiceKeys, config.UNLIMITED, errorString)
 		convertToFormattedInt("app-instance-limit", &spaceConfig.AppInstanceLimit, spaceQuota.AppInstanceLimit, config.UNLIMITED, errorString)
-		convertToFormattedInt("app-task-limit", &spaceConfig.AppTaskLimit, spaceQuota.AppTaskLimit, config.UNLIMITED, errorString)
+		convertToFormattedInt("log-rate-limit-bytes-per-second", &spaceConfig.LogRateLimitBytesPerSecond, spaceQuota.LogRateLimitBytesPerSecond, config.UNLIMITED, errorString)
 	}
 }
 

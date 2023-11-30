@@ -1,6 +1,4 @@
-FROM concourse/buildroot:git
-
-MAINTAINER Caleb Washburn "cwashburn@pivotal.io"
+FROM ubuntu:latest
 
 COPY cf-mgmt-linux /usr/bin/cf-mgmt
 COPY cf-mgmt-config-linux /usr/bin/cf-mgmt-config

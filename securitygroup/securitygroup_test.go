@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -52,7 +53,7 @@ const asg_config_with_space = `[
 var _ = Describe("given Security Group Manager", func() {
 	var (
 		fakeReader   *configfakes.FakeReader
-		fakeClient   *securitygroupfakes.FakeCFClient
+		fakeClient   *securitygroupfakes.FakeCFSecurityGroupClient
 		fakeSpaceMgr *spacefakes.FakeManager
 		securityMgr  securitygroup.DefaultManager
 	)
@@ -60,7 +61,7 @@ var _ = Describe("given Security Group Manager", func() {
 	BeforeEach(func() {
 		fakeReader = new(configfakes.FakeReader)
 		fakeSpaceMgr = new(spacefakes.FakeManager)
-		fakeClient = new(securitygroupfakes.FakeCFClient)
+		fakeClient = new(securitygroupfakes.FakeCFSecurityGroupClient)
 		securityMgr = securitygroup.DefaultManager{
 			Cfg:          fakeReader,
 			Client:       fakeClient,
@@ -70,18 +71,22 @@ var _ = Describe("given Security Group Manager", func() {
 	})
 	Context("ListNonDefaultSecurityGroups", func() {
 		It("returns 2 security groups", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
-					Name:    "group1",
-					Guid:    "group1-guid",
-					Running: false,
-					Staging: false,
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
+					Name: "group1",
+					GUID: "group1-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: false,
+						Staging: false,
+					},
 				},
-				cfclient.SecGroup{
-					Name:    "group2",
-					Guid:    "group2-guid",
-					Running: false,
-					Staging: false,
+				{
+					Name: "group2",
+					GUID: "group2-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: false,
+						Staging: false,
+					},
 				},
 			}, nil)
 			groups, err := securityMgr.ListNonDefaultSecurityGroups()
@@ -90,27 +95,31 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("returns error", func() {
-			fakeClient.ListSecGroupsReturns(nil, errors.New("error"))
+			fakeClient.ListAllReturns(nil, errors.New("error"))
 			_, err := securityMgr.ListNonDefaultSecurityGroups()
 			Expect(err).Should(HaveOccurred())
-			Expect(fakeClient.ListSecGroupsCallCount()).Should(Equal(1))
+			Expect(fakeClient.ListAllCallCount()).Should(Equal(1))
 		})
 	})
 
 	Context("ListDefaultSecurityGroups", func() {
 		It("returns 2 security groups", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
-					Name:    "group1",
-					Guid:    "group1-guid",
-					Running: true,
-					Staging: false,
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
+					Name: "group1",
+					GUID: "group1-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: true,
+						Staging: false,
+					},
 				},
-				cfclient.SecGroup{
-					Name:    "group2",
-					Guid:    "group2-guid",
-					Running: false,
-					Staging: true,
+				{
+					Name: "group2",
+					GUID: "group2-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: false,
+						Staging: true,
+					},
 				},
 			}, nil)
 			groups, err := securityMgr.ListDefaultSecurityGroups()
@@ -119,10 +128,10 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("returns error", func() {
-			fakeClient.ListSecGroupsReturns(nil, errors.New("error"))
+			fakeClient.ListAllReturns(nil, errors.New("error"))
 			_, err := securityMgr.ListDefaultSecurityGroups()
 			Expect(err).Should(HaveOccurred())
-			Expect(fakeClient.ListSecGroupsCallCount()).Should(Equal(1))
+			Expect(fakeClient.ListAllCallCount()).Should(Equal(1))
 		})
 	})
 
@@ -142,10 +151,16 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{
-				Name:             "space1",
-				Guid:             "space1-guid",
-				OrganizationGuid: "org1-guid",
+			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
+				Name: "space1",
+				GUID: "space1-guid",
+				Relationships: &resource.SpaceRelationships{
+					Organization: &resource.ToOneRelationship{
+						Data: &resource.Relationship{
+							GUID: "org1-guid",
+						},
+					},
+				},
 			}, nil)
 		})
 
@@ -159,18 +174,18 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name: "dns",
-					Guid: "dns-guid",
+					GUID: "dns-guid",
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(1))
-			sgGUID, spaceGUID := fakeClient.BindSecGroupArgsForCall(0)
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(1))
+			_, sgGUID, spaceGUIDs := fakeClient.BindRunningSecurityGroupArgsForCall(0)
 			Expect(sgGUID).Should(Equal("dns-guid"))
-			Expect(spaceGUID).Should(Equal("space1-guid"))
+			Expect(spaceGUIDs[0]).Should(Equal("space1-guid"))
 		})
 
 		It("Should not assign global group to space that is already assigned", func() {
@@ -183,22 +198,22 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name: "dns",
-					Guid: "dns-guid",
+					GUID: "dns-guid",
 				},
 			}, nil)
-			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+				{
 					Name: "dns",
-					Guid: "dns-guid",
+					GUID: "dns-guid",
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.ListSpaceSecGroupsCallCount()).Should(Equal(1))
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.ListRunningForSpaceAllCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(0))
 		})
 
 		It("Should unbind global group to space that is not in configuration", func() {
@@ -212,46 +227,46 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name: "dns",
-					Guid: "dns-guid",
-					SpacesData: []cfclient.SpaceResource{
-						cfclient.SpaceResource{
-							Entity: cfclient.Space{
-								Guid: "space1-guid",
+					GUID: "dns-guid",
+					Relationships: resource.SecurityGroupsRelationships{
+						RunningSpaces: resource.ToManyRelationships{
+							Data: []resource.Relationship{
+								{GUID: "space1-guid"},
 							},
 						},
 					},
 				},
-				cfclient.SecGroup{
+				{
 					Name: "ntp",
-					Guid: "ntp-guid",
-					SpacesData: []cfclient.SpaceResource{
-						cfclient.SpaceResource{
-							Entity: cfclient.Space{
-								Guid: "space1-guid",
+					GUID: "ntp-guid",
+					Relationships: resource.SecurityGroupsRelationships{
+						RunningSpaces: resource.ToManyRelationships{
+							Data: []resource.Relationship{
+								{GUID: "space1-guid"},
 							},
 						},
 					},
 				},
 			}, nil)
-			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+				{
 					Name: "dns",
-					Guid: "dns-guid",
+					GUID: "dns-guid",
 				},
-				cfclient.SecGroup{
+				{
 					Name: "ntp",
-					Guid: "ntp-guid",
+					GUID: "ntp-guid",
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.ListSpaceSecGroupsCallCount()).Should(Equal(1))
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
-			Expect(fakeClient.UnbindSecGroupCallCount()).Should(Equal(1))
-			secGroupGUID, spaceGUID := fakeClient.UnbindSecGroupArgsForCall(0)
+			Expect(fakeClient.ListRunningForSpaceAllCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UnBindRunningSecurityGroupCallCount()).Should(Equal(1))
+			_, secGroupGUID, spaceGUID := fakeClient.UnBindRunningSecurityGroupArgsForCall(0)
 			Expect(secGroupGUID).Should(Equal("ntp-guid"))
 			Expect(spaceGUID).Should(Equal("space1-guid"))
 		})
@@ -267,33 +282,33 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name: "dns",
-					Guid: "dns-guid",
+					GUID: "dns-guid",
 				},
-				cfclient.SecGroup{
+				{
 					Name:  "org1-space1",
-					Guid:  "org1-space1-guid",
-					Rules: []cfclient.SecGroupRule{},
+					GUID:  "org1-space1-guid",
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
-			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+				{
 					Name: "dns",
-					Guid: "dns-guid",
+					GUID: "dns-guid",
 				},
-				cfclient.SecGroup{
+				{
 					Name:  "org1-space1",
-					Guid:  "org1-space1-guid",
-					Rules: []cfclient.SecGroupRule{},
+					GUID:  "org1-space1-guid",
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.ListSpaceSecGroupsCallCount()).Should(Equal(1))
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
-			Expect(fakeClient.UnbindSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.ListRunningForSpaceAllCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UnBindRunningSecurityGroupCallCount()).Should(Equal(0))
 		})
 
 		It("Should unbind space specific group to space", func() {
@@ -307,47 +322,47 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name: "dns",
-					Guid: "dns-guid",
-					SpacesData: []cfclient.SpaceResource{
-						cfclient.SpaceResource{
-							Entity: cfclient.Space{
-								Guid: "space1-guid",
+					GUID: "dns-guid",
+					Relationships: resource.SecurityGroupsRelationships{
+						RunningSpaces: resource.ToManyRelationships{
+							Data: []resource.Relationship{
+								{GUID: "space1-guid"},
 							},
 						},
 					},
 				},
-				cfclient.SecGroup{
+				{
 					Name:  "org1-space1",
-					Guid:  "org1-space1-guid",
-					Rules: []cfclient.SecGroupRule{},
-					SpacesData: []cfclient.SpaceResource{
-						cfclient.SpaceResource{
-							Entity: cfclient.Space{
-								Guid: "space1-guid",
+					GUID:  "org1-space1-guid",
+					Rules: []resource.SecurityGroupRule{},
+					Relationships: resource.SecurityGroupsRelationships{
+						RunningSpaces: resource.ToManyRelationships{
+							Data: []resource.Relationship{
+								{GUID: "space1-guid"},
 							},
 						},
 					},
 				},
 			}, nil)
-			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+				{
 					Name: "dns",
-					Guid: "dns-guid",
+					GUID: "dns-guid",
 				},
-				cfclient.SecGroup{
+				{
 					Name:  "org1-space1",
-					Guid:  "org1-space1-guid",
-					Rules: []cfclient.SecGroupRule{},
+					GUID:  "org1-space1-guid",
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.ListSpaceSecGroupsCallCount()).Should(Equal(1))
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
-			Expect(fakeClient.UnbindSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.ListRunningForSpaceAllCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UnBindRunningSecurityGroupCallCount()).Should(Equal(1))
 		})
 
 		It("Should error assigning global group to space", func() {
@@ -360,16 +375,16 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name: "dns",
-					Guid: "dns-guid",
+					GUID: "dns-guid",
 				},
 			}, nil)
-			fakeClient.BindSecGroupReturns(errors.New("error"))
+			fakeClient.BindRunningSecurityGroupReturns(nil, errors.New("error"))
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).Should(HaveOccurred())
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(1))
 		})
 
 		It("Should error when group doesn't exist", func() {
@@ -385,82 +400,92 @@ var _ = Describe("given Security Group Manager", func() {
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).Should(HaveOccurred())
 			Expect(err.Error()).Should(ContainSubstring("Security group [dns] does not exist"))
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(0))
 		})
 
 		It("Should create and assign group to space", func() {
-			fakeClient.ListSecGroupsReturns(nil, nil)
-			fakeClient.CreateSecGroupReturns(&cfclient.SecGroup{Name: "org1-space1", Guid: "org1-space1-guid"}, nil)
+			fakeClient.ListAllReturns(nil, nil)
+			fakeClient.CreateReturns(&resource.SecurityGroup{Name: "org1-space1", GUID: "org1-space1-guid"}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.CreateSecGroupCallCount()).Should(Equal(1))
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(1))
-			sgGUID, spaceGUID := fakeClient.BindSecGroupArgsForCall(0)
+			Expect(fakeClient.CreateCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(1))
+			_, sgGUID, spaceGUIDs := fakeClient.BindRunningSecurityGroupArgsForCall(0)
 			Expect(sgGUID).Should(Equal("org1-space1-guid"))
-			Expect(spaceGUID).Should(Equal("space1-guid"))
+			Expect(spaceGUIDs[0]).Should(Equal("space1-guid"))
 		})
 
 		It("Should update and assign group to space", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
-					Name:    "org1-space1",
-					Guid:    "org1-space1-guid",
-					Running: false,
-					Staging: false,
-				},
-			}, nil)
-			err := securityMgr.CreateApplicationSecurityGroups()
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UpdateSecGroupCallCount()).Should(Equal(1))
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(1))
-			sgGUID, spaceGUID := fakeClient.BindSecGroupArgsForCall(0)
-			Expect(sgGUID).Should(Equal("org1-space1-guid"))
-			Expect(spaceGUID).Should(Equal("space1-guid"))
-		})
-
-		It("Should update and not assign group to space", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
-					Name:    "org1-space1",
-					Guid:    "org1-space1-guid",
-					Running: false,
-					Staging: false,
-					SpacesData: []cfclient.SpaceResource{
-						cfclient.SpaceResource{Entity: cfclient.Space{Guid: "space1-guid"}},
-						cfclient.SpaceResource{Entity: cfclient.Space{Guid: "space2-guid"}},
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
+					Name: "org1-space1",
+					GUID: "org1-space1-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: false,
+						Staging: false,
 					},
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UpdateSecGroupCallCount()).Should(Equal(1))
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(1))
+			_, sgGUID, spaceGUIDs := fakeClient.BindRunningSecurityGroupArgsForCall(0)
+			Expect(sgGUID).Should(Equal("org1-space1-guid"))
+			Expect(spaceGUIDs[0]).Should(Equal("space1-guid"))
 		})
 
-		It("Should not create and not assign group to space", func() {
-			securityMgr.Peek = true
-			fakeClient.ListSecGroupsReturns(nil, nil)
-			fakeClient.CreateSecGroupReturns(&cfclient.SecGroup{Name: "org1-space1", Guid: "org1-space1-guid"}, nil)
-			err := securityMgr.CreateApplicationSecurityGroups()
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.CreateSecGroupCallCount()).Should(Equal(0))
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
-		})
-
-		It("Should not update and not assign group to space", func() {
-			securityMgr.Peek = true
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
-					Name:    "org1-space1",
-					Guid:    "org1-space1-guid",
-					Running: false,
-					Staging: false,
+		It("Should update and not assign group to space", func() {
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
+					Name: "org1-space1",
+					GUID: "org1-space1-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: false,
+						Staging: false,
+					},
+					Relationships: resource.SecurityGroupsRelationships{
+						RunningSpaces: resource.ToManyRelationships{
+							Data: []resource.Relationship{
+								{GUID: "space1-guid"},
+								{GUID: "space2-guid"},
+							},
+						},
+					},
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UpdateSecGroupCallCount()).Should(Equal(0))
-			Expect(fakeClient.BindSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(0))
+		})
+
+		It("Should not create and not assign group to space", func() {
+			securityMgr.Peek = true
+			fakeClient.ListAllReturns(nil, nil)
+			fakeClient.CreateReturns(&resource.SecurityGroup{Name: "org1-space1", GUID: "org1-space1-guid"}, nil)
+			err := securityMgr.CreateApplicationSecurityGroups()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.CreateCallCount()).Should(Equal(0))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(0))
+		})
+
+		It("Should not update and not assign group to space", func() {
+			securityMgr.Peek = true
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
+					Name: "org1-space1",
+					GUID: "org1-space1-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: false,
+						Staging: false,
+					},
+				},
+			}, nil)
+			err := securityMgr.CreateApplicationSecurityGroups()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(0))
 		})
 
 		It("Should error on get space config", func() {
@@ -470,12 +495,12 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("Should error listing security groups", func() {
-			fakeClient.ListSecGroupsReturns(nil, errors.New("error"))
+			fakeClient.ListAllReturns(nil, errors.New("error"))
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).Should(HaveOccurred())
 		})
 		It("Should error returning space", func() {
-			fakeSpaceMgr.FindSpaceReturns(cfclient.Space{}, errors.New("error"))
+			fakeSpaceMgr.FindSpaceReturns(nil, errors.New("error"))
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).Should(HaveOccurred())
 		})
@@ -492,7 +517,7 @@ var _ = Describe("given Security Group Manager", func() {
 			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
 			err := securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.CreateSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.CreateCallCount()).Should(Equal(1))
 		})
 
 		It("should create 1 asg from default asg config", func() {
@@ -505,7 +530,7 @@ var _ = Describe("given Security Group Manager", func() {
 			fakeReader.GetDefaultASGConfigsReturns(asgConfigs, nil)
 			err := securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.CreateSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.CreateCallCount()).Should(Equal(1))
 		})
 
 		It("should update 1 asg from asg config", func() {
@@ -515,17 +540,17 @@ var _ = Describe("given Security Group Manager", func() {
 					Rules: asg_config,
 				},
 			}
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name:  "asg-1",
-					Guid:  "asg-1-guid",
-					Rules: []cfclient.SecGroupRule{},
+					GUID:  "asg-1-guid",
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
 			err := securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UpdateSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
 		})
 
 		It("should not update 1 asg from asg config", func() {
@@ -535,20 +560,20 @@ var _ = Describe("given Security Group Manager", func() {
 					Rules: asg_config,
 				},
 			}
-			securityGroupRules := []cfclient.SecGroupRule{}
+			securityGroupRules := []resource.SecurityGroupRule{}
 			err := json.Unmarshal([]byte(asg_config), &securityGroupRules)
 			Expect(err).ShouldNot(HaveOccurred())
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name:  "asg-1",
-					Guid:  "asg-1-guid",
+					GUID:  "asg-1-guid",
 					Rules: securityGroupRules,
 				},
 			}, nil)
 			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
 			err = securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UpdateSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
 		})
 
 		It("should error create 1 asg from asg config", func() {
@@ -559,10 +584,10 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
-			fakeClient.CreateSecGroupReturns(nil, errors.New("error"))
+			fakeClient.CreateReturns(nil, errors.New("error"))
 			err := securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).Should(HaveOccurred())
-			Expect(fakeClient.CreateSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.CreateCallCount()).Should(Equal(1))
 		})
 
 		It("should error on update 1 asg from asg config", func() {
@@ -572,18 +597,18 @@ var _ = Describe("given Security Group Manager", func() {
 					Rules: asg_config,
 				},
 			}
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name:  "asg-1",
-					Guid:  "asg-1-guid",
-					Rules: []cfclient.SecGroupRule{},
+					GUID:  "asg-1-guid",
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
-			fakeClient.UpdateSecGroupReturns(nil, errors.New("error"))
+			fakeClient.UpdateReturns(nil, errors.New("error"))
 			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
 			err := securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).Should(HaveOccurred())
-			Expect(fakeClient.UpdateSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
 		})
 
 		It("should error on update 1 asg from default config", func() {
@@ -593,18 +618,18 @@ var _ = Describe("given Security Group Manager", func() {
 					Rules: asg_config,
 				},
 			}
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name:  "asg-1",
-					Guid:  "asg-1-guid",
-					Rules: []cfclient.SecGroupRule{},
+					GUID:  "asg-1-guid",
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
-			fakeClient.UpdateSecGroupReturns(nil, errors.New("error"))
+			fakeClient.UpdateReturns(nil, errors.New("error"))
 			fakeReader.GetDefaultASGConfigsReturns(asgConfigs, nil)
 			err := securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).Should(HaveOccurred())
-			Expect(fakeClient.UpdateSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
 		})
 
 		It("should error on getting asg config", func() {
@@ -618,7 +643,7 @@ var _ = Describe("given Security Group Manager", func() {
 			Expect(err).Should(HaveOccurred())
 		})
 		It("should error on getting security groups", func() {
-			fakeClient.ListSecGroupsReturns(nil, errors.New("errorr"))
+			fakeClient.ListAllReturns(nil, errors.New("errorr"))
 			err := securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).Should(HaveOccurred())
 		})
@@ -633,11 +658,11 @@ var _ = Describe("given Security Group Manager", func() {
 			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
 			err := securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.CreateSecGroupCallCount()).Should(Equal(1))
-			name, securityGroups, _ := fakeClient.CreateSecGroupArgsForCall(0)
-			Expect(name).Should(Equal("asg-1"))
-			Expect(len(securityGroups)).Should(Equal(1))
-			Expect(securityGroups[0].Destination).Should(Equal("0.0.0.0/0"))
+			Expect(fakeClient.CreateCallCount()).Should(Equal(1))
+			_, securityGroupCreate := fakeClient.CreateArgsForCall(0)
+			Expect(securityGroupCreate.Name).Should(Equal("asg-1"))
+			Expect(len(securityGroupCreate.Rules)).Should(Equal(1))
+			Expect(securityGroupCreate.Rules[0].Destination).Should(Equal("0.0.0.0/0"))
 		})
 
 		It("should create 1 asg from asg config and remove trailing spaces", func() {
@@ -650,21 +675,21 @@ var _ = Describe("given Security Group Manager", func() {
 			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
 			err := securityMgr.CreateGlobalSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.CreateSecGroupCallCount()).Should(Equal(1))
-			name, securityGroups, _ := fakeClient.CreateSecGroupArgsForCall(0)
-			Expect(name).Should(Equal("asg-1"))
-			Expect(len(securityGroups)).Should(Equal(1))
-			Expect(securityGroups[0].Destination).Should(Equal("10.0.11.0-10.0.11.2"))
+			Expect(fakeClient.CreateCallCount()).Should(Equal(1))
+			_, securityGroupCreate := fakeClient.CreateArgsForCall(0)
+			Expect(securityGroupCreate.Name).Should(Equal("asg-1"))
+			Expect(len(securityGroupCreate.Rules)).Should(Equal(1))
+			Expect(securityGroupCreate.Rules[0].Destination).Should(Equal("10.0.11.0-10.0.11.2"))
 		})
 	})
 
 	Context("AssignDefaultSecurityGroups", func() {
 		It("should assign running security group", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name:  "asg-1",
-					Guid:  "asg-1-guid",
-					Rules: []cfclient.SecGroupRule{},
+					GUID:  "asg-1-guid",
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -672,16 +697,22 @@ var _ = Describe("given Security Group Manager", func() {
 			}, nil)
 			err := securityMgr.AssignDefaultSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.BindRunningSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
+			_, sgGUID, updateRequest := fakeClient.UpdateArgsForCall(0)
+			Expect(sgGUID).To(Equal("asg-1-guid"))
+			Expect(updateRequest.GloballyEnabled.Running).To(BeTrue())
 		})
 
 		It("should not assign running security group", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
-					Name:    "asg-1",
-					Guid:    "asg-1-guid",
-					Running: true,
-					Rules:   []cfclient.SecGroupRule{},
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
+					Name: "asg-1",
+					GUID: "asg-1-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: true,
+						Staging: false,
+					},
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -689,11 +720,11 @@ var _ = Describe("given Security Group Manager", func() {
 			}, nil)
 			err := securityMgr.AssignDefaultSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.BindRunningSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
 		})
 
 		It("should error since group doesn't exist", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{}, nil)
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				RunningSecurityGroups: []string{"asg-1"},
 			}, nil)
@@ -703,11 +734,11 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("should assign running staging group", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
 					Name:  "asg-1",
-					Guid:  "asg-1-guid",
-					Rules: []cfclient.SecGroupRule{},
+					GUID:  "asg-1-guid",
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -715,16 +746,22 @@ var _ = Describe("given Security Group Manager", func() {
 			}, nil)
 			err := securityMgr.AssignDefaultSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.BindStagingSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
+			_, sgGUID, updateRequest := fakeClient.UpdateArgsForCall(0)
+			Expect(sgGUID).To(Equal("asg-1-guid"))
+			Expect(updateRequest.GloballyEnabled.Staging).To(BeTrue())
 		})
 
 		It("should not assign staging security group", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
-					Name:    "asg-1",
-					Guid:    "asg-1-guid",
-					Staging: true,
-					Rules:   []cfclient.SecGroupRule{},
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
+					Name: "asg-1",
+					GUID: "asg-1-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: false,
+						Staging: true,
+					},
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -732,11 +769,11 @@ var _ = Describe("given Security Group Manager", func() {
 			}, nil)
 			err := securityMgr.AssignDefaultSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.BindStagingSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
 		})
 
 		It("should error since group doesn't exist", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{}, nil)
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				StagingSecurityGroups: []string{"asg-1"},
 			}, nil)
@@ -746,12 +783,15 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("should unassign running security group", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
-					Name:    "asg-1",
-					Guid:    "asg-1-guid",
-					Running: true,
-					Rules:   []cfclient.SecGroupRule{},
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
+					Name: "asg-1",
+					GUID: "asg-1-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: true,
+						Staging: false,
+					},
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -759,15 +799,21 @@ var _ = Describe("given Security Group Manager", func() {
 			}, nil)
 			err := securityMgr.AssignDefaultSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UnbindRunningSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
+			_, sgGUID, updateRequest := fakeClient.UpdateArgsForCall(0)
+			Expect(sgGUID).To(Equal("asg-1-guid"))
+			Expect(updateRequest.GloballyEnabled.Running).To(BeFalse())
 		})
 		It("should unassign staging security group", func() {
-			fakeClient.ListSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{
-					Name:    "asg-1",
-					Guid:    "asg-1-guid",
-					Staging: true,
-					Rules:   []cfclient.SecGroupRule{},
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
+					Name: "asg-1",
+					GUID: "asg-1-guid",
+					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+						Running: false,
+						Staging: true,
+					},
+					Rules: []resource.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -775,22 +821,25 @@ var _ = Describe("given Security Group Manager", func() {
 			}, nil)
 			err := securityMgr.AssignDefaultSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UnbindStagingSecGroupCallCount()).Should(Equal(1))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
+			_, sgGUID, updateRequest := fakeClient.UpdateArgsForCall(0)
+			Expect(sgGUID).To(Equal("asg-1-guid"))
+			Expect(updateRequest.GloballyEnabled.Staging).To(BeFalse())
 		})
 	})
 
 	Context("ListSpaceSecurityGroups", func() {
 		It("Should return 2", func() {
-			fakeClient.ListSpaceSecGroupsReturns([]cfclient.SecGroup{
-				cfclient.SecGroup{Name: "1", Guid: "1-guid"},
-				cfclient.SecGroup{Name: "2", Guid: "2-guid"},
+			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+				{Name: "1", GUID: "1-guid"},
+				{Name: "2", GUID: "2-guid"},
 			}, nil)
 			secGroups, err := securityMgr.ListSpaceSecurityGroups("spaceGUID")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(len(secGroups)).Should(Equal(2))
 		})
 		It("Should error", func() {
-			fakeClient.ListSpaceSecGroupsReturns(nil, errors.New("error"))
+			fakeClient.ListRunningForSpaceAllReturns(nil, errors.New("error"))
 			_, err := securityMgr.ListSpaceSecurityGroups("spaceGUID")
 			Expect(err).Should(HaveOccurred())
 		})
@@ -798,12 +847,12 @@ var _ = Describe("given Security Group Manager", func() {
 
 	Context("GetSecurityGroupRules", func() {
 		It("Should succeed", func() {
-			securityGroupRules := []cfclient.SecGroupRule{}
+			securityGroupRules := []resource.SecurityGroupRule{}
 			err := json.Unmarshal([]byte(asg_config), &securityGroupRules)
 			Expect(err).ShouldNot(HaveOccurred())
-			fakeClient.GetSecGroupReturns(&cfclient.SecGroup{
+			fakeClient.GetReturns(&resource.SecurityGroup{
 				Name:  "1",
-				Guid:  "1-guid",
+				GUID:  "1-guid",
 				Rules: securityGroupRules,
 			}, nil)
 			bytes, err := securityMgr.GetSecurityGroupRules("sgGUID")
@@ -811,97 +860,100 @@ var _ = Describe("given Security Group Manager", func() {
 			Expect(bytes).ShouldNot(BeNil())
 		})
 		It("Should error", func() {
-			fakeClient.GetSecGroupReturns(nil, errors.New("error"))
+			fakeClient.GetReturns(nil, errors.New("error"))
 			_, err := securityMgr.GetSecurityGroupRules("sgGUID")
 			Expect(err).Should(HaveOccurred())
 		})
 	})
 
-	Context("UnassignStagingSecurityGroup", func() {
+	Context("UnassignSecurityGroupGlobalStaging", func() {
 		It("Should succeed", func() {
-			err := securityMgr.UnassignStagingSecurityGroup(cfclient.SecGroup{
+			err := securityMgr.UnassignSecurityGroupGlobalStaging(&resource.SecurityGroup{
 				Name: "sec-group",
-				Guid: "seg-group-guid",
+				GUID: "seg-group-guid",
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UnbindStagingSecGroupCallCount()).Should(Equal(1))
-			sgGUID := fakeClient.UnbindStagingSecGroupArgsForCall(0)
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
+			_, sgGUID, _ := fakeClient.UpdateArgsForCall(0)
 			Expect(sgGUID).Should(Equal("seg-group-guid"))
 		})
 		It("Should peek", func() {
 			securityMgr.Peek = true
-			err := securityMgr.UnassignStagingSecurityGroup(cfclient.SecGroup{
+			err := securityMgr.UnassignSecurityGroupGlobalStaging(&resource.SecurityGroup{
 				Name: "sec-group",
-				Guid: "seg-group-guid",
+				GUID: "seg-group-guid",
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UnbindStagingSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
 		})
 	})
 
-	Context("UnassignRunningSecurityGroup", func() {
+	Context("UnassignSecurityGroupGlobalRunning", func() {
 		It("Should succeed", func() {
-			err := securityMgr.UnassignRunningSecurityGroup(cfclient.SecGroup{
+			err := securityMgr.UnassignSecurityGroupGlobalRunning(&resource.SecurityGroup{
 				Name: "sec-group",
-				Guid: "seg-group-guid",
+				GUID: "seg-group-guid",
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UnbindRunningSecGroupCallCount()).Should(Equal(1))
-			sgGUID := fakeClient.UnbindRunningSecGroupArgsForCall(0)
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
+			_, sgGUID, updateRequest := fakeClient.UpdateArgsForCall(0)
 			Expect(sgGUID).Should(Equal("seg-group-guid"))
+			Expect(updateRequest.GloballyEnabled.Running).To(BeFalse())
 		})
 		It("Should peek", func() {
 			securityMgr.Peek = true
-			err := securityMgr.UnassignRunningSecurityGroup(cfclient.SecGroup{
+			err := securityMgr.UnassignSecurityGroupGlobalRunning(&resource.SecurityGroup{
 				Name: "sec-group",
-				Guid: "seg-group-guid",
+				GUID: "seg-group-guid",
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.UnbindRunningSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
 		})
 	})
 
-	Context("AssignStagingSecurityGroup", func() {
+	Context("AssignSecurityGroupGlobalStaging", func() {
 		It("Should succeed", func() {
-			err := securityMgr.AssignStagingSecurityGroup(cfclient.SecGroup{
+			err := securityMgr.AssignSecurityGroupGlobalStaging(&resource.SecurityGroup{
 				Name: "sec-group",
-				Guid: "seg-group-guid",
+				GUID: "seg-group-guid",
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.BindStagingSecGroupCallCount()).Should(Equal(1))
-			sgGUID := fakeClient.BindStagingSecGroupArgsForCall(0)
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
+			_, sgGUID, updateRequest := fakeClient.UpdateArgsForCall(0)
 			Expect(sgGUID).Should(Equal("seg-group-guid"))
+			Expect(updateRequest.GloballyEnabled.Staging).To(BeTrue())
 		})
 		It("Should peek", func() {
 			securityMgr.Peek = true
-			err := securityMgr.AssignStagingSecurityGroup(cfclient.SecGroup{
+			err := securityMgr.AssignSecurityGroupGlobalStaging(&resource.SecurityGroup{
 				Name: "sec-group",
-				Guid: "seg-group-guid",
+				GUID: "seg-group-guid",
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.BindStagingSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
 		})
 	})
 
-	Context("AssignRunningSecurityGroup", func() {
+	Context("AssignSecurityGroupGlobalRunning", func() {
 		It("Should succeed", func() {
-			err := securityMgr.AssignRunningSecurityGroup(cfclient.SecGroup{
+			err := securityMgr.AssignSecurityGroupGlobalRunning(&resource.SecurityGroup{
 				Name: "sec-group",
-				Guid: "seg-group-guid",
+				GUID: "seg-group-guid",
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.BindRunningSecGroupCallCount()).Should(Equal(1))
-			sgGUID := fakeClient.BindRunningSecGroupArgsForCall(0)
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
+			_, sgGUID, updateRequest := fakeClient.UpdateArgsForCall(0)
 			Expect(sgGUID).Should(Equal("seg-group-guid"))
+			Expect(updateRequest.GloballyEnabled.Running).To(BeTrue())
 		})
 		It("Should peek", func() {
 			securityMgr.Peek = true
-			err := securityMgr.AssignRunningSecurityGroup(cfclient.SecGroup{
+			err := securityMgr.AssignSecurityGroupGlobalRunning(&resource.SecurityGroup{
 				Name: "sec-group",
-				Guid: "seg-group-guid",
+				GUID: "seg-group-guid",
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.BindRunningSecGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
 		})
 	})
 })

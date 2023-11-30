@@ -1,7 +1,7 @@
 package space_test
 
 import (
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -15,32 +15,34 @@ import (
 
 var _ = Describe("given SpaceManager", func() {
 	var (
-		fakeUaa      *uaafakes.FakeManager
-		fakeOrgMgr   *orgfakes.FakeReader
-		fakeClient   *spacefakes.FakeCFClient
-		spaceManager space.DefaultManager
-		fakeReader   *configfakes.FakeReader
+		fakeUaa                *uaafakes.FakeManager
+		fakeOrgMgr             *orgfakes.FakeReader
+		spaceManager           space.DefaultManager
+		fakeReader             *configfakes.FakeReader
+		fakeSpaceClient        *spacefakes.FakeCFSpaceClient
+		fakeSpaceFeatureClient *spacefakes.FakeCFSpaceFeatureClient
 	)
 
 	BeforeEach(func() {
 		fakeUaa = new(uaafakes.FakeManager)
 		fakeOrgMgr = new(orgfakes.FakeReader)
-		fakeClient = new(spacefakes.FakeCFClient)
 		fakeReader = new(configfakes.FakeReader)
+		fakeSpaceClient = new(spacefakes.FakeCFSpaceClient)
+		fakeSpaceFeatureClient = new(spacefakes.FakeCFSpaceFeatureClient)
 		spaceManager = space.DefaultManager{
-			Cfg:       fakeReader,
-			Client:    fakeClient,
-			UAAMgr:    fakeUaa,
-			OrgReader: fakeOrgMgr,
-			Peek:      false,
+			Cfg:                fakeReader,
+			UAAMgr:             fakeUaa,
+			OrgReader:          fakeOrgMgr,
+			Peek:               false,
+			SpaceClient:        fakeSpaceClient,
+			SpaceFeatureClient: fakeSpaceFeatureClient,
 		}
 	})
 
 	Context("UpdateSpacesMetadata()", func() {
 		It("should add metadata label for given space", func() {
-			fakeClient.SupportsMetadataAPIReturns(true, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space: "testSpace",
 					Org:   "testOrg",
 					Metadata: &config.Metadata{
@@ -53,29 +55,35 @@ var _ = Describe("given SpaceManager", func() {
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				MetadataPrefix: "foo.bar",
 			}, nil)
-			spaces := []cfclient.Space{
-				cfclient.Space{
-					Name:             "testSpace",
-					Guid:             "test-space-guid",
-					OrganizationGuid: "testOrgGUID",
+			spaces := []*resource.Space{
+				{
+					Name: "testSpace",
+					GUID: "test-space-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			err := spaceManager.UpdateSpacesMetadata()
 			Expect(err).Should(BeNil())
 
-			Expect(fakeClient.UpdateSpaceMetadataCallCount()).Should(Equal(1))
-			spaceGUID, metadata := fakeClient.UpdateSpaceMetadataArgsForCall(0)
+			Expect(fakeSpaceClient.UpdateCallCount()).Should(Equal(1))
+			_, spaceGUID, spaceUpdate := fakeSpaceClient.UpdateArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("test-space-guid"))
-			Expect(metadata).ShouldNot(BeNil())
-			Expect(metadata.Labels).Should(HaveKeyWithValue("foo.bar/test-label", "test-value"))
+			Expect(spaceUpdate.Name).Should(Equal("testSpace"))
+			value := spaceUpdate.Metadata.Labels["foo.bar/test-label"]
+			Expect(*value).Should(Equal("test-value"))
 		})
 
 		It("should add metadata annotation for given space", func() {
-			fakeClient.SupportsMetadataAPIReturns(true, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space: "testSpace",
 					Org:   "testOrg",
 					Metadata: &config.Metadata{
@@ -88,29 +96,34 @@ var _ = Describe("given SpaceManager", func() {
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				MetadataPrefix: "foo.bar",
 			}, nil)
-			spaces := []cfclient.Space{
-				cfclient.Space{
-					Name:             "testSpace",
-					Guid:             "test-space-guid",
-					OrganizationGuid: "testOrgGUID",
+			spaces := []*resource.Space{
+				{
+					Name: "testSpace",
+					GUID: "test-space-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			err := spaceManager.UpdateSpacesMetadata()
 			Expect(err).Should(BeNil())
 
-			Expect(fakeClient.UpdateSpaceMetadataCallCount()).Should(Equal(1))
-			spaceGUID, metadata := fakeClient.UpdateSpaceMetadataArgsForCall(0)
+			Expect(fakeSpaceClient.UpdateCallCount()).Should(Equal(1))
+			_, spaceGUID, spaceUpdate := fakeSpaceClient.UpdateArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("test-space-guid"))
-			Expect(metadata).ShouldNot(BeNil())
-			Expect(metadata.Annotations).Should(HaveKeyWithValue("foo.bar/test-annotation", "test-value"))
+			value := spaceUpdate.Metadata.Annotations["foo.bar/test-annotation"]
+			Expect(*value).Should(Equal("test-value"))
 		})
 
 		It("should remove metadata label for given space", func() {
-			fakeClient.SupportsMetadataAPIReturns(true, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space: "testSpace",
 					Org:   "testOrg",
 					Metadata: &config.Metadata{
@@ -123,30 +136,34 @@ var _ = Describe("given SpaceManager", func() {
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				MetadataPrefix: "foo.bar",
 			}, nil)
-			spaces := []cfclient.Space{
-				cfclient.Space{
-					Name:             "testSpace",
-					Guid:             "test-space-guid",
-					OrganizationGuid: "testOrgGUID",
+			spaces := []*resource.Space{
+				{
+					Name: "testSpace",
+					GUID: "test-space-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			err := spaceManager.UpdateSpacesMetadata()
 			Expect(err).Should(BeNil())
 
-			Expect(fakeClient.UpdateSpaceMetadataCallCount()).Should(Equal(1))
-			spaceGUID, metadata := fakeClient.UpdateSpaceMetadataArgsForCall(0)
+			Expect(fakeSpaceClient.UpdateCallCount()).Should(Equal(1))
+			_, spaceGUID, spaceUpdate := fakeSpaceClient.UpdateArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("test-space-guid"))
-			Expect(metadata).ShouldNot(BeNil())
-			Expect(metadata.Labels).Should(HaveKey("foo.bar/test-label"))
-			Expect(metadata.Labels["foo.bar/test-label"]).Should(BeNil())
+			Expect(spaceUpdate.Metadata.Labels).Should(HaveKey("foo.bar/test-label"))
+			Expect(spaceUpdate.Metadata.Labels["foo.bar/test-label"]).Should(BeNil())
 		})
 
 		It("should remove metadata annotation for given space", func() {
-			fakeClient.SupportsMetadataAPIReturns(true, nil)
 			fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
-				config.SpaceConfig{
+				{
 					Space: "testSpace",
 					Org:   "testOrg",
 					Metadata: &config.Metadata{
@@ -159,38 +176,30 @@ var _ = Describe("given SpaceManager", func() {
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				MetadataPrefix: "foo.bar",
 			}, nil)
-			spaces := []cfclient.Space{
-				cfclient.Space{
-					Name:             "testSpace",
-					Guid:             "test-space-guid",
-					OrganizationGuid: "testOrgGUID",
+			spaces := []*resource.Space{
+				{
+					Name: "testSpace",
+					GUID: "test-space-guid",
+					Relationships: &resource.SpaceRelationships{
+						Organization: &resource.ToOneRelationship{
+							Data: &resource.Relationship{
+								GUID: "testOrgGUID",
+							},
+						},
+					},
 				},
 			}
 			fakeOrgMgr.GetOrgGUIDReturns("testOrgGUID", nil)
-			fakeClient.ListSpacesReturns(spaces, nil)
+			fakeSpaceClient.ListAllReturns(spaces, nil)
 			err := spaceManager.UpdateSpacesMetadata()
 			Expect(err).Should(BeNil())
 
-			Expect(fakeClient.UpdateSpaceMetadataCallCount()).Should(Equal(1))
-			spaceGUID, metadata := fakeClient.UpdateSpaceMetadataArgsForCall(0)
+			Expect(fakeSpaceClient.UpdateCallCount()).Should(Equal(1))
+			_, spaceGUID, spaceUpdate := fakeSpaceClient.UpdateArgsForCall(0)
 			Expect(spaceGUID).Should(Equal("test-space-guid"))
-			Expect(metadata).ShouldNot(BeNil())
-			Expect(metadata.Annotations).Should(HaveKey("foo.bar/test-annotation"))
-			Expect(metadata.Annotations["foo.bar/test-annotation"]).Should(BeNil())
+			Expect(spaceUpdate.Metadata.Annotations).Should(HaveKey("foo.bar/test-annotation"))
+			Expect(spaceUpdate.Metadata.Annotations["foo.bar/test-annotation"]).Should(BeNil())
 		})
 
-	})
-
-	Context("ClearMetadata()", func() {
-		It("should remove metadata from given space", func() {
-			fakeClient.SupportsMetadataAPIReturns(true, nil)
-			space := cfclient.Space{
-				Guid: "space-guid",
-			}
-			err := spaceManager.ClearMetadata(space, "test-org")
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(fakeClient.RemoveSpaceMetadataCallCount()).Should(Equal(1))
-			Expect(fakeClient.RemoveSpaceMetadataArgsForCall(0)).Should(Equal("space-guid"))
-		})
 	})
 })

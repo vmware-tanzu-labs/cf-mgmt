@@ -8,25 +8,15 @@ import (
 )
 
 type FakeManager struct {
-	CleanupOrgUsersStub        func() error
+	CleanupOrgUsersStub        func() []error
 	cleanupOrgUsersMutex       sync.RWMutex
 	cleanupOrgUsersArgsForCall []struct {
 	}
 	cleanupOrgUsersReturns struct {
-		result1 error
+		result1 []error
 	}
 	cleanupOrgUsersReturnsOnCall map[int]struct {
-		result1 error
-	}
-	DeinitializeLdapStub        func() error
-	deinitializeLdapMutex       sync.RWMutex
-	deinitializeLdapArgsForCall []struct {
-	}
-	deinitializeLdapReturns struct {
-		result1 error
-	}
-	deinitializeLdapReturnsOnCall map[int]struct {
-		result1 error
+		result1 []error
 	}
 	InitializeAzureADStub        func(string, string, string, string) error
 	initializeAzureADMutex       sync.RWMutex
@@ -42,82 +32,31 @@ type FakeManager struct {
 	initializeAzureADReturnsOnCall map[int]struct {
 		result1 error
 	}
-	InitializeLdapStub        func(string, string, string) error
-	initializeLdapMutex       sync.RWMutex
-	initializeLdapArgsForCall []struct {
-		arg1 string
-		arg2 string
-		arg3 string
-	}
-	initializeLdapReturns struct {
-		result1 error
-	}
-	initializeLdapReturnsOnCall map[int]struct {
-		result1 error
-	}
-	ListOrgUsersByRoleStub        func(string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error)
-	listOrgUsersByRoleMutex       sync.RWMutex
-	listOrgUsersByRoleArgsForCall []struct {
-		arg1 string
-	}
-	listOrgUsersByRoleReturns struct {
-		result1 *user.RoleUsers
-		result2 *user.RoleUsers
-		result3 *user.RoleUsers
-		result4 *user.RoleUsers
-		result5 error
-	}
-	listOrgUsersByRoleReturnsOnCall map[int]struct {
-		result1 *user.RoleUsers
-		result2 *user.RoleUsers
-		result3 *user.RoleUsers
-		result4 *user.RoleUsers
-		result5 error
-	}
-	ListSpaceUsersByRoleStub        func(string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error)
-	listSpaceUsersByRoleMutex       sync.RWMutex
-	listSpaceUsersByRoleArgsForCall []struct {
-		arg1 string
-	}
-	listSpaceUsersByRoleReturns struct {
-		result1 *user.RoleUsers
-		result2 *user.RoleUsers
-		result3 *user.RoleUsers
-		result4 *user.RoleUsers
-		result5 error
-	}
-	listSpaceUsersByRoleReturnsOnCall map[int]struct {
-		result1 *user.RoleUsers
-		result2 *user.RoleUsers
-		result3 *user.RoleUsers
-		result4 *user.RoleUsers
-		result5 error
-	}
-	UpdateOrgUsersStub        func() error
+	UpdateOrgUsersStub        func() []error
 	updateOrgUsersMutex       sync.RWMutex
 	updateOrgUsersArgsForCall []struct {
 	}
 	updateOrgUsersReturns struct {
-		result1 error
+		result1 []error
 	}
 	updateOrgUsersReturnsOnCall map[int]struct {
-		result1 error
+		result1 []error
 	}
-	UpdateSpaceUsersStub        func() error
+	UpdateSpaceUsersStub        func() []error
 	updateSpaceUsersMutex       sync.RWMutex
 	updateSpaceUsersArgsForCall []struct {
 	}
 	updateSpaceUsersReturns struct {
-		result1 error
+		result1 []error
 	}
 	updateSpaceUsersReturnsOnCall map[int]struct {
-		result1 error
+		result1 []error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeManager) CleanupOrgUsers() error {
+func (fake *FakeManager) CleanupOrgUsers() []error {
 	fake.cleanupOrgUsersMutex.Lock()
 	ret, specificReturn := fake.cleanupOrgUsersReturnsOnCall[len(fake.cleanupOrgUsersArgsForCall)]
 	fake.cleanupOrgUsersArgsForCall = append(fake.cleanupOrgUsersArgsForCall, struct {
@@ -141,85 +80,32 @@ func (fake *FakeManager) CleanupOrgUsersCallCount() int {
 	return len(fake.cleanupOrgUsersArgsForCall)
 }
 
-func (fake *FakeManager) CleanupOrgUsersCalls(stub func() error) {
+func (fake *FakeManager) CleanupOrgUsersCalls(stub func() []error) {
 	fake.cleanupOrgUsersMutex.Lock()
 	defer fake.cleanupOrgUsersMutex.Unlock()
 	fake.CleanupOrgUsersStub = stub
 }
 
-func (fake *FakeManager) CleanupOrgUsersReturns(result1 error) {
+func (fake *FakeManager) CleanupOrgUsersReturns(result1 []error) {
 	fake.cleanupOrgUsersMutex.Lock()
 	defer fake.cleanupOrgUsersMutex.Unlock()
 	fake.CleanupOrgUsersStub = nil
 	fake.cleanupOrgUsersReturns = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
-func (fake *FakeManager) CleanupOrgUsersReturnsOnCall(i int, result1 error) {
+func (fake *FakeManager) CleanupOrgUsersReturnsOnCall(i int, result1 []error) {
 	fake.cleanupOrgUsersMutex.Lock()
 	defer fake.cleanupOrgUsersMutex.Unlock()
 	fake.CleanupOrgUsersStub = nil
 	if fake.cleanupOrgUsersReturnsOnCall == nil {
 		fake.cleanupOrgUsersReturnsOnCall = make(map[int]struct {
-			result1 error
+			result1 []error
 		})
 	}
 	fake.cleanupOrgUsersReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeManager) DeinitializeLdap() error {
-	fake.deinitializeLdapMutex.Lock()
-	ret, specificReturn := fake.deinitializeLdapReturnsOnCall[len(fake.deinitializeLdapArgsForCall)]
-	fake.deinitializeLdapArgsForCall = append(fake.deinitializeLdapArgsForCall, struct {
-	}{})
-	stub := fake.DeinitializeLdapStub
-	fakeReturns := fake.deinitializeLdapReturns
-	fake.recordInvocation("DeinitializeLdap", []interface{}{})
-	fake.deinitializeLdapMutex.Unlock()
-	if stub != nil {
-		return stub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeManager) DeinitializeLdapCallCount() int {
-	fake.deinitializeLdapMutex.RLock()
-	defer fake.deinitializeLdapMutex.RUnlock()
-	return len(fake.deinitializeLdapArgsForCall)
-}
-
-func (fake *FakeManager) DeinitializeLdapCalls(stub func() error) {
-	fake.deinitializeLdapMutex.Lock()
-	defer fake.deinitializeLdapMutex.Unlock()
-	fake.DeinitializeLdapStub = stub
-}
-
-func (fake *FakeManager) DeinitializeLdapReturns(result1 error) {
-	fake.deinitializeLdapMutex.Lock()
-	defer fake.deinitializeLdapMutex.Unlock()
-	fake.DeinitializeLdapStub = nil
-	fake.deinitializeLdapReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeManager) DeinitializeLdapReturnsOnCall(i int, result1 error) {
-	fake.deinitializeLdapMutex.Lock()
-	defer fake.deinitializeLdapMutex.Unlock()
-	fake.DeinitializeLdapStub = nil
-	if fake.deinitializeLdapReturnsOnCall == nil {
-		fake.deinitializeLdapReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.deinitializeLdapReturnsOnCall[i] = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
@@ -287,216 +173,7 @@ func (fake *FakeManager) InitializeAzureADReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeManager) InitializeLdap(arg1 string, arg2 string, arg3 string) error {
-	fake.initializeLdapMutex.Lock()
-	ret, specificReturn := fake.initializeLdapReturnsOnCall[len(fake.initializeLdapArgsForCall)]
-	fake.initializeLdapArgsForCall = append(fake.initializeLdapArgsForCall, struct {
-		arg1 string
-		arg2 string
-		arg3 string
-	}{arg1, arg2, arg3})
-	stub := fake.InitializeLdapStub
-	fakeReturns := fake.initializeLdapReturns
-	fake.recordInvocation("InitializeLdap", []interface{}{arg1, arg2, arg3})
-	fake.initializeLdapMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeManager) InitializeLdapCallCount() int {
-	fake.initializeLdapMutex.RLock()
-	defer fake.initializeLdapMutex.RUnlock()
-	return len(fake.initializeLdapArgsForCall)
-}
-
-func (fake *FakeManager) InitializeLdapCalls(stub func(string, string, string) error) {
-	fake.initializeLdapMutex.Lock()
-	defer fake.initializeLdapMutex.Unlock()
-	fake.InitializeLdapStub = stub
-}
-
-func (fake *FakeManager) InitializeLdapArgsForCall(i int) (string, string, string) {
-	fake.initializeLdapMutex.RLock()
-	defer fake.initializeLdapMutex.RUnlock()
-	argsForCall := fake.initializeLdapArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *FakeManager) InitializeLdapReturns(result1 error) {
-	fake.initializeLdapMutex.Lock()
-	defer fake.initializeLdapMutex.Unlock()
-	fake.InitializeLdapStub = nil
-	fake.initializeLdapReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeManager) InitializeLdapReturnsOnCall(i int, result1 error) {
-	fake.initializeLdapMutex.Lock()
-	defer fake.initializeLdapMutex.Unlock()
-	fake.InitializeLdapStub = nil
-	if fake.initializeLdapReturnsOnCall == nil {
-		fake.initializeLdapReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.initializeLdapReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeManager) ListOrgUsersByRole(arg1 string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error) {
-	fake.listOrgUsersByRoleMutex.Lock()
-	ret, specificReturn := fake.listOrgUsersByRoleReturnsOnCall[len(fake.listOrgUsersByRoleArgsForCall)]
-	fake.listOrgUsersByRoleArgsForCall = append(fake.listOrgUsersByRoleArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	stub := fake.ListOrgUsersByRoleStub
-	fakeReturns := fake.listOrgUsersByRoleReturns
-	fake.recordInvocation("ListOrgUsersByRole", []interface{}{arg1})
-	fake.listOrgUsersByRoleMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2, ret.result3, ret.result4, ret.result5
-	}
-	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3, fakeReturns.result4, fakeReturns.result5
-}
-
-func (fake *FakeManager) ListOrgUsersByRoleCallCount() int {
-	fake.listOrgUsersByRoleMutex.RLock()
-	defer fake.listOrgUsersByRoleMutex.RUnlock()
-	return len(fake.listOrgUsersByRoleArgsForCall)
-}
-
-func (fake *FakeManager) ListOrgUsersByRoleCalls(stub func(string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error)) {
-	fake.listOrgUsersByRoleMutex.Lock()
-	defer fake.listOrgUsersByRoleMutex.Unlock()
-	fake.ListOrgUsersByRoleStub = stub
-}
-
-func (fake *FakeManager) ListOrgUsersByRoleArgsForCall(i int) string {
-	fake.listOrgUsersByRoleMutex.RLock()
-	defer fake.listOrgUsersByRoleMutex.RUnlock()
-	argsForCall := fake.listOrgUsersByRoleArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeManager) ListOrgUsersByRoleReturns(result1 *user.RoleUsers, result2 *user.RoleUsers, result3 *user.RoleUsers, result4 *user.RoleUsers, result5 error) {
-	fake.listOrgUsersByRoleMutex.Lock()
-	defer fake.listOrgUsersByRoleMutex.Unlock()
-	fake.ListOrgUsersByRoleStub = nil
-	fake.listOrgUsersByRoleReturns = struct {
-		result1 *user.RoleUsers
-		result2 *user.RoleUsers
-		result3 *user.RoleUsers
-		result4 *user.RoleUsers
-		result5 error
-	}{result1, result2, result3, result4, result5}
-}
-
-func (fake *FakeManager) ListOrgUsersByRoleReturnsOnCall(i int, result1 *user.RoleUsers, result2 *user.RoleUsers, result3 *user.RoleUsers, result4 *user.RoleUsers, result5 error) {
-	fake.listOrgUsersByRoleMutex.Lock()
-	defer fake.listOrgUsersByRoleMutex.Unlock()
-	fake.ListOrgUsersByRoleStub = nil
-	if fake.listOrgUsersByRoleReturnsOnCall == nil {
-		fake.listOrgUsersByRoleReturnsOnCall = make(map[int]struct {
-			result1 *user.RoleUsers
-			result2 *user.RoleUsers
-			result3 *user.RoleUsers
-			result4 *user.RoleUsers
-			result5 error
-		})
-	}
-	fake.listOrgUsersByRoleReturnsOnCall[i] = struct {
-		result1 *user.RoleUsers
-		result2 *user.RoleUsers
-		result3 *user.RoleUsers
-		result4 *user.RoleUsers
-		result5 error
-	}{result1, result2, result3, result4, result5}
-}
-
-func (fake *FakeManager) ListSpaceUsersByRole(arg1 string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error) {
-	fake.listSpaceUsersByRoleMutex.Lock()
-	ret, specificReturn := fake.listSpaceUsersByRoleReturnsOnCall[len(fake.listSpaceUsersByRoleArgsForCall)]
-	fake.listSpaceUsersByRoleArgsForCall = append(fake.listSpaceUsersByRoleArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	stub := fake.ListSpaceUsersByRoleStub
-	fakeReturns := fake.listSpaceUsersByRoleReturns
-	fake.recordInvocation("ListSpaceUsersByRole", []interface{}{arg1})
-	fake.listSpaceUsersByRoleMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2, ret.result3, ret.result4, ret.result5
-	}
-	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3, fakeReturns.result4, fakeReturns.result5
-}
-
-func (fake *FakeManager) ListSpaceUsersByRoleCallCount() int {
-	fake.listSpaceUsersByRoleMutex.RLock()
-	defer fake.listSpaceUsersByRoleMutex.RUnlock()
-	return len(fake.listSpaceUsersByRoleArgsForCall)
-}
-
-func (fake *FakeManager) ListSpaceUsersByRoleCalls(stub func(string) (*user.RoleUsers, *user.RoleUsers, *user.RoleUsers, *user.RoleUsers, error)) {
-	fake.listSpaceUsersByRoleMutex.Lock()
-	defer fake.listSpaceUsersByRoleMutex.Unlock()
-	fake.ListSpaceUsersByRoleStub = stub
-}
-
-func (fake *FakeManager) ListSpaceUsersByRoleArgsForCall(i int) string {
-	fake.listSpaceUsersByRoleMutex.RLock()
-	defer fake.listSpaceUsersByRoleMutex.RUnlock()
-	argsForCall := fake.listSpaceUsersByRoleArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeManager) ListSpaceUsersByRoleReturns(result1 *user.RoleUsers, result2 *user.RoleUsers, result3 *user.RoleUsers, result4 *user.RoleUsers, result5 error) {
-	fake.listSpaceUsersByRoleMutex.Lock()
-	defer fake.listSpaceUsersByRoleMutex.Unlock()
-	fake.ListSpaceUsersByRoleStub = nil
-	fake.listSpaceUsersByRoleReturns = struct {
-		result1 *user.RoleUsers
-		result2 *user.RoleUsers
-		result3 *user.RoleUsers
-		result4 *user.RoleUsers
-		result5 error
-	}{result1, result2, result3, result4, result5}
-}
-
-func (fake *FakeManager) ListSpaceUsersByRoleReturnsOnCall(i int, result1 *user.RoleUsers, result2 *user.RoleUsers, result3 *user.RoleUsers, result4 *user.RoleUsers, result5 error) {
-	fake.listSpaceUsersByRoleMutex.Lock()
-	defer fake.listSpaceUsersByRoleMutex.Unlock()
-	fake.ListSpaceUsersByRoleStub = nil
-	if fake.listSpaceUsersByRoleReturnsOnCall == nil {
-		fake.listSpaceUsersByRoleReturnsOnCall = make(map[int]struct {
-			result1 *user.RoleUsers
-			result2 *user.RoleUsers
-			result3 *user.RoleUsers
-			result4 *user.RoleUsers
-			result5 error
-		})
-	}
-	fake.listSpaceUsersByRoleReturnsOnCall[i] = struct {
-		result1 *user.RoleUsers
-		result2 *user.RoleUsers
-		result3 *user.RoleUsers
-		result4 *user.RoleUsers
-		result5 error
-	}{result1, result2, result3, result4, result5}
-}
-
-func (fake *FakeManager) UpdateOrgUsers() error {
+func (fake *FakeManager) UpdateOrgUsers() []error {
 	fake.updateOrgUsersMutex.Lock()
 	ret, specificReturn := fake.updateOrgUsersReturnsOnCall[len(fake.updateOrgUsersArgsForCall)]
 	fake.updateOrgUsersArgsForCall = append(fake.updateOrgUsersArgsForCall, struct {
@@ -520,36 +197,36 @@ func (fake *FakeManager) UpdateOrgUsersCallCount() int {
 	return len(fake.updateOrgUsersArgsForCall)
 }
 
-func (fake *FakeManager) UpdateOrgUsersCalls(stub func() error) {
+func (fake *FakeManager) UpdateOrgUsersCalls(stub func() []error) {
 	fake.updateOrgUsersMutex.Lock()
 	defer fake.updateOrgUsersMutex.Unlock()
 	fake.UpdateOrgUsersStub = stub
 }
 
-func (fake *FakeManager) UpdateOrgUsersReturns(result1 error) {
+func (fake *FakeManager) UpdateOrgUsersReturns(result1 []error) {
 	fake.updateOrgUsersMutex.Lock()
 	defer fake.updateOrgUsersMutex.Unlock()
 	fake.UpdateOrgUsersStub = nil
 	fake.updateOrgUsersReturns = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateOrgUsersReturnsOnCall(i int, result1 error) {
+func (fake *FakeManager) UpdateOrgUsersReturnsOnCall(i int, result1 []error) {
 	fake.updateOrgUsersMutex.Lock()
 	defer fake.updateOrgUsersMutex.Unlock()
 	fake.UpdateOrgUsersStub = nil
 	if fake.updateOrgUsersReturnsOnCall == nil {
 		fake.updateOrgUsersReturnsOnCall = make(map[int]struct {
-			result1 error
+			result1 []error
 		})
 	}
 	fake.updateOrgUsersReturnsOnCall[i] = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateSpaceUsers() error {
+func (fake *FakeManager) UpdateSpaceUsers() []error {
 	fake.updateSpaceUsersMutex.Lock()
 	ret, specificReturn := fake.updateSpaceUsersReturnsOnCall[len(fake.updateSpaceUsersArgsForCall)]
 	fake.updateSpaceUsersArgsForCall = append(fake.updateSpaceUsersArgsForCall, struct {
@@ -573,32 +250,32 @@ func (fake *FakeManager) UpdateSpaceUsersCallCount() int {
 	return len(fake.updateSpaceUsersArgsForCall)
 }
 
-func (fake *FakeManager) UpdateSpaceUsersCalls(stub func() error) {
+func (fake *FakeManager) UpdateSpaceUsersCalls(stub func() []error) {
 	fake.updateSpaceUsersMutex.Lock()
 	defer fake.updateSpaceUsersMutex.Unlock()
 	fake.UpdateSpaceUsersStub = stub
 }
 
-func (fake *FakeManager) UpdateSpaceUsersReturns(result1 error) {
+func (fake *FakeManager) UpdateSpaceUsersReturns(result1 []error) {
 	fake.updateSpaceUsersMutex.Lock()
 	defer fake.updateSpaceUsersMutex.Unlock()
 	fake.UpdateSpaceUsersStub = nil
 	fake.updateSpaceUsersReturns = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
-func (fake *FakeManager) UpdateSpaceUsersReturnsOnCall(i int, result1 error) {
+func (fake *FakeManager) UpdateSpaceUsersReturnsOnCall(i int, result1 []error) {
 	fake.updateSpaceUsersMutex.Lock()
 	defer fake.updateSpaceUsersMutex.Unlock()
 	fake.UpdateSpaceUsersStub = nil
 	if fake.updateSpaceUsersReturnsOnCall == nil {
 		fake.updateSpaceUsersReturnsOnCall = make(map[int]struct {
-			result1 error
+			result1 []error
 		})
 	}
 	fake.updateSpaceUsersReturnsOnCall[i] = struct {
-		result1 error
+		result1 []error
 	}{result1}
 }
 
@@ -607,16 +284,6 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.cleanupOrgUsersMutex.RLock()
 	defer fake.cleanupOrgUsersMutex.RUnlock()
-	fake.deinitializeLdapMutex.RLock()
-	defer fake.deinitializeLdapMutex.RUnlock()
-	fake.initializeAzureADMutex.RLock()
-	defer fake.initializeAzureADMutex.RUnlock()
-	fake.initializeLdapMutex.RLock()
-	defer fake.initializeLdapMutex.RUnlock()
-	fake.listOrgUsersByRoleMutex.RLock()
-	defer fake.listOrgUsersByRoleMutex.RUnlock()
-	fake.listSpaceUsersByRoleMutex.RLock()
-	defer fake.listSpaceUsersByRoleMutex.RUnlock()
 	fake.updateOrgUsersMutex.RLock()
 	defer fake.updateOrgUsersMutex.RUnlock()
 	fake.updateSpaceUsersMutex.RLock()

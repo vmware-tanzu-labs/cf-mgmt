@@ -32,10 +32,10 @@ var _ = Describe("Ldap", func() {
 			It("should return specified user", func() {
 				connection.SearchReturns(&l.SearchResult{
 					Entries: []*l.Entry{
-						&l.Entry{
+						{
 							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								{Name: "mail", Values: []string{"cwashburn@foo.com"}},
 							}},
 					},
 				}, nil)
@@ -50,15 +50,15 @@ var _ = Describe("Ldap", func() {
 			It("should return nil user when multiple entries found", func() {
 				connection.SearchReturns(&l.SearchResult{
 					Entries: []*l.Entry{
-						&l.Entry{
+						{
 							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								{Name: "mail", Values: []string{"cwashburn@foo.com"}},
 							}},
-						&l.Entry{
+						{
 							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								{Name: "mail", Values: []string{"cwashburn@foo.com"}},
 							}},
 					},
 				}, nil)
@@ -79,11 +79,11 @@ var _ = Describe("Ldap", func() {
 			It("should return specified user", func() {
 				connection.SearchReturns(&l.SearchResult{
 					Entries: []*l.Entry{
-						&l.Entry{
+						{
 							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
-								&l.EntryAttribute{Name: "uid", Values: []string{"cwashburn"}},
+								{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								{Name: "uid", Values: []string{"cwashburn"}},
 							}},
 					},
 				}, nil)
@@ -101,11 +101,11 @@ var _ = Describe("Ldap", func() {
 			It(`should return specified user when \, is in dn`, func() {
 				connection.SearchReturns(&l.SearchResult{
 					Entries: []*l.Entry{
-						&l.Entry{
+						{
 							DN: `cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org`,
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
-								&l.EntryAttribute{Name: "uid", Values: []string{"cwashburn"}},
+								{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								{Name: "uid", Values: []string{"cwashburn"}},
 							}},
 					},
 				}, nil)
@@ -123,11 +123,11 @@ var _ = Describe("Ldap", func() {
 			It("should return specified user when space is in dn", func() {
 				connection.SearchReturns(&l.SearchResult{
 					Entries: []*l.Entry{
-						&l.Entry{
+						{
 							DN: "cn=Caleb A. Washburn,ou=users,dc=pivotal,dc=org",
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
-								&l.EntryAttribute{Name: "uid", Values: []string{"cwashburn"}},
+								{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								{Name: "uid", Values: []string{"cwashburn"}},
 							}},
 					},
 				}, nil)
@@ -145,17 +145,17 @@ var _ = Describe("Ldap", func() {
 			It("should return nil user when multiple entries found", func() {
 				connection.SearchReturns(&l.SearchResult{
 					Entries: []*l.Entry{
-						&l.Entry{
+						{
 							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
-								&l.EntryAttribute{Name: "uid", Values: []string{"cwashburn"}},
+								{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								{Name: "uid", Values: []string{"cwashburn"}},
 							}},
-						&l.Entry{
+						{
 							DN: "cn=cwashburn,ou=users,dc=pivotal,dc=org",
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{Name: "mail", Values: []string{"cwashburn@foo.com"}},
-								&l.EntryAttribute{Name: "uid", Values: []string{"cwashburn"}},
+								{Name: "mail", Values: []string{"cwashburn@foo.com"}},
+								{Name: "uid", Values: []string{"cwashburn"}},
 							}},
 					},
 				}, nil)
@@ -182,9 +182,9 @@ var _ = Describe("Ldap", func() {
 			It("should return users for specified group", func() {
 				connection.SearchReturns(&l.SearchResult{
 					Entries: []*l.Entry{
-						&l.Entry{
+						{
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{Name: "member", Values: []string{
+								{Name: "member", Values: []string{
 									"cn=cwashburn,ou=users,dc=pivotal,dc=org",
 									"cn=cwashburn1,ou=users,dc=pivotal,dc=org",
 									`cn=Washburn\, Caleb,ou=users,dc=pivotal,dc=org`}},
@@ -209,7 +209,7 @@ var _ = Describe("Ldap", func() {
 			It("should return empty list when group has no users", func() {
 				connection.SearchReturns(&l.SearchResult{
 					Entries: []*l.Entry{
-						&l.Entry{},
+						{},
 					},
 				}, nil)
 				users, err := ldapManager.GetUserDNs("group1")
@@ -219,8 +219,8 @@ var _ = Describe("Ldap", func() {
 			It("should return empty list when multiple groups are found", func() {
 				connection.SearchReturns(&l.SearchResult{
 					Entries: []*l.Entry{
-						&l.Entry{},
-						&l.Entry{},
+						{},
+						{},
 					},
 				}, nil)
 				users, err := ldapManager.GetUserDNs("group1")
@@ -266,9 +266,9 @@ var _ = Describe("Ldap", func() {
 			It("Should return true", func() {
 				connection.SearchReturns(&l.SearchResult{
 					Entries: []*l.Entry{
-						&l.Entry{
+						{
 							Attributes: []*l.EntryAttribute{
-								&l.EntryAttribute{
+								{
 									Name:   "cn",
 									Values: []string{"nested_group"},
 								},

@@ -278,10 +278,10 @@ var _ = Describe("Global", func() {
 
 		It("Will not update anything as plan is already public", func() {
 			globalConfig.ServiceAccess = []*config.Broker{
-				&config.Broker{
+				{
 					Name: "test-broker",
 					Services: []*config.Service{
-						&config.Service{
+						{
 							Name:           "test-service",
 							AllAccessPlans: []string{"test-plan"},
 						},
@@ -304,10 +304,10 @@ var _ = Describe("Global", func() {
 
 		It("Will make plan public that is current no-access", func() {
 			globalConfig.ServiceAccess = []*config.Broker{
-				&config.Broker{
+				{
 					Name: "test-broker",
 					Services: []*config.Service{
-						&config.Service{
+						{
 							Name:          "test-service",
 							NoAccessPlans: []string{"test-plan"},
 						},
@@ -330,13 +330,13 @@ var _ = Describe("Global", func() {
 
 		It("Will make plan public that is current limited access", func() {
 			globalConfig.ServiceAccess = []*config.Broker{
-				&config.Broker{
+				{
 					Name: "test-broker",
 					Services: []*config.Service{
-						&config.Service{
+						{
 							Name: "test-service",
 							LimitedAccessPlans: []*config.PlanVisibility{
-								&config.PlanVisibility{
+								{
 									Name: "test-plan",
 								},
 							},
@@ -375,10 +375,10 @@ var _ = Describe("Global", func() {
 
 		It("Will not update anything as plan is already no access", func() {
 			globalConfig.ServiceAccess = []*config.Broker{
-				&config.Broker{
+				{
 					Name: "test-broker",
 					Services: []*config.Service{
-						&config.Service{
+						{
 							Name:          "test-service",
 							NoAccessPlans: []string{"test-plan"},
 						},
@@ -401,13 +401,13 @@ var _ = Describe("Global", func() {
 
 		It("Will make plan no access that is current limited access", func() {
 			globalConfig.ServiceAccess = []*config.Broker{
-				&config.Broker{
+				{
 					Name: "test-broker",
 					Services: []*config.Service{
-						&config.Service{
+						{
 							Name: "test-service",
 							LimitedAccessPlans: []*config.PlanVisibility{
-								&config.PlanVisibility{
+								{
 									Name: "test-plan",
 								},
 							},
@@ -441,7 +441,7 @@ var _ = Describe("Global", func() {
 			Expect(len(globalConfig.ServiceAccess[0].Services)).Should(Equal(1))
 			Expect(globalConfig.ServiceAccess[0].Services[0].Name).Should(Equal("test-service"))
 			Expect(globalConfig.ServiceAccess[0].Services[0].LimitedAccessPlans).Should(ConsistOf([]*config.PlanVisibility{
-				&config.PlanVisibility{
+				{
 					Name: "test-plan", Orgs: []string{"org1", "org2"},
 				},
 			}))
@@ -451,13 +451,13 @@ var _ = Describe("Global", func() {
 
 		It("Will not update anything as plan is already limited", func() {
 			globalConfig.ServiceAccess = []*config.Broker{
-				&config.Broker{
+				{
 					Name: "test-broker",
 					Services: []*config.Service{
-						&config.Service{
+						{
 							Name: "test-service",
 							LimitedAccessPlans: []*config.PlanVisibility{
-								&config.PlanVisibility{
+								{
 									Name: "test-plan", Orgs: []string{"org1", "org2"},
 								},
 							},
@@ -476,7 +476,7 @@ var _ = Describe("Global", func() {
 			Expect(len(globalConfig.ServiceAccess[0].Services)).Should(Equal(1))
 			Expect(globalConfig.ServiceAccess[0].Services[0].Name).Should(Equal("test-service"))
 			Expect(globalConfig.ServiceAccess[0].Services[0].LimitedAccessPlans).Should(ConsistOf([]*config.PlanVisibility{
-				&config.PlanVisibility{
+				{
 					Name: "test-plan", Orgs: []string{"org1", "org2"},
 				},
 			}))
@@ -486,10 +486,10 @@ var _ = Describe("Global", func() {
 
 		It("Will make plan limited that is current public access", func() {
 			globalConfig.ServiceAccess = []*config.Broker{
-				&config.Broker{
+				{
 					Name: "test-broker",
 					Services: []*config.Service{
-						&config.Service{
+						{
 							Name:           "test-service",
 							AllAccessPlans: []string{"test-plan"},
 						},
@@ -507,7 +507,7 @@ var _ = Describe("Global", func() {
 			Expect(len(globalConfig.ServiceAccess[0].Services)).Should(Equal(1))
 			Expect(globalConfig.ServiceAccess[0].Services[0].Name).Should(Equal("test-service"))
 			Expect(globalConfig.ServiceAccess[0].Services[0].LimitedAccessPlans).Should(ConsistOf([]*config.PlanVisibility{
-				&config.PlanVisibility{
+				{
 					Name: "test-plan", Orgs: []string{"org1", "org2"},
 				},
 			}))
@@ -517,13 +517,13 @@ var _ = Describe("Global", func() {
 
 		It("Will add an org to already limited plan", func() {
 			globalConfig.ServiceAccess = []*config.Broker{
-				&config.Broker{
+				{
 					Name: "test-broker",
 					Services: []*config.Service{
-						&config.Service{
+						{
 							Name: "test-service",
 							LimitedAccessPlans: []*config.PlanVisibility{
-								&config.PlanVisibility{
+								{
 									Name: "test-plan", Orgs: []string{"org1", "org2"},
 								},
 							},
@@ -542,7 +542,7 @@ var _ = Describe("Global", func() {
 			Expect(len(globalConfig.ServiceAccess[0].Services)).Should(Equal(1))
 			Expect(globalConfig.ServiceAccess[0].Services[0].Name).Should(Equal("test-service"))
 			Expect(globalConfig.ServiceAccess[0].Services[0].LimitedAccessPlans).Should(ConsistOf([]*config.PlanVisibility{
-				&config.PlanVisibility{
+				{
 					Name: "test-plan", Orgs: []string{"org1", "org2", "org3"},
 				},
 			}))
@@ -552,13 +552,13 @@ var _ = Describe("Global", func() {
 
 		It("Will add an org and remove an org to already limited plan", func() {
 			globalConfig.ServiceAccess = []*config.Broker{
-				&config.Broker{
+				{
 					Name: "test-broker",
 					Services: []*config.Service{
-						&config.Service{
+						{
 							Name: "test-service",
 							LimitedAccessPlans: []*config.PlanVisibility{
-								&config.PlanVisibility{
+								{
 									Name: "test-plan", Orgs: []string{"org1", "org2"},
 								},
 							},
@@ -578,7 +578,7 @@ var _ = Describe("Global", func() {
 			Expect(len(globalConfig.ServiceAccess[0].Services)).Should(Equal(1))
 			Expect(globalConfig.ServiceAccess[0].Services[0].Name).Should(Equal("test-service"))
 			Expect(globalConfig.ServiceAccess[0].Services[0].LimitedAccessPlans).Should(ConsistOf([]*config.PlanVisibility{
-				&config.PlanVisibility{
+				{
 					Name: "test-plan", Orgs: []string{"org1", "org3"},
 				},
 			}))

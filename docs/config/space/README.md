@@ -3,10 +3,12 @@
 # `cf-mgmt-config space`
 
 `space` command allows adding/updating any property except name of org/space within spaceConfig.yml
+
 - quotas
 - user/role mappings
 
 ## Command Usage
+
 ```
 Usage:
   cf-mgmt-config [OPTIONS] space [space-OPTIONS]
@@ -41,6 +43,7 @@ quota:
       --total-service-keys=                         Total Service Keys capacity for an Space
       --app-instance-limit=                         App Instance Limit for a space
       --app-task-limit=                             App Task Limit for a space
+      --log-rate-limit-bytes-per-second=            Log Rate limit per app for a space
 
 developer:
       --developer-ldap-user=                        Ldap User to add, specify multiple times

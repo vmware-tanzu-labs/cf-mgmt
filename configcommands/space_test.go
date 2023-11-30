@@ -152,18 +152,19 @@ var _ = Describe("Space", func() {
 	Context("No options provided", func() {
 		It("Nothing should change", func() {
 			err := configManager.SaveSpaceConfig(&config.SpaceConfig{
-				Org:                     "test-org",
-				Space:                   "test-space",
-				MemoryLimit:             "unlimited",
-				InstanceMemoryLimit:     "unlimited",
-				TotalRoutes:             "100",
-				TotalServices:           "100",
-				PaidServicePlansAllowed: true,
-				TotalReservedRoutePorts: "unlimited",
-				TotalServiceKeys:        "unlimited",
-				AppInstanceLimit:        "unlimited",
-				AppTaskLimit:            "unlimited",
-				EnableSpaceQuota:        true,
+				Org:                        "test-org",
+				Space:                      "test-space",
+				MemoryLimit:                "unlimited",
+				InstanceMemoryLimit:        "unlimited",
+				TotalRoutes:                "100",
+				TotalServices:              "100",
+				PaidServicePlansAllowed:    true,
+				TotalReservedRoutePorts:    "unlimited",
+				TotalServiceKeys:           "unlimited",
+				AppInstanceLimit:           "unlimited",
+				AppTaskLimit:               "unlimited",
+				EnableSpaceQuota:           true,
+				LogRateLimitBytesPerSecond: "unlimited",
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			spaceBefore, err := configManager.GetSpaceConfig("test-org", "test-space")

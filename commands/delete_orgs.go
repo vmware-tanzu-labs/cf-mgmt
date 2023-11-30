@@ -5,11 +5,11 @@ type DeleteOrgsCommand struct {
 	BasePeekCommand
 }
 
-//Execute - deletes orgs
+// Execute - deletes orgs
 func (c *DeleteOrgsCommand) Execute([]string) error {
 	var cfMgmt *CFMgmt
 	var err error
-	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek); err == nil {
+	if cfMgmt, err = InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, nil); err == nil {
 		err = cfMgmt.OrgManager.DeleteOrgs()
 	}
 	return err

@@ -44,6 +44,7 @@ type SpaceConfig struct {
 	TotalServiceKeys            string    `yaml:"total_service_keys,omitempty"`
 	AppInstanceLimit            string    `yaml:"app_instance_limit,omitempty"`
 	AppTaskLimit                string    `yaml:"app_task_limit,omitempty"`
+	LogRateLimitBytesPerSecond  string    `yaml:"log_rate_limit_bytes_per_second,omitempty"`
 	NamedQuota                  string    `yaml:"named_quota"`
 	Metadata                    *Metadata `yaml:"metadata"`
 }
@@ -57,32 +58,34 @@ func (s *SpaceConfig) GetSecurityGroupContents() string {
 }
 func (s *SpaceConfig) GetQuota() SpaceQuota {
 	return SpaceQuota{
-		Name:                    s.Space,
-		Org:                     s.Org,
-		MemoryLimit:             s.MemoryLimit,
-		InstanceMemoryLimit:     s.InstanceMemoryLimit,
-		TotalRoutes:             s.TotalRoutes,
-		TotalServices:           s.TotalServices,
-		PaidServicePlansAllowed: s.PaidServicePlansAllowed,
-		TotalReservedRoutePorts: s.TotalReservedRoutePorts,
-		TotalServiceKeys:        s.TotalServiceKeys,
-		AppInstanceLimit:        s.AppInstanceLimit,
-		AppTaskLimit:            s.AppTaskLimit,
+		Name:                       s.Space,
+		Org:                        s.Org,
+		MemoryLimit:                s.MemoryLimit,
+		InstanceMemoryLimit:        s.InstanceMemoryLimit,
+		TotalRoutes:                s.TotalRoutes,
+		TotalServices:              s.TotalServices,
+		PaidServicePlansAllowed:    s.PaidServicePlansAllowed,
+		TotalReservedRoutePorts:    s.TotalReservedRoutePorts,
+		TotalServiceKeys:           s.TotalServiceKeys,
+		AppInstanceLimit:           s.AppInstanceLimit,
+		AppTaskLimit:               s.AppTaskLimit,
+		LogRateLimitBytesPerSecond: s.LogRateLimitBytesPerSecond,
 	}
 }
 
 type SpaceQuota struct {
-	Name                    string `yaml:"-"`
-	Org                     string `yaml:"-"`
-	MemoryLimit             string `yaml:"memory-limit"`
-	InstanceMemoryLimit     string `yaml:"instance-memory-limit"`
-	TotalRoutes             string `yaml:"total-routes"`
-	TotalServices           string `yaml:"total-services"`
-	PaidServicePlansAllowed bool   `yaml:"paid-service-plans-allowed"`
-	TotalReservedRoutePorts string `yaml:"total_reserved_route_ports"`
-	TotalServiceKeys        string `yaml:"total_service_keys"`
-	AppInstanceLimit        string `yaml:"app_instance_limit"`
-	AppTaskLimit            string `yaml:"app_task_limit"`
+	Name                       string `yaml:"-"`
+	Org                        string `yaml:"-"`
+	MemoryLimit                string `yaml:"memory-limit"`
+	InstanceMemoryLimit        string `yaml:"instance-memory-limit"`
+	TotalRoutes                string `yaml:"total-routes"`
+	TotalServices              string `yaml:"total-services"`
+	PaidServicePlansAllowed    bool   `yaml:"paid-service-plans-allowed"`
+	TotalReservedRoutePorts    string `yaml:"total_reserved_route_ports"`
+	TotalServiceKeys           string `yaml:"total_service_keys"`
+	AppInstanceLimit           string `yaml:"app_instance_limit"`
+	AppTaskLimit               string `yaml:"app_task_limit"`
+	LogRateLimitBytesPerSecond string `yaml:"log_rate_limit_bytes_per_second"`
 }
 
 func (s *SpaceQuota) IsUnlimitedMemory() bool {

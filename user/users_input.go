@@ -1,16 +1,38 @@
 package user
 
+import (
+	"fmt"
+	"strings"
+
+	"github.com/vmwarepivotallabs/cf-mgmt/role"
+)
+
 // UsersInput
 type UsersInput struct {
-	SpaceGUID                               string
-	OrgGUID                                 string
-	LdapUsers, Users, GroupNames, SamlUsers []string
-	SpaceName                               string
-	OrgName                                 string
-	RemoveUsers                             bool
-	RoleUsers                               *RoleUsers
-	AddUser                                 func(updateUserInput UsersInput, userName, userGUID string) error
-	RemoveUser                              func(updateUserInput UsersInput, userName, userGUID string) error
+	SpaceGUID                                   string
+	OrgGUID                                     string
+	LdapUsers, Users, LdapGroupNames, SamlUsers []string
+	SpaceName                                   string
+	OrgName                                     string
+	RemoveUsers                                 bool
+	RoleUsers                                   *role.RoleUsers
+	AddUser                                     func(orgGUID, entityName, entityGUID, userName, userGUID string) error
+	RemoveUser                                  func(entityName, entityGUID, userName, userGUID string) error
+	Role                                        string
+}
+
+func (u *UsersInput) EntityName() string {
+	if u.SpaceGUID != "" {
+		return fmt.Sprintf("%s/%s", u.OrgName, u.SpaceName)
+	}
+	return u.OrgName
+}
+
+func (u *UsersInput) EntityGUID() string {
+	if u.SpaceGUID != "" {
+		return u.SpaceGUID
+	}
+	return u.OrgGUID
 }
 
 func (u *UsersInput) UniqueUsers() []string {
@@ -25,16 +47,17 @@ func (u *UsersInput) UniqueLdapUsers() []string {
 	return uniqueSlice(u.LdapUsers)
 }
 
-func (u *UsersInput) UniqueGroupNames() []string {
-	return uniqueSlice(u.GroupNames)
+func (u *UsersInput) UniqueLdapGroupNames() []string {
+	return uniqueSlice(u.LdapGroupNames)
 }
 
 func uniqueSlice(input []string) []string {
 	unique := make(map[string]string)
 	output := []string{}
 	for _, value := range input {
-		if _, ok := unique[value]; !ok {
-			unique[value] = value
+		v := strings.Trim(strings.ToLower(value), " ")
+		if _, ok := unique[v]; !ok {
+			unique[v] = v
 		}
 	}
 	for key := range unique {

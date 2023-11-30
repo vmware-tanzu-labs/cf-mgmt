@@ -1,33 +1,39 @@
 package organizationreader
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient/v3/client"
+	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/xchapter7x/lo"
 )
 
-func NewReader(client CFClient, cfg config.Reader, peek bool) Reader {
+func NewReader(client CFClient, orgClient CFOrgClient, cfg config.Reader, peek bool) Reader {
 	return &DefaultReader{
-		Cfg:    cfg,
-		Client: client,
-		Peek:   peek,
+		Cfg:       cfg,
+		OrgClient: orgClient,
+		Peek:      peek,
 	}
 }
 
-//DefaultManager -
+// DefaultManager -
 type DefaultReader struct {
-	Cfg    config.Reader
-	Client CFClient
-	Peek   bool
-	orgs   []cfclient.Org
+	Cfg       config.Reader
+	OrgClient CFOrgClient
+	Peek      bool
+	orgs      []*resource.Organization
 }
 
 func (m *DefaultReader) init() error {
 	if m.orgs == nil {
-		orgs, err := m.Client.ListOrgs()
+		orgs, err := m.OrgClient.ListAll(context.Background(), &client.OrganizationListOptions{
+			ListOptions: &client.ListOptions{
+				PerPage: 5000,
+			},
+		})
 		if err != nil {
 			return err
 		}
@@ -40,9 +46,9 @@ func (m *DefaultReader) ClearOrgList() {
 	m.orgs = nil
 }
 
-func (m *DefaultReader) AddOrgToList(org cfclient.Org) {
+func (m *DefaultReader) AddOrgToList(org *resource.Organization) {
 	if m.orgs == nil {
-		m.orgs = []cfclient.Org{}
+		m.orgs = []*resource.Organization{}
 	}
 	m.orgs = append(m.orgs, org)
 }
@@ -52,14 +58,14 @@ func (m *DefaultReader) GetOrgGUID(orgName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return org.Guid, nil
+	return org.GUID, nil
 }
 
-//FindOrg -
-func (m *DefaultReader) FindOrg(orgName string) (cfclient.Org, error) {
+// FindOrg -
+func (m *DefaultReader) FindOrg(orgName string) (*resource.Organization, error) {
 	orgs, err := m.ListOrgs()
 	if err != nil {
-		return cfclient.Org{}, err
+		return nil, err
 	}
 	for _, theOrg := range orgs {
 		if strings.EqualFold(theOrg.Name, orgName) {
@@ -67,36 +73,36 @@ func (m *DefaultReader) FindOrg(orgName string) (cfclient.Org, error) {
 		}
 	}
 	if m.Peek {
-		return cfclient.Org{
+		return &resource.Organization{
 			Name: orgName,
-			Guid: fmt.Sprintf("%s-dry-run-org-guid", orgName),
+			GUID: fmt.Sprintf("%s-dry-run-org-guid", orgName),
 		}, nil
 	}
-	return cfclient.Org{}, fmt.Errorf("org %q not found", orgName)
+	return nil, fmt.Errorf("org %q not found", orgName)
 }
 
-//FindOrgByGUID -
-func (m *DefaultReader) FindOrgByGUID(orgGUID string) (cfclient.Org, error) {
+// FindOrgByGUID -
+func (m *DefaultReader) FindOrgByGUID(orgGUID string) (*resource.Organization, error) {
 	orgs, err := m.ListOrgs()
 	if err != nil {
-		return cfclient.Org{}, err
+		return nil, err
 	}
 	for _, theOrg := range orgs {
-		if theOrg.Guid == orgGUID {
+		if theOrg.GUID == orgGUID {
 			return theOrg, nil
 		}
 	}
 	if m.Peek {
-		return cfclient.Org{
-			Guid: orgGUID,
+		return &resource.Organization{
+			GUID: orgGUID,
 			Name: fmt.Sprintf("%s-dry-run-org-name", orgGUID),
 		}, nil
 	}
-	return cfclient.Org{}, fmt.Errorf("org %q not found", orgGUID)
+	return nil, fmt.Errorf("org %q not found", orgGUID)
 }
 
-//ListOrgs : Returns all orgs in the given foundation
-func (m *DefaultReader) ListOrgs() ([]cfclient.Org, error) {
+// ListOrgs : Returns all orgs in the given foundation
+func (m *DefaultReader) ListOrgs() ([]*resource.Organization, error) {
 	err := m.init()
 	if err != nil {
 		return nil, err
@@ -105,6 +111,6 @@ func (m *DefaultReader) ListOrgs() ([]cfclient.Org, error) {
 	return m.orgs, nil
 }
 
-func (m *DefaultReader) GetOrgByGUID(orgGUID string) (cfclient.Org, error) {
-	return m.Client.GetOrgByGuid(orgGUID)
+func (m *DefaultReader) GetDefaultIsolationSegment(org *resource.Organization) (string, error) {
+	return m.OrgClient.GetDefaultIsolationSegment(context.Background(), org.GUID)
 }

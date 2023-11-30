@@ -1,6 +1,6 @@
 package config
 
-//Config -
+// Config -
 type LdapConfig struct {
 	Enabled            bool   `yaml:"enabled"`
 	LdapHost           string `yaml:"ldapHost"`

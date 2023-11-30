@@ -2,15 +2,18 @@
 
 set -eu -o pipefail
 
-mkdir ~/.ssh/ && touch ~/.ssh/known_hosts
+mkdir -p ~/.ssh/ && touch ~/.ssh/known_hosts
 ssh-keyscan github.com >>~/.ssh/known_hosts
 
 SOURCE_DIR=$PWD/source
 
 go install github.com/xchapter7x/versioning@latest
 
+export GOPATH="$HOME/go"
+export PATH="$GOPATH/bin:$PATH"
+
 pushd ${SOURCE_DIR} > /dev/null
-  if [ -d ".git" ]; then
+ if [ -d ".git" ]; then
     if ${DEV}; then
       ts=$(date +"%Y%m%M%S%N")
       DRAFT_VERSION="dev-${ts}"
@@ -47,5 +50,10 @@ pushd ${WORKING_DIR} > /dev/null
   cp Dockerfile ${OUTPUT_DIR}/.
 popd
 
-echo ${DRAFT_VERSION} > ${OUTPUT_DIR}/name
-echo ${DRAFT_VERSION} > ${OUTPUT_DIR}/tag
+if ${DEV}; then
+  echo ${DRAFT_VERSION} > "${OUTPUT_DIR}/name"
+  echo ${DRAFT_VERSION} > "${OUTPUT_DIR}/tag"
+else
+  echo ${VERSION} > "${OUTPUT_DIR}/name"
+  echo ${VERSION} > "${OUTPUT_DIR}/tag"
+fi

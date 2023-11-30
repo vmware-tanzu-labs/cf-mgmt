@@ -73,7 +73,7 @@ func (m *Manager) Apply() error {
 	return nil
 }
 
-//RemoveUnknownVisibilites - will remove any service plan visiblities that are not known by cf-mgmt
+// RemoveUnknownVisibilites - will remove any service plan visiblities that are not known by cf-mgmt
 func (m *Manager) RemoveUnknownVisibilites(serviceInfo *ServiceInfo) error {
 	for servicePlanName, servicePlan := range serviceInfo.AllPlans() {
 		for _, plan := range servicePlan {
@@ -93,7 +93,7 @@ func (m *Manager) RemoveUnknownVisibilites(serviceInfo *ServiceInfo) error {
 	return nil
 }
 
-//DisablePublicServiceAccess - will ensure any public plan is made private
+// DisablePublicServiceAccess - will ensure any public plan is made private
 func (m *Manager) DisablePublicServiceAccess(serviceInfo *ServiceInfo) error {
 	for _, servicePlan := range serviceInfo.AllPlans() {
 		for _, plan := range servicePlan {
@@ -108,7 +108,7 @@ func (m *Manager) DisablePublicServiceAccess(serviceInfo *ServiceInfo) error {
 	return nil
 }
 
-//ListServiceInfo - returns services and their cooresponding plans
+// ListServiceInfo - returns services and their cooresponding plans
 func (m *Manager) ListServiceInfo() (*ServiceInfo, error) {
 	serviceInfo := &ServiceInfo{}
 	services, err := m.Client.ListServices()
@@ -147,18 +147,18 @@ func (m *Manager) EnableProtectedOrgServiceAccess(serviceInfo *ServiceInfo, prot
 		if util.Matches(org.Name, protectedOrgs) {
 			for serviceName, plans := range serviceInfo.AllPlans() {
 				for _, servicePlan := range plans {
-					if !servicePlan.OrgHasAccess(org.Guid) {
+					if !servicePlan.OrgHasAccess(org.GUID) {
 						if m.Peek {
 							lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
 							continue
 						}
 						lo.G.Infof("adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
-						_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.Guid)
+						_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.GUID)
 						if err != nil {
 							return err
 						}
 					} else {
-						servicePlan.RemoveOrg(org.Guid)
+						servicePlan.RemoveOrg(org.GUID)
 					}
 				}
 			}
@@ -181,18 +181,18 @@ func (m *Manager) EnableOrgServiceAccess(serviceInfo *ServiceInfo, orgConfigs []
 					continue
 				}
 				for _, servicePlan := range servicePlans {
-					if !servicePlan.OrgHasAccess(org.Guid) {
+					if !servicePlan.OrgHasAccess(org.GUID) {
 						if m.Peek {
 							lo.G.Infof("[dry-run]: adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
 							continue
 						}
 						lo.G.Infof("adding plan %s for service %s to org %s", servicePlan.Name, serviceName, org.Name)
-						_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.Guid)
+						_, err = m.Client.CreateServicePlanVisibility(servicePlan.GUID, org.GUID)
 						if err != nil {
 							return err
 						}
 					} else {
-						servicePlan.RemoveOrg(org.Guid)
+						servicePlan.RemoveOrg(org.GUID)
 					}
 				}
 			}
