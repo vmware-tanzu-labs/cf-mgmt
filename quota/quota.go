@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
-	"strings"
-
 	"github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/pkg/errors"
@@ -14,6 +11,8 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/xchapter7x/lo"
+	"reflect"
+	"strings"
 )
 
 // NewManager -
@@ -94,9 +93,11 @@ func (m *Manager) CreateSpaceQuotas() error {
 			}
 			spaceQuota := quotas[input.NamedQuota]
 
-			if spaceQuota != nil && (space.Relationships.Quota == nil || space.Relationships.Quota.Data.GUID != spaceQuota.GUID) {
-				if err = m.AssignQuotaToSpace(space, spaceQuota); err != nil {
-					return err
+			if m.Peek != true {
+				if spaceQuota != nil && (space.Relationships.Quota.Data == nil || space.Relationships.Quota.Data.GUID != spaceQuota.GUID) {
+					if err = m.AssignQuotaToSpace(space, spaceQuota); err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -105,12 +106,17 @@ func (m *Manager) CreateSpaceQuotas() error {
 }
 
 func (m *Manager) createSpaceQuota(input config.SpaceQuota, space *resource.Space, quotas map[string]*resource.SpaceQuota, orgQuotas map[string]*resource.OrganizationQuota) error {
-	quota := &resource.SpaceQuotaCreateOrUpdate{
-		Name:     &input.Name,
-		Apps:     &resource.SpaceQuotaApps{},
-		Services: &resource.SpaceQuotaServices{},
-		Routes:   &resource.SpaceQuotaRoutes{},
+
+	org, err := m.OrgReader.FindOrg(input.Org)
+	if err != nil {
+		return err
 	}
+
+	quota := resource.NewSpaceQuotaCreate(input.Name, org.GUID)
+	quota.Apps = &resource.SpaceQuotaApps{}
+	quota.Services = &resource.SpaceQuotaServices{}
+	quota.Routes = &resource.SpaceQuotaRoutes{}
+
 	instanceMemoryLimit, err := config.ToMegabytes(input.InstanceMemoryLimit)
 	if err != nil {
 		return err
