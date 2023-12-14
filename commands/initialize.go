@@ -86,7 +86,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
 
 	userAgent := fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION)
-	uaaMgr, err := uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.ClientSecret, userAgent, peek)
+	uaaMgr, err := uaa.NewDefaultUAAManager(baseCommand.SystemDomain, baseCommand.UserID, baseCommand.ClientSecret, userAgent, peek)
 	if err != nil {
 		return nil, err
 	}
