@@ -17,12 +17,13 @@ func (c *UpdateOrgUsersCommand) Execute([]string) error {
 	if ldapMgr != nil {
 		defer ldapMgr.Close()
 	}
-	if cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, ldapMgr); err == nil {
-		errs := cfMgmt.UserManager.UpdateOrgUsers()
-		if len(errs) > 0 {
-			return fmt.Errorf("got errors processing update org users %v", errs)
-		}
-		return nil
+	cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, ldapMgr)
+	if err != nil {
+		return err
+	}
+	errs := cfMgmt.UserManager.UpdateOrgUsers()
+	if len(errs) > 0 {
+		return fmt.Errorf("got errors processing update org users %v", errs)
 	}
 	return nil
 }
