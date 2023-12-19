@@ -504,6 +504,7 @@ jobs:
   plan:
   - in_parallel:
     - get: every-day
+      trigger: true
     - get: cryogenics-essentials
     - get: source-repo
       resource: source
