@@ -18,32 +18,12 @@ Please report all issues and feature requests in [cloudfoundry/routing-release](
 - Go should be installed and in the PATH
 - This repo is part of
   [routing-release](https://github.com/cloudfoundry/routing-release) bosh
-  release repo, which also acts as cannonical GOPATH. So to work on routing-api
+  release repo. So to work on routing-api
   you will need to checkout
   [routing-release](https://github.com/cloudfoundry/routing-release) and follow
   instructions in its
-  [README](https://github.com/cloudfoundry/routing-release/blob/develop/README.md#developer-workflow)
-  to setup GOPATH.
+  [README](https://github.com/cloudfoundry/routing-release/blob/develop/README.md#developer-workflow).
 
-
-### Development Setup
-
-Refer to routing-release
-[README](https://github.com/cloudfoundry/routing-release/blob/develop/README.md#developer-workflow)
-for development setup.
-
-## Development
-
-To run the tests you need a running RDB (either Postgres or MySQL). Currently
-there is a helper script under routing-release which runs tests in [docker
-container](https://github.com/cloudfoundry/routing-release/blob/develop/scripts/run-unit-tests-in-docker).
-`cf-routing-pipeline` docker image used in the below script is configured with
-correct version of `MySQL` and `Postgres` for testing purposes. To run the tests
-for routing-api:
-
-```sh
-./scripts/run-unit-tests-in-docker routing-api
-```
 
 ### Local Database Instances in Docker
 A Docker Compose is provided to start the database locally for testing.
@@ -190,3 +170,18 @@ Please refer to the [API documentation](docs/api_docs.md).
 + The routing-api will return a 404 if you attempt to hit the endpoint
   `http://[router host]/routing/v1/routes/` as opposed to `http://[router
   host]/routing/v1/routes`
+
+## Development
+
+### <a name="dependencies"></a>Dependencies
+
+This repository's dependencies are managed using
+[routing-release](https://github.com/cloudfoundry/routing-release). Please refer to documentation in that repository for setting up tests
+
+### Executables
+
+1. `bin/test.bash`: This file is used to run test in Docker & CI. Please refer to [Dependencies](#dependencies) for setting up tests.
+
+### Reporting issues and requesting features
+
+Please report all issues and feature requests in [cloudfoundry/routing-release](https://github.com/cloudfoundry/routing-release).

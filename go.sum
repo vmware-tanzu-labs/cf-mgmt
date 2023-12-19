@@ -13,10 +13,8 @@ cloud.google.com/go/pubsub v1.0.1/go.mod h1:R0Gpsv3s54REJCy4fxDixWD93lHJMoZTyQ2k
 cloud.google.com/go/storage v1.0.0/go.mod h1:IhtSnM/ZTZV8YYJWCY8RULGVqBDmpoyjwiyrjsg+URw=
 code.cloudfoundry.org/cfhttp/v2 v2.0.0 h1:4+mLfyzm84gUpJnCT68BLPUypGgvUsYq29QKaSotTz4=
 code.cloudfoundry.org/cfhttp/v2 v2.0.0/go.mod h1:Fwt0o/haXfwgOHMom4AM96pXCVw9EAiIcSsPb8hWK9s=
-code.cloudfoundry.org/routing-api v0.0.0-20210519201915-b3b118a368e6 h1:IPL49Y93lrHC47ADA/jGWe57bY7Doqn7OAvfuMhyep8=
-code.cloudfoundry.org/routing-api v0.0.0-20210519201915-b3b118a368e6/go.mod h1:zvOkz/tZMCCr9jvq4xeFf8kzTnRjLrJQZn6jMtShfCA=
-code.cloudfoundry.org/trace-logger v0.0.0-20170119230301-107ef08a939d h1:1I5BueV2nNkvIV40CQ0JQgmD/ijouF0QlLLOz0KMkRo=
-code.cloudfoundry.org/trace-logger v0.0.0-20170119230301-107ef08a939d/go.mod h1:KAH6N5nwHViCZsOgmApk6nj8TDuqRGb9R06Hk461Uwc=
+code.cloudfoundry.org/routing-api v0.0.0-20231121142832-babb23b69306 h1:+VJnfZA0/17YXWFT0HIOhGoZqdjKMDgciTkyo9ZV7Zc=
+code.cloudfoundry.org/routing-api v0.0.0-20231121142832-babb23b69306/go.mod h1:zvOkz/tZMCCr9jvq4xeFf8kzTnRjLrJQZn6jMtShfCA=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 h1:mFRzDkZVAjdal+s7s0MwaRv9igoPqLRdzOLzw/8Xvq8=
 github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358/go.mod h1:chxPXzSsl7ZWRAuOIE23GDNzjWuZquvFlgA8xmpunjU=

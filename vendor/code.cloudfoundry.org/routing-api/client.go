@@ -14,7 +14,7 @@ import (
 
 	"code.cloudfoundry.org/cfhttp/v2"
 	"code.cloudfoundry.org/routing-api/models"
-	trace "code.cloudfoundry.org/trace-logger"
+	"code.cloudfoundry.org/routing-api/trace"
 	"github.com/tedsuo/rata"
 	"github.com/vito/go-sse/sse"
 )

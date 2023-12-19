@@ -12,6 +12,7 @@ var InvalidPortError = errors.New("Port must be between 1024 and 65535")
 type RouterGroupType string
 
 var ReservedSystemComponentPorts = []int{}
+var FailOnRouterPortConflicts = false
 
 const (
 	RouterGroup_TCP  RouterGroupType = "tcp"
@@ -115,6 +116,7 @@ func (g RouterGroup) Validate() error {
 	}
 
 	return g.ReservablePorts.Validate()
+
 }
 
 type ReservablePorts string
@@ -171,11 +173,14 @@ func (p ReservablePorts) Validate() error {
 		}
 	}
 	// check if ports overlap with reservedSystemComponentPorts
-	for _, r1 := range portRanges {
-		for _, reservedPort := range ReservedSystemComponentPorts {
-			if uint64(reservedPort) >= r1.start && uint64(reservedPort) <= r1.end {
-				errMsg := fmt.Sprintf("Invalid ports. Reservable ports must not include the following reserved system component ports: %v.", ReservedSystemComponentPorts)
-				return errors.New(errMsg)
+	if FailOnRouterPortConflicts {
+		for _, r1 := range portRanges {
+			for _, reservedPort := range ReservedSystemComponentPorts {
+
+				if uint64(reservedPort) >= r1.start && uint64(reservedPort) <= r1.end {
+					errMsg := fmt.Sprintf("Invalid ports. Reservable ports must not include the following reserved system component ports: %v.", ReservedSystemComponentPorts)
+					return errors.New(errMsg)
+				}
 			}
 		}
 	}

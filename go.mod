@@ -3,7 +3,7 @@ module github.com/vmwarepivotallabs/cf-mgmt
 go 1.20
 
 require (
-	code.cloudfoundry.org/routing-api v0.0.0-20210519201915-b3b118a368e6
+	code.cloudfoundry.org/routing-api v0.0.0-20231121142832-babb23b69306
 	github.com/cloudfoundry-community/go-cfclient v0.0.0-20220803221820-5e81c204bd31
 	github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.6
 	github.com/cloudfoundry-community/go-uaa v0.3.2
@@ -19,7 +19,6 @@ require (
 
 require (
 	code.cloudfoundry.org/cfhttp/v2 v2.0.0 // indirect
-	code.cloudfoundry.org/trace-logger v0.0.0-20170119230301-107ef08a939d // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f // indirect
