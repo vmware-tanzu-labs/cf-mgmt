@@ -74,6 +74,7 @@ groups:
 - name: bump
   jobs:
   - bump-ci-tasks
+  - bump-go-module
 - name: release
   jobs:
   - check-for-changes
