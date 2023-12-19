@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"code.cloudfoundry.org/routing-api/models"
-	trace "code.cloudfoundry.org/trace-logger"
+	"code.cloudfoundry.org/routing-api/trace"
 	"github.com/vito/go-sse/sse"
 )
 

@@ -1,13 +1,11 @@
 # code.cloudfoundry.org/cfhttp/v2 v2.0.0
 ## explicit
 code.cloudfoundry.org/cfhttp/v2
-# code.cloudfoundry.org/routing-api v0.0.0-20210519201915-b3b118a368e6
+# code.cloudfoundry.org/routing-api v0.0.0-20231121142832-babb23b69306
 ## explicit
 code.cloudfoundry.org/routing-api
 code.cloudfoundry.org/routing-api/models
-# code.cloudfoundry.org/trace-logger v0.0.0-20170119230301-107ef08a939d
-## explicit
-code.cloudfoundry.org/trace-logger
+code.cloudfoundry.org/routing-api/trace
 # github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358
 ## explicit
 github.com/Azure/go-ntlmssp
