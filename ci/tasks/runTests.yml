@@ -2,7 +2,7 @@ platform: linux
 image_resource:
   source:
     repository: harbor-repo.vmware.com/cryogenics/essentials
-    tag: 0.1.87
+    tag: 0.1.88
   type: registry-image
 run:
   path: source/ci/tasks/runTests.sh
