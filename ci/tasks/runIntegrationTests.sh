@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[ -z "$DEBUG" ] || set -x
+
 set -eu -o pipefail
 
 get_from_credhub() {
@@ -7,9 +9,19 @@ get_from_credhub() {
   credhub find -j -n "${variable_name}" | jq -r .credentials[].name | xargs credhub get -j -n | jq -r .value
 }
 
+get_system_domain() {
+  jq -r '.cf.api_url | capture("^api\\.(?<system_domain>.*)$") | .system_domain' \
+    cf-deployment-env/metadata
+}
+
 eval "$(bbl print-env --metadata-file cf-deployment-env/metadata)"
 
 go install code.cloudfoundry.org/uaa-cli@latest
+
+if [ -z "$SYSTEM_DOMAIN" ]
+then
+  SYSTEM_DOMAIN=$( get_system_domain )
+fi
 
 uaa-cli target "https://uaa.${SYSTEM_DOMAIN}" -k
 uaa-cli get-client-credentials-token "admin" -s $(get_from_credhub uaa_admin_client_secret)
