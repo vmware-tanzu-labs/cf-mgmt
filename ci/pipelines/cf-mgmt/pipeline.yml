@@ -282,8 +282,6 @@ jobs:
         format: json
       - task: integration-test
         file: source/ci/tasks/runIntegrationTests.yml
-        params:
-          SYSTEM_DOMAIN: ((.:pooled-env.name)).cf-app.com
   on_failure:
     put: pull-request
     params:
