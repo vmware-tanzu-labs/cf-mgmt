@@ -425,8 +425,16 @@ func (m *DefaultManager) DeleteSpacesForOrg(orgGUID, orgName string) (err error)
 }
 
 func (m *DefaultManager) IsSSHEnabled(space *resource.Space) (bool, error) {
+	if m.Peek && space.GUID == fmt.Sprintf("%s-dry-run-space-guid", space.Name) {
+		lo.G.Infof("[dry-run]: checking if ssh enabled for org/space %s", space.Name)
+		return true, nil
+	}
 	return m.SpaceFeatureClient.IsSSHEnabled(context.Background(), space.GUID)
 }
 func (m *DefaultManager) GetSpaceIsolationSegmentGUID(space *resource.Space) (string, error) {
+	if m.Peek && space.GUID == fmt.Sprintf("%s-dry-run-space-guid", space.Name) {
+		lo.G.Infof("[dry-run]: checking if ssh enabled for org/space %s", space.Name)
+		return fmt.Sprintf("%s-dry-run-space-isolation-guid", space.Name), nil
+	}
 	return m.SpaceClient.GetAssignedIsolationSegment(context.Background(), space.GUID)
 }
