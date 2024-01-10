@@ -216,6 +216,13 @@ func (m *DefaultManager) DeleteOrgByName(orgName string) error {
 }
 
 func (m *DefaultManager) updateOrg(orgGUID string, orgRequest *resource.OrganizationUpdate) (*resource.Organization, error) {
+	if m.Peek {
+		lo.G.Infof("[dry-run]: update org %s", orgRequest.Name)
+		return &resource.Organization{
+			GUID: orgGUID,
+			Name: orgRequest.Name,
+		}, nil
+	}
 	return m.OrgClient.Update(context.Background(), orgGUID, orgRequest)
 }
 

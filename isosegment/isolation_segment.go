@@ -285,7 +285,7 @@ func (u *Updater) UpdateOrgs() error {
 		}
 		orgIsolationSegmentGUID, err := u.OrgReader.GetDefaultIsolationSegment(org)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "finding org default isolation segment")
 		}
 		if orgIsolationSegmentGUID != isolationSegmentGUID {
 			if u.Peek {
@@ -301,13 +301,13 @@ func (u *Updater) UpdateOrgs() error {
 				lo.G.Infof("set default isolation segment for org %s to %s", oc.Org, oc.DefaultIsoSegment)
 				err = u.Client.DefaultIsolationSegmentForOrg(org.GUID, isolationSegmentGUID)
 				if err != nil {
-					return err
+					return errors.Wrap(err, "setting org default isolation segment")
 				}
 			} else {
 				lo.G.Infof("reset default isolation segment for org %s", oc.Org)
 				err = u.Client.ResetDefaultIsolationSegmentForOrg(org.GUID)
 				if err != nil {
-					return err
+					return errors.Wrap(err, "reset org default isolation segment")
 				}
 			}
 

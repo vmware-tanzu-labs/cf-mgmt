@@ -112,5 +112,8 @@ func (m *DefaultReader) ListOrgs() ([]*resource.Organization, error) {
 }
 
 func (m *DefaultReader) GetDefaultIsolationSegment(org *resource.Organization) (string, error) {
+	if m.Peek && org.GUID == fmt.Sprintf("%s-dry-run-org-guid", org.Name) {
+		return fmt.Sprintf("%s-dry-run-org-isolation-segment-guid", org.Name), nil
+	}
 	return m.OrgClient.GetDefaultIsolationSegment(context.Background(), org.GUID)
 }
