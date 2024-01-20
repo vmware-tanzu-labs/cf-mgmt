@@ -114,6 +114,12 @@ resources:
     username: *harbor_robot_username
     password: *harbor_robot_password
 
+- name: cf-deployment-concourse-tasks-image
+  type: registry-image
+  source:
+    repository: harbor-repo.vmware.com/dockerhub-proxy-cache/cloudfoundry/cf-deployment-concourse-tasks
+    tag: latest
+
 - name: slack-cryo-notification
   type: slack-notification
   icon: bell-ring
@@ -272,6 +278,7 @@ jobs:
       trigger: true
       passed: [ claim-cf ]
     - get: cryogenics-concourse-tasks
+    - get: cf-deployment-concourse-tasks-image
   - in_parallel:
     - do:
       - task: unit-test
@@ -281,6 +288,7 @@ jobs:
         file: cf-deployment-env/metadata
         format: json
       - task: integration-test
+        image: cf-deployment-concourse-tasks-image
         file: source/ci/tasks/runIntegrationTests.yml
   on_failure:
     put: pull-request
