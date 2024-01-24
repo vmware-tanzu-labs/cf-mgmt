@@ -201,6 +201,9 @@ resources:
   source:
     uri: git@github.com:vmware-tanzu-labs/cf-mgmt.git
     private_key: *github_ssh_key
+    commit_filter:
+      exclude:
+      - ;resource comment; This resource is used exclusively for pushing new changes
 
 - name: releases
   type: github-release
@@ -247,6 +250,7 @@ resources:
   source:
     uri: git@github.com:pivotal/cryogenics-concourse-tasks.git
     private_key: *github_ssh_key
+    branch: main
 
 - name: bash
   type: registry-image
