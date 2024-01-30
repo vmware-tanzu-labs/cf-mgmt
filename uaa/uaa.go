@@ -45,6 +45,7 @@ func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, p
 		uaaclient.WithClientCredentials(clientID, clientSecret, uaaclient.OpaqueToken),
 		uaaclient.WithUserAgent(userAgent),
 		uaaclient.WithSkipSSLValidation(true),
+		uaaclient.WithVerbosity(true),
 	)
 	if err != nil {
 		return nil, err
