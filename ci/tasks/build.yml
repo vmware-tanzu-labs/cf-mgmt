@@ -2,7 +2,7 @@ platform: linux
 image_resource:
   source:
     repository: harbor-repo.vmware.com/cryogenics/essentials
-    tag: 0.1.95
+    tag: 0.1.96
   type: registry-image
 run:
   path: source/ci/tasks/build.sh
