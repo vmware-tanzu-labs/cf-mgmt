@@ -156,5 +156,5 @@ type GlobalServiceAccess struct {
 	LimitedAccessPlan string   `long:"limited-access-plan" description:"Plan to give limited access to, must also provide org list"`
 	OrgsToAdd         []string `long:"org" description:"Orgs to add to limited plan"`
 	OrgsToRemove      []string `long:"remove-org" description:"Orgs to remove from limited plan"`
-	NoAccessPlan      string   `long:"no-access-plan" description:"Plan to give access to all orgs"`
+	NoAccessPlan      string   `long:"no-access-plan" description:"Plan to ensure no access for any org"`
 }

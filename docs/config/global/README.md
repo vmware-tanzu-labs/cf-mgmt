@@ -8,10 +8,10 @@
 
 ```
 Usage:
-  main [OPTIONS] global [global-OPTIONS]
+  cf-mgmt-config [OPTIONS] global [global-OPTIONS]
 
 Help Options:
-  -h, --help                                              Show this help message
+  -h, --help                                        Show this help message
 
 [global command options]
     --config-dir=                                   Name of the config directory (default: config) [$CONFIG_DIR]
@@ -31,11 +31,11 @@ Help Options:
     --remove-shared-domain=                         Shared Domain to remove
 
     service-access:
-      --broker=                                       Name of Broker
-      --service=                                      Name of Service
-      --all-access-plan=                              Plan to give access to all orgs
-      --limited-access-plan=                          Plan to give limited access to, must also provide org list
-      --org=                                          Orgs to add to limited plan
-      --remove-org=                                   Orgs to remove from limited plan
-      --no-access-plan=                               Plan to give access to all orgs
+      --broker=                                     Name of Broker
+      --service=                                    Name of Service
+      --all-access-plan=                            Plan to give access to all orgs
+      --limited-access-plan=                        Plan to give limited access to, must also provide org list
+      --org=                                        Orgs to add to limited plan
+      --remove-org=                                 Orgs to remove from limited plan
+      --no-access-plan=                             Plan to ensure no access for any org
 ```
