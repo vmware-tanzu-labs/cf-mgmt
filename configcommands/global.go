@@ -3,6 +3,7 @@ package configcommands
 import (
 	"errors"
 	"fmt"
+	"regexp"
 
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 )
@@ -14,6 +15,7 @@ type GlobalConfigurationCommand struct {
 	EnableDeleteSharedDomains      string              `long:"enable-delete-shared-domains" description:"Enable removing shared domains" choice:"true" choice:"false"`
 	EnableServiceAccess            string              `long:"enable-service-access" description:"Enable managing service access" choice:"true" choice:"false"`
 	EnableUnassignSecurityGroups   string              `long:"enable-unassign-security-groups" description:"Enable unassigning security groups" choice:"true" choice:"false"`
+	SkipUnassignSecurityGroupRegex string              `long:"skip-unassign-security-group-regex" description:"Skip unassigning security groups for names matching regex" default:""`
 	MetadataPrefix                 string              `long:"metadata-prefix" description:"Prefix for org/space metadata"`
 	StagingSecurityGroups          []string            `long:"staging-security-group" description:"Staging Security Group to add"`
 	RemoveStagingSecurityGroups    []string            `long:"remove-staging-security-group" description:"Staging Security Group to remove"`
@@ -47,6 +49,14 @@ func (c *GlobalConfigurationCommand) Execute([]string) error {
 	convertToBool("enable-unassign-security-groups", &globalConfig.EnableUnassignSecurityGroups, c.EnableUnassignSecurityGroups, &errorString)
 	if c.MetadataPrefix != "" {
 		globalConfig.MetadataPrefix = c.MetadataPrefix
+	}
+
+	if c.SkipUnassignSecurityGroupRegex != "" {
+		_, err := regexp.Compile(c.SkipUnassignSecurityGroupRegex)
+		if err != nil {
+			return fmt.Errorf("Must specify an expresion which compiles")
+		}
+		globalConfig.SkipUnassignSecurityGroupRegex = c.SkipUnassignSecurityGroupRegex
 	}
 
 	globalConfig.StagingSecurityGroups = c.updateSecGroups(globalConfig.StagingSecurityGroups, c.StagingSecurityGroups, c.RemoveStagingSecurityGroups)
