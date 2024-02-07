@@ -1,6 +1,7 @@
 package uaa
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -45,7 +46,6 @@ func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, p
 		uaaclient.WithClientCredentials(clientID, clientSecret, uaaclient.OpaqueToken),
 		uaaclient.WithUserAgent(userAgent),
 		uaaclient.WithSkipSSLValidation(true),
-		uaaclient.WithVerbosity(true),
 	)
 	if err != nil {
 		return nil, err
@@ -78,6 +78,10 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 		},
 	})
 	if err != nil {
+		var requestError uaaclient.RequestError
+		if errors.As(err, &requestError) {
+			return "", fmt.Errorf("got an error calling %s with response %s", requestError.Url, requestError.ErrorResponse)
+		}
 		return "", err
 	}
 	lo.G.Infof("successfully added user [%s]", userName)
@@ -90,6 +94,10 @@ func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 	lo.G.Debug("Getting users from Cloud Foundry")
 	userList, err := m.Client.ListAllUsers("", "", "userName,id,externalId,emails,origin", "")
 	if err != nil {
+		var requestError uaaclient.RequestError
+		if errors.As(err, &requestError) {
+			return nil, fmt.Errorf("got an error calling %s with response %s", requestError.Url, requestError.ErrorResponse)
+		}
 		return nil, err
 	}
 
