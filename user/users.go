@@ -100,7 +100,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 	}
 	lo.G.Debug("")
 	lo.G.Debug("")
-	lo.G.Debugf("Processing Org(%s)/Space(%s)", input.Org, input.Space)
+	lo.G.Debugf("Processing Org(%s/%s)/Space(%s/%s)", input.Org, space.Relationships.Organization.Data.GUID, input.Space, space.GUID)
 	lo.G.Debug("")
 	lo.G.Debug("")
 
