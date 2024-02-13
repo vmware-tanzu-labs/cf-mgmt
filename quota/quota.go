@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/pkg/errors"
@@ -11,8 +14,6 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/xchapter7x/lo"
-	"reflect"
-	"strings"
 )
 
 // NewManager -
@@ -274,6 +275,7 @@ func (m *Manager) UpdateSpaceQuota(quotaGUID string, quota *resource.SpaceQuotaC
 		return nil
 	}
 	lo.G.Infof("Updating space quota %s", *quota.Name)
+	quota.Relationships = nil
 	_, err := m.SpaceQuoteClient.Update(context.Background(), quotaGUID, quota)
 	return err
 }

@@ -288,7 +288,7 @@ var _ = Describe("given QuotaManager", func() {
 			_, quotaGUID, quotaRequest := fakeSpaceQuotaClient.UpdateArgsForCall(0)
 			Expect(quotaGUID).Should(Equal("space-quota-guid"))
 			Expect(*quotaRequest.Name).Should(Equal("space1"))
-			Expect(quotaRequest.Relationships).ShouldNot(BeNil())
+			Expect(quotaRequest.Relationships).Should(BeNil())
 			Expect(fakeSpaceQuotaClient.ApplyCallCount()).Should(Equal(1))
 			_, quotaGUID, spaceGUIDs := fakeSpaceQuotaClient.ApplyArgsForCall(0)
 			Expect(quotaGUID).Should(Equal("space-quota-guid"))
