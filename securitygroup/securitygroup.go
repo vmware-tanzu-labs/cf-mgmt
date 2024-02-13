@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
@@ -41,6 +42,18 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 	sgs, err := m.ListNonDefaultSecurityGroups()
 	if err != nil {
 		return err
+	}
+
+	globalConfig, err := m.Cfg.GetGlobalConfig()
+	if err != nil {
+		return errors.Wrapf(err, "Getting global config")
+	}
+	var skipUnassignSecurityGroupRegex *regexp.Regexp
+	if globalConfig.SkipUnassignSecurityGroupRegex != "" {
+		skipUnassignSecurityGroupRegex, err = regexp.Compile(globalConfig.SkipUnassignSecurityGroupRegex)
+		if err != nil {
+			return errors.Wrapf(err, "Compiling regex from gloabl config key skipUnassignSecurityGroupRegex")
+		}
 	}
 
 	for _, input := range spaceConfigs {
@@ -105,6 +118,10 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 			lo.G.Debugf("Existing space security groups after %+v", existingSpaceSecurityGroups)
 			for sgName, _ := range existingSpaceSecurityGroups {
 				if sgInfo, ok := sgs[sgName]; ok {
+					if globalConfig.SkipUnassignSecurityGroupRegex != "" && skipUnassignSecurityGroupRegex.MatchString(sgName) {
+						lo.G.Debugf("Skip unassign as security group name %s matches global config regex", sgName)
+						continue
+					}
 					err := m.UnassignSecurityGroupToSpace(space, sgInfo)
 					if err != nil {
 						return err
