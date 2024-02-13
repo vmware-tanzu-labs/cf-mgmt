@@ -119,8 +119,10 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 			for sgName, _ := range existingSpaceSecurityGroups {
 				if sgInfo, ok := sgs[sgName]; ok {
 					if globalConfig.SkipUnassignSecurityGroupRegex != "" && skipUnassignSecurityGroupRegex.MatchString(sgName) {
-						lo.G.Debugf("Skip unassign as security group name %s matches global config regex", sgName)
+						lo.G.Debugf("Skip unassign as security group name [%s] matches global config regex [%s]", sgName, globalConfig.SkipUnassignSecurityGroupRegex)
 						continue
+					} else {
+						lo.G.Debugf("Not skip unassign as security group name [%s] does not match global config regex [%s]", sgName, globalConfig.SkipUnassignSecurityGroupRegex)
 					}
 					err := m.UnassignSecurityGroupToSpace(space, sgInfo)
 					if err != nil {
