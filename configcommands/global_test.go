@@ -104,6 +104,50 @@ var _ = Describe("Global", func() {
 			})
 		})
 
+		Context("SecurityGroupNameRegexToIgnore", func() {
+			It("Should set the regex", func() {
+				command.SkipUnassignSecurityGroupRegex = "^skip-this-asg-prefix-*$"
+				err := command.Execute(nil)
+				Expect(err).ShouldNot(HaveOccurred())
+				globalConfig, err := configManager.GetGlobalConfig()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(globalConfig.SkipUnassignSecurityGroupRegex).To(Equal("^skip-this-asg-prefix-*$"))
+			})
+			It("Should allow an empty regex", func() {
+				err := command.Execute(nil)
+				Expect(err).ShouldNot(HaveOccurred())
+				globalConfig, err := configManager.GetGlobalConfig()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(globalConfig.SkipUnassignSecurityGroupRegex).To(Equal(""))
+			})
+			It("Should error for invalid regex", func() {
+				command.SkipUnassignSecurityGroupRegex = "broken-regex(["
+				err := command.Execute(nil)
+				Expect(err).Should(HaveOccurred())
+				globalConfig, err := configManager.GetGlobalConfig()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(globalConfig.SkipUnassignSecurityGroupRegex).To(Equal(""))
+			})
+			It("Should not modify config if argument has been omitted", func() {
+				// set specific value and save to config file
+				command.SkipUnassignSecurityGroupRegex = "asg-to-skip-when-unassigning"
+				err := command.Execute(nil)
+				Expect(err).ShouldNot(HaveOccurred())
+				globalConfig, err := configManager.GetGlobalConfig()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(globalConfig.SkipUnassignSecurityGroupRegex).To(Equal("asg-to-skip-when-unassigning"))
+
+				// execute omitting the option does not change the existing value in file
+				command = &GlobalConfigurationCommand{}
+				command.ConfigDirectory = configDir
+				err = command.Execute(nil)
+				Expect(err).ShouldNot(HaveOccurred())
+				globalConfig, err = configManager.GetGlobalConfig()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(globalConfig.SkipUnassignSecurityGroupRegex).To(Equal("asg-to-skip-when-unassigning"))
+			})
+		})
+
 		Context("MetadataPrefix", func() {
 			It("Should be unset", func() {
 				err := command.Execute(nil)

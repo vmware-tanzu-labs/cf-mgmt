@@ -4,17 +4,18 @@ import "strings"
 
 // GlobalConfig configuration for global settings
 type GlobalConfig struct {
-	EnableDeleteIsolationSegments bool                    `yaml:"enable-delete-isolation-segments"`
-	EnableUnassignSecurityGroups  bool                    `yaml:"enable-unassign-security-groups"`
-	RunningSecurityGroups         []string                `yaml:"running-security-groups"`
-	StagingSecurityGroups         []string                `yaml:"staging-security-groups"`
-	SharedDomains                 map[string]SharedDomain `yaml:"shared-domains"`
-	EnableDeleteSharedDomains     bool                    `yaml:"enable-remove-shared-domains"`
-	MetadataPrefix                string                  `yaml:"metadata-prefix"`
-	EnableServiceAccess           bool                    `yaml:"enable-service-access"`
-	IgnoreLegacyServiceAccess     bool                    `yaml:"ignore-legacy-service-access"`
-	ServiceAccess                 []*Broker               `yaml:"service-access"`
-	ProtectedUsers                []string                `yaml:"protected-users"`
+	EnableDeleteIsolationSegments  bool                    `yaml:"enable-delete-isolation-segments"`
+	EnableUnassignSecurityGroups   bool                    `yaml:"enable-unassign-security-groups"`
+	SkipUnassignSecurityGroupRegex string                  `yaml:"skip-unassign-security-group-regex"`
+	RunningSecurityGroups          []string                `yaml:"running-security-groups"`
+	StagingSecurityGroups          []string                `yaml:"staging-security-groups"`
+	SharedDomains                  map[string]SharedDomain `yaml:"shared-domains"`
+	EnableDeleteSharedDomains      bool                    `yaml:"enable-remove-shared-domains"`
+	MetadataPrefix                 string                  `yaml:"metadata-prefix"`
+	EnableServiceAccess            bool                    `yaml:"enable-service-access"`
+	IgnoreLegacyServiceAccess      bool                    `yaml:"ignore-legacy-service-access"`
+	ServiceAccess                  []*Broker               `yaml:"service-access"`
+	ProtectedUsers                 []string                `yaml:"protected-users"`
 }
 
 type PlanInfo struct {

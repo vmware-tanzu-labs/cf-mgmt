@@ -162,6 +162,9 @@ var _ = Describe("given Security Group Manager", func() {
 					},
 				},
 			}, nil)
+			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
+				SkipUnassignSecurityGroupRegex: "^skip-this-asg-prefix-.*$",
+			}, nil)
 		})
 
 		It("Should assign global group to space", func() {
@@ -302,6 +305,62 @@ var _ = Describe("given Security Group Manager", func() {
 					Name:  "org1-space1",
 					GUID:  "org1-space1-guid",
 					Rules: []resource.SecurityGroupRule{},
+				},
+			}, nil)
+			err := securityMgr.CreateApplicationSecurityGroups()
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeClient.ListRunningForSpaceAllCallCount()).Should(Equal(1))
+			Expect(fakeClient.BindRunningSecurityGroupCallCount()).Should(Equal(0))
+			Expect(fakeClient.UnBindRunningSecurityGroupCallCount()).Should(Equal(0))
+		})
+
+		It("Should not unbind space specific group to space which is ignore-listed", func() {
+			spaceConfigs := []config.SpaceConfig{
+				config.SpaceConfig{
+					EnableSecurityGroup:         false,
+					Space:                       "space1",
+					Org:                         "org1",
+					ASGs:                        []string{},
+					EnableUnassignSecurityGroup: true,
+				},
+			}
+			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
+			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+				{
+					Name:  "skip-this-asg-prefix-example",
+					GUID:  "skip-this-asg-prefix-example-guid",
+					Rules: []resource.SecurityGroupRule{},
+					Relationships: resource.SecurityGroupsRelationships{
+						StagingSpaces: resource.ToManyRelationships{
+							Data: []resource.Relationship{
+								resource.Relationship{GUID: "space1-guid"},
+							},
+						},
+						RunningSpaces: resource.ToManyRelationships{
+							Data: []resource.Relationship{
+								resource.Relationship{GUID: "space1-guid"},
+							},
+						},
+					},
+				},
+			}, nil)
+			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+				{
+					Name:  "skip-this-asg-prefix-example",
+					GUID:  "skip-this-asg-prefix-example-guid",
+					Rules: []resource.SecurityGroupRule{},
+					Relationships: resource.SecurityGroupsRelationships{
+						StagingSpaces: resource.ToManyRelationships{
+							Data: []resource.Relationship{
+								resource.Relationship{GUID: "space1-guid"},
+							},
+						},
+						RunningSpaces: resource.ToManyRelationships{
+							Data: []resource.Relationship{
+								resource.Relationship{GUID: "space1-guid"},
+							},
+						},
+					},
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
