@@ -19,3 +19,4 @@ publish-develop.sh
 make-binary.sh
 .idea
 test-for-pagination.sh
+export-cli.sh
