@@ -19,6 +19,7 @@ Help Options:
     --enable-delete-shared-domains=[true|false]     Enable removing shared domains
     --enable-service-access=[true|false]            Enable managing service access
     --enable-unassign-security-groups=[true|false]  Enable unassigning security groups
+    --skip-unassign-security-group-regex=           Skip unassigning security groups for names matching regex
     --metadata-prefix=                              Prefix for org/space metadata
     --staging-security-group=                       Staging Security Group to add
     --remove-staging-security-group=                Staging Security Group to remove
