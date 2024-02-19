@@ -472,6 +472,7 @@ jobs:
       PIPELINE_TO_CHECK: ./pipeline-repo/ci/pipelines/cf-mgmt/pipeline.yml
 
 - name: bump-ci-tasks
+  serial: true
   plan:
   - in_parallel:
     - get: cryogenics-essentials
@@ -511,6 +512,7 @@ jobs:
       source-repo: source-write-only
 
 - name: bump-go-module
+  serial: true
   plan:
   - in_parallel:
     - get: every-day
