@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"net/http"
+	"os"
 	"strings"
 
 	routing_api "code.cloudfoundry.org/routing-api"
@@ -24,6 +26,7 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/vmwarepivotallabs/cf-mgmt/user"
+	"github.com/vmwarepivotallabs/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
 )
 
@@ -92,6 +95,9 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 	}
 	cfMgmt.UAAManager = uaaMgr
 
+	httpClient := &http.Client{}
+	httpClient.Transport = util.NewLoggingTransport(http.DefaultTransport)
+
 	var c *cfclient.Config
 	var cv3 *v3config.Config
 	if baseCommand.Password != "" {
@@ -103,6 +109,10 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 			Password:          baseCommand.Password,
 			UserAgent:         userAgent,
 		}
+		if strings.EqualFold(os.Getenv("LOG_LEVEL"), "trace") {
+			c.HttpClient = httpClient
+		}
+
 		cv3, err = v3config.NewUserPassword(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
 			baseCommand.UserID,
 			baseCommand.Password)
@@ -129,6 +139,9 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 		return nil, err
 	}
 	cv3.WithSkipTLSValidation(true)
+	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "trace") {
+		cv3.WithHTTPClient(httpClient)
+	}
 	v3client, err := v3cfclient.New(cv3)
 	if err != nil {
 		return nil, err

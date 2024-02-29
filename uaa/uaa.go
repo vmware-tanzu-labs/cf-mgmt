@@ -3,6 +3,7 @@ package uaa
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/xchapter7x/lo"
@@ -47,6 +48,9 @@ func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, p
 		uaaclient.WithUserAgent(userAgent),
 		uaaclient.WithSkipSSLValidation(true),
 	)
+	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "trace") {
+		uaaclient.WithVerbosity(true)
+	}
 	if err != nil {
 		return nil, err
 	}
