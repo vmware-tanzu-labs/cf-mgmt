@@ -42,15 +42,19 @@ type User struct {
 // NewDefaultUAAManager -
 func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, peek bool) (Manager, error) {
 	target := fmt.Sprintf("https://uaa.%s", sysDomain)
+
+	opts := []uaaclient.Option{}
+	opts = append(opts, uaaclient.WithUserAgent(userAgent))
+	opts = append(opts, uaaclient.WithSkipSSLValidation(true))
+	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "trace") {
+		opts = append(opts, uaaclient.WithVerbosity(true))
+	}
 	client, err := uaaclient.New(
 		target,
 		uaaclient.WithClientCredentials(clientID, clientSecret, uaaclient.OpaqueToken),
-		uaaclient.WithUserAgent(userAgent),
-		uaaclient.WithSkipSSLValidation(true),
+		opts...,
 	)
-	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "trace") {
-		uaaclient.WithVerbosity(true)
-	}
+
 	if err != nil {
 		return nil, err
 	}
