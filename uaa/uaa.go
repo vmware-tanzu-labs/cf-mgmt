@@ -3,7 +3,7 @@ package uaa
 import (
 	"errors"
 	"fmt"
-	"os"
+	"net/http"
 	"strings"
 
 	"github.com/xchapter7x/lo"
@@ -11,24 +11,24 @@ import (
 	uaaclient "github.com/cloudfoundry-community/go-uaa"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
-//counterfeiter:generate -o fakes/uaa_client.go uaa.go uaa
 type uaa interface {
 	CreateUser(user uaaclient.User) (*uaaclient.User, error)
 	ListAllUsers(filter string, sortBy string, attributes string, sortOrder uaaclient.SortOrder) ([]uaaclient.User, error)
+	ListUsers(filter string, sortBy string, attributes string, sortOrder uaaclient.SortOrder, startIndex int, itemsPerPage int) ([]uaaclient.User, uaaclient.Page, error)
 }
 
 // Manager -
 type Manager interface {
 	//Returns a map keyed and valued by user id. User id is converted to lowercase
 	ListUsers() (*Users, error)
-	CreateExternalUser(userName, userEmail, externalID, origin string) (GUID string, err error)
+	CreateExternalUser(userName, userEmail, externalID, origin string) (err error)
 }
 
 // DefaultUAAManager -
 type DefaultUAAManager struct {
 	Peek   bool
 	Client uaa
+	Users  *Users
 }
 
 type User struct {
@@ -40,19 +40,15 @@ type User struct {
 }
 
 // NewDefaultUAAManager -
-func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, peek bool) (Manager, error) {
+func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, httpClient *http.Client, peek bool) (Manager, error) {
 	target := fmt.Sprintf("https://uaa.%s", sysDomain)
 
-	opts := []uaaclient.Option{}
-	opts = append(opts, uaaclient.WithUserAgent(userAgent))
-	opts = append(opts, uaaclient.WithSkipSSLValidation(true))
-	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "trace") {
-		opts = append(opts, uaaclient.WithVerbosity(true))
-	}
 	client, err := uaaclient.New(
 		target,
 		uaaclient.WithClientCredentials(clientID, clientSecret, uaaclient.OpaqueToken),
-		opts...,
+		uaaclient.WithUserAgent(userAgent),
+		uaaclient.WithClient(httpClient),
+		uaaclient.WithSkipSSLValidation(true),
 	)
 
 	if err != nil {
@@ -65,14 +61,28 @@ func NewDefaultUAAManager(sysDomain, clientID, clientSecret, userAgent string, p
 	}, nil
 }
 
+func (m *DefaultUAAManager) addUser(user User) {
+	if m.Users == nil {
+		m.Users = &Users{}
+	}
+	m.Users.Add(user)
+}
+
 // CreateExternalUser -
-func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, origin string) (string, error) {
+func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, origin string) error {
 	if userName == "" || userEmail == "" || externalID == "" {
-		return "", fmt.Errorf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID)
+		return fmt.Errorf("skipping user as missing name[%s], email[%s] or externalID[%s]", userName, userEmail, externalID)
 	}
 	if m.Peek {
 		lo.G.Infof("[dry-run]: successfully added user [%s]", userName)
-		return fmt.Sprintf("dry-run-%s-%s-guid", userName, origin), nil
+		m.addUser(User{
+			Username:   userName,
+			Email:      userEmail,
+			ExternalID: externalID,
+			Origin:     origin,
+			GUID:       fmt.Sprintf("dry-run-%s-%s-guid", userName, origin),
+		})
+		return nil
 	}
 
 	createdUser, err := m.Client.CreateUser(uaaclient.User{
@@ -88,16 +98,27 @@ func (m *DefaultUAAManager) CreateExternalUser(userName, userEmail, externalID, 
 	if err != nil {
 		var requestError uaaclient.RequestError
 		if errors.As(err, &requestError) {
-			return "", fmt.Errorf("got an error calling %s with response %s", requestError.Url, requestError.ErrorResponse)
+			return fmt.Errorf("got an error calling %s with response %s", requestError.Url, requestError.ErrorResponse)
 		}
-		return "", err
+		return err
 	}
+	m.addUser(User{
+		Username:   userName,
+		Email:      userEmail,
+		ExternalID: externalID,
+		Origin:     origin,
+		GUID:       createdUser.ID,
+	})
 	lo.G.Infof("successfully added user [%s]", userName)
-	return createdUser.ID, nil
+	return nil
 }
 
 // ListUsers - returns uaa.Users
 func (m *DefaultUAAManager) ListUsers() (*Users, error) {
+	if m.Users != nil {
+		return m.Users, nil
+	}
+
 	users := &Users{}
 	lo.G.Debug("Getting users from Cloud Foundry")
 	userList, err := m.Client.ListAllUsers("", "", "userName,id,externalId,emails,origin", "")
@@ -108,8 +129,8 @@ func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 		}
 		return nil, err
 	}
-
 	lo.G.Debugf("Found %d users in the CF instance", len(userList))
+
 	for _, user := range userList {
 		userName := strings.Trim(user.Username, " ")
 		externalID := strings.Trim(user.ExternalID, " ")
@@ -122,6 +143,7 @@ func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 			GUID:       user.ID,
 		})
 	}
+	m.Users = users
 	return users, nil
 }
 

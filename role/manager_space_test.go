@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	uaaclient "github.com/cloudfoundry-community/go-uaa"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/vmwarepivotallabs/cf-mgmt/role"
@@ -18,13 +19,13 @@ var _ = Describe("given RoleManager", func() {
 		roleClient  *fakes.FakeCFRoleClient
 		userClient  *fakes.FakeCFUserClient
 		jobClient   *fakes.FakeCFJobClient
-		uaaFake     *uaafakes.FakeManager
+		uaaFake     *uaafakes.FakeUaa
 	)
 	BeforeEach(func() {
 		roleClient = new(fakes.FakeCFRoleClient)
 		userClient = new(fakes.FakeCFUserClient)
 		jobClient = new(fakes.FakeCFJobClient)
-		uaaFake = new(uaafakes.FakeManager)
+		uaaFake = new(uaafakes.FakeUaa)
 	})
 	Context("Role Manager", func() {
 		BeforeEach(func() {
@@ -32,14 +33,13 @@ var _ = Describe("given RoleManager", func() {
 				RoleClient: roleClient,
 				UserClient: userClient,
 				JobClient:  jobClient,
-				UAAMgr:     uaaFake,
+				UAAMgr:     &uaa.DefaultUAAManager{Client: uaaFake},
 			}
 		})
 
 		Context("Remove", func() {
 			BeforeEach(func() {
-				uaaUsers := &uaa.Users{}
-				uaaFake.ListUsersReturns(uaaUsers, nil)
+				uaaFake.ListAllUsersReturns([]uaaclient.User{}, nil)
 				userClient.ListAllReturns([]*resource.User{
 					{GUID: "test-user-guid"},
 				}, nil)

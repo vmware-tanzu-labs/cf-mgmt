@@ -37,6 +37,26 @@ type FakeUaa struct {
 		result1 []uaaa.User
 		result2 error
 	}
+	ListUsersStub        func(string, string, string, uaaa.SortOrder, int, int) ([]uaaa.User, uaaa.Page, error)
+	listUsersMutex       sync.RWMutex
+	listUsersArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 uaaa.SortOrder
+		arg5 int
+		arg6 int
+	}
+	listUsersReturns struct {
+		result1 []uaaa.User
+		result2 uaaa.Page
+		result3 error
+	}
+	listUsersReturnsOnCall map[int]struct {
+		result1 []uaaa.User
+		result2 uaaa.Page
+		result3 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -172,6 +192,78 @@ func (fake *FakeUaa) ListAllUsersReturnsOnCall(i int, result1 []uaaa.User, resul
 	}{result1, result2}
 }
 
+func (fake *FakeUaa) ListUsers(arg1 string, arg2 string, arg3 string, arg4 uaaa.SortOrder, arg5 int, arg6 int) ([]uaaa.User, uaaa.Page, error) {
+	fake.listUsersMutex.Lock()
+	ret, specificReturn := fake.listUsersReturnsOnCall[len(fake.listUsersArgsForCall)]
+	fake.listUsersArgsForCall = append(fake.listUsersArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 uaaa.SortOrder
+		arg5 int
+		arg6 int
+	}{arg1, arg2, arg3, arg4, arg5, arg6})
+	stub := fake.ListUsersStub
+	fakeReturns := fake.listUsersReturns
+	fake.recordInvocation("ListUsers", []interface{}{arg1, arg2, arg3, arg4, arg5, arg6})
+	fake.listUsersMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4, arg5, arg6)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeUaa) ListUsersCallCount() int {
+	fake.listUsersMutex.RLock()
+	defer fake.listUsersMutex.RUnlock()
+	return len(fake.listUsersArgsForCall)
+}
+
+func (fake *FakeUaa) ListUsersCalls(stub func(string, string, string, uaaa.SortOrder, int, int) ([]uaaa.User, uaaa.Page, error)) {
+	fake.listUsersMutex.Lock()
+	defer fake.listUsersMutex.Unlock()
+	fake.ListUsersStub = stub
+}
+
+func (fake *FakeUaa) ListUsersArgsForCall(i int) (string, string, string, uaaa.SortOrder, int, int) {
+	fake.listUsersMutex.RLock()
+	defer fake.listUsersMutex.RUnlock()
+	argsForCall := fake.listUsersArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5, argsForCall.arg6
+}
+
+func (fake *FakeUaa) ListUsersReturns(result1 []uaaa.User, result2 uaaa.Page, result3 error) {
+	fake.listUsersMutex.Lock()
+	defer fake.listUsersMutex.Unlock()
+	fake.ListUsersStub = nil
+	fake.listUsersReturns = struct {
+		result1 []uaaa.User
+		result2 uaaa.Page
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeUaa) ListUsersReturnsOnCall(i int, result1 []uaaa.User, result2 uaaa.Page, result3 error) {
+	fake.listUsersMutex.Lock()
+	defer fake.listUsersMutex.Unlock()
+	fake.ListUsersStub = nil
+	if fake.listUsersReturnsOnCall == nil {
+		fake.listUsersReturnsOnCall = make(map[int]struct {
+			result1 []uaaa.User
+			result2 uaaa.Page
+			result3 error
+		})
+	}
+	fake.listUsersReturnsOnCall[i] = struct {
+		result1 []uaaa.User
+		result2 uaaa.Page
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *FakeUaa) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -179,6 +271,8 @@ func (fake *FakeUaa) Invocations() map[string][][]interface{} {
 	defer fake.createUserMutex.RUnlock()
 	fake.listAllUsersMutex.RLock()
 	defer fake.listAllUsersMutex.RUnlock()
+	fake.listUsersMutex.RLock()
+	defer fake.listUsersMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

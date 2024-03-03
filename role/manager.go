@@ -26,7 +26,6 @@ type DefaultManager struct {
 	OrgRoles        map[string]map[string]*RoleUsers
 	SpaceRoles      map[string]map[string]*RoleUsers
 	CFUsers         map[string]*resource.User
-	UAAUsers        *uaa.Users
 	UAAMgr          uaa.Manager
 	Peek            bool
 	OrgRolesUsers   map[string]map[string]map[string]string
@@ -276,14 +275,7 @@ func (m *DefaultManager) GetCFUsers() (map[string]*resource.User, error) {
 }
 
 func (m *DefaultManager) GetUAAUsers() (*uaa.Users, error) {
-	if m.UAAUsers == nil {
-		uaaUsers, err := m.UAAMgr.ListUsers()
-		if err != nil {
-			return nil, err
-		}
-		m.UAAUsers = uaaUsers
-	}
-	return m.UAAUsers, nil
+	return m.UAAMgr.ListUsers()
 }
 
 func (m *DefaultManager) UpdateOrgRoleUsers(orgGUID string, roleUser *RoleUsers) {

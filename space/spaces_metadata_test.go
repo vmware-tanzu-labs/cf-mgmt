@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
+	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 
 	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
@@ -15,7 +16,7 @@ import (
 
 var _ = Describe("given SpaceManager", func() {
 	var (
-		fakeUaa                *uaafakes.FakeManager
+		fakeUaa                *uaafakes.FakeUaa
 		fakeOrgMgr             *orgfakes.FakeReader
 		spaceManager           space.DefaultManager
 		fakeReader             *configfakes.FakeReader
@@ -24,14 +25,14 @@ var _ = Describe("given SpaceManager", func() {
 	)
 
 	BeforeEach(func() {
-		fakeUaa = new(uaafakes.FakeManager)
+		fakeUaa = new(uaafakes.FakeUaa)
 		fakeOrgMgr = new(orgfakes.FakeReader)
 		fakeReader = new(configfakes.FakeReader)
 		fakeSpaceClient = new(spacefakes.FakeCFSpaceClient)
 		fakeSpaceFeatureClient = new(spacefakes.FakeCFSpaceFeatureClient)
 		spaceManager = space.DefaultManager{
 			Cfg:                fakeReader,
-			UAAMgr:             fakeUaa,
+			UAAMgr:             &uaa.DefaultUAAManager{Client: fakeUaa},
 			OrgReader:          fakeOrgMgr,
 			Peek:               false,
 			SpaceClient:        fakeSpaceClient,

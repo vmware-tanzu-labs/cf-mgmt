@@ -12,6 +12,10 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa/fakes"
 )
 
+type UaaResponse struct {
+	Response []uaaclient.User `json:"resources"`
+}
+
 var _ = Describe("given uaa manager", func() {
 	var (
 		fakeuaa *fakes.FakeUaa
@@ -69,7 +73,7 @@ var _ = Describe("given uaa manager", func() {
 					}},
 				nil,
 			)
-			_, err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
+			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 		It("should successfully create user with complex dn", func() {
@@ -86,7 +90,7 @@ var _ = Describe("given uaa manager", func() {
 					}},
 				nil,
 			)
-			_, err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
+			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 
@@ -95,12 +99,12 @@ var _ = Describe("given uaa manager", func() {
 			userEmail := "email"
 			externalID := "userDN"
 			manager.Peek = true
-			_, err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
+			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(fakeuaa.CreateUserCallCount()).Should(Equal(0))
 		})
 		It("should not invoke post", func() {
-			_, err := manager.CreateExternalUser("", "", "", "ldap")
+			err := manager.CreateExternalUser("", "", "", "ldap")
 			Ω(err).Should(HaveOccurred())
 			Ω(fakeuaa.CreateUserCallCount()).Should(Equal(0))
 		})
@@ -122,7 +126,7 @@ var _ = Describe("given uaa manager", func() {
 					}},
 				nil,
 			)
-			_, err := manager.CreateExternalUser(userName, userEmail, externalID, origin)
+			err := manager.CreateExternalUser(userName, userEmail, externalID, origin)
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 	})

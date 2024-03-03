@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	uaaclient "github.com/cloudfoundry-community/go-uaa"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -22,7 +23,7 @@ var _ = Describe("given UserSpaces", func() {
 	var (
 		userManager *DefaultManager
 		ldapFake    *fakes.FakeLdapManager
-		uaaFake     *uaafakes.FakeManager
+		uaaFake     *uaafakes.FakeUaa
 		fakeReader  *configfakes.FakeReader
 		spaceFake   *spacefakes.FakeManager
 		orgFake     *orgfakes.FakeReader
@@ -30,7 +31,7 @@ var _ = Describe("given UserSpaces", func() {
 	)
 	BeforeEach(func() {
 		ldapFake = new(fakes.FakeLdapManager)
-		uaaFake = new(uaafakes.FakeManager)
+		uaaFake = new(uaafakes.FakeUaa)
 		fakeReader = new(configfakes.FakeReader)
 		spaceFake = new(spacefakes.FakeManager)
 		orgFake = new(orgfakes.FakeReader)
@@ -40,7 +41,7 @@ var _ = Describe("given UserSpaces", func() {
 		BeforeEach(func() {
 			userManager = &DefaultManager{
 				Cfg:        fakeReader,
-				UAAMgr:     uaaFake,
+				UAAMgr:     &uaa.DefaultUAAManager{Client: uaaFake},
 				LdapMgr:    ldapFake,
 				SpaceMgr:   spaceFake,
 				OrgReader:  orgFake,
@@ -57,14 +58,16 @@ var _ = Describe("given UserSpaces", func() {
 		Context("SyncInternalUsers", func() {
 			var roleUsers *role.RoleUsers
 			BeforeEach(func() {
-				uaaUsers := &uaa.Users{}
-				uaaUsers.Add(uaa.User{Username: "test", Origin: "uaa", GUID: "test-user-guid"})
-				uaaUsers.Add(uaa.User{Username: "test-existing", Origin: "uaa", GUID: "test-existing-id"})
+				uaaUsers := []uaaclient.User{}
+				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test", Origin: "uaa", ID: "test-user-guid"})
+				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test-existing", Origin: "uaa", ID: "test-existing-id"})
+				uaaFake.ListAllUsersReturns(uaaUsers, nil)
+
+				users, err := userManager.UAAMgr.ListUsers()
+				Expect(err).ShouldNot(HaveOccurred())
 				roleUsers, _ = role.NewRoleUsers([]*resource.User{
 					{Username: "test-existing", GUID: "test-existing-id"},
-				}, uaaUsers)
-
-				userManager.UAAUsers = uaaUsers
+				}, users)
 			})
 			It("Should add internal user to role", func() {
 				updateUsersInput := UsersInput{
@@ -233,9 +236,9 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("UpdateSpaceUsers", func() {
 			It("Should succeed", func() {
-				userMap := &uaa.Users{}
-				userMap.Add(uaa.User{Username: "test-user-guid", GUID: "test-user"})
-				uaaFake.ListUsersReturns(userMap, nil)
+				uaaUsers := []uaaclient.User{}
+				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test-user-guid", ID: "test-user"})
+				uaaFake.ListAllUsersReturns(uaaUsers, nil)
 				fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
 					{
 						Space: "test-space",
@@ -261,9 +264,9 @@ var _ = Describe("given UserSpaces", func() {
 
 		Context("UpdateSpaceUsers", func() {
 			It("Should succeed", func() {
-				userMap := &uaa.Users{}
-				userMap.Add(uaa.User{Username: "test-user-guid", GUID: "test-user"})
-				uaaFake.ListUsersReturns(userMap, nil)
+				uaaUsers := []uaaclient.User{}
+				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test-user-guid", ID: "test-user"})
+				uaaFake.ListAllUsersReturns(uaaUsers, nil)
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
 					{
 						Org: "test-org",
@@ -281,12 +284,15 @@ var _ = Describe("given UserSpaces", func() {
 		Context("Sync Users", func() {
 			var roleUsers *role.RoleUsers
 			BeforeEach(func() {
-				uaaUsers := &uaa.Users{}
-				uaaUsers.Add(uaa.User{Username: "test", Origin: "uaa", GUID: "test-user-guid"})
-				uaaUsers.Add(uaa.User{Username: "test", Origin: "ldap", GUID: "test-ldap-user-guid", ExternalID: "cn=test"})
-				roleUsers, _ = role.NewRoleUsers([]*resource.User{}, uaaUsers)
+				uaaUsers := []uaaclient.User{}
+				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test", Origin: "uaa", ID: "test-user-guid"})
+				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test", Origin: "ldap", ID: "test-ldap-user-guid", ExternalID: "cn=test"})
+				uaaFake.ListAllUsersReturns(uaaUsers, nil)
 
-				userManager.UAAUsers = uaaUsers
+				users, err := userManager.UAAMgr.ListUsers()
+				Expect(err).ShouldNot(HaveOccurred())
+				roleUsers, _ = role.NewRoleUsers([]*resource.User{}, users)
+
 			})
 			It("Should add internal user to role and ldap user with same name to role", func() {
 				updateUsersInput := UsersInput{
