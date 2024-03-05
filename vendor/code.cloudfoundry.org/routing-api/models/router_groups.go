@@ -74,17 +74,6 @@ func (rgs RouterGroupsDB) ToRouterGroups() RouterGroups {
 
 type RouterGroups []RouterGroup
 
-func (g RouterGroups) validateRouterGroupName() error {
-	encountered := map[string]bool{}
-	for _, r := range g {
-		if _, exist := encountered[r.Name]; exist {
-			return fmt.Errorf("Router group name must be unique")
-		}
-		encountered[r.Name] = true
-	}
-	return nil
-}
-
 func (g RouterGroups) Validate() error {
 	for _, r := range g {
 		if err := r.Validate(); err != nil {
