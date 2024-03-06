@@ -3,7 +3,7 @@ image_resource:
   type: registry-image
   source:
     repository: harbor-repo.vmware.com/cryogenics/essentials
-    tag: 0.1.105
+    tag: 0.1.106
 inputs:
   - name: source
   - name: env
