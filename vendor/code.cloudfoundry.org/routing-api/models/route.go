@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/nu7hatch/gouuid"
+	uuid "github.com/nu7hatch/gouuid"
 )
 
 type Route struct {

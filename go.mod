@@ -3,7 +3,7 @@ module github.com/vmwarepivotallabs/cf-mgmt
 go 1.20
 
 require (
-	code.cloudfoundry.org/routing-api v0.0.0-20231121142832-babb23b69306
+	code.cloudfoundry.org/routing-api v0.0.0-20240304204111-816d1f560a86
 	github.com/cloudfoundry-community/go-cfclient v0.0.0-20220803221820-5e81c204bd31
 	github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.6
 	github.com/cloudfoundry-community/go-uaa v0.3.2
