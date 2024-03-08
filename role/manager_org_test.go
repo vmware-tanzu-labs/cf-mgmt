@@ -182,7 +182,7 @@ var _ = Describe("given RoleManager", func() {
 		})
 		Context("Remove", func() {
 			BeforeEach(func() {
-				uaaFake.ListAllUsersReturns([]uaaclient.User{}, nil)
+				uaaFake.ListUsersReturns([]uaaclient.User{}, uaaclient.Page{StartIndex: 1, TotalResults: 0, ItemsPerPage: 500}, nil)
 				userClient.ListAllReturns([]*resource.User{
 					{GUID: "test-user-guid"},
 				}, nil)

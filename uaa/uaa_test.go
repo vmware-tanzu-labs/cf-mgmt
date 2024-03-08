@@ -31,7 +31,7 @@ var _ = Describe("given uaa manager", func() {
 	Context("ListUsers()", func() {
 
 		It("should return list of users", func() {
-			fakeuaa.ListAllUsersReturns([]uaaclient.User{
+			fakeuaa.ListUsersReturns([]uaaclient.User{
 				{Username: "foo4", ID: "foo4-id"},
 				{Username: "admin", ID: "admin-id"},
 				{Username: "user", ID: "user-id"},
@@ -41,24 +41,25 @@ var _ = Describe("given uaa manager", func() {
 				{Username: "foo2", ID: "foo2-id"},
 				{Username: "foo3", ID: "foo3-id"},
 				{Username: "cn=admin", ID: "cn=admin-id"},
-			}, nil)
+			}, uaaclient.Page{ItemsPerPage: 500, StartIndex: 1, TotalResults: 9}, nil)
 			users, err := manager.ListUsers()
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(fakeuaa.ListUsersCallCount()).Should(Equal(1))
+			Expect(err).ShouldNot(HaveOccurred())
 			keys := make([]string, 0, len(users.List()))
 			for _, k := range users.List() {
 				keys = append(keys, k.Username)
 			}
-			Ω(len(users.List())).Should(Equal(9))
-			Ω(keys).Should(ConsistOf("foo4", "admin", "user", "cwashburn", "foo", "foo1", "foo2", "foo3", "cn=admin"))
+			Expect(len(users.List())).Should(Equal(9))
+			Expect(keys).Should(ConsistOf("foo4", "admin", "user", "cwashburn", "foo", "foo1", "foo2", "foo3", "cn=admin"))
 		})
 		It("should return an error", func() {
-			fakeuaa.ListAllUsersReturns(nil, errors.New("Got an error"))
+			fakeuaa.ListUsersReturns(nil, uaaclient.Page{ItemsPerPage: 500, StartIndex: 1, TotalResults: 10}, errors.New("Got an error"))
 			_, err := manager.ListUsers()
-			Ω(err).Should(HaveOccurred())
+			Expect(err).Should(HaveOccurred())
+			Expect(fakeuaa.ListUsersCallCount()).Should(Equal(1))
 		})
 	})
 	Context("CreateLdapUser()", func() {
-
 		It("should successfully create user", func() {
 			userName := "user"
 			userEmail := "email"
@@ -74,7 +75,7 @@ var _ = Describe("given uaa manager", func() {
 				nil,
 			)
 			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 		It("should successfully create user with complex dn", func() {
 			userName := "asdfasdfsadf"
@@ -91,7 +92,7 @@ var _ = Describe("given uaa manager", func() {
 				nil,
 			)
 			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 
 		It("should peek", func() {
@@ -100,13 +101,13 @@ var _ = Describe("given uaa manager", func() {
 			externalID := "userDN"
 			manager.Peek = true
 			err := manager.CreateExternalUser(userName, userEmail, externalID, "ldap")
-			Ω(err).ShouldNot(HaveOccurred())
-			Ω(fakeuaa.CreateUserCallCount()).Should(Equal(0))
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(fakeuaa.CreateUserCallCount()).Should(Equal(0))
 		})
 		It("should not invoke post", func() {
 			err := manager.CreateExternalUser("", "", "", "ldap")
-			Ω(err).Should(HaveOccurred())
-			Ω(fakeuaa.CreateUserCallCount()).Should(Equal(0))
+			Expect(err).Should(HaveOccurred())
+			Expect(fakeuaa.CreateUserCallCount()).Should(Equal(0))
 		})
 	})
 	Context("CreateSamlUser()", func() {
@@ -127,7 +128,7 @@ var _ = Describe("given uaa manager", func() {
 				nil,
 			)
 			err := manager.CreateExternalUser(userName, userEmail, externalID, origin)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 	})
 })

@@ -61,7 +61,7 @@ var _ = Describe("given UserSpaces", func() {
 				uaaUsers := []uaaclient.User{}
 				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test", Origin: "uaa", ID: "test-user-guid"})
 				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test-existing", Origin: "uaa", ID: "test-existing-id"})
-				uaaFake.ListAllUsersReturns(uaaUsers, nil)
+				uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: len(uaaUsers), ItemsPerPage: 500}, nil)
 
 				users, err := userManager.UAAMgr.ListUsers()
 				Expect(err).ShouldNot(HaveOccurred())
@@ -238,7 +238,7 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should succeed", func() {
 				uaaUsers := []uaaclient.User{}
 				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test-user-guid", ID: "test-user"})
-				uaaFake.ListAllUsersReturns(uaaUsers, nil)
+				uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 1, ItemsPerPage: 500}, nil)
 				fakeReader.GetSpaceConfigsReturns([]config.SpaceConfig{
 					{
 						Space: "test-space",
@@ -266,7 +266,7 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should succeed", func() {
 				uaaUsers := []uaaclient.User{}
 				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test-user-guid", ID: "test-user"})
-				uaaFake.ListAllUsersReturns(uaaUsers, nil)
+				uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 1, ItemsPerPage: 500}, nil)
 				fakeReader.GetOrgConfigsReturns([]config.OrgConfig{
 					{
 						Org: "test-org",
@@ -287,7 +287,7 @@ var _ = Describe("given UserSpaces", func() {
 				uaaUsers := []uaaclient.User{}
 				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test", Origin: "uaa", ID: "test-user-guid"})
 				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test", Origin: "ldap", ID: "test-ldap-user-guid", ExternalID: "cn=test"})
-				uaaFake.ListAllUsersReturns(uaaUsers, nil)
+				uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 2, ItemsPerPage: 500}, nil)
 
 				users, err := userManager.UAAMgr.ListUsers()
 				Expect(err).ShouldNot(HaveOccurred())

@@ -58,7 +58,7 @@ var _ = Describe("SamlUsers", func() {
 			uaaUsers := []uaaclient.User{}
 			uaaUsers = append(uaaUsers, uaaclient.User{Username: "Test.Test@test.com", Emails: []uaaclient.Email{{Value: "test.test@test.com"}}, ExternalID: "Test.Test@test.com", Origin: "saml_origin", ID: "test-id"})
 			uaaUsers = append(uaaUsers, uaaclient.User{Username: "test2.test2@test.com", Emails: []uaaclient.Email{{Value: "test2.test2@test.com"}}, ExternalID: "test2.test2@test.com", Origin: "saml_origin", ID: "test2-id"})
-			uaaFake.ListAllUsersReturns(uaaUsers, nil)
+			uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 2, ItemsPerPage: 500}, nil)
 
 			users, err := userManager.UAAMgr.ListUsers()
 			Expect(err).ShouldNot(HaveOccurred())
@@ -149,7 +149,7 @@ var _ = Describe("SamlUsers", func() {
 				AddUser:   roleMgrFake.AssociateSpaceAuditor,
 				RoleUsers: role.InitRoleUsers(),
 			}
-			uaaFake.ListAllUsersReturns([]uaaclient.User{}, nil)
+			uaaFake.ListUsersReturns([]uaaclient.User{}, uaaclient.Page{StartIndex: 1, TotalResults: 0, ItemsPerPage: 500}, nil)
 			uaaFake.CreateUserReturns(nil, errors.New("error"))
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).Should(HaveOccurred())
@@ -171,7 +171,7 @@ var _ = Describe("SamlUsers", func() {
 				AddUser:   roleMgrFake.AssociateSpaceAuditor,
 				RoleUsers: role.InitRoleUsers(),
 			}
-			uaaFake.ListAllUsersReturns(uaaUsers, nil)
+			uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 0, ItemsPerPage: 500}, nil)
 			roleMgrFake.AssociateSpaceAuditorReturns(errors.New("Got an error"))
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).Should(HaveOccurred())
@@ -184,7 +184,7 @@ var _ = Describe("SamlUsers", func() {
 			userManager.LdapConfig = &config.LdapConfig{Origin: "saml_origin"}
 			uaaUsers := []uaaclient.User{}
 			uaaUsers = append(uaaUsers, uaaclient.User{Username: "test.test@test.com", Emails: []uaaclient.Email{{Value: "test.test@test.com"}}, ExternalID: "test.test@test.com", Origin: "saml_original_origin", ID: "test-id"})
-			uaaFake.ListAllUsersReturns(uaaUsers, nil)
+			uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 1, ItemsPerPage: 500}, nil)
 
 			users, err := userManager.UAAMgr.ListUsers()
 			Expect(err).ShouldNot(HaveOccurred())

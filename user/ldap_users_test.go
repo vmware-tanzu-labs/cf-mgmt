@@ -63,7 +63,7 @@ var _ = Describe("given UserSpaces", func() {
 				uaaUsers := []uaaclient.User{}
 				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap", ID: "test_ldap-id"})
 				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2", ID: "test_ldap2-id"})
-				uaaFake.ListAllUsersReturns(uaaUsers, nil)
+				uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 2, ItemsPerPage: 500}, nil)
 
 				users, err := userManager.UAAMgr.ListUsers()
 				Expect(err).ShouldNot(HaveOccurred())
@@ -114,7 +114,7 @@ var _ = Describe("given UserSpaces", func() {
 				uaaUsers := []uaaclient.User{}
 				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test_ldap", Origin: "ldap", ExternalID: "cn=test_ldap", ID: "test_ldap-id"})
 				uaaUsers = append(uaaUsers, uaaclient.User{Username: "test_ldap2", Origin: "ldap", ExternalID: "cn=test_ldap2", ID: "test_ldap2-id"})
-				uaaFake.ListAllUsersReturns(uaaUsers, nil)
+				uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 10, ItemsPerPage: 500}, nil)
 
 				users, err := userManager.UAAMgr.ListUsers()
 				Expect(err).ShouldNot(HaveOccurred())
