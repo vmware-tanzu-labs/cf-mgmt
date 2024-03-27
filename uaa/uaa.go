@@ -157,7 +157,7 @@ func (m *DefaultUAAManager) ListAllUsers() ([]uaaclient.User, error) {
 		err          error
 		totalResults int
 	)
-	currentPage, page, err = m.Client.ListUsers("", "", "userName,id,externalId,emails,origin", "", page.StartIndex, page.ItemsPerPage)
+	currentPage, page, err = m.Client.ListUsers("", "id", "userName,id,externalId,emails,origin", "", page.StartIndex, page.ItemsPerPage)
 	totalResults = page.TotalResults
 	if err != nil {
 		return nil, err
