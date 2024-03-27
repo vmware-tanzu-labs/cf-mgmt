@@ -166,7 +166,7 @@ func (m *DefaultUAAManager) ListAllUsers() ([]uaaclient.User, error) {
 	if (page.StartIndex + page.ItemsPerPage) <= page.TotalResults {
 		page.StartIndex = page.StartIndex + page.ItemsPerPage
 		for {
-			currentPage, page, err = m.Client.ListUsers("", "", "userName,id,externalId,emails,origin", "", page.StartIndex, page.ItemsPerPage)
+			currentPage, page, err = m.Client.ListUsers("", "id", "userName,id,externalId,emails,origin", "", page.StartIndex, page.ItemsPerPage)
 			if err != nil {
 				return nil, err
 			}
