@@ -3,7 +3,7 @@ module github.com/vmwarepivotallabs/cf-mgmt
 go 1.20
 
 require (
-	code.cloudfoundry.org/routing-api v0.0.0-20240304204111-816d1f560a86
+	code.cloudfoundry.org/routing-api v0.0.0-20240308221647-8d0a58ac5a62
 	github.com/cloudfoundry-community/go-cfclient v0.0.0-20220803221820-5e81c204bd31
 	github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.6
 	github.com/cloudfoundry-community/go-uaa v0.3.2
@@ -11,7 +11,7 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.8.1
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.31.1
+	github.com/onsi/gomega v1.32.0
 	github.com/pkg/errors v0.9.1
 	github.com/xchapter7x/lo v0.0.0-20160804235750-e33b245fc7a8
 	gopkg.in/yaml.v2 v2.4.0
@@ -52,7 +52,7 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.17.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
