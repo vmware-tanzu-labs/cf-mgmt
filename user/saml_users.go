@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/role"
-	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
@@ -19,16 +18,8 @@ func (m *DefaultManager) SyncSamlUsers(roleUsers *role.RoleUsers, usersInput Use
 		uaaUser := uaaUsers.GetByNameAndOrigin(userEmail, origin)
 		if uaaUser == nil {
 			lo.G.Debugf("user %s doesn't exist in cloud foundry with origin %s, so creating user", userEmail, origin)
-			if userGUID, err := m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, origin); err != nil {
+			if err := m.UAAMgr.CreateExternalUser(userEmail, userEmail, userEmail, origin); err != nil {
 				return err
-			} else {
-				m.AddUAAUser(uaa.User{
-					Username:   userEmail,
-					Email:      userEmail,
-					ExternalID: userEmail,
-					Origin:     origin,
-					GUID:       userGUID,
-				})
 			}
 		}
 		user := uaaUsers.GetByNameAndOrigin(userEmail, origin)

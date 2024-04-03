@@ -1,7 +1,10 @@
 package commands
 
 import (
+	"crypto/tls"
 	"fmt"
+	"net/http"
+	"os"
 	"strings"
 
 	routing_api "code.cloudfoundry.org/routing-api"
@@ -24,6 +27,7 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/vmwarepivotallabs/cf-mgmt/user"
+	"github.com/vmwarepivotallabs/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
 )
 
@@ -85,8 +89,22 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 	cfMgmt.SystemDomain = baseCommand.SystemDomain
 	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
 
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "trace") {
+		loggingTranport := util.NewLoggingTransport(httpClient.Transport)
+		httpClient = &http.Client{
+			Transport: loggingTranport,
+		}
+	}
+
 	userAgent := fmt.Sprintf("cf-mgmt/%s", configcommands.VERSION)
-	uaaMgr, err := uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.ClientSecret, userAgent, peek)
+	uaaMgr, err := uaa.NewDefaultUAAManager(cfMgmt.SystemDomain, baseCommand.UserID, baseCommand.ClientSecret, userAgent, httpClient, peek)
 	if err != nil {
 		return nil, err
 	}
@@ -97,11 +115,10 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 	if baseCommand.Password != "" {
 		lo.G.Warning("Password parameter is deprecated, create uaa client and client-secret instead")
 		c = &cfclient.Config{
-			ApiAddress:        fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
-			SkipSslValidation: true,
-			Username:          baseCommand.UserID,
-			Password:          baseCommand.Password,
-			UserAgent:         userAgent,
+			ApiAddress: fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
+			Username:   baseCommand.UserID,
+			Password:   baseCommand.Password,
+			UserAgent:  userAgent,
 		}
 		cv3, err = v3config.NewUserPassword(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
 			baseCommand.UserID,
@@ -111,11 +128,10 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 		}
 	} else {
 		c = &cfclient.Config{
-			ApiAddress:        fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
-			SkipSslValidation: true,
-			ClientID:          baseCommand.UserID,
-			ClientSecret:      baseCommand.ClientSecret,
-			UserAgent:         userAgent,
+			ApiAddress:   fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
+			ClientID:     baseCommand.UserID,
+			ClientSecret: baseCommand.ClientSecret,
+			UserAgent:    userAgent,
 		}
 		cv3, err = v3config.NewClientSecret(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
 			baseCommand.UserID,
@@ -124,12 +140,16 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 			return nil, err
 		}
 	}
+	c.HttpClient = httpClient
+	cv3.UserAgent = userAgent
+	cv3.WithHTTPClient(httpClient)
+
 	client, err := cfclient.NewClient(c)
 	if err != nil {
 		return nil, err
 	}
-	cv3.WithSkipTLSValidation(true)
 	v3client, err := v3cfclient.New(cv3)
+
 	if err != nil {
 		return nil, err
 	}

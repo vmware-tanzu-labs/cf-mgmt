@@ -58,22 +58,10 @@ type DefaultManager struct {
 	Peek       bool
 	LdapMgr    LdapManager
 	LdapConfig *config.LdapConfig
-	UAAUsers   *uaa.Users
 }
 
 func (m *DefaultManager) GetUAAUsers() (*uaa.Users, error) {
-	if m.UAAUsers == nil {
-		uaaUsers, err := m.UAAMgr.ListUsers()
-		if err != nil {
-			return nil, err
-		}
-		m.UAAUsers = uaaUsers
-	}
-	return m.UAAUsers, nil
-}
-
-func (m *DefaultManager) AddUAAUser(user uaa.User) {
-	m.UAAUsers.Add(user)
+	return m.UAAMgr.ListUsers()
 }
 
 // UpdateSpaceUsers -
@@ -100,7 +88,7 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 	}
 	lo.G.Debug("")
 	lo.G.Debug("")
-	lo.G.Debugf("Processing Org(%s)/Space(%s)", input.Org, input.Space)
+	lo.G.Debugf("Processing Org(%s/%s)/Space(%s/%s)", input.Org, space.Relationships.Organization.Data.GUID, input.Space, space.GUID)
 	lo.G.Debug("")
 	lo.G.Debug("")
 

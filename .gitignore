@@ -20,3 +20,4 @@ make-binary.sh
 .idea
 test-for-pagination.sh
 export-cli.sh
+docker.env

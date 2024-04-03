@@ -17,12 +17,14 @@ func (c *UpdateSpaceUsersCommand) Execute([]string) error {
 	if ldapMgr != nil {
 		defer ldapMgr.Close()
 	}
-	if cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, ldapMgr); err == nil {
-		errs := cfMgmt.UserManager.UpdateSpaceUsers()
-		if len(errs) > 0 {
-			return fmt.Errorf("got errors processing update space users %v", errs)
-		}
-		return nil
+	cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, ldapMgr)
+	if err != nil {
+		return err
+	}
+	errs := cfMgmt.UserManager.UpdateSpaceUsers()
+	if len(errs) > 0 {
+		return fmt.Errorf("got errors processing update space users %v", errs)
 	}
 	return nil
+
 }

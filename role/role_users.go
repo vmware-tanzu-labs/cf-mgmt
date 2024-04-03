@@ -55,6 +55,7 @@ func (r *RoleUsers) OrphanedUsers() []string {
 
 func (r *RoleUsers) HasUserForGUID(userName, userGUID string) bool {
 	userList := r.users[strings.ToLower(userName)]
+	lo.G.Debugf("Users %v found for userName [%s] and guid [%s]", userList, userName, userGUID)
 	for _, user := range userList {
 		if strings.EqualFold(user.GUID, userGUID) {
 			return true
@@ -65,6 +66,7 @@ func (r *RoleUsers) HasUserForGUID(userName, userGUID string) bool {
 
 func (r *RoleUsers) HasUserForOrigin(userName, origin string) bool {
 	userList := r.users[strings.ToLower(userName)]
+	lo.G.Debugf("Users %v found for userName [%s] and origin [%s]", userList, userName, origin)
 	for _, user := range userList {
 		if strings.EqualFold(user.Origin, origin) {
 			return true

@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/ldap"
 	"github.com/vmwarepivotallabs/cf-mgmt/role"
-	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
 
@@ -29,17 +28,9 @@ func (m *DefaultManager) SyncLdapUsers(roleUsers *role.RoleUsers, usersInput Use
 			userID := userToUse.UserID
 			uaaUser := uaaUsers.GetByNameAndOrigin(userID, origin)
 			if uaaUser == nil {
-				lo.G.Debugf("User %s doesn't exist in cloud foundry with origin, so creating user", userID, origin)
-				if userGUID, err := m.UAAMgr.CreateExternalUser(userID, userToUse.Email, userToUse.UserDN, m.LdapConfig.Origin); err != nil {
+				lo.G.Debugf("User %s doesn't exist in cloud foundry with origin %s, so creating user", userID, origin)
+				if err := m.UAAMgr.CreateExternalUser(userID, userToUse.Email, userToUse.UserDN, m.LdapConfig.Origin); err != nil {
 					return err
-				} else {
-					m.AddUAAUser(uaa.User{
-						Username:   userID,
-						ExternalID: userToUse.UserDN,
-						Origin:     origin,
-						Email:      userToUse.Email,
-						GUID:       userGUID,
-					})
 				}
 			}
 			if !roleUsers.HasUserForOrigin(userID, origin) {

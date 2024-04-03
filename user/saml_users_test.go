@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	uaaclient "github.com/cloudfoundry-community/go-uaa"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
 	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
@@ -23,7 +24,7 @@ var _ = Describe("SamlUsers", func() {
 	var (
 		userManager *DefaultManager
 		ldapFake    *fakes.FakeLdapManager
-		uaaFake     *uaafakes.FakeManager
+		uaaFake     *uaafakes.FakeUaa
 		fakeReader  *configfakes.FakeReader
 		spaceFake   *spacefakes.FakeManager
 		orgFake     *orgfakes.FakeReader
@@ -31,14 +32,14 @@ var _ = Describe("SamlUsers", func() {
 	)
 	BeforeEach(func() {
 		ldapFake = new(fakes.FakeLdapManager)
-		uaaFake = new(uaafakes.FakeManager)
+		uaaFake = new(uaafakes.FakeUaa)
 		fakeReader = new(configfakes.FakeReader)
 		spaceFake = new(spacefakes.FakeManager)
 		orgFake = new(orgfakes.FakeReader)
 		roleMgrFake = new(rolefakes.FakeManager)
 		userManager = &DefaultManager{
 			Cfg:        fakeReader,
-			UAAMgr:     uaaFake,
+			UAAMgr:     &uaa.DefaultUAAManager{Client: uaaFake},
 			LdapMgr:    ldapFake,
 			SpaceMgr:   spaceFake,
 			OrgReader:  orgFake,
@@ -53,17 +54,21 @@ var _ = Describe("SamlUsers", func() {
 		var roleUsers *role.RoleUsers
 		BeforeEach(func() {
 			userManager.LdapConfig = &config.LdapConfig{Origin: "saml_origin"}
-			uaaUsers := &uaa.Users{}
 
-			uaaUsers.Add(uaa.User{Username: "Test.Test@test.com", Email: "test.test@test.com", ExternalID: "Test.Test@test.com", Origin: "saml_origin", GUID: "test-id"})
-			uaaUsers.Add(uaa.User{Username: "test2.test2@test.com", Email: "test2.test2@test.com", ExternalID: "test2.test2@test.com", Origin: "saml_origin", GUID: "test2-id"})
+			uaaUsers := []uaaclient.User{}
+			uaaUsers = append(uaaUsers, uaaclient.User{Username: "Test.Test@test.com", Emails: []uaaclient.Email{{Value: "test.test@test.com"}}, ExternalID: "Test.Test@test.com", Origin: "saml_origin", ID: "test-id"})
+			uaaUsers = append(uaaUsers, uaaclient.User{Username: "test2.test2@test.com", Emails: []uaaclient.Email{{Value: "test2.test2@test.com"}}, ExternalID: "test2.test2@test.com", Origin: "saml_origin", ID: "test2-id"})
+			uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 2, ItemsPerPage: 500}, nil)
+
+			users, err := userManager.UAAMgr.ListUsers()
+			Expect(err).ShouldNot(HaveOccurred())
 			roleUsers, _ = role.NewRoleUsers(
 				[]*resource.User{
 					{Username: "Test.Test@test.com", GUID: "test-id"},
 				},
-				uaaUsers,
+				users,
 			)
-			userManager.UAAUsers = uaaUsers
+
 		})
 		It("Should add saml user to role", func() {
 			updateUsersInput := UsersInput{
@@ -98,7 +103,7 @@ var _ = Describe("SamlUsers", func() {
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(roleUsers.HasUserForOrigin("test.test@test.com", "saml_origin")).Should(BeFalse())
-			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(0))
+			Expect(uaaFake.CreateUserCallCount()).Should(Equal(0))
 			Expect(roleMgrFake.AssociateSpaceAuditorCallCount()).Should(Equal(0))
 
 		})
@@ -114,7 +119,7 @@ var _ = Describe("SamlUsers", func() {
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(roleUsers.HasUserForOrigin("Test.Test@test.com", "saml_origin")).Should(BeFalse())
-			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(0))
+			Expect(uaaFake.CreateUserCallCount()).Should(Equal(0))
 			Expect(roleMgrFake.AssociateSpaceAuditorCallCount()).Should(Equal(0))
 		})
 		It("Should create external user when user doesn't exist in uaa", func() {
@@ -125,29 +130,30 @@ var _ = Describe("SamlUsers", func() {
 				AddUser:   roleMgrFake.AssociateSpaceAuditor,
 				RoleUsers: role.InitRoleUsers(),
 			}
+			uaaFake.CreateUserReturns(&uaaclient.User{ID: "user-guid"}, nil)
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(1))
-			arg1, arg2, arg3, origin := uaaFake.CreateExternalUserArgsForCall(0)
-			Expect(arg1).Should(Equal("test3.test3@test.com"))
-			Expect(arg2).Should(Equal("test3.test3@test.com"))
-			Expect(arg3).Should(Equal("test3.test3@test.com"))
-			Expect(origin).Should(Equal("saml_origin"))
+			Expect(uaaFake.CreateUserCallCount()).Should(Equal(1))
+			user := uaaFake.CreateUserArgsForCall(0)
+			Expect(user.Username).Should(Equal("test3.test3@test.com"))
+			Expect(user.Emails[0].Value).Should(Equal("test3.test3@test.com"))
+			Expect(user.ExternalID).Should(Equal("test3.test3@test.com"))
+			Expect(user.Origin).Should(Equal("saml_origin"))
 		})
 
 		It("Should not error when create external user errors", func() {
 			updateUsersInput := UsersInput{
-				SamlUsers: []string{"test.test@test.com"},
+				SamlUsers: []string{"test.test@foo.com"},
 				SpaceGUID: "space_guid",
 				OrgGUID:   "org_guid",
 				AddUser:   roleMgrFake.AssociateSpaceAuditor,
 				RoleUsers: role.InitRoleUsers(),
 			}
-			userManager.UAAUsers = &uaa.Users{}
-			uaaFake.CreateExternalUserReturns("guid", errors.New("error"))
+			uaaFake.ListUsersReturns([]uaaclient.User{}, uaaclient.Page{StartIndex: 1, TotalResults: 0, ItemsPerPage: 500}, nil)
+			uaaFake.CreateUserReturns(nil, errors.New("error"))
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).Should(HaveOccurred())
-			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(1))
+			Expect(uaaFake.CreateUserCallCount()).Should(Equal(1))
 		})
 
 		It("Should return error", func() {
@@ -155,8 +161,9 @@ var _ = Describe("SamlUsers", func() {
 			roleUsers.AddUsers([]role.RoleUser{
 				{UserName: "test"},
 			})
-			uaaUsers := &uaa.Users{}
-			uaaUsers.Add(uaa.User{Username: "test.test@test.com"})
+
+			uaaUsers := []uaaclient.User{}
+			uaaUsers = append(uaaUsers, uaaclient.User{Username: "test.test@test.com", Origin: "saml_origin"})
 			updateUsersInput := UsersInput{
 				SamlUsers: []string{"test.test@test.com"},
 				SpaceGUID: "space_guid",
@@ -164,7 +171,7 @@ var _ = Describe("SamlUsers", func() {
 				AddUser:   roleMgrFake.AssociateSpaceAuditor,
 				RoleUsers: role.InitRoleUsers(),
 			}
-			userManager.UAAUsers = uaaUsers
+			uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 0, ItemsPerPage: 500}, nil)
 			roleMgrFake.AssociateSpaceAuditorReturns(errors.New("Got an error"))
 			err := userManager.SyncSamlUsers(roleUsers, updateUsersInput)
 			Expect(err).Should(HaveOccurred())
@@ -175,15 +182,18 @@ var _ = Describe("SamlUsers", func() {
 		var roleUsers *role.RoleUsers
 		BeforeEach(func() {
 			userManager.LdapConfig = &config.LdapConfig{Origin: "saml_origin"}
-			uaaUsers := &uaa.Users{}
-			uaaUsers.Add(uaa.User{Username: "test.test@test.com", Email: "test.test@test.com", ExternalID: "test.test@test.com", Origin: "saml_original_origin", GUID: "test-id"})
+			uaaUsers := []uaaclient.User{}
+			uaaUsers = append(uaaUsers, uaaclient.User{Username: "test.test@test.com", Emails: []uaaclient.Email{{Value: "test.test@test.com"}}, ExternalID: "test.test@test.com", Origin: "saml_original_origin", ID: "test-id"})
+			uaaFake.ListUsersReturns(uaaUsers, uaaclient.Page{StartIndex: 1, TotalResults: 1, ItemsPerPage: 500}, nil)
+
+			users, err := userManager.UAAMgr.ListUsers()
+			Expect(err).ShouldNot(HaveOccurred())
 			roleUsers, _ = role.NewRoleUsers(
 				[]*resource.User{
 					{Username: "test.test@test.com", GUID: "test-id", Origin: "saml_original_origin"},
 				},
-				uaaUsers,
+				users,
 			)
-			userManager.UAAUsers = uaaUsers
 		})
 
 		It("Should add saml new user to role with new origin and remove old user from role", func() {
@@ -198,15 +208,15 @@ var _ = Describe("SamlUsers", func() {
 				RemoveUser:  roleMgrFake.RemoveSpaceAuditor,
 				RemoveUsers: true,
 			}
-			uaaFake.CreateExternalUserReturns("new-user-guid", nil)
+			uaaFake.CreateUserReturns(&uaaclient.User{ID: "new-user-guid"}, nil)
 			err := userManager.SyncUsers(updateUsersInput)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(uaaFake.CreateExternalUserCallCount()).Should(Equal(1))
-			createExternalUserArg1, createExternalUserArg2, createExternalUserArg3, createExternalUserArg4 := uaaFake.CreateExternalUserArgsForCall(0)
-			Expect(createExternalUserArg1).Should(Equal("test.test@test.com"))
-			Expect(createExternalUserArg2).Should(Equal("test.test@test.com"))
-			Expect(createExternalUserArg3).Should(Equal("test.test@test.com"))
-			Expect(createExternalUserArg4).Should(Equal("saml_origin"))
+			Expect(uaaFake.CreateUserCallCount()).Should(Equal(1))
+			user := uaaFake.CreateUserArgsForCall(0)
+			Expect(user.Username).Should(Equal("test.test@test.com"))
+			Expect(user.Emails[0].Value).Should(Equal("test.test@test.com"))
+			Expect(user.ExternalID).Should(Equal("test.test@test.com"))
+			Expect(user.Origin).Should(Equal("saml_origin"))
 
 			Expect(roleMgrFake.AssociateSpaceAuditorCallCount()).Should(Equal(1))
 			orgGUID, spaceName, spaceGUID, userName, userGUID := roleMgrFake.AssociateSpaceAuditorArgsForCall(0)
