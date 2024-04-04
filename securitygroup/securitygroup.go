@@ -57,6 +57,10 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 	}
 
 	for _, input := range spaceConfigs {
+		orgConfig, err := m.Cfg.GetOrgConfig(input.Org)
+		if err != nil {
+			return errors.Wrapf(err, "can't find org configuration %s", input.Org)
+		}
 		space, err := m.SpaceManager.FindSpace(input.Org, input.Space)
 		if err != nil {
 			return errors.Wrapf(err, "Finding org/space %s/%s", input.Org, input.Space)
@@ -68,7 +72,12 @@ func (m *DefaultManager) CreateApplicationSecurityGroups() error {
 		lo.G.Debugf("Existing space security groups %+v", existingSpaceSecurityGroups)
 		// iterate through and assign named security groups to the space - ensuring that they are up to date is
 		// done elsewhere.
-		for _, securityGroupName := range input.ASGs {
+		namedASGs := input.ASGs
+		if len(namedASGs) == 0 {
+			lo.G.Debugf("using named asgs from org as space array is blank")
+			namedASGs = orgConfig.NamedSpaceSecurityGroups
+		}
+		for _, securityGroupName := range namedASGs {
 			if sgInfo, ok := sgs[securityGroupName]; ok {
 				if _, ok := existingSpaceSecurityGroups[securityGroupName]; !ok {
 					err := m.AssignSecurityGroupToSpace(space, sgInfo)

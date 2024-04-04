@@ -68,6 +68,7 @@ var _ = Describe("given Security Group Manager", func() {
 			SpaceManager: fakeSpaceMgr,
 			Peek:         false,
 		}
+		fakeReader.GetOrgConfigReturns(&config.OrgConfig{}, nil)
 	})
 	Context("ListNonDefaultSecurityGroups", func() {
 		It("returns 2 security groups", func() {

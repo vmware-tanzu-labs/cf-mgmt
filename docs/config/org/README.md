@@ -32,6 +32,8 @@ Help Options:
       --enable-remove-users=[true|false]                  Enable removing users from the org
       --named-quota=                                      Named quota to assign to org
       --clear-named-quota                                 Sets the named quota to blank
+      --named-asg=                                        Named asg(s) to assign to space, specify multiple times
+      --named-asg-to-remove=                              Named asg(s) to remove, specify multiple times
 
 quota:
       --enable-org-quota=[true|false]                     Enable the Org Quota in the config

@@ -30,6 +30,8 @@ type OrgConfigurationCommand struct {
 	Auditor                          UserRole      `group:"auditor" namespace:"auditor"`
 	ServiceAccess                    ServiceAccess `group:"service-access"`
 	Metadata                         Metadata      `group:"metadata"`
+	ASGs                             []string      `long:"named-asg" description:"Named asg(s) to assign to space, specify multiple times"`
+	ASGsToRemove                     []string      `long:"named-asg-to-remove" description:"Named asg(s) to remove, specify multiple times"`
 }
 
 // Execute - updates org configuration`
@@ -154,6 +156,12 @@ func (c *OrgConfigurationCommand) Execute(args []string) error {
 			delete(orgConfig.Metadata.Annotations, annotation)
 		}
 	}
+	asgConfigs, err := c.ConfigManager.GetASGConfigs()
+	if err != nil {
+		return err
+	}
+	orgConfig.NamedSpaceSecurityGroups = removeFromSlice(addToSlice(orgConfig.NamedSpaceSecurityGroups, c.ASGs, &errorString), c.ASGsToRemove)
+	validateASGsExist(asgConfigs, orgConfig.NamedSpaceSecurityGroups, &errorString)
 
 	if errorString != "" {
 		return errors.New(errorString)

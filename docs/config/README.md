@@ -1,31 +1,31 @@
 # DEPRECATED Commands
 
-* [add-org](add-org/README.md), use [org](org/README.md)
-* [add-space](add-space/README.md), use [space](space/README.md)
-* [add-asg](add-asg/README.md), use [asg](asg/README.md)
-* [update-org](update-org/README.md), use [org](org/README.md)
-* [update-space](update-space/README.md), use [space](space/README.md)
+- [add-org](add-org/README.md), use [org](org/README.md)
+- [add-space](add-space/README.md), use [space](space/README.md)
+- [add-asg](add-asg/README.md), use [asg](asg/README.md)
+- [update-org](update-org/README.md), use [org](org/README.md)
+- [update-space](update-space/README.md), use [space](space/README.md)
 
 # Configuration Commands
 
-* [init](init/README.md)
-* [global](global/README.md)
-* [asg](asg/README.md)
-* [org](org/README.md)
-* [space](space/README.md)
-* [delete-org](delete-org/README.md)
-* [delete-space](delete-space/README.md)
-* [generate-concourse-pipeline](generate-concourse-pipeline/README.md)
-* [update-orgs](update-orgs/README.md)
-* [rename-org](rename-org/README.md)
-* [rename-space](rename-space/README.md)
-* [named-org-quota](named-org-quota/README.md)
-* [named-space-quota](named-space-quota/README.md)
-* [version](version/README.md)
+- [init](init/README.md)
+- [global](global/README.md)
+- [asg](asg/README.md)
+- [org](org/README.md)
+- [space](space/README.md)
+- [delete-org](delete-org/README.md)
+- [delete-space](delete-space/README.md)
+- [generate-concourse-pipeline](generate-concourse-pipeline/README.md)
+- [update-orgs](update-orgs/README.md)
+- [rename-org](rename-org/README.md)
+- [rename-space](rename-space/README.md)
+- [named-org-quota](named-org-quota/README.md)
+- [named-space-quota](named-space-quota/README.md)
+- [version](version/README.md)
 
 ## Global Config
 
-There is global configuration that is managed in `cf-mgmt.yml`.  The following options exist in that configuration.
+There is global configuration that is managed in `cf-mgmt.yml`. The following options exist in that configuration.
 
 ```yml
 enable-delete-isolation-segments: false #true/false
@@ -84,22 +84,22 @@ protected-users:
 
 ### Org Configuration
 
-There is a orgs.yml that contains list of orgs that will be created.  This should have a corresponding folder with name of the orgs cf-mgmt is managing. orgs.yml also can be configured with a list of protected orgs which would never be deleted when using the the `delete-orgs` command. An example of how orgs.yml could be configured is seen below.
+There is a orgs.yml that contains list of orgs that will be created. This should have a corresponding folder with name of the orgs cf-mgmt is managing. orgs.yml also can be configured with a list of protected orgs which would never be deleted when using the the `delete-orgs` command. An example of how orgs.yml could be configured is seen below.
 
 ```yml
 orgs:
-- foo-org
-- bar-org
+  - foo-org
+  - bar-org
 # added in 0.0.63+ which will remove orgs not configured in cf-mgmt
 enable-delete-orgs: true
 # added in 0.0.63+ which allows configuration of orgs to 'ignore'. Uses re2 syntax: https://github.com/google/re2/wiki/Syntax
 protected_orgs:
-- ^system$ # will match only system
-- system   # will match system at any place within the org name. For example: my-system-org will be protected.
-- ^p-      # matches any org beginning with "p-" and any characters following
+  - ^system$ # will match only system
+  - system # will match system at any place within the org name. For example: my-system-org will be protected.
+  - ^p- # matches any org beginning with "p-" and any characters following
 ```
 
-This will contain a orgConfig.yml and folder for each space.  Each orgConfig.yml consists of the following.
+This will contain a orgConfig.yml and folder for each space. Each orgConfig.yml consists of the following.
 
 ```yml
 # org name
@@ -118,7 +118,6 @@ org-billingmanager:
   users:
     - cwashburn@testdomain.com
     - cwashburn2@testdomain.com
-
 
   # ldap group that contains users that will be added to cf and given billing manager role
   ldap_group: test_billing_managers
@@ -202,18 +201,21 @@ metadata:
     foo: bar
   annotations:
     hello: world
+
+# added in 1.0.84+ allows setting security groups for all spaces in a given org
+named-space-security-groups: []
 ```
 
 ### Space Configuration
 
-There will be a spaces.yml that will list all the spaces for each org.  There will also be a folder for each space with the same name.  Each folder will contain a spaceConfig.yml and security-group.json file with an empty json file.
+There will be a spaces.yml that will list all the spaces for each org. There will also be a folder for each space with the same name. Each folder will contain a spaceConfig.yml and security-group.json file with an empty json file.
 
 Each spaceConfig.yml will have the following configuration options:
 
-* allow ssh at space level
-* map ldap group names to SpaceDeveloper, SpaceManager, SpaceAuditor role
-* setup quotas at a space level (if enabled)
-* apply application security group config at space level (if enabled)
+- allow ssh at space level
+- map ldap group names to SpaceDeveloper, SpaceManager, SpaceAuditor role
+- setup quotas at a space level (if enabled)
+- apply application security group config at space level (if enabled)
 
 ```yml
 # org that is space belongs to
@@ -340,7 +342,7 @@ Note that this is actually processed at runtime, not when spaces are added to th
 
 ### LDAP Configuration
 
-LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. By default, LDAP is disabled and you can enable it by setting ```enabled: true```. Once this is enabled, all other LDAP configuration properties are required.
+LDAP configuration file `ldap.yml` is located under the `config` folder. By default, LDAP is disabled and you can enable it by setting `enabled: true`. Once this is enabled, all other LDAP configuration properties are required.
 
 ```yml
 enabled: true
@@ -374,11 +376,11 @@ minTLSVersion: 1.0
 maxTLSVersion: 1.3
 ```
 
->When using LDAP with Active Directory, the `uid` for `userNameAttribute` should be a `sAMAccountName`
+> When using LDAP with Active Directory, the `uid` for `userNameAttribute` should be a `sAMAccountName`
 
 ### SAML Configuration with ldap group lookups
 
-LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users.  In orgConfig.yml and spaceConfig.yml leverage either/or `ldap_users` or `ldap_group(s)`
+LDAP configuration file `ldap.yml` is located under the `config` folder. To have cf-mgmt create SAML users in UAA need to enable ldap to lookup the user information from an LDAP source to properly create the SAML users. In orgConfig.yml and spaceConfig.yml leverage either/or `ldap_users` or `ldap_group(s)`
 
 ```yml
 enabled: true
@@ -413,7 +415,7 @@ maxTLSVersion: 1.3
 
 ### SAML Configuration
 
-LDAP configuration file ```ldap.yml``` is located under the ```config``` folder. To have cf-mgmt create SAML users you can disable ldap integration for looking up users in ldap groups with v0.0.66+ as orgConfig.yml and spaceConfig.yml now includes a saml_users array attribute which can contain a list of email addresses.
+LDAP configuration file `ldap.yml` is located under the `config` folder. To have cf-mgmt create SAML users you can disable ldap integration for looking up users in ldap groups with v0.0.66+ as orgConfig.yml and spaceConfig.yml now includes a saml_users array attribute which can contain a list of email addresses.
 
 ```yml
 enabled: false
@@ -430,7 +432,7 @@ groupAttribute:
 
 ### Enable Temporary Application SSH Access
 
-With 1.0.13+ there is ability to grant applicaiton ssh access for a specific duration.  Durations supported are in number of Days (D), Hours (H) or Minutes (M).  Use the cf-mgmt-config cli to update a given space with one of these metrics.  This will generate the timestamp in the correct format for you.  You must also use the latest generated concourse pipeline as this places update-space command on a timer to run every 15m (by default) to check to see if time has elapsed to re-disable application ssh access
+With 1.0.13+ there is ability to grant applicaiton ssh access for a specific duration. Durations supported are in number of Days (D), Hours (H) or Minutes (M). Use the cf-mgmt-config cli to update a given space with one of these metrics. This will generate the timestamp in the correct format for you. You must also use the latest generated concourse pipeline as this places update-space command on a timer to run every 15m (by default) to check to see if time has elapsed to re-disable application ssh access
 
 The following will enable for 2 days:
 

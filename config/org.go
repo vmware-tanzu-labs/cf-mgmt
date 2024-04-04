@@ -37,6 +37,7 @@ type OrgConfig struct {
 	ServiceAccess              map[string][]string `yaml:"service-access,omitempty"`
 	NamedQuota                 string              `yaml:"named_quota"`
 	Metadata                   *Metadata           `yaml:"metadata"`
+	NamedSpaceSecurityGroups   []string            `yaml:"named-space-security-groups"`
 }
 
 func (o *OrgConfig) GetQuota() OrgQuota {
