@@ -14,7 +14,7 @@ import (
 	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
 	"github.com/vmwarepivotallabs/cf-mgmt/serviceaccess/legacy/fakes"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
