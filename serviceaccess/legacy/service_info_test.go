@@ -4,7 +4,7 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/vmwarepivotallabs/cf-mgmt/serviceaccess/legacy"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

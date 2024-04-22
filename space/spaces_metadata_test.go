@@ -2,7 +2,7 @@ package space_test
 
 import (
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"

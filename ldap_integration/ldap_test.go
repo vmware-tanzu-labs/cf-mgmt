@@ -7,7 +7,7 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	. "github.com/vmwarepivotallabs/cf-mgmt/ldap"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
