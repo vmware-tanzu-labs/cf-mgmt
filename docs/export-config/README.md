@@ -34,4 +34,6 @@ Help Options:
           --excluded-space=      Space to be excluded from export. Repeat the flag to specify multiple spaces
           --skip-spaces          Will not export space configurations
           --skip-routing-groups  Will not export routing groups. Set to true if tcp routing is not configured
+          --disable-metadata-prefix  Disable using metadata prefixes
+
 ```

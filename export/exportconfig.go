@@ -2,6 +2,7 @@ package export
 
 import (
 	"fmt"
+	"strings"
 
 	"code.cloudfoundry.org/routing-api/models"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
@@ -111,7 +112,7 @@ func (im *Manager) ExportServiceAccess() error {
 
 // ExportConfig Imports org and space configuration from an existing CF instance
 // Entries part of excludedOrgs and excludedSpaces are not included in the import
-func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, skipSpaces bool) error {
+func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, skipSpaces, useMetadataPrefix bool) error {
 	//Get all the users from the foundation
 	uaaUsers, err := im.UAAMgr.ListUsers()
 	if err != nil {
@@ -173,6 +174,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 	lo.G.Debugf("Orgs to process: %s", orgs)
 
 	globalConfig.EnableServiceAccess = true
+	globalConfig.UseMetadataPrefix = useMetadataPrefix
 
 	err = im.exportServiceAccess(globalConfig, orgs)
 	if err != nil {
@@ -232,6 +234,29 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 			orgConfig.PrivateDomains = append(orgConfig.PrivateDomains, privatedomain)
 		}
 
+		if org.Metadata != nil {
+			orgConfig.Metadata = &config.Metadata{}
+			labels := make(map[string]string)
+			for label, labelValue := range org.Metadata.Labels {
+				if globalConfig.UseMetadataPrefix {
+					labels[strings.ReplaceAll(label, globalConfig.MetadataPrefix+"/", "")] = *labelValue
+				} else {
+					labels[label] = *labelValue
+				}
+			}
+			orgConfig.Metadata.Labels = labels
+
+			annotations := make(map[string]string)
+			for annotation, annotationValue := range org.Metadata.Annotations {
+				if globalConfig.UseMetadataPrefix {
+					annotations[strings.ReplaceAll(annotation, globalConfig.MetadataPrefix+"/", "")] = *annotationValue
+				} else {
+					annotations[annotation] = *annotationValue
+				}
+			}
+			orgConfig.Metadata.Annotations = annotations
+		}
+
 		err = im.ConfigMgr.SaveOrgConfig(orgConfig)
 		if err != nil {
 			return err
@@ -242,7 +267,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 		}
 		lo.G.Infof("Done creating org %s", orgConfig.Org)
 		if !skipSpaces {
-			err := im.processSpaces(orgConfig, org.GUID, excludedSpaces, isolationSegments, securityGroups)
+			err := im.processSpaces(globalConfig, orgConfig, org.GUID, excludedSpaces, isolationSegments, securityGroups)
 			if err != nil {
 				return errors.Wrapf(err, "Processing org %s", orgConfig.Org)
 			}
@@ -334,7 +359,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 	return im.ConfigMgr.SaveGlobalConfig(globalConfig)
 }
 
-func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]*resource.SecurityGroup) error {
+func (im *Manager) processSpaces(globalConfig *config.GlobalConfig, orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]*resource.SecurityGroup) error {
 	lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
 	spaces, _ := im.SpaceManager.ListSpaces(orgGUID)
 	lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)
@@ -445,6 +470,29 @@ func (im *Manager) processSpaces(orgConfig *config.OrgConfig, orgGUID string, ex
 					spaceConfig.EnableSecurityGroup = true
 				}
 			}
+		}
+
+		if orgSpace.Metadata != nil {
+			spaceConfig.Metadata = &config.Metadata{}
+			labels := make(map[string]string)
+			for label, labelValue := range orgSpace.Metadata.Labels {
+				if globalConfig.UseMetadataPrefix {
+					labels[strings.ReplaceAll(label, globalConfig.MetadataPrefix+"/", "")] = *labelValue
+				} else {
+					labels[label] = *labelValue
+				}
+			}
+			spaceConfig.Metadata.Labels = labels
+
+			annotations := make(map[string]string)
+			for annotation, annotationValue := range orgSpace.Metadata.Annotations {
+				if globalConfig.UseMetadataPrefix {
+					annotations[strings.ReplaceAll(annotation, globalConfig.MetadataPrefix+"/", "")] = *annotationValue
+				} else {
+					annotations[annotation] = *annotationValue
+				}
+			}
+			spaceConfig.Metadata.Annotations = annotations
 		}
 
 		im.ConfigMgr.AddSpaceToConfig(spaceConfig)

@@ -255,9 +255,25 @@ func (m *DefaultManager) UpdateOrgsMetadata() error {
 			if orgConfig.Metadata.Labels != nil {
 				for key, value := range orgConfig.Metadata.Labels {
 					if len(value) > 0 {
-						org.Metadata.SetLabel(globalCfg.MetadataPrefix, key, value)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								org.Metadata.SetLabel(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""), value)
+							} else {
+								org.Metadata.SetLabel(globalCfg.MetadataPrefix, key, value)
+							}
+						} else {
+							org.Metadata.SetLabel("", key, value)
+						}
 					} else {
-						org.Metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								org.Metadata.RemoveLabel(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""))
+							} else {
+								org.Metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
+							}
+						} else {
+							org.Metadata.RemoveLabel("", key)
+						}
 					}
 				}
 			}
@@ -270,9 +286,25 @@ func (m *DefaultManager) UpdateOrgsMetadata() error {
 			if orgConfig.Metadata.Annotations != nil {
 				for key, value := range orgConfig.Metadata.Annotations {
 					if len(value) > 0 {
-						org.Metadata.SetAnnotation(globalCfg.MetadataPrefix, key, value)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								org.Metadata.SetAnnotation(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""), value)
+							} else {
+								org.Metadata.SetAnnotation(globalCfg.MetadataPrefix, key, value)
+							}
+						} else {
+							org.Metadata.SetAnnotation("", key, value)
+						}
 					} else {
-						org.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, key)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								org.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""))
+							} else {
+								org.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, key)
+							}
+						} else {
+							org.Metadata.RemoveAnnotation("", key)
+						}
 					}
 				}
 			}

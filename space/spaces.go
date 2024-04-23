@@ -367,9 +367,25 @@ func (m *DefaultManager) UpdateSpacesMetadata() error {
 			if spaceConfig.Metadata.Labels != nil {
 				for key, value := range spaceConfig.Metadata.Labels {
 					if len(value) > 0 {
-						space.Metadata.SetLabel(globalCfg.MetadataPrefix, key, value)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								space.Metadata.SetLabel(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""), value)
+							} else {
+								space.Metadata.SetLabel(globalCfg.MetadataPrefix, key, value)
+							}
+						} else {
+							space.Metadata.SetLabel("", key, value)
+						}
 					} else {
-						space.Metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								space.Metadata.RemoveLabel(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""))
+							} else {
+								space.Metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
+							}
+						} else {
+							space.Metadata.RemoveLabel("", key)
+						}
 					}
 				}
 			}
@@ -382,9 +398,25 @@ func (m *DefaultManager) UpdateSpacesMetadata() error {
 			if spaceConfig.Metadata.Annotations != nil {
 				for key, value := range spaceConfig.Metadata.Annotations {
 					if len(value) > 0 {
-						space.Metadata.SetAnnotation(globalCfg.MetadataPrefix, key, value)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								space.Metadata.SetAnnotation(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""), value)
+							} else {
+								space.Metadata.SetAnnotation(globalCfg.MetadataPrefix, key, value)
+							}
+						} else {
+							space.Metadata.SetAnnotation("", key, value)
+						}
 					} else {
-						space.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, key)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								space.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""))
+							} else {
+								space.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, key)
+							}
+						} else {
+							space.Metadata.RemoveAnnotation("", key)
+						}
 					}
 				}
 			}

@@ -54,7 +54,8 @@ var _ = Describe("given SpaceManager", func() {
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
-				MetadataPrefix: "foo.bar",
+				MetadataPrefix:    "foo.bar",
+				UseMetadataPrefix: true,
 			}, nil)
 			spaces := []*resource.Space{
 				{
@@ -95,7 +96,8 @@ var _ = Describe("given SpaceManager", func() {
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
-				MetadataPrefix: "foo.bar",
+				MetadataPrefix:    "foo.bar",
+				UseMetadataPrefix: true,
 			}, nil)
 			spaces := []*resource.Space{
 				{
@@ -135,7 +137,8 @@ var _ = Describe("given SpaceManager", func() {
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
-				MetadataPrefix: "foo.bar",
+				MetadataPrefix:    "foo.bar",
+				UseMetadataPrefix: true,
 			}, nil)
 			spaces := []*resource.Space{
 				{
@@ -175,7 +178,8 @@ var _ = Describe("given SpaceManager", func() {
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
-				MetadataPrefix: "foo.bar",
+				MetadataPrefix:    "foo.bar",
+				UseMetadataPrefix: true,
 			}, nil)
 			spaces := []*resource.Space{
 				{
