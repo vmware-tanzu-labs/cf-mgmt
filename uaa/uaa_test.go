@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	uaaclient "github.com/cloudfoundry-community/go-uaa"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	. "github.com/vmwarepivotallabs/cf-mgmt/uaa"
