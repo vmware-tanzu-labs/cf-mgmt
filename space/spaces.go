@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
@@ -358,6 +359,11 @@ func (m *DefaultManager) UpdateSpacesMetadata() error {
 			if space.Metadata == nil {
 				space.Metadata = &resource.Metadata{}
 			}
+
+			spaceYamlOriginal, err := yaml.Marshal(space.Metadata)
+			if err != nil {
+				return err
+			}
 			//clear any labels that start with the prefix
 			for key, _ := range space.Metadata.Labels {
 				if strings.Contains(key, globalCfg.MetadataPrefix) {
@@ -420,10 +426,20 @@ func (m *DefaultManager) UpdateSpacesMetadata() error {
 					}
 				}
 			}
-			err = m.UpdateSpaceMetadata(spaceConfig.Org, space)
+
+			spaceYamlNew, err := yaml.Marshal(space.Metadata)
 			if err != nil {
 				return err
 			}
+			if strings.EqualFold(string(spaceYamlNew), string(spaceYamlOriginal)) {
+				lo.G.Debugf("No changes to yaml old [%s] and new [%s]", string(spaceYamlOriginal), string(spaceYamlNew))
+			} else {
+				err = m.UpdateSpaceMetadata(spaceConfig.Org, space)
+				if err != nil {
+					return err
+				}
+			}
+
 		}
 	}
 	return nil
