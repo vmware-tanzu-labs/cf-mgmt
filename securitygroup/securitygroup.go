@@ -501,6 +501,7 @@ func (m *DefaultManager) AssignSecurityGroupGlobalRunning(sg *resource.SecurityG
 	r := &resource.SecurityGroupUpdate{
 		GloballyEnabled: &resource.SecurityGroupGloballyEnabled{
 			Running: true,
+			Staging: sg.GloballyEnabled.Staging,
 		},
 	}
 	sg.GloballyEnabled.Running = true
@@ -513,10 +514,12 @@ func (m *DefaultManager) AssignSecurityGroupGlobalStaging(sg *resource.SecurityG
 		lo.G.Infof("[dry-run]: assigning sg %s as staging security group", sg.Name)
 		return nil
 	}
+
 	lo.G.Infof("assigning sg %s as staging security group", sg.Name)
 	r := &resource.SecurityGroupUpdate{
 		GloballyEnabled: &resource.SecurityGroupGloballyEnabled{
 			Staging: true,
+			Running: sg.GloballyEnabled.Running,
 		},
 	}
 	sg.GloballyEnabled.Staging = true
