@@ -33,8 +33,8 @@ secrets:
 - &github_email ((github.email))
 - &github_user ((github.user))
 
-#! slack_webhook was needed on 2023-09-15 for notifying the #mapbu-cryogenics-ci channel when builds are published.
-- &slack_webhook ((slack.webhook))
+#! as of 23/04/2024 gchat webhook is used to send us ci status messages. It was created in gchat space settings after logging in with personal creds
+- &gchat_webhook ((gchat-webhook.url))
 
 #! shepherd_account_key was needed on 2023-09-28 to claim shepherd environments. It was created using `shepherd create service-account` after logging in with WS1.
 - &shepherd_account_key ((shepherd.sa_key))
@@ -74,13 +74,13 @@ resource_types:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
   type: registry-image
 
-- name: slack-notification
+- name: google-chat-notify-resource
   type: registry-image
   source:
-    repository: us-west2-docker.pkg.dev/mapbu-cryogenics/dockerhub-proxy-cache/cfcommunity/slack-notification-resource
+    repository:  us-west2-docker.pkg.dev/mapbu-cryogenics/dockerhub-proxy-cache/springio/google-chat-notify-resource
     username: _json_key
     password: *gcr_viewer_key
-    tag: latest
+    tag: 0.0.1-SNAPSHOT
 
 - name: pr-queue-resource
   type: registry-image
@@ -112,11 +112,10 @@ resources:
     username: _json_key
     password: *gcr_viewer_key
 
-- name: slack-cryo-notification
-  type: slack-notification
-  icon: bell-ring
+- name: gchat-cryo-notification
+  type: google-chat-notify-resource
   source:
-    url: *slack_webhook
+    url: *gchat_webhook
 
 - name: every-week
   type: time
@@ -410,11 +409,11 @@ jobs:
     file: releases/url
   - load_var: version-number
     file: compiled-output/tag
-  - put: slack-cryo-notification
+  - put: gchat-cryo-notification
     params:
       text: |
         *cf-mgmt*: version `((.:version-number))` has been released 🎉
-        Next steps (cc <!subteam^S028XABEHAP>):
+        Next steps <users/all>:
           1. Review the release notes <((.:github-release-url))|here>.
 
 - name: publish
@@ -493,7 +492,7 @@ jobs:
               I have detected a new version of a go module and automatically bumped
               it to benefit from the latest changes.
               
-              If this does not look right, please reach out to the [#mapbu-cryogenics](https://vmware.slack.com/archives/C01DXEYRKRU) team.
+              If this does not look right, please reach out to the mapbu-cryogenics team.
           input_mapping:
             source-repo: source-write-only
         
