@@ -12,6 +12,7 @@ type GlobalConfig struct {
 	SharedDomains                  map[string]SharedDomain `yaml:"shared-domains"`
 	EnableDeleteSharedDomains      bool                    `yaml:"enable-remove-shared-domains"`
 	MetadataPrefix                 string                  `yaml:"metadata-prefix"`
+	UseMetadataPrefix              bool                    `yaml:"use-metadata-prefix"`
 	EnableServiceAccess            bool                    `yaml:"enable-service-access"`
 	IgnoreLegacyServiceAccess      bool                    `yaml:"ignore-legacy-service-access"`
 	ServiceAccess                  []*Broker               `yaml:"service-access"`

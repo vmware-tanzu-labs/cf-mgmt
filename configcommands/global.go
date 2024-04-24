@@ -17,6 +17,7 @@ type GlobalConfigurationCommand struct {
 	EnableUnassignSecurityGroups   string              `long:"enable-unassign-security-groups" description:"Enable unassigning security groups" choice:"true" choice:"false"`
 	SkipUnassignSecurityGroupRegex string              `long:"skip-unassign-security-group-regex" description:"Skip unassigning security groups for names matching regex" default:""`
 	MetadataPrefix                 string              `long:"metadata-prefix" description:"Prefix for org/space metadata"`
+	EnableMetadataPrefix           string              `long:"enable-metadata-prefix" description:"Enable useing metadata prefixes" choice:"true" choice:"false"`
 	StagingSecurityGroups          []string            `long:"staging-security-group" description:"Staging Security Group to add"`
 	RemoveStagingSecurityGroups    []string            `long:"remove-staging-security-group" description:"Staging Security Group to remove"`
 	RunningSecurityGroups          []string            `long:"running-security-group" description:"Running Security Group to add"`
@@ -50,6 +51,7 @@ func (c *GlobalConfigurationCommand) Execute([]string) error {
 	if c.MetadataPrefix != "" {
 		globalConfig.MetadataPrefix = c.MetadataPrefix
 	}
+	convertToBool("enable-metadata-prefix", &globalConfig.UseMetadataPrefix, c.EnableMetadataPrefix, &errorString)
 
 	if c.SkipUnassignSecurityGroupRegex != "" {
 		_, err := regexp.Compile(c.SkipUnassignSecurityGroupRegex)

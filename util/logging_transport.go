@@ -29,7 +29,7 @@ func (t *LoggingTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 }
 
 func (t *LoggingTransport) logRequest(req *http.Request) {
-	bytes, _ := httputil.DumpRequest(req, false)
+	bytes, _ := httputil.DumpRequest(req, true)
 	lo.G.Infof("Request: [%s]", string(bytes))
 }
 

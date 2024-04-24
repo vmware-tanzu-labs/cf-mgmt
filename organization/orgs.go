@@ -11,6 +11,7 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/vmwarepivotallabs/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
+	"gopkg.in/yaml.v2"
 )
 
 func NewManager(orgClient CFOrgClient, orgReader organizationreader.Reader, cfg config.Reader, peek bool) Manager {
@@ -246,6 +247,10 @@ func (m *DefaultManager) UpdateOrgsMetadata() error {
 			if org.Metadata == nil {
 				org.Metadata = &resource.Metadata{}
 			}
+			orgYamlOriginal, err := yaml.Marshal(org.Metadata)
+			if err != nil {
+				return err
+			}
 			//clear any labels that start with the prefix
 			for key, _ := range org.Metadata.Labels {
 				if strings.Contains(key, globalCfg.MetadataPrefix) {
@@ -255,9 +260,25 @@ func (m *DefaultManager) UpdateOrgsMetadata() error {
 			if orgConfig.Metadata.Labels != nil {
 				for key, value := range orgConfig.Metadata.Labels {
 					if len(value) > 0 {
-						org.Metadata.SetLabel(globalCfg.MetadataPrefix, key, value)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								org.Metadata.SetLabel(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""), value)
+							} else {
+								org.Metadata.SetLabel(globalCfg.MetadataPrefix, key, value)
+							}
+						} else {
+							org.Metadata.SetLabel("", key, value)
+						}
 					} else {
-						org.Metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								org.Metadata.RemoveLabel(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""))
+							} else {
+								org.Metadata.RemoveLabel(globalCfg.MetadataPrefix, key)
+							}
+						} else {
+							org.Metadata.RemoveLabel("", key)
+						}
 					}
 				}
 			}
@@ -270,19 +291,46 @@ func (m *DefaultManager) UpdateOrgsMetadata() error {
 			if orgConfig.Metadata.Annotations != nil {
 				for key, value := range orgConfig.Metadata.Annotations {
 					if len(value) > 0 {
-						org.Metadata.SetAnnotation(globalCfg.MetadataPrefix, key, value)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								org.Metadata.SetAnnotation(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""), value)
+							} else {
+								org.Metadata.SetAnnotation(globalCfg.MetadataPrefix, key, value)
+							}
+						} else {
+							org.Metadata.SetAnnotation("", key, value)
+						}
 					} else {
-						org.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, key)
+						if globalCfg.UseMetadataPrefix {
+							if strings.Contains(key, globalCfg.MetadataPrefix) {
+								org.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, strings.ReplaceAll(key, globalCfg.MetadataPrefix+"/", ""))
+							} else {
+								org.Metadata.RemoveAnnotation(globalCfg.MetadataPrefix, key)
+							}
+						} else {
+							org.Metadata.RemoveAnnotation("", key)
+						}
 					}
 				}
 			}
-			_, err = m.updateOrg(org.GUID, &resource.OrganizationUpdate{
-				Name:     org.Name,
-				Metadata: org.Metadata,
-			})
+
+			orgYamlNew, err := yaml.Marshal(org.Metadata)
 			if err != nil {
 				return err
 			}
+			if strings.EqualFold(string(orgYamlNew), string(orgYamlOriginal)) {
+				lo.G.Debugf("No changes to yaml old [%s] and new [%s]", string(orgYamlOriginal), string(orgYamlNew))
+			} else {
+				lo.G.Infof("updating org [%s] metadata as there are changes", org.Name)
+				_, err = m.updateOrg(org.GUID, &resource.OrganizationUpdate{
+					Name:     org.Name,
+					Metadata: org.Metadata,
+				})
+				if err != nil {
+					return err
+				}
+			}
+
 		}
 	}
 	return nil

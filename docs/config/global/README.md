@@ -21,6 +21,7 @@ Help Options:
     --enable-unassign-security-groups=[true|false]  Enable unassigning security groups
     --skip-unassign-security-group-regex=           Skip unassigning security groups for names matching regex
     --metadata-prefix=                              Prefix for org/space metadata
+    --enable-metadata-prefix=[true|false]           Enable useing metadata prefixes
     --staging-security-group=                       Staging Security Group to add
     --remove-staging-security-group=                Staging Security Group to remove
     --running-security-group=                       Running Security Group to add
