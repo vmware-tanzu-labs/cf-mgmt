@@ -68,6 +68,10 @@ func (m *DefaultManager) GetUAAUsers() (*uaa.Users, error) {
 func (m *DefaultManager) UpdateSpaceUsers() []error {
 	errs := []error{}
 	m.RoleMgr.ClearRoles()
+	err := m.RoleMgr.InitializeSpaceUserRolesMap()
+	if err != nil {
+		return []error{err}
+	}
 	spaceConfigs, err := m.Cfg.GetSpaceConfigs()
 	if err != nil {
 		return []error{err}
@@ -182,6 +186,10 @@ func (m *DefaultManager) updateSpaceUsers(input *config.SpaceConfig) error {
 func (m *DefaultManager) UpdateOrgUsers() []error {
 	errs := []error{}
 	m.RoleMgr.ClearRoles()
+	err := m.RoleMgr.InitializeOrgUserRolesMap()
+	if err != nil {
+		return []error{err}
+	}
 	orgConfigs, err := m.Cfg.GetOrgConfigs()
 	if err != nil {
 		return []error{err}

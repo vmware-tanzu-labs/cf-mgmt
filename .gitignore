@@ -21,3 +21,4 @@ make-binary.sh
 test-for-pagination.sh
 export-cli.sh
 docker.env
+create-users

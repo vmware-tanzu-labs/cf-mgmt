@@ -2,22 +2,29 @@ package role_test
 
 import (
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	uaaclient "github.com/cloudfoundry-community/go-uaa"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/vmwarepivotallabs/cf-mgmt/role"
 	"github.com/vmwarepivotallabs/cf-mgmt/role/fakes"
+	uaafakes "github.com/vmwarepivotallabs/cf-mgmt/uaa/fakes"
 )
 
 var _ = Describe("given RoleManager", func() {
 	var (
 		roleManager *DefaultManager
 		roleClient  *fakes.FakeCFRoleClient
+		uaaFake     = new(uaafakes.FakeUaa)
 	)
 	BeforeEach(func() {
 		roleClient = new(fakes.FakeCFRoleClient)
+		uaaFake = new(uaafakes.FakeUaa)
 	})
 	Context("Role Manager", func() {
 		BeforeEach(func() {
+			uaaFake.ListUsersReturns([]uaaclient.User{
+				{ID: "test-user-guid", Username: "test"},
+			}, uaaclient.Page{StartIndex: 1, TotalResults: 1, ItemsPerPage: 500}, nil)
 			roleManager = &DefaultManager{
 				RoleClient: roleClient,
 			}

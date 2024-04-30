@@ -119,7 +119,7 @@ func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 	}
 
 	users := &Users{}
-	lo.G.Debug("Getting users from Cloud Foundry")
+	lo.G.Debug("Getting users from UAA")
 	userList, err := m.ListAllUsers()
 	if err != nil {
 		var requestError uaaclient.RequestError
@@ -142,7 +142,9 @@ func (m *DefaultUAAManager) ListUsers() (*Users, error) {
 			GUID:       user.ID,
 		})
 	}
+
 	m.Users = users
+
 	return users, nil
 }
 

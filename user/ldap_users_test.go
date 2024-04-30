@@ -3,7 +3,6 @@ package user_test
 import (
 	"errors"
 
-	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	uaaclient "github.com/cloudfoundry-community/go-uaa"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -67,7 +66,7 @@ var _ = Describe("given UserSpaces", func() {
 
 				users, err := userManager.UAAMgr.ListUsers()
 				Expect(err).ShouldNot(HaveOccurred())
-				roleUsers, _ = role.NewRoleUsers([]*resource.User{
+				roleUsers, _ = role.NewRoleUsers([]*uaa.User{
 					{Username: "test_ldap", GUID: "test_ldap-id"},
 				}, users)
 
@@ -118,7 +117,7 @@ var _ = Describe("given UserSpaces", func() {
 
 				users, err := userManager.UAAMgr.ListUsers()
 				Expect(err).ShouldNot(HaveOccurred())
-				roleUsers, _ = role.NewRoleUsers([]*resource.User{
+				roleUsers, _ = role.NewRoleUsers([]*uaa.User{
 					{Username: "test_ldap", GUID: "test_ldap-id"},
 				}, users)
 
