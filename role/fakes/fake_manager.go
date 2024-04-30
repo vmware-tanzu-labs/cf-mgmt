@@ -128,6 +128,26 @@ type FakeManager struct {
 	deleteUserReturnsOnCall map[int]struct {
 		result1 error
 	}
+	InitializeOrgUserRolesMapStub        func() error
+	initializeOrgUserRolesMapMutex       sync.RWMutex
+	initializeOrgUserRolesMapArgsForCall []struct {
+	}
+	initializeOrgUserRolesMapReturns struct {
+		result1 error
+	}
+	initializeOrgUserRolesMapReturnsOnCall map[int]struct {
+		result1 error
+	}
+	InitializeSpaceUserRolesMapStub        func() error
+	initializeSpaceUserRolesMapMutex       sync.RWMutex
+	initializeSpaceUserRolesMapArgsForCall []struct {
+	}
+	initializeSpaceUserRolesMapReturns struct {
+		result1 error
+	}
+	initializeSpaceUserRolesMapReturnsOnCall map[int]struct {
+		result1 error
+	}
 	ListOrgUsersByRoleStub        func(string) (*role.RoleUsers, *role.RoleUsers, *role.RoleUsers, *role.RoleUsers, error)
 	listOrgUsersByRoleMutex       sync.RWMutex
 	listOrgUsersByRoleArgsForCall []struct {
@@ -822,6 +842,112 @@ func (fake *FakeManager) DeleteUserReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeManager) InitializeOrgUserRolesMap() error {
+	fake.initializeOrgUserRolesMapMutex.Lock()
+	ret, specificReturn := fake.initializeOrgUserRolesMapReturnsOnCall[len(fake.initializeOrgUserRolesMapArgsForCall)]
+	fake.initializeOrgUserRolesMapArgsForCall = append(fake.initializeOrgUserRolesMapArgsForCall, struct {
+	}{})
+	stub := fake.InitializeOrgUserRolesMapStub
+	fakeReturns := fake.initializeOrgUserRolesMapReturns
+	fake.recordInvocation("InitializeOrgUserRolesMap", []interface{}{})
+	fake.initializeOrgUserRolesMapMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeManager) InitializeOrgUserRolesMapCallCount() int {
+	fake.initializeOrgUserRolesMapMutex.RLock()
+	defer fake.initializeOrgUserRolesMapMutex.RUnlock()
+	return len(fake.initializeOrgUserRolesMapArgsForCall)
+}
+
+func (fake *FakeManager) InitializeOrgUserRolesMapCalls(stub func() error) {
+	fake.initializeOrgUserRolesMapMutex.Lock()
+	defer fake.initializeOrgUserRolesMapMutex.Unlock()
+	fake.InitializeOrgUserRolesMapStub = stub
+}
+
+func (fake *FakeManager) InitializeOrgUserRolesMapReturns(result1 error) {
+	fake.initializeOrgUserRolesMapMutex.Lock()
+	defer fake.initializeOrgUserRolesMapMutex.Unlock()
+	fake.InitializeOrgUserRolesMapStub = nil
+	fake.initializeOrgUserRolesMapReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) InitializeOrgUserRolesMapReturnsOnCall(i int, result1 error) {
+	fake.initializeOrgUserRolesMapMutex.Lock()
+	defer fake.initializeOrgUserRolesMapMutex.Unlock()
+	fake.InitializeOrgUserRolesMapStub = nil
+	if fake.initializeOrgUserRolesMapReturnsOnCall == nil {
+		fake.initializeOrgUserRolesMapReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.initializeOrgUserRolesMapReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) InitializeSpaceUserRolesMap() error {
+	fake.initializeSpaceUserRolesMapMutex.Lock()
+	ret, specificReturn := fake.initializeSpaceUserRolesMapReturnsOnCall[len(fake.initializeSpaceUserRolesMapArgsForCall)]
+	fake.initializeSpaceUserRolesMapArgsForCall = append(fake.initializeSpaceUserRolesMapArgsForCall, struct {
+	}{})
+	stub := fake.InitializeSpaceUserRolesMapStub
+	fakeReturns := fake.initializeSpaceUserRolesMapReturns
+	fake.recordInvocation("InitializeSpaceUserRolesMap", []interface{}{})
+	fake.initializeSpaceUserRolesMapMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeManager) InitializeSpaceUserRolesMapCallCount() int {
+	fake.initializeSpaceUserRolesMapMutex.RLock()
+	defer fake.initializeSpaceUserRolesMapMutex.RUnlock()
+	return len(fake.initializeSpaceUserRolesMapArgsForCall)
+}
+
+func (fake *FakeManager) InitializeSpaceUserRolesMapCalls(stub func() error) {
+	fake.initializeSpaceUserRolesMapMutex.Lock()
+	defer fake.initializeSpaceUserRolesMapMutex.Unlock()
+	fake.InitializeSpaceUserRolesMapStub = stub
+}
+
+func (fake *FakeManager) InitializeSpaceUserRolesMapReturns(result1 error) {
+	fake.initializeSpaceUserRolesMapMutex.Lock()
+	defer fake.initializeSpaceUserRolesMapMutex.Unlock()
+	fake.InitializeSpaceUserRolesMapStub = nil
+	fake.initializeSpaceUserRolesMapReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) InitializeSpaceUserRolesMapReturnsOnCall(i int, result1 error) {
+	fake.initializeSpaceUserRolesMapMutex.Lock()
+	defer fake.initializeSpaceUserRolesMapMutex.Unlock()
+	fake.InitializeSpaceUserRolesMapStub = nil
+	if fake.initializeSpaceUserRolesMapReturnsOnCall == nil {
+		fake.initializeSpaceUserRolesMapReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.initializeSpaceUserRolesMapReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeManager) ListOrgUsersByRole(arg1 string) (*role.RoleUsers, *role.RoleUsers, *role.RoleUsers, *role.RoleUsers, error) {
 	fake.listOrgUsersByRoleMutex.Lock()
 	ret, specificReturn := fake.listOrgUsersByRoleReturnsOnCall[len(fake.listOrgUsersByRoleArgsForCall)]
@@ -1501,6 +1627,10 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	defer fake.clearRolesMutex.RUnlock()
 	fake.deleteUserMutex.RLock()
 	defer fake.deleteUserMutex.RUnlock()
+	fake.initializeOrgUserRolesMapMutex.RLock()
+	defer fake.initializeOrgUserRolesMapMutex.RUnlock()
+	fake.initializeSpaceUserRolesMapMutex.RLock()
+	defer fake.initializeSpaceUserRolesMapMutex.RUnlock()
 	fake.listOrgUsersByRoleMutex.RLock()
 	defer fake.listOrgUsersByRoleMutex.RUnlock()
 	fake.listSpaceUsersByRoleMutex.RLock()

@@ -20,7 +20,9 @@ type RoleUser struct {
 type Manager interface {
 	ClearRoles()
 	DeleteUser(userGuid string) error
+	InitializeSpaceUserRolesMap() error
 	ListSpaceUsersByRole(spaceGUID string) (*RoleUsers, *RoleUsers, *RoleUsers, *RoleUsers, error)
+	InitializeOrgUserRolesMap() error
 	ListOrgUsersByRole(orgGUID string) (*RoleUsers, *RoleUsers, *RoleUsers, *RoleUsers, error)
 	AssociateOrgAuditor(orgGUID, orgName, entityGUID, userName, userGUID string) error
 	AssociateOrgManager(orgGUID, orgName, entityGUID, userName, userGUID string) error
@@ -50,8 +52,8 @@ type CFRoleClient interface {
 }
 
 type CFUserClient interface {
-	ListAll(ctx context.Context, opts *v3cfclient.UserListOptions) ([]*resource.User, error)
 	Delete(ctx context.Context, guid string) (string, error)
+	Get(ctx context.Context, guid string) (*resource.User, error)
 }
 
 type CFJobClient interface {

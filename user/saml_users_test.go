@@ -3,7 +3,6 @@ package user_test
 import (
 	"errors"
 
-	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	uaaclient "github.com/cloudfoundry-community/go-uaa"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
@@ -63,7 +62,7 @@ var _ = Describe("SamlUsers", func() {
 			users, err := userManager.UAAMgr.ListUsers()
 			Expect(err).ShouldNot(HaveOccurred())
 			roleUsers, _ = role.NewRoleUsers(
-				[]*resource.User{
+				[]*uaa.User{
 					{Username: "Test.Test@test.com", GUID: "test-id"},
 				},
 				users,
@@ -189,7 +188,7 @@ var _ = Describe("SamlUsers", func() {
 			users, err := userManager.UAAMgr.ListUsers()
 			Expect(err).ShouldNot(HaveOccurred())
 			roleUsers, _ = role.NewRoleUsers(
-				[]*resource.User{
+				[]*uaa.User{
 					{Username: "test.test@test.com", GUID: "test-id", Origin: "saml_original_origin"},
 				},
 				users,

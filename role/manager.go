@@ -25,7 +25,6 @@ type DefaultManager struct {
 	JobClient       CFJobClient
 	OrgRoles        map[string]map[string]*RoleUsers
 	SpaceRoles      map[string]map[string]*RoleUsers
-	CFUsers         map[string]*resource.User
 	UAAMgr          uaa.Manager
 	Peek            bool
 	OrgRolesUsers   map[string]map[string]map[string]string
@@ -95,7 +94,7 @@ func (m *DefaultManager) ListSpaceRoles() ([]*resource.Role, error) {
 }
 
 func (m *DefaultManager) InitializeSpaceUserRolesMap() error {
-	spaceV3UsersRolesMap := make(map[string]map[string][]*resource.User)
+	spaceV3UsersRolesMap := make(map[string]map[string][]*uaa.User)
 	roles, err := m.ListSpaceRoles()
 	if err != nil {
 		return err
@@ -108,7 +107,7 @@ func (m *DefaultManager) InitializeSpaceUserRolesMap() error {
 		}
 		spaceRoleMap, ok := spaceV3UsersRolesMap[spaceGUID]
 		if !ok {
-			spaceRoleMap = make(map[string][]*resource.User)
+			spaceRoleMap = make(map[string][]*uaa.User)
 			spaceV3UsersRolesMap[spaceGUID] = spaceRoleMap
 		}
 		spaceRoleMap[role.Type] = append(spaceRoleMap[role.Type], user)
@@ -142,7 +141,7 @@ func (m *DefaultManager) InitializeSpaceUserRolesMap() error {
 }
 
 func (m *DefaultManager) InitializeOrgUserRolesMap() error {
-	orgV3UsersRolesMap := make(map[string]map[string][]*resource.User)
+	orgV3UsersRolesMap := make(map[string]map[string][]*uaa.User)
 	roles, err := m.ListOrgRoles()
 	if err != nil {
 		return err
@@ -161,7 +160,7 @@ func (m *DefaultManager) InitializeOrgUserRolesMap() error {
 		}
 		orgRoleMap, ok := orgV3UsersRolesMap[orgGUID]
 		if !ok {
-			orgRoleMap = make(map[string][]*resource.User)
+			orgRoleMap = make(map[string][]*uaa.User)
 			orgV3UsersRolesMap[orgGUID] = orgRoleMap
 		}
 		orgRoleMap[role.Type] = append(orgRoleMap[role.Type], user)
@@ -252,28 +251,6 @@ func asJson(role *resource.Role) string {
 	return string(bytes)
 }
 
-func (m *DefaultManager) GetCFUsers() (map[string]*resource.User, error) {
-	if m.CFUsers == nil {
-		cfUserMap := make(map[string]*resource.User)
-		cfUsers, err := m.UserClient.ListAll(context.Background(), &client.UserListOptions{
-			ListOptions: &client.ListOptions{
-				PerPage: 5000,
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-		lo.G.Debug("Begin CFUsers")
-		for _, cfUser := range cfUsers {
-			cfUserMap[cfUser.GUID] = cfUser
-			lo.G.Debugf("CFUser with username [%s] and guid [%s]", cfUser.Username, cfUser.GUID)
-		}
-		lo.G.Debug("End CFUsers")
-		m.CFUsers = cfUserMap
-	}
-	return m.CFUsers, nil
-}
-
 func (m *DefaultManager) GetUAAUsers() (*uaa.Users, error) {
 	return m.UAAMgr.ListUsers()
 }
@@ -338,15 +315,30 @@ func (m *DefaultManager) getSpaceRole(spaceGUID, role string) *RoleUsers {
 	return roleUser
 }
 
-func (m *DefaultManager) getUserForGUID(guid string) (*resource.User, error) {
-	cfUsersMap, err := m.GetCFUsers()
+func (m *DefaultManager) getUserForGUID(guid string) (*uaa.User, error) {
+	uaaUsers, err := m.GetUAAUsers()
 	if err != nil {
 		return nil, err
 	}
-	if user, ok := cfUsersMap[guid]; ok {
+	user := uaaUsers.GetByID(guid)
+	if user != nil {
 		return user, nil
+	} else {
+		user, err := m.GetUser(guid)
+		if err != nil {
+			return nil, err
+		}
+		return &uaa.User{
+			Username: user.Username,
+			GUID:     user.GUID,
+			Origin:   user.Origin,
+		}, nil
 	}
-	return nil, fmt.Errorf("user not found for guid [%s]", guid)
+}
+
+func (m *DefaultManager) GetUser(userGuid string) (*resource.User, error) {
+	user, err := m.UserClient.Get(context.Background(), userGuid)
+	return user, err
 }
 
 func (m *DefaultManager) DeleteUser(userGuid string) error {

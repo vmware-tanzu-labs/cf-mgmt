@@ -5,7 +5,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/role"
 )
@@ -25,18 +24,18 @@ type FakeCFUserClient struct {
 		result1 string
 		result2 error
 	}
-	ListAllStub        func(context.Context, *client.UserListOptions) ([]*resource.User, error)
-	listAllMutex       sync.RWMutex
-	listAllArgsForCall []struct {
+	GetStub        func(context.Context, string) (*resource.User, error)
+	getMutex       sync.RWMutex
+	getArgsForCall []struct {
 		arg1 context.Context
-		arg2 *client.UserListOptions
+		arg2 string
 	}
-	listAllReturns struct {
-		result1 []*resource.User
+	getReturns struct {
+		result1 *resource.User
 		result2 error
 	}
-	listAllReturnsOnCall map[int]struct {
-		result1 []*resource.User
+	getReturnsOnCall map[int]struct {
+		result1 *resource.User
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -108,17 +107,17 @@ func (fake *FakeCFUserClient) DeleteReturnsOnCall(i int, result1 string, result2
 	}{result1, result2}
 }
 
-func (fake *FakeCFUserClient) ListAll(arg1 context.Context, arg2 *client.UserListOptions) ([]*resource.User, error) {
-	fake.listAllMutex.Lock()
-	ret, specificReturn := fake.listAllReturnsOnCall[len(fake.listAllArgsForCall)]
-	fake.listAllArgsForCall = append(fake.listAllArgsForCall, struct {
+func (fake *FakeCFUserClient) Get(arg1 context.Context, arg2 string) (*resource.User, error) {
+	fake.getMutex.Lock()
+	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
+	fake.getArgsForCall = append(fake.getArgsForCall, struct {
 		arg1 context.Context
-		arg2 *client.UserListOptions
+		arg2 string
 	}{arg1, arg2})
-	stub := fake.ListAllStub
-	fakeReturns := fake.listAllReturns
-	fake.recordInvocation("ListAll", []interface{}{arg1, arg2})
-	fake.listAllMutex.Unlock()
+	stub := fake.GetStub
+	fakeReturns := fake.getReturns
+	fake.recordInvocation("Get", []interface{}{arg1, arg2})
+	fake.getMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
 	}
@@ -128,47 +127,47 @@ func (fake *FakeCFUserClient) ListAll(arg1 context.Context, arg2 *client.UserLis
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCFUserClient) ListAllCallCount() int {
-	fake.listAllMutex.RLock()
-	defer fake.listAllMutex.RUnlock()
-	return len(fake.listAllArgsForCall)
+func (fake *FakeCFUserClient) GetCallCount() int {
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
+	return len(fake.getArgsForCall)
 }
 
-func (fake *FakeCFUserClient) ListAllCalls(stub func(context.Context, *client.UserListOptions) ([]*resource.User, error)) {
-	fake.listAllMutex.Lock()
-	defer fake.listAllMutex.Unlock()
-	fake.ListAllStub = stub
+func (fake *FakeCFUserClient) GetCalls(stub func(context.Context, string) (*resource.User, error)) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = stub
 }
 
-func (fake *FakeCFUserClient) ListAllArgsForCall(i int) (context.Context, *client.UserListOptions) {
-	fake.listAllMutex.RLock()
-	defer fake.listAllMutex.RUnlock()
-	argsForCall := fake.listAllArgsForCall[i]
+func (fake *FakeCFUserClient) GetArgsForCall(i int) (context.Context, string) {
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
+	argsForCall := fake.getArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCFUserClient) ListAllReturns(result1 []*resource.User, result2 error) {
-	fake.listAllMutex.Lock()
-	defer fake.listAllMutex.Unlock()
-	fake.ListAllStub = nil
-	fake.listAllReturns = struct {
-		result1 []*resource.User
+func (fake *FakeCFUserClient) GetReturns(result1 *resource.User, result2 error) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = nil
+	fake.getReturns = struct {
+		result1 *resource.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFUserClient) ListAllReturnsOnCall(i int, result1 []*resource.User, result2 error) {
-	fake.listAllMutex.Lock()
-	defer fake.listAllMutex.Unlock()
-	fake.ListAllStub = nil
-	if fake.listAllReturnsOnCall == nil {
-		fake.listAllReturnsOnCall = make(map[int]struct {
-			result1 []*resource.User
+func (fake *FakeCFUserClient) GetReturnsOnCall(i int, result1 *resource.User, result2 error) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = nil
+	if fake.getReturnsOnCall == nil {
+		fake.getReturnsOnCall = make(map[int]struct {
+			result1 *resource.User
 			result2 error
 		})
 	}
-	fake.listAllReturnsOnCall[i] = struct {
-		result1 []*resource.User
+	fake.getReturnsOnCall[i] = struct {
+		result1 *resource.User
 		result2 error
 	}{result1, result2}
 }
@@ -178,8 +177,8 @@ func (fake *FakeCFUserClient) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
-	fake.listAllMutex.RLock()
-	defer fake.listAllMutex.RUnlock()
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

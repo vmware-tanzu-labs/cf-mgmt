@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
 	"github.com/vmwarepivotallabs/cf-mgmt/uaa"
 	"github.com/xchapter7x/lo"
 )
@@ -16,7 +15,7 @@ func InitRoleUsers() *RoleUsers {
 	}
 }
 
-func NewRoleUsers(users []*resource.User, uaaUsers *uaa.Users) (*RoleUsers, error) {
+func NewRoleUsers(users []*uaa.User, uaaUsers *uaa.Users) (*RoleUsers, error) {
 	roleUsers := InitRoleUsers()
 	for _, user := range users {
 		uaaUser := uaaUsers.GetByID(user.GUID)

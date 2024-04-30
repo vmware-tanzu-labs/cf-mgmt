@@ -65,7 +65,7 @@ var _ = Describe("given UserSpaces", func() {
 
 				users, err := userManager.UAAMgr.ListUsers()
 				Expect(err).ShouldNot(HaveOccurred())
-				roleUsers, _ = role.NewRoleUsers([]*resource.User{
+				roleUsers, _ = role.NewRoleUsers([]*uaa.User{
 					{Username: "test-existing", GUID: "test-existing-id"},
 				}, users)
 			})
@@ -155,7 +155,7 @@ var _ = Describe("given UserSpaces", func() {
 			BeforeEach(func() {
 				uaaUsers := &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "test", Origin: "uaa", GUID: "test-id"})
-				roleUsers, _ = role.NewRoleUsers([]*resource.User{
+				roleUsers, _ = role.NewRoleUsers([]*uaa.User{
 					{Username: "test", GUID: "test-id"},
 				}, uaaUsers)
 			})
@@ -199,7 +199,7 @@ var _ = Describe("given UserSpaces", func() {
 			It("Should skip users that match protected user pattern", func() {
 				uaaUsers := &uaa.Users{}
 				uaaUsers.Add(uaa.User{Username: "abcd_123_0919191", Origin: "uaa", GUID: "test-id"})
-				roleUsers, _ = role.NewRoleUsers([]*resource.User{
+				roleUsers, _ = role.NewRoleUsers([]*uaa.User{
 					{Username: "abcd_123_0919191", GUID: "test-id"},
 				}, uaaUsers)
 				updateUsersInput := UsersInput{
@@ -291,7 +291,7 @@ var _ = Describe("given UserSpaces", func() {
 
 				users, err := userManager.UAAMgr.ListUsers()
 				Expect(err).ShouldNot(HaveOccurred())
-				roleUsers, _ = role.NewRoleUsers([]*resource.User{}, users)
+				roleUsers, _ = role.NewRoleUsers([]*uaa.User{}, users)
 
 			})
 			It("Should add internal user to role and ldap user with same name to role", func() {
