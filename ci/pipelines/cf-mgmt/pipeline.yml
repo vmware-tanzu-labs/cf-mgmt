@@ -412,7 +412,7 @@ jobs:
   - put: gchat-cryo-notification
     params:
       text: |
-        *cf-mgmt*: version `((.:version-number))` has been released 🎉
+        *cf-mgmt*: version `((.:version-number))` has been released!
         Next steps <users/all>:
           1. Review the release notes <((.:github-release-url))|here>.
 
