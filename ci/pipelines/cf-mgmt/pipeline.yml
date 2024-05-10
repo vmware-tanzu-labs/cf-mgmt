@@ -419,8 +419,8 @@ jobs:
   - put: slack-cryo-notification
     params:
       text: |
-        *cf-mgmt*: version `((.:version-number))` has been released 🎉
-        Next steps (cc <!subteam^S028XABEHAP>):
+        *cf-mgmt*: version `((.:version-number))` has been released!
+        Next steps (cc <users/all>):
           1. Review the release notes <((.:github-release-url))|here>.
 
 - name: publish
