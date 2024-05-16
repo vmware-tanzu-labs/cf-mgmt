@@ -143,7 +143,7 @@ resources:
     service-account-key: *shepherd_account_key
     compatibility-mode: environments-app
     lease:
-      namespace: cryogenics
+      namespace: tas-identity-and-credentials
       pool:
         namespace: official
         name: #@ v["pool_name"]
@@ -210,7 +210,7 @@ resources:
     service-account-key: *shepherd_account_key
     compatibility-mode: environments-app
     lease:
-      namespace: cryogenics
+      namespace: tas-identity-and-credentials
       pool:
         namespace: official
         name: cfd
