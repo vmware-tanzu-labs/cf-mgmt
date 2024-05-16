@@ -97,6 +97,13 @@ resource_types:
   type: registry-image
 
 resources:
+- name: golang-release
+  type: git
+  icon: tag
+  source:
+    uri: https://github.com/bosh-packages/golang-release.git
+    tag_filter: v*
+
 - name: cf-deployment-concourse-tasks-image
   type: registry-image
   source:
@@ -121,9 +128,6 @@ resources:
   type: time
   source:
     interval: 168h  #! 24h*7days
-
-- name: every-day
-  type: time  #! default interval is 1 day
 
 - name: python-394
   type: registry-image
@@ -456,43 +460,42 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: every-day
-      trigger: true
     - get: image-cryogenics-essentials
     - get: source-repo
       resource: source
     - get: cryogenics-concourse-tasks
-  - task: bump-go-module
+    - get: golang-release
+      trigger: true
+  - task: update-gomod-directive
     image: image-cryogenics-essentials
-    file: cryogenics-concourse-tasks/deps-automation/bump-go-module/task.yml
+    file: cryogenics-concourse-tasks/tasks/bosh/update-go-directive/task.yml
+    input_mapping:
+      bosh-release-repo-with-vendored-golang: golang-release
+      golang-project-repo: source-repo
+    output_mapping:
+      golang-project-repo: source-repo
+  - load_var: golang-release-version
+    file: golang-release/.git/describe_ref
+  - put: source-write-only
     params:
-      GIT_USERNAME: *github_user
-      GIT_EMAIL: *github_email
+      repository: source-repo
+      branch: &go-module-branch bump-go-based-on-golang-release-((.:golang-release-version))
   - try:
-      load_var: go-module-update-branch
-      file: destination-repo/.update-branch-name
-      reveal: true
-      on_success:
-        do:
-        - put: source-write-only
-          params:
-            repository: destination-repo
-            branch: &go-module-branch ((.:go-module-update-branch))
-        - task: create-go-module-bump-pull-request
-          image: image-cryogenics-essentials
-          file: cryogenics-concourse-tasks/github-automation/create-pr/task.yml
-          params:
-            BASE: main
-            BRANCH: *go-module-branch
-            LABELS: dependencies
-            TITLE: Bump go module ((.:go-module-update-branch))
-            MESSAGE: |
-              This is an automatically generated Pull Request from the Cryogenics CI Bot.
-              
-              I have detected a new version of a go module and automatically bumped
-              it to benefit from the latest changes.
-              
-              If this does not look right, please reach out to the mapbu-cryogenics team.
-          input_mapping:
-            source-repo: source-write-only
+      task: create-go-module-bump-pull-request
+      image: image-cryogenics-essentials
+      file: cryogenics-concourse-tasks/github-automation/create-pr/task.yml
+      params:
+        BASE: main
+        BRANCH: *go-module-branch
+        LABELS: dependencies
+        TITLE: Bump go module ((.:golang-release-version))
+        MESSAGE: |
+          This is an automatically generated Pull Request from the Cryogenics CI Bot.
+          
+          I have detected a new version of a go module and automatically bumped
+          it to benefit from the latest changes.
+          
+          If this does not look right, please reach out to the mapbu-cryogenics team.
+      input_mapping:
+        source-repo: source-write-only
         
