@@ -231,7 +231,7 @@ resources:
   source:
     uri: git@github.com:pivotal/cryogenics-concourse-tasks.git
     private_key: *github_ssh_key
-    branch: main
+    branch: identity-and-credentials
 
 jobs:
 - name: claim-cf
