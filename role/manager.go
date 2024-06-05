@@ -14,11 +14,6 @@ import (
 	"github.com/xchapter7x/lo"
 )
 
-const SPACE_AUDITOR string = "space_auditor"
-const SPACE_DEVELOPER string = "space_developer"
-const SPACE_MANAGER string = "space_manager"
-const SPACE_SUPPORTER string = "space_supporter"
-
 type DefaultManager struct {
 	RoleClient      CFRoleClient
 	UserClient      CFUserClient
@@ -49,33 +44,66 @@ func (m *DefaultManager) ClearRoles() {
 }
 
 func (m *DefaultManager) ListOrgRoles() ([]*resource.Role, error) {
-	roles, err := m.RoleClient.ListAll(context.Background(), &client.RoleListOptions{
-		Types: client.Filter{
-			Values: []string{resource.OrganizationRoleAuditor.String(),
-				resource.OrganizationRoleBillingManager.String(),
-				resource.OrganizationRoleManager.String(),
-				resource.OrganizationRoleUser.String()},
-		},
-		ListOptions: &client.ListOptions{
-			PerPage: 5000,
-		},
-	})
+
+	var rolesToReturn []*resource.Role
+	roles, err := m.listRolesForType(resource.OrganizationRoleAuditor.String())
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debugf("Found %d roles from %s API", len(roles), "organization")
-	err = m.checkResultsAllReturned("organization", roles)
+	rolesToReturn = append(rolesToReturn, roles...)
+
+	roles, err = m.listRolesForType(resource.OrganizationRoleBillingManager.String())
 	if err != nil {
 		return nil, err
 	}
-	m.dumpV3Roles("organization", roles)
-	return roles, err
+	rolesToReturn = append(rolesToReturn, roles...)
+
+	roles, err = m.listRolesForType(resource.OrganizationRoleManager.String())
+	if err != nil {
+		return nil, err
+	}
+	rolesToReturn = append(rolesToReturn, roles...)
+
+	roles, err = m.listRolesForType(resource.OrganizationRoleUser.String())
+	if err != nil {
+		return nil, err
+	}
+	rolesToReturn = append(rolesToReturn, roles...)
+	return rolesToReturn, err
 }
 
 func (m *DefaultManager) ListSpaceRoles() ([]*resource.Role, error) {
+	var rolesToReturn []*resource.Role
+	roles, err := m.listRolesForType(resource.SpaceRoleAuditor.String())
+	if err != nil {
+		return nil, err
+	}
+	rolesToReturn = append(rolesToReturn, roles...)
+
+	roles, err = m.listRolesForType(resource.SpaceRoleDeveloper.String())
+	if err != nil {
+		return nil, err
+	}
+	rolesToReturn = append(rolesToReturn, roles...)
+
+	roles, err = m.listRolesForType(resource.SpaceRoleManager.String())
+	if err != nil {
+		return nil, err
+	}
+	rolesToReturn = append(rolesToReturn, roles...)
+
+	roles, err = m.listRolesForType(resource.SpaceRoleSupporter.String())
+	if err != nil {
+		return nil, err
+	}
+	rolesToReturn = append(rolesToReturn, roles...)
+	return rolesToReturn, err
+}
+
+func (m *DefaultManager) listRolesForType(roleType string) ([]*resource.Role, error) {
 	roles, err := m.RoleClient.ListAll(context.Background(), &client.RoleListOptions{
 		Types: client.Filter{
-			Values: []string{SPACE_AUDITOR, SPACE_DEVELOPER, SPACE_MANAGER, SPACE_SUPPORTER},
+			Values: []string{roleType},
 		},
 		ListOptions: &client.ListOptions{
 			PerPage: 5000,
@@ -84,12 +112,12 @@ func (m *DefaultManager) ListSpaceRoles() ([]*resource.Role, error) {
 	if err != nil {
 		return nil, err
 	}
-	lo.G.Debugf("Found %d roles from %s API", len(roles), "space")
-	err = m.checkResultsAllReturned("space", roles)
+	lo.G.Debugf("Found %d roles from type %s", len(roles), roleType)
+	err = m.checkResultsAllReturned(roles)
 	if err != nil {
 		return nil, err
 	}
-	m.dumpV3Roles("space", roles)
+	m.dumpV3Roles(roles)
 	return roles, err
 }
 
@@ -146,12 +174,6 @@ func (m *DefaultManager) InitializeOrgUserRolesMap() error {
 	if err != nil {
 		return err
 	}
-	lo.G.Debugf("Found %d roles from %s API", len(roles), "organization")
-	err = m.checkResultsAllReturned("organization", roles)
-	if err != nil {
-		return err
-	}
-	m.dumpV3Roles("organization", roles)
 	for _, role := range roles {
 		orgGUID := role.Relationships.Org.Data.GUID
 		user, err := m.getUserForGUID(role.Relationships.User.Data.GUID)
@@ -225,22 +247,22 @@ func (m *DefaultManager) dumpRolesUsers(entityType string, entityRoles map[strin
 	}
 }
 
-func (m *DefaultManager) dumpV3Roles(entityType string, roles []*resource.Role) {
+func (m *DefaultManager) dumpV3Roles(roles []*resource.Role) {
 	level, logging := os.LookupEnv("LOG_LEVEL")
 	if logging && strings.EqualFold(level, "DEBUG") {
 		for _, role := range roles {
-			lo.G.Debugf("For entity [%s/%s] and role [%s] user guid [%s]", entityType, role.GUID, role.Type, role.Relationships.User.Data.GUID)
+			lo.G.Debugf("For role guid [%s] and role [%s] user guid [%s]", role.GUID, role.Type, role.Relationships.User.Data.GUID)
 		}
 	}
 }
 
-func (m *DefaultManager) checkResultsAllReturned(entityType string, roles []*resource.Role) error {
+func (m *DefaultManager) checkResultsAllReturned(roles []*resource.Role) error {
 	tracker := make(map[string]*resource.Role)
 	for _, role := range roles {
 		if priorRole, ok := tracker[role.GUID]; !ok {
 			tracker[role.GUID] = role
 		} else {
-			return fmt.Errorf("role for type %s with GUID[%s] is returned multiple times, prior role [%s] and current role [%s]", entityType, role.GUID, asJson(priorRole), asJson(role))
+			return fmt.Errorf("role with GUID[%s] is returned multiple times, prior role [%s] and current role [%s]", role.GUID, asJson(priorRole), asJson(role))
 		}
 	}
 	return nil
@@ -288,7 +310,7 @@ func (m *DefaultManager) ListSpaceUsersByRole(spaceGUID string) (*RoleUsers, *Ro
 			return nil, nil, nil, nil, err
 		}
 	}
-	return m.getSpaceRole(spaceGUID, SPACE_MANAGER), m.getSpaceRole(spaceGUID, SPACE_DEVELOPER), m.getSpaceRole(spaceGUID, SPACE_AUDITOR), m.getSpaceRole(spaceGUID, SPACE_SUPPORTER), nil
+	return m.getSpaceRole(spaceGUID, resource.SpaceRoleManager.String()), m.getSpaceRole(spaceGUID, resource.SpaceRoleDeveloper.String()), m.getSpaceRole(spaceGUID, resource.SpaceRoleAuditor.String()), m.getSpaceRole(spaceGUID, resource.SpaceRoleSupporter.String()), nil
 }
 
 func (m *DefaultManager) getOrgRole(orgGUID, role string) *RoleUsers {
