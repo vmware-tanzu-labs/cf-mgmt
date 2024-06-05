@@ -221,7 +221,7 @@ var _ = Describe("given RoleManager", func() {
 				}, nil)
 				err := roleManager.InitializeOrgUserRolesMap()
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(roleClient.ListAllCallCount()).To(Equal(1))
+				Expect(roleClient.ListAllCallCount()).To(Equal(4))
 			})
 			Context("RemoveOrgAuditor", func() {
 				It("should succeed", func() {
