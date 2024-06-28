@@ -37,7 +37,7 @@ var _ = Describe("given RoleManager", func() {
 				}, nil)
 				results, err := roleManager.ListSpaceRoles()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(len(results)).To(Equal(1))
+				Expect(len(results)).To(Equal(4))
 			})
 			It("Should fail as duplicate guids returned", func() {
 				roleClient.ListAllReturns([]*resource.Role{
@@ -63,7 +63,7 @@ var _ = Describe("given RoleManager", func() {
 				}, nil)
 				results, err := roleManager.ListOrgRoles()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(len(results)).To(Equal(1))
+				Expect(len(results)).To(Equal(4))
 			})
 		})
 	})
