@@ -1,7 +1,7 @@
 # code.cloudfoundry.org/cfhttp/v2 v2.0.0
 ## explicit
 code.cloudfoundry.org/cfhttp/v2
-# code.cloudfoundry.org/routing-api v0.0.0-20240405184607-ef1509a3ec8a
+# code.cloudfoundry.org/routing-api v0.0.0-20240712082137-00d61e736f1e
 ## explicit
 code.cloudfoundry.org/routing-api
 code.cloudfoundry.org/routing-api/models

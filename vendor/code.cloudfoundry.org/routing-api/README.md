@@ -1,187 +1,39 @@
-# CF Routing API Server
+# routing-api
 
-The purpose of the Routing API is to present a RESTful interface for registering
-and deregistering routes for both internal and external clients. This allows
-easier consumption by different clients as well as the ability to register
-routes from outside of the CF deployment.
+[![Go Report
+Card](https://goreportcard.com/badge/code.cloudfoundry.org/routing-api)](https://goreportcard.com/report/code.cloudfoundry.org/routing-api)
+[![Go
+Reference](https://pkg.go.dev/badge/code.cloudfoundry.org/routing-api.svg)](https://pkg.go.dev/code.cloudfoundry.org/routing-api)
 
-**Note**: This repository should be imported as `code.cloudfoundry.org/routing-api`.
+The purpose of the Routing API is to present a RESTful interface for
+registering and deregistering routes for both internal and external
+clients. This allows easier consumption by different clients as well as
+the ability to register routes from outside of the CF deployment.
 
-## Reporting issues and requesting features
+> \[!NOTE\]
+>
+> This repository should be imported as
+> `code.cloudfoundry.org/routing-api`.
 
-Please report all issues and feature requests in [cloudfoundry/routing-release](https://github.com/cloudfoundry/routing-release).
+# Docs
 
-## Downloading and Installing
+-   [Usage](./docs/01-usage.md)
+-   [Routing API Documentation](./docs/02-api-docs.md)
+-   [Modification Tags](./docs/03-modification-tags.md)
 
-### External Dependencies
+# Contributing
 
-- Go should be installed and in the PATH
-- This repo is part of
-  [routing-release](https://github.com/cloudfoundry/routing-release) bosh
-  release repo. So to work on routing-api
-  you will need to checkout
-  [routing-release](https://github.com/cloudfoundry/routing-release) and follow
-  instructions in its
-  [README](https://github.com/cloudfoundry/routing-release/blob/develop/README.md#developer-workflow).
+See the [Contributing.md](./.github/CONTRIBUTING.md) for more
+information on how to contribute.
 
+# Working Group Charter
 
-### Local Database Instances in Docker
-A Docker Compose is provided to start the database locally for testing.
-```console
-$ docker-compose up
-...
-postgress_1  | 2020-11-12 18:00:21.618 UTC [1] LOG:  database system is ready to accept connections
-mysql_1      | [Entrypoint] Starting MySQL 5.7.32-1.1.18
-```
+This repository is maintained by [App Runtime
+Platform](https://github.com/cloudfoundry/community/blob/main/toc/working-groups/app-runtime-platform.md)
+under `Networking` area.
 
-## Running the API Server
-
-### Server Configuration
-
-#### jwt token
-
-To run the routing-api server, a configuration file with the public uaa jwt token must be provided.
-This configuration file can then be passed in with the flag `-config [path_to_config]`.
-An example of the configuration file can be found under `example_config/example.yml` for bosh-lite.
-
-To generate your own config file, you must provide a `uaa_verification_key` in
-pem format, such as the following:
-
-```yaml
-uaa_verification_key: |
-  -----BEGIN PUBLIC KEY-----
-  SOME_KEY
-  -----END PUBLIC KEY-----
-```
-
-This can be found in your Cloud Foundry manifest under `uaa.jwt.verification_key`
-
-#### Oauth Clients
-
-The Routing API uses OAuth tokens to authenticate clients. To obtain a token
-from UAA that grants the API client permission to register routes, an OAuth
-client must first be created for the API client in UAA. An API client can then
-authenticate with UAA using the registered OAuth client credentials, request a
-token, then provide this token with requests to the Routing API.
-
-Registering OAuth clients can be done using the cf-release BOSH deployment
-manifest, or manually using the `uaac` CLI for UAA.
-
-- For API clients that wish to register/unregister routes with the Routing API,
-  the OAuth client in UAA must be configured with the `routing.routes.write`
-  authority.
-- For API clients that wish to list routes with the Routing API, the OAuth
-  client in UAA must be configured with the `routing.routes.read` authority.
-- For API clients that wish to list router groups with the Routing API, the
-  OAuth client in UAA must be configured with the `routing.router_groups.read`
-  authority.
-
-For instructions on fetching a token, please refer to the [API
-documentation](docs/api_docs.md).
-
-##### Configure OAuth clients in the cf-release BOSH Manifest
-
-```yaml
-uaa:
-  clients:
-    routing_api_client:
-      authorities: routing.routes.write,routing.routes.read,routing.router_groups.read
-      authorized_grant_type: client_credentials
-      secret: route_secret
-```
-
-##### Configure OAuth clients manually using `uaac` CLI for UAA
-
-1. Install the `uaac` CLI
-
-   ```bash
-   gem install cf-uaac
-   ```
-
-2. Get the admin client token
-
-   ```bash
-   uaac target uaa.bosh-lite.com
-   uaac token client get admin # You will need to provide the client_secret, found in your CF manifest.
-   ```
-
-3. Create the OAuth client.
-
-   ```bash
-   uaac client add routing_api_client \
-     --authorities "routing.routes.write,routing.routes.read,routing.router_groups.read" \
-     --authorized_grant_type "client_credentials"
-   ```
-
-### Starting the Server
-
-To run the API server you need to provide RDB configuration for the Postgres or
-MySQL, a configuration file containing the public UAA jwt key, plus some
-optional flags.
-
-```bash
-routing-api \
-   -ip 127.0.0.1 \
-   -systemDomain 127.0.0.1.xip.io \
-   -config example_config/example.yml \
-   -port 3000 \
-   -maxTTL 60
-```
-
-
-### Profiling the Server
-
-The Routing API runs the
-[cf_debug_server](https://github.com/cloudfoundry/debugserver), which is a
-wrapper around the go pprof tool. In order to generate this profile, do the
-following:
-
-```bash
-# Establish a SSH tunnel to your server (not necessary if you can connect directly)
-ssh -L localhost:8080:[INTERNAL_SERVER_IP]:17002 vcap@[BOSH_DIRECTOR]
-# Run the profile tool.
-go tool pprof http://localhost:8080/debug/pprof/profile
-```
-
-> Note: Debug server should run on loopback interface i.e., 0.0.0.0 for the SSH
-> tunnel to work.
-
-## Using the API
-
-The Routing API uses OAuth tokens to authenticate clients. To obtain a token
-from UAA an OAuth client must first be created for the API client in UAA. For
-instructions on registering OAuth clients, see [Server
-Configuration](#oauth-clients).
-
-### Using the API with the `rtr` CLI
-
-A CLI client called `rtr` has been created for the Routing API that simplifies
-interactions by abstracting authentication.
-
-- [Documentation](https://github.com/cloudfoundry/routing-api-cli)
-- [Releases](https://github.com/cloudfoundry/routing-api-cli/releases)
-
-### Using the API manually
-
-Please refer to the [API documentation](docs/api_docs.md).
-
-## Known issues
-
-+ The routing-api will return a 404 if you attempt to hit the endpoint
-  `http://[router host]/routing/v1/routes/` as opposed to `http://[router
-  host]/routing/v1/routes`
-
-## Development
-
-### <a name="dependencies"></a>Dependencies
-
-This repository's dependencies are managed using
-[routing-release](https://github.com/cloudfoundry/routing-release). Please refer to documentation in that repository for setting up tests
-
-### Executables
-
-1. `bin/test.bash`: This file is used to run test in Docker & CI. Please refer to [Dependencies](#dependencies) for setting up tests.
-
-### Reporting issues and requesting features
-
-Please report all issues and feature requests in [cloudfoundry/routing-release](https://github.com/cloudfoundry/routing-release).
+> \[!IMPORTANT\]
+>
+> Content in this file is managed by the [CI task
+> `sync-readme`](https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/c83c224ad06515ed52f51bdadf6075f56300ec93/shared/tasks/sync-readme/metadata.yml)
+> and is generated by CI following a convention.
