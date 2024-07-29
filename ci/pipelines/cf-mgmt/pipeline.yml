@@ -25,9 +25,9 @@ secrets:
 #! dockerhub_repository was needed on 2023-09-15 to publish releases to Docker. This is not really a secret, this is the tag we use when we publish new images.
 - &dockerhub_tag ((docker-hub.tag))
 
-#! github_access_token is required to create PRs against repos used in this pipeline. It lives in runway vault under the path 'runway_concourse/cryogenics/github'
+#! github_access_token is required to create PRs against repos used in this pipeline. It lives in runway vault under the path 'runway_concourse/tas-journey-auth/cf_mgmt_github_bot'
 - &github_access_token ((cf_mgmt_github_bot.access_token))
-#! github_ssh_key is required to pull and push the repos used in this pipeline. It lives in runway vault under the path 'runway_concourse/cryogenics/github'
+#! github_ssh_key is required to pull and push the repos used in this pipeline. It lives in runway vault under the path 'runway_concourse/tas-journey-auth/cf_mgmt_github_bot'
 - &github_ssh_key ((cf-identity_deploy_key.private_key))
 #! github_email and github_user were added on 2023-12-19 to make the bump-go-module commits
 - &github_email ((cf_mgmt_github_bot.email))
