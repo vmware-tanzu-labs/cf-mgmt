@@ -404,10 +404,14 @@ jobs:
       tag: compiled-output/tag
       globs:
       - compiled-output/cf-mgmt-linux
+      - compiled-output/cf-mgmt-linux-arm64
       - compiled-output/cf-mgmt-osx
+      - compiled-output/cf-mgmt-osx-arm64
       - compiled-output/cf-mgmt.exe
       - compiled-output/cf-mgmt-config-linux
+      - compiled-output/cf-mgmt-linux-arm64
       - compiled-output/cf-mgmt-config-osx
+      - compiled-output/cf-mgmt-config-osx-arm64
       - compiled-output/cf-mgmt-config.exe
   - load_var: github-release-url
     file: releases/url
