@@ -492,7 +492,7 @@ jobs:
         LABELS: dependencies
         TITLE: Bump go module ((.:golang-release-version))
         MESSAGE: |
-          This is an automatically generated Pull Request from the Cryogenics CI Bot.
+          This is an automatically generated Pull Request from the cf-identity CI Bot.
           
           I have detected a new version of a go module and automatically bumped
           it to benefit from the latest changes.
