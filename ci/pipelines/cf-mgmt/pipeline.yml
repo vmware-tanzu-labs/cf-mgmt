@@ -491,6 +491,7 @@ jobs:
       params:
         BASE: main
         BRANCH: *go-module-branch
+        GH_TOKEN: *github_access_token
         LABELS: dependencies
         TITLE: Bump go module ((.:golang-release-version))
         MESSAGE: |
@@ -499,7 +500,7 @@ jobs:
           I have detected a new version of a go module and automatically bumped
           it to benefit from the latest changes.
           
-          If this does not look right, please reach out to the mapbu-cryogenics team.
+          If this does not look right, please reach out to the Identity and Credentials team.
       input_mapping:
         source-repo: source-write-only
         
