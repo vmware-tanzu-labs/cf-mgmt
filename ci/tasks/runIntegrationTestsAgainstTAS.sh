@@ -5,6 +5,8 @@ set -eu -o pipefail
 [ -d env ]
 [ -d source ]
 
+go version
+
 : "${SYSTEM_DOMAIN:="$(jq -r '.sys_domain' env/metadata)"}"
 
 ADMIN_CLIENT_SECRET="$( \
@@ -41,5 +43,5 @@ pushd source > /dev/null
   export ADMIN_CLIENT_SECRET CF_ADMIN_PASSWORD SYSTEM_DOMAIN
 
   RUN_INTEGRATION_TESTS=true \
-    go test ./integration/... -ginkgo.progress
+    go run github.com/onsi/ginkgo/v2/ginkgo ./integration/... --show-node-events -vv --poll-progress-after
 popd > /dev/null
