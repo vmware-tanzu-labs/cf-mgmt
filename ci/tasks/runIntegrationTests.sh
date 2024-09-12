@@ -16,6 +16,7 @@ get_system_domain() {
 
 eval "$(bbl print-env --metadata-file cf-deployment-env/metadata)"
 
+go version
 go install code.cloudfoundry.org/uaa-cli@latest
 
 if [ -z "$SYSTEM_DOMAIN" ]
@@ -37,5 +38,5 @@ pushd source > /dev/null
   CF_ADMIN_PASSWORD=$(get_from_credhub cf_admin_password) \
   ADMIN_CLIENT_SECRET=$(get_from_credhub uaa_admin_client_secret) \
   RUN_INTEGRATION_TESTS=true \
-    go test ./integration/... -ginkgo.progress
+    go  run github.com/onsi/ginkgo/v2/ginkgo ./integration/... --show-node-events -vv --poll-progress-after
 popd > /dev/null

@@ -483,6 +483,7 @@ jobs:
   - put: source-write-only
     params:
       repository: source-repo
+      rebase: true
       branch: &go-module-branch bump-go-based-on-golang-release-((.:golang-release-version))
   - try:
       task: create-go-module-bump-pull-request
