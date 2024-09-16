@@ -104,14 +104,6 @@ resources:
     uri: https://github.com/bosh-packages/golang-release.git
     tag_filter: v*
 
-- name: cf-deployment-concourse-tasks-image
-  type: registry-image
-  source:
-    repository: us-west2-docker.pkg.dev/mapbu-cryogenics/dockerhub-proxy-cache/cloudfoundry/cf-deployment-concourse-tasks
-    username: _json_key
-    password: *gcr_viewer_key
-    tag: latest
-
 - name: image-cryogenics-essentials
   type: registry-image
   source:
@@ -263,7 +255,6 @@ jobs:
       passed: [ claim-cf ]
     - get: cryogenics-concourse-tasks
     - get: image-cryogenics-essentials
-    - get: cf-deployment-concourse-tasks-image
   - in_parallel:
     - do:
       - task: unit-test
@@ -274,8 +265,8 @@ jobs:
         file: cf-deployment-env/metadata
         format: json
       - task: integration-test
-        image: cf-deployment-concourse-tasks-image
-        file: source/ci/tasks/runIntegrationTests.yml #!requires uaa cli, not available in cryo essentials
+        image: image-cryogenics-essentials
+        file: source/ci/tasks/runIntegrationTests.yml
   on_failure:
     put: pull-request
     params:

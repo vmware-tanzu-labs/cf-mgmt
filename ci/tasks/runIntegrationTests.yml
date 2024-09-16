@@ -3,7 +3,7 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: cloudfoundry/cf-deployment-concourse-tasks
+    repository: harbor-repo.vmware.com/cryogenics/essentials
     tag: latest
 
 inputs:
