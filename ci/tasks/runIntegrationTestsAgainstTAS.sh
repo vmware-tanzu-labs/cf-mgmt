@@ -14,9 +14,9 @@ ADMIN_CLIENT_SECRET="$( \
     --skip-ssl-validation \
     --env env/pcf.yml \
     credentials \
-      --product-name cf \
-      --credential-reference .uaa.admin_client_credentials \
-      --credential-field password \
+    --product-name cf \
+    --credential-reference .uaa.admin_client_credentials \
+    --credential-field password \
 )"
 
 uaac target "uaa.$SYSTEM_DOMAIN" --skip-ssl-validation
@@ -34,14 +34,14 @@ CF_ADMIN_PASSWORD="$( \
     --skip-ssl-validation \
     --env env/pcf.yml \
     credentials \
-      --product-name cf \
-      --credential-reference .uaa.admin_credentials \
-      --credential-field password \
+    --product-name cf \
+    --credential-reference .uaa.admin_credentials \
+    --credential-field password \
 )"
 
-pushd source > /dev/null
+pushd source >/dev/null
   export ADMIN_CLIENT_SECRET CF_ADMIN_PASSWORD SYSTEM_DOMAIN
 
   RUN_INTEGRATION_TESTS=true \
     go run github.com/onsi/ginkgo/v2/ginkgo ./integration/... --show-node-events -vv --poll-progress-after
-popd > /dev/null
+popd >/dev/null

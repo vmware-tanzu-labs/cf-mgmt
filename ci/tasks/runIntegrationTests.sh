@@ -18,11 +18,11 @@ eval "$(bbl print-env --metadata-file cf-deployment-env/metadata)"
 
 go version
 go install code.cloudfoundry.org/uaa-cli@latest
-export PATH=$PATH:$(go env GOPATH)/bin
+export GOPATH="$(go env GOPATH)"
+export PATH="$GOPATH/bin:$PATH"
 
-if [ -z "$SYSTEM_DOMAIN" ]
-then
-  SYSTEM_DOMAIN=$( get_system_domain )
+if [ -z "$SYSTEM_DOMAIN" ]; then
+  SYSTEM_DOMAIN=$(get_system_domain)
 fi
 
 uaa-cli target "https://uaa.${SYSTEM_DOMAIN}" -k
@@ -39,5 +39,5 @@ pushd source > /dev/null
   CF_ADMIN_PASSWORD=$(get_from_credhub cf_admin_password) \
   ADMIN_CLIENT_SECRET=$(get_from_credhub uaa_admin_client_secret) \
   RUN_INTEGRATION_TESTS=true \
-    go  run github.com/onsi/ginkgo/v2/ginkgo ./integration/... --show-node-events -vv --poll-progress-after
+    go run github.com/onsi/ginkgo/v2/ginkgo ./integration/... --show-node-events -vv --poll-progress-after
 popd > /dev/null

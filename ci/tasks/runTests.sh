@@ -2,7 +2,7 @@
 
 set -eu -o pipefail
 
-pushd "source" > /dev/null
+pushd "source" >/dev/null
   go version
 
   echo "Running go vet"
