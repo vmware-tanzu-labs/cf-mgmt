@@ -18,6 +18,7 @@ eval "$(bbl print-env --metadata-file cf-deployment-env/metadata)"
 
 go version
 go install code.cloudfoundry.org/uaa-cli@latest
+export PATH=$PATH:$(go env GOPATH)/bin
 
 if [ -z "$SYSTEM_DOMAIN" ]
 then
