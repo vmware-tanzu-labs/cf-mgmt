@@ -64,6 +64,11 @@ groups:
 - name: release
   jobs:
   - check-for-changes
+  #@ for v in data.values.other_tas_versions:
+  - #@ 'claim-tas-' + v["version_slug"]
+  - #@ 'test-against-tas-' + v["version_slug"]
+  - #@ 'release-tas-' + v["version_slug"]
+  #@ end
   - release
   - publish
 
@@ -150,6 +155,27 @@ resources:
           password: "output.ops_manager.password"
           target: "output.ops_manager.url"
           username: "output.ops_manager.username"
+
+  #@ for/end v in data.values.other_tas_versions:
+- name: #@ 'tas-' + v["version_slug"] + '-env'
+  type: shepherd
+  icon: pool
+  source:
+    url: https://v2.shepherd.run
+    service-account-key: *shepherd_account_key
+    compatibility-mode: environments-app
+    lease:
+      namespace: tas-identity-and-credentials
+      pool:
+        namespace: official
+        name: #@ v["pool_name"]
+    output:
+      json-file:
+        - path: "pcf.yml"
+          fields:
+            password: "output.ops_manager.password"
+            target: "output.ops_manager.url"
+            username: "output.ops_manager.username"
 
 - name: source
   type: git
@@ -355,13 +381,68 @@ jobs:
     - get: source
     - get: source-production-files-only
 
+#@ for v in data.values.other_tas_versions:
+- name: #@ 'claim-tas-' + v["version_slug"]
+  plan:
+    - in_parallel:
+      - get: source
+        trigger: true
+        passed:
+          - check-for-changes
+      - get: source-production-files-only
+    - put: #@ 'tas-' + v["version_slug"] +'-env'
+      timeout: 6h
+      attempts: *number_of_claim_env_retries
+      params:
+        action: create
+        duration: 24h
+        resource: #@ 'tas-' + v["version_slug"] +'-env'
+        timeout: 6h
+
+- name: #@ 'test-against-tas-' + v["version_slug"]
+  plan:
+    - in_parallel:
+        - get: source
+          passed:
+            - #@ 'claim-tas-' + v["version_slug"]
+        - get: source-production-files-only
+        - get: #@ 'tas-' + v["version_slug"] +'-env'
+          trigger: true
+          passed:
+            - #@ 'claim-tas-' + v["version_slug"]
+        - get: image-cryogenics-essentials
+    - task: integration-test
+      image: image-cryogenics-essentials
+      file: source/ci/tasks/runIntegrationTestsAgainstTAS.yml
+      input_mapping:
+        env: #@ 'tas-' + v["version_slug"] +'-env'
+
+- name: #@ 'release-tas-' + v["version_slug"]
+  plan:
+    - in_parallel:
+      - get: source
+        passed:
+          - #@ 'test-against-tas-' + v["version_slug"]
+      - get: source-production-files-only
+      - get: #@ 'tas-' + v["version_slug"] + '-env'
+        trigger: true
+        passed:
+          - #@ 'test-against-tas-' + v["version_slug"]
+    - put: #@ 'tas-' + v["version_slug"] + '-env'
+      params:
+        action: release
+        resource: #@ 'tas-' + v["version_slug"] +'-env'
+#@ end
+
 - name: release
   plan:
   - in_parallel:
     - get: source-production-files-only
       trigger: true
       passed:
-      - check-for-changes
+      #@ for v in data.values.other_tas_versions:
+      - #@ 'release-tas-' + v["version_slug"]
+      #@ end
     - get: cryogenics-concourse-tasks
     - get: python-394
     - get: image-cryogenics-essentials
@@ -495,4 +576,3 @@ jobs:
           If this does not look right, please reach out to the Identity and Credentials team.
       input_mapping:
         source-repo: source-write-only
-        
