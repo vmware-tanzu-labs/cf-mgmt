@@ -101,6 +101,7 @@ func (m *DefaultManager) ListSpaceRoles() ([]*resource.Role, error) {
 }
 
 func (m *DefaultManager) listRolesForType(roleType string) ([]*resource.Role, error) {
+	// is this the cf api call?
 	roles, err := m.RoleClient.ListAll(context.Background(), &client.RoleListOptions{
 		Types: client.Filter{
 			Values: []string{roleType},
@@ -310,6 +311,7 @@ func (m *DefaultManager) ListSpaceUsersByRole(spaceGUID string) (*RoleUsers, *Ro
 			return nil, nil, nil, nil, err
 		}
 	}
+	// this is returning 0 space developer
 	return m.getSpaceRole(spaceGUID, resource.SpaceRoleManager.String()), m.getSpaceRole(spaceGUID, resource.SpaceRoleDeveloper.String()), m.getSpaceRole(spaceGUID, resource.SpaceRoleAuditor.String()), m.getSpaceRole(spaceGUID, resource.SpaceRoleSupporter.String()), nil
 }
 
@@ -326,7 +328,11 @@ func (m *DefaultManager) getOrgRole(orgGUID, role string) *RoleUsers {
 }
 
 func (m *DefaultManager) getSpaceRole(spaceGUID, role string) *RoleUsers {
+	// here the spaceGUID is actually the org guid somehow?????
+	lo.G.Debugf("PHC: searching for role %v in spaceGUID %v", role, spaceGUID)
+	lo.G.Debugf("PHC: m.SpaceRoles: %v:", m.SpaceRoles)
 	spaceRoles := m.SpaceRoles[spaceGUID]
+	lo.G.Debugf("PHC: spaceRoles: %v:", spaceRoles)
 	if spaceRoles == nil {
 		return InitRoleUsers()
 	}

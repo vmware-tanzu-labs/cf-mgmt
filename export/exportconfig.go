@@ -401,7 +401,9 @@ func (im *Manager) processSpaces(globalConfig *config.GlobalConfig, orgConfig *c
 
 		spaceConfig := &config.SpaceConfig{Org: orgConfig.Org, Space: spaceName, EnableUnassignSecurityGroup: true}
 		//Add users
-		err = im.addSpaceUsers(spaceConfig, orgSpace.Relationships.Organization.Data.GUID)
+		// the second param in below is supposed to be the space guid
+		//err = im.addSpaceUsers(spaceConfig, orgSpace.Relationships.Organization.Data.GUID)
+		err = im.addSpaceUsers(spaceConfig, orgSpace.GUID)
 		if err != nil {
 			return err
 		}
