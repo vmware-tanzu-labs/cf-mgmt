@@ -3,6 +3,8 @@ package integration_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/vmwarepivotallabs/cf-mgmt/config"
+	"gopkg.in/yaml.v2"
 	"os"
 	"os/exec"
 	"strings"
@@ -14,7 +16,8 @@ import (
 )
 
 const (
-	configDir = "./fixture"
+	configDir         = "./fixture"
+	exportedConfigDir = "./exported-config"
 )
 
 // cf runs the cf CLI with the specified args.
@@ -253,6 +256,59 @@ var _ = Describe("cf-mgmt cli", func() {
 				orgInfo, err := cf("org", "test2")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(bytes.Contains(orgInfo, []byte("test2-iso-segment"))).Should(BeTrue())
+			})
+		})
+
+		Describe("export-config", func() {
+			BeforeEach(func() {
+				fmt.Println("********   Before called *********")
+
+				err := os.MkdirAll(exportedConfigDir, os.ModePerm)
+				Expect(err).ShouldNot(HaveOccurred())
+				// There seems to be an existing issue where if this ldap.yml does not exist, "cf-mgmt export-config" will fail with:
+				// "Unable to initialize cf-mgmt. Error : Error reading file exported-config/ldap.yml: open exported-config/ldap.yml: no such file or directory"
+				_, err = os.Create(exportedConfigDir + "/ldap.yml")
+				Expect(err).ShouldNot(HaveOccurred())
+
+				cf("create-org", "test-org")
+				cf("target", "-o", "test-org")
+				cf("create-space", "test-space")
+				cf("target", "-o", "test-org", "-s", "test-space")
+			})
+
+			AfterEach(func() {
+				fmt.Println("********   after called *********")
+
+				err := os.RemoveAll(exportedConfigDir)
+				Expect(err).ShouldNot(HaveOccurred())
+
+				cf("delete-space", "test-space", "-o", "test-org", "-f")
+				cf("delete-org", "-f", "test-org")
+			})
+
+			It("should complete successfully", func() {
+				orgs, err := cf("orgs")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(string(orgs)).Should(ContainSubstring("test-org"))
+
+				By("exporting space roles")
+				exportConfigCommand := exec.Command(outPath, "export-config",
+					"--config-dir", exportedConfigDir,
+					"--system-domain", systemDomain,
+					"--user-id", userID,
+					"--password", password,
+					"--client-secret", clientSecret)
+				session, err := Start(exportConfigCommand, GinkgoWriter, GinkgoWriter)
+				Expect(err).ShouldNot(HaveOccurred())
+				Eventually(session).Should(Exit(0))
+
+				spaceConfigFile, err := os.ReadFile(exportedConfigDir + "/test-org/test-space/spaceConfig.yml")
+				Expect(err).ShouldNot(HaveOccurred())
+				var spaceConfig config.SpaceConfig
+				yaml.Unmarshal(spaceConfigFile, &spaceConfig)
+
+				// the user that created the space is auto-assigned as a space developer; the exported config should reflect that
+				Expect(spaceConfig.Developer.Users).Should(ContainElement("admin"))
 			})
 		})
 	})
