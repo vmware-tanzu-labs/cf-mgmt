@@ -29,6 +29,8 @@ secrets:
 - &github_access_token ((cf_mgmt_github_bot.access_token))
 #! github_ssh_key is required to pull and push the repos used in this pipeline. It lives in runway vault under the path 'runway_concourse/tas-journey-auth/cf_mgmt_github_bot'
 - &github_ssh_key ((cf-identity_deploy_key.private_key))
+#! cryogenics-concourse-tasks-key is required to operate upon the cryogenics_concourse_tasks repo used in this pipeline. It lives in runway vault under the path 'identity-and-credentials/cryogenics_concourse_tasks_key'
+- &cryogenics_concourse_tasks_key ((cryogenics-concourse-tasks-key.private_key))
 #! github_email and github_user were added on 2023-12-19 to make the bump-go-module commits
 - &github_email ((cf_mgmt_github_bot.email))
 - &github_user ((cf_mgmt_github_bot.user))
@@ -251,8 +253,8 @@ resources:
   type: git
   icon: github
   source:
-    uri: git@github.com:pivotal/cryogenics-concourse-tasks.git
-    private_key: *github_ssh_key
+    uri: git@github.gwd.broadcom.net:TNZ/cryogenics-concourse-tasks.git
+    private_key: *cryogenics_concourse_tasks_key
     branch: identity-and-credentials
 
 jobs:
