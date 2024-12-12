@@ -6,8 +6,6 @@ package typeparams
 
 import (
 	"go/types"
-
-	"golang.org/x/tools/internal/aliases"
 )
 
 // Free is a memoization of the set of free type parameters within a
@@ -21,7 +19,6 @@ type Free struct {
 
 // Has reports whether the specified type has a free type parameter.
 func (w *Free) Has(typ types.Type) (res bool) {
-
 	// detect cycles
 	if x, ok := w.seen[typ]; ok {
 		return x
@@ -38,8 +35,8 @@ func (w *Free) Has(typ types.Type) (res bool) {
 	case nil, *types.Basic: // TODO(gri) should nil be handled here?
 		break
 
-	case *aliases.Alias:
-		return w.Has(aliases.Unalias(t))
+	case *types.Alias:
+		return w.Has(types.Unalias(t))
 
 	case *types.Array:
 		return w.Has(t.Elem())
@@ -83,7 +80,7 @@ func (w *Free) Has(typ types.Type) (res bool) {
 		}
 		terms, err := InterfaceTermSet(t)
 		if err != nil {
-			panic(err)
+			return false // ill typed
 		}
 		for _, term := range terms {
 			if w.Has(term.Type()) {
