@@ -6,7 +6,7 @@ require (
 	code.cloudfoundry.org/routing-api v0.0.0-20240405184607-ef1509a3ec8a
 	github.com/cloudfoundry-community/go-cfclient v0.0.0-20220803221820-5e81c204bd31
 	github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.6
-	github.com/cloudfoundry-community/go-uaa v0.3.2
+	github.com/cloudfoundry-community/go-uaa v0.3.3
 	github.com/go-ldap/ldap/v3 v3.4.8
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.10.0
@@ -28,7 +28,6 @@ require (
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-martini/martini v0.0.0-20170121215854-22fa46961aab // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20241029153458-d1b30febd7db // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -48,12 +47,10 @@ require (
 	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/oauth2 v0.13.0 // indirect
+	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
