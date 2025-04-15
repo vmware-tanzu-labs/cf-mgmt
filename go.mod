@@ -1,12 +1,13 @@
 module github.com/vmwarepivotallabs/cf-mgmt
 
 go 1.23.2
+
 require (
 	code.cloudfoundry.org/routing-api v0.0.0-20240405184607-ef1509a3ec8a
 	github.com/cloudfoundry-community/go-cfclient v0.0.0-20220803221820-5e81c204bd31
 	github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.6
 	github.com/cloudfoundry-community/go-uaa v0.3.5
-	github.com/go-ldap/ldap/v3 v3.4.10
+	github.com/go-ldap/ldap/v3 v3.4.11
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.2
 	github.com/onsi/ginkgo/v2 v2.23.0
@@ -23,7 +24,7 @@ require (
 	github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f // indirect
 	github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/go-asn1-ber/asn1-ber v1.5.7 // indirect
+	github.com/go-asn1-ber/asn1-ber v1.5.8-0.20250403174932-29230038a667 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-martini/martini v0.0.0-20170121215854-22fa46961aab // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
@@ -45,7 +46,7 @@ require (
 	github.com/vito/go-sse v1.0.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/mod v0.24.0 // indirect
-	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.28.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
