@@ -1,3 +1,12 @@
+
+<b>
+:warning: cf-mgmt is no longer maintained as an open-source project by Broadcom, Inc.
+
+For information about commercial support for cf-mgmt, please review this [Product Advisory](https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/ProductAdvisories/0/36873).
+Questions about commercial support should be directed to the [Broadcom Support Portal](https://support.broadcom.com),
+or to your Tanzu Account Team.
+</b>
+
 TAS version | Compatible
 --- | ---
 4.0
@@ -8,6 +17,8 @@ TAS version | Compatible
 # Cloud Foundry Management (cf-mgmt)
 
 Go automation for managing orgs, spaces, users (from ldap groups or internal store) mapping to roles, quotas, application security groups and private-domains that can be driven from concourse pipeline and GIT managed metadata
+
+
 
 ## New Major Release Information
 
